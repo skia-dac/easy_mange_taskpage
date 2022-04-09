@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/context_extensions.dart';
 import 'homepage.dart';
 import 'notepage/notes_page.dart';
+import 'setting.dart';
 
 
 
@@ -20,7 +21,7 @@ class _MyNevBarState extends State<MyNevBar>
     HomePage(),
     HomePage(),
     NotesPage(),
-    HomePage(),
+    Setting(),
 
   ];
   @override

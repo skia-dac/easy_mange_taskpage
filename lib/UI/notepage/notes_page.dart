@@ -41,61 +41,66 @@ class _NotesPageState extends State<NotesPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: context.theme.backgroundColor,
-          title: Text(
-            'Notes',
-            style: headingStyle
-            ,
-          ),
-          // actions: [Icon(Icons.search), SizedBox(width: 12)],
-        ),
-          backgroundColor: context.theme.backgroundColor,
-        body: Center(
-          child: isLoading
-              ? CircularProgressIndicator()
-              : notes.isEmpty ?
-                    Text(
-                      'No Notes',
-                      style: headingStyle,
-                    )
-                  : buildNotes(),
-        ),
-        // add a note
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.deepPurpleAccent,
-          child: Icon(Icons.add),
-          onPressed: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => AddEditNotePage()),
-            );
+    appBar: AppBar(
+      elevation: 0,
+      backgroundColor: context.theme.backgroundColor,
+      title: Text(
+        'Notes',
+        style: headingStyle
+        ,
+      ),
+      // actions: [Icon(Icons.search), SizedBox(width: 12)],
+    ),
+    backgroundColor: context.theme.backgroundColor,
+    body: Center(
+      child: isLoading
+          ? CircularProgressIndicator()
+          : notes.isEmpty ?
+      Text(
+        'No Notes',
+        style: headingStyle,
+      )
+          : buildNotes(),
+    ),
+    // add a note
+    floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.deepPurpleAccent,
+      child: Icon(Icons.add),
+      onPressed: () async {
+        await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => AddEditNotePage()),
+        );
 
-            refreshNotes();
-          },
-        ),
-      );
+        refreshNotes();
+      },
+    ),
+  );
 
   Widget buildNotes() => StaggeredGridView.countBuilder(
-        padding: EdgeInsets.all(8),
-        itemCount: notes.length,
-        staggeredTileBuilder: (index) => StaggeredTile.fit(2),
-        crossAxisCount: 4,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        itemBuilder: (context, index) {
-          final note = notes[index];
+    padding: EdgeInsets.all(8),
+    itemCount: notes.length,
+    staggeredTileBuilder: (index) => StaggeredTile.fit(2),
+    crossAxisCount: 4,
+    mainAxisSpacing: 4,
+    crossAxisSpacing: 4,
+    itemBuilder: (context, index) {
+      final note = notes[index];
 
-          return GestureDetector(
-            onTap: () async {
-              await Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => NoteDetailPage(noteId: note.id!),
-              ));
+      return GestureDetector(
+        onTap: () async {
+          await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => NoteDetailPage(noteId: note.id!),
+          ));
 
-              refreshNotes();
-            },
-            child: NoteCardWidget(note: note, index: index),
-          );
+          refreshNotes();
         },
+        child: NoteCardWidget(note: note, index: index),
       );
+    },
+  );
+}
+@override
+State<StatefulWidget> createState() {
+  // TODO: implement createState
+  throw UnimplementedError();
 }

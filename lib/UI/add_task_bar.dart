@@ -150,7 +150,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
      crossAxisAlignment: CrossAxisAlignment.center,
      children: [
-       _colorpallete(),
+       _colorPallete(),
        MyButton(label: "Create Task",  onTap: ()=>_validateDate()),
 
   ],
@@ -193,7 +193,7 @@ _validateDate(){
     );
    print("My id is "+"$value");
    }
-  _colorpallete(){
+  _colorPallete(){
     return   Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
