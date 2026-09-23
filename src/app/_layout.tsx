@@ -18,12 +18,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
-import { useTheme } from '@/shared/theme';
+import { fonts, useTheme } from '@/shared/theme';
 import { AppText, Button } from '@/shared/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [fontsLoaded, fontError] = useFonts({
     BricolageGrotesque_700Bold,
@@ -48,10 +49,17 @@ export default function RootLayout() {
         <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
           <Stack
             screenOptions={{
-              headerShown: false,
+              headerBackTitle: t('common.back'),
+              headerTintColor: colors.primary,
+              headerStyle: { backgroundColor: colors.background },
+              headerTitleStyle: { color: colors.text, fontFamily: fonts.bodyBold },
+              headerShadowVisible: false,
               contentStyle: { backgroundColor: colors.background },
             }}
-          />
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
+          </Stack>
         </SQLiteProvider>
       </Suspense>
     </SafeAreaProvider>

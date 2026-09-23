@@ -1,0 +1,105 @@
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, View } from 'react-native';
+
+import { useLabels } from '@/hooks/useLabels';
+import { useSubjects } from '@/hooks/useSubjects';
+import { colorOf, countdown, getExam } from '@/modules/academic';
+import { fromIsoDate, toIsoDate } from '@/shared/dates';
+import { useLiveQuery } from '@/shared/db';
+import { formatLongDate } from '@/shared/format';
+import { useTheme } from '@/shared/theme';
+import { useNow } from '@/shared/useNow';
+import { AppText, Button, Card, EmptyState, IconBadge, ListRow, TextButton } from '@/shared/ui';
+
+export default function ExamDetailScreen() {
+  const { t } = useTranslation();
+  const labels = useLabels();
+  const now = useNow(60_000);
+  const { radius, spacing, scheme } = useTheme();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { byId } = useSubjects();
+  const exam = useLiveQuery((db) => getExam(db, id), ['exams'], [id]);
+
+  if (exam.loading) return null;
+  const e = exam.data;
+  if (!e) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
+
+  const subject = byId.get(e.subjectId);
+  const color = colorOf(subject);
+  const strong = scheme === 'dark' ? color.strongDark : color.strong;
+  const c = countdown(e.date, toIsoDate(now));
+
+  return (
+    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
+      <Stack.Screen
+        options={{
+          title: t('exams.detailTitle'),
+          headerRight: () => (
+            <TextButton
+              label={t('common.edit')}
+              onPress={() => router.push({ pathname: '/exams/form', params: { id: e.id } })}
+            />
+          ),
+        }}
+      />
+      <View
+        style={{
+          backgroundColor: scheme === 'dark' ? color.softDark : color.soft,
+          borderRadius: radius.xl,
+          padding: spacing.xl,
+          gap: spacing.xs,
+        }}
+      >
+        {e.title ? (
+          <AppText variant="label" style={{ color: strong, letterSpacing: 1 }}>
+            {e.title.toLocaleUpperCase()}
+          </AppText>
+        ) : null}
+        <AppText variant="title" style={{ color: strong }}>
+          {subject?.name ?? ''}
+        </AppText>
+        <AppText variant="title" style={{ fontSize: 34, lineHeight: 40 }}>
+          {labels.countdown(c)}
+        </AppText>
+      </View>
+      <Card>
+        <ListRow
+          title={[formatLongDate(fromIsoDate(e.date), labels.lang), e.time]
+            .filter(Boolean)
+            .join(' · ')}
+          subtitle={t('exams.when')}
+          leading={<IconBadge icon="calendar" />}
+        />
+        {e.durationMinutes ? (
+          <ListRow
+            title={labels.duration(e.durationMinutes)}
+            subtitle={t('exams.durationLabel')}
+            leading={<IconBadge icon="clock" />}
+          />
+        ) : null}
+        {e.room ? (
+          <ListRow
+            title={e.room}
+            subtitle={t('exams.room')}
+            leading={<IconBadge icon="map-pin" />}
+          />
+        ) : null}
+      </Card>
+      {e.description ? (
+        <Card>
+          <AppText variant="caption" color="muted">
+            {t('exams.description')}
+          </AppText>
+          <AppText>{e.description}</AppText>
+        </Card>
+      ) : null}
+      {subject ? (
+        <Button
+          label={subject.name}
+          onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: subject.id } })}
+        />
+      ) : null}
+    </ScrollView>
+  );
+}

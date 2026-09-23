@@ -1,7 +1,7 @@
 # MySky
 
 Application mobile d'organisation pour étudiants (Android et iOS), construite avec **Expo** et **TypeScript**.
-Statut : **phase 0 terminée** (socle technique). Les fonctionnalités arrivent à partir de la phase 1.
+Statut : **phase 1 terminée** : matières, emplois du temps, cours (uniques ou hebdomadaires), calendrier jour / semaine / mois, écran Aujourd'hui, tâches, devoirs, examens et événements. Tout fonctionne hors connexion, sur un seul téléphone (comptes et synchronisation : phase 2).
 
 - Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
 - Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
@@ -47,6 +47,9 @@ src/
     academic/          matières, emplois du temps, cours, examens, vacances
     productivity/      notes, tâches, devoirs, pièces jointes
     platform/          notifications, fichiers, import, synchronisation, recherche
+  projections/         Aujourd'hui et Calendrier : calculés à partir des données, jamais stockés
+  workflows/           Actions qui touchent plusieurs modules (ex. supprimer une matière)
+  components/          Lignes réutilisables (cours, devoir, examen, événement)
   shared/
     theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières)
     theme/tokens.ts    espacements, arrondis, typographie

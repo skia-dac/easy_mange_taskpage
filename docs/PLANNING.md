@@ -137,7 +137,8 @@ Module rule: code imports another module only through its `index.ts`. A lint rul
   - `tasks`: subject optional
   - `assignments`: subject, due date, priority, status, completed_at
   - `attachments`
-- **platform:** `personal_events`, `import_jobs`, `imported_timetable_drafts` (rows with a confidence value or a "à vérifier" flag), `mutations_applied`
+- **productivity (implemented there in phase 1):** `personal_events`
+- **platform:** `import_jobs`, `imported_timetable_drafts` (rows with a confidence value or a "à vérifier" flag), `mutations_applied`
 
 Edit options on a recurring course:
 - "This occurrence only" → a `MODIFIED` exception.
@@ -156,7 +157,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 | Phase | Content | Result |
 |---|---|---|
 | **0. Setup** ✅ done | ~~Remove the old Flutter code~~ (done), create the Expo project with the module structure + boundary lint, tests, CI, EAS, design tokens, i18n, local DB (Supabase project moved to phase 2) | Empty app runs on both platforms |
-| **1. Local core (offline by design)** | Subjects, timetables, course series (weekly), calendar + Today projections, tasks/assignments/exams/events, confirmations, empty states. Sync metadata columns and the outbox already written, but no server yet | Fully usable app on one device, no account |
+| **1. Local core (offline by design)** ✅ done | Subjects, timetables, course series (weekly), calendar + Today projections, tasks/assignments/exams/events, confirmations, empty states. Sync metadata columns and the outbox already written, but no server yet | Fully usable app on one device, no account |
 | **2. Accounts + sync** | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
 | **3. Notifications** | Course/homework/task/exam reminders, end-of-course actions with prefilled forms, settings, rolling scheduler | Acceptance criteria 17–19 |
 | **4. Advanced timetable** | Per-occurrence edits (3 options), cancellations, holidays/days off with suspension | Criteria 6, rule 8 |
