@@ -20,6 +20,8 @@ module.exports = defineConfig([
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
+      // Architecture : pas de dépendances circulaires entre fichiers
+      'import/no-cycle': 'error',
       // Architecture : un module s'utilise seulement par son index.ts
       'no-restricted-imports': [
         'error',

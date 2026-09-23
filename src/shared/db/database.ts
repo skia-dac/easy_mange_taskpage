@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import { asDb } from './compat';
 import { migrate } from './migrate';
 import { migrations } from './migrations';
 
@@ -12,5 +13,5 @@ export const DATABASE_NAME = 'mysky.db';
  */
 export async function setupDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
-  await migrate(db, migrations);
+  await migrate(asDb(db), migrations);
 }

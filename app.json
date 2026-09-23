@@ -53,7 +53,8 @@
           }
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "mysky",
     "experiments": {

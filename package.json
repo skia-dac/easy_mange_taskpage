@@ -6,6 +6,8 @@
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-community/datetimepicker": "9.1.0",
+    "date-fns": "^4.4.0",
     "expo": "~57.0.24",
     "expo-asset": "~57.0.18",
     "expo-build-properties": "~57.0.21",
@@ -30,8 +32,10 @@
   },
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
+    "better-sqlite3": "^13.0.3",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~57.0.2",
     "eslint-config-prettier": "^10.1.8",
@@ -63,6 +67,9 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.expo/"
+    ],
+    "setupFiles": [
+      "<rootDir>/jest.setup.ts"
     ]
   },
   "engines": {

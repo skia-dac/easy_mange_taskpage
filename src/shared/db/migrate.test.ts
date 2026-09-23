@@ -11,7 +11,7 @@ function fakeDb(startVersion = 0, failOn?: string) {
       if (m) state.version = Number(m[1]);
       else state.executed.push(sql.trim());
     },
-    async getFirstAsync<T>() {
+    async getFirstAsync<T>(_sql: string, _params: unknown[]) {
       return { user_version: state.version } as T;
     },
     async withExclusiveTransactionAsync(task) {

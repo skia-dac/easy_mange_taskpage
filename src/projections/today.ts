@@ -1,0 +1,85 @@
+import {
+  countdown,
+  occurrencesInRange,
+  type Countdown,
+  type CourseSeries,
+  type Exam,
+  type Occurrence,
+} from '@/modules/academic';
+import {
+  compareWorkItems,
+  isOverdue,
+  type PersonalEvent,
+  type WorkItem,
+} from '@/modules/productivity';
+import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
+
+export type NextCourse =
+  | { state: 'upcoming'; occurrence: Occurrence; minutes: number }
+  | { state: 'ongoing'; occurrence: Occurrence; minutes: number };
+
+/**
+ * Le prochain cours du jour (§8) :
+ * - « en cours » s'il a commencé et n'est pas fini (minutes = temps restant) ;
+ * - sinon le prochain qui n'a pas commencé (minutes = temps avant le début).
+ */
+export function nextCourse(todayOccurrences: readonly Occurrence[], now: Date): NextCourse | null {
+  const t = now.getTime();
+  for (const o of todayOccurrences) {
+    const start = atTime(o.date, o.startTime).getTime();
+    const end = atTime(o.date, o.endTime).getTime();
+    if (t >= end) continue;
+    if (t >= start)
+      return { state: 'ongoing', occurrence: o, minutes: Math.ceil((end - t) / 60000) };
+    return { state: 'upcoming', occurrence: o, minutes: Math.ceil((start - t) / 60000) };
+  }
+  return null;
+}
+
+export type TodayData = {
+  series: readonly CourseSeries[];
+  exams: readonly Exam[];
+  work: readonly WorkItem[];
+  events: readonly PersonalEvent[];
+};
+
+export type TodayView = {
+  today: IsoDate;
+  next: NextCourse | null;
+  courses: Occurrence[];
+  overdue: WorkItem[];
+  dueToday: WorkItem[];
+  upcomingExams: { exam: Exam; countdown: Countdown }[];
+  events: PersonalEvent[];
+};
+
+/** Nombre de jours à l'avance où un examen apparaît dans « Aujourd'hui ». */
+export const EXAM_HORIZON_DAYS = 30;
+
+/** Tout ce qui concerne la journée (§7) : calculé, jamais stocké (architecture §10.1). */
+export function buildToday(data: TodayData, now: Date): TodayView {
+  const today = toIsoDate(now);
+  const courses = occurrencesInRange(data.series, today, today);
+  const open = data.work.filter((w) => w.status !== 'done');
+  const overdue = open.filter((w) => isOverdue(w, now)).sort(compareWorkItems);
+  const dueToday = open
+    .filter((w) => w.dueDate === today && !isOverdue(w, now))
+    .sort(compareWorkItems);
+  const horizon = addDaysIso(today, EXAM_HORIZON_DAYS);
+  const upcomingExams = data.exams
+    .filter((e) => e.date >= today && e.date <= horizon)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? '').localeCompare(b.time ?? ''))
+    .map((exam) => ({ exam, countdown: countdown(exam.date, today) }));
+  const events = data.events
+    .filter((e) => e.date === today)
+    .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''));
+  return {
+    today,
+    next: nextCourse(courses, now),
+    courses,
+    overdue,
+    dueToday,
+    upcomingExams,
+    events,
+  };
+}

@@ -1,4 +1,5 @@
 import { AppError } from '../errors';
+import type { Db } from './types';
 
 export type Migration = {
   /** 1, 2, 3… : chaque migration a un numéro unique, dans l'ordre. */
@@ -8,11 +9,9 @@ export type Migration = {
 };
 
 /** Le minimum dont le moteur de migrations a besoin (compatible avec SQLiteDatabase). */
-export interface MigratableDatabase {
-  execAsync(source: string): Promise<void>;
-  getFirstAsync<T>(source: string): Promise<T | null>;
+export type MigratableDatabase = Pick<Db, 'execAsync' | 'getFirstAsync'> & {
   withExclusiveTransactionAsync(task: (txn: MigratableDatabase) => Promise<void>): Promise<void>;
-}
+};
 
 export function validateMigrations(migrations: readonly Migration[]): void {
   migrations.forEach((m, index) => {
@@ -32,7 +31,7 @@ export async function migrate(
   migrations: readonly Migration[],
 ): Promise<number> {
   validateMigrations(migrations);
-  const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version', []);
   const current = row?.user_version ?? 0;
   const latest = migrations.length;
 
