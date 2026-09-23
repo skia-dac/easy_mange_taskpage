@@ -194,9 +194,14 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 - Typography: one sans-serif family (e.g. Inter or Plus Jakarta Sans). Titles 24–28, body 15–16.
 - Accessibility: contrast AA, touch targets ≥ 44 pt, dynamic font size respected.
 
+**Mock-ups (validated direction):** https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
+- Discovery flow: Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?"
+- 5 tabs, quick-add sheet, import review, end-of-course notification, colour sheet.
+
+**Rule: all colours are editable in ONE place.** `src/shared/theme/colors.ts` holds named tokens (`primary`, `primarySoft`, `background`, `surface`, `text`, `muted`, `warning`, `danger`, `success`, plus a light and a dark set, and the subject palette). Screens and components never contain a hex code: they read `theme.colors.*`. A lint rule (no colour literals outside `theme/`) enforces it.
+
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil.
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
 
-1. Import model/provider and budget per import (a vision LLM costs a few cents per page).
-2. Design: direction set in section 5b. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.
+1. Design: direction set in section 5b, mock-ups done. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.
