@@ -30,7 +30,7 @@ npm run check      # types + lint + formatage + tests
 | `npm run typecheck` | Vérifie les types TypeScript |
 | `npm run lint` | Règles de code (0 avertissement autorisé) |
 | `npm run format` | Formate le code automatiquement |
-| `npm test` | Lance les tests |
+| `npm test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |
 | `npm run audit:prod` | Cherche les failles connues dans les dépendances |
 | `npm run doctor` | Diagnostic Expo |
 

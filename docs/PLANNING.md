@@ -205,6 +205,14 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 
 Ideas kept out of the MVP are described in [`VERSION_2.md`](VERSION_2.md). Main one: a school or teacher publishes **courses and a class timetable** from the app, with or without an account, and shares a **code**; students enter the code and receive them automatically.
 
+## 5d. Completeness audit (23 Sep 2026)
+
+Done after a walk-through showed gaps between "module exists" and "module complete". Added: profile (§6), appearance setting, event reminders (§40), holidays in the calendar (§37), notifications screen, notes listed on their class, next session date on the subject page, delete on detail screens, 'Ajouter une note' on the end-of-class prompt (§76–78).
+
+**Safety nets now in place:** `src/test/screens.smoke.test.tsx` renders **every screen** against a real SQLite database seeded with a subject, timetable, class (with a cancelled session), exam, task, homework, event, note and holiday, and checks the expected texts; `src/shared/i18n/keys.test.ts` fails if a translation key used in code is missing.
+
+**Still out of scope until external accounts exist:** accounts + sync (phase 2, Supabase), timetable import (phase 6, AI key), store assets (7b).
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).

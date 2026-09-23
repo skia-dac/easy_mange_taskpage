@@ -10,7 +10,7 @@ Plusieurs sont **vérifiées automatiquement** (ESLint, tests, CI) : le code qui
 | Types TypeScript stricts (`strict`, `noUncheckedIndexedAccess`) | `npm run typecheck` | Valeurs `undefined` oubliées, erreurs de type |
 | ESLint, 0 avertissement | `npm run lint` | Bugs courants (`==`, hooks mal utilisés), `eval`, `console.log`, couleurs en dur, imports internes d'un module |
 | Formatage Prettier | `npm run format:check` | Code illisible ou incohérent |
-| Tests Jest | `npm test` | Régressions : migrations de la base, contraste des couleurs, traductions FR/EN complètes, messages d'erreur, écrans |
+| Tests Jest | `npm test` | Régressions : migrations de la base, contraste des couleurs, traductions FR/EN complètes (et clés utilisées existantes), messages d'erreur, **chaque écran affiché avec de vraies données** |
 | Audit des dépendances | `npm run audit:prod` | Bibliothèques avec failles connues de niveau élevé ou critique |
 | Diagnostic Expo | `npm run doctor` | Dépendances incompatibles avec le SDK |
 | **Tout d'un coup** | `npm run check` | À lancer avant chaque commit |

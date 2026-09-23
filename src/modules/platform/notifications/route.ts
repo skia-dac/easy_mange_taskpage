@@ -10,6 +10,18 @@ export function routeForResponse(r: NotificationResponse): Href | null {
       return { pathname: '/courses/[id]', params: { id: a.seriesId, date: a.date } };
     case 'endOfCourse':
       if (r.actionIdentifier === ACTIONS.nothing) return null;
+      if (r.actionIdentifier === ACTIONS.addNote) {
+        // Note pré-remplie avec la matière et la date du cours (§78).
+        return {
+          pathname: '/notes/[id]',
+          params: {
+            id: 'new',
+            subjectId: a.subjectId,
+            courseSeriesId: a.seriesId,
+            courseDate: a.date,
+          },
+        };
+      }
       if (r.actionIdentifier === ACTIONS.addTask) {
         return {
           pathname: '/work/form',

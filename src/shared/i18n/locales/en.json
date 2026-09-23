@@ -415,6 +415,7 @@
     "endTitle": "Class over: {{subject}}",
     "endBody": "Anything to add?",
     "actionAssignment": "Add homework",
+    "actionNote": "Add a note",
     "actionTask": "Add a task",
     "actionNothing": "Nothing to add",
     "taskTitle": "Task reminder",

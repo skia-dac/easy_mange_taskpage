@@ -10,6 +10,13 @@ describe('réponse à une notification de fin de cours (§76–79)', () => {
     });
   });
 
+  it('« Ajouter une note » ouvre une note pré-remplie (§78)', () => {
+    expect(routeForResponse({ actionIdentifier: 'add_note', action: end })).toEqual({
+      pathname: '/notes/[id]',
+      params: { id: 'new', subjectId: 'mkt', courseSeriesId: 's', courseDate: '2026-09-23' },
+    });
+  });
+
   it('« Ajouter une tâche » ouvre la tâche', () => {
     expect(routeForResponse({ actionIdentifier: 'add_task', action: end })).toMatchObject({
       params: { kind: 'task' },

@@ -13,6 +13,7 @@ import { planReminders, type PlannedReminder, type ReminderAction } from './plan
 export const END_OF_COURSE_CATEGORY = 'endofcourse';
 export const ACTIONS = {
   addAssignment: 'add_assignment',
+  addNote: 'add_note',
   addTask: 'add_task',
   nothing: 'nothing',
 } as const;
@@ -41,6 +42,11 @@ export async function configureNotifications(): Promise<void> {
     {
       identifier: ACTIONS.addAssignment,
       buttonTitle: i18n.t('notif.actionAssignment'),
+      options: { opensAppToForeground: true },
+    },
+    {
+      identifier: ACTIONS.addNote,
+      buttonTitle: i18n.t('notif.actionNote'),
       options: { opensAppToForeground: true },
     },
     {

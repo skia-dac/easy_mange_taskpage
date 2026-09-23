@@ -415,6 +415,7 @@
     "endTitle": "Cours terminé : {{subject}}",
     "endBody": "Quelque chose à ajouter ?",
     "actionAssignment": "Ajouter un devoir",
+    "actionNote": "Ajouter une note",
     "actionTask": "Ajouter une tâche",
     "actionNothing": "Rien à ajouter",
     "taskTitle": "Rappel de tâche",
