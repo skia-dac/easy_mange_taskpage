@@ -196,7 +196,7 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 
 **Mock-ups (validated direction):** https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
 - Discovery flow: Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?"
-- 5 tabs, quick-add sheet, import review, end-of-course notification, colour sheet.
+- 38 screens covering every screen of spec §98: account (sign-in, forgotten password), 5 tabs + empty state, subjects (list, detail, form, delete with the choice of keeping linked content), timetable (list, course form, edit a repeated course with 3 options, holidays with course suspension), import (choose file → analysis → review), notes editor, forms and details for tâche/devoir/examen/événement, quick add, end of course, search, notifications (with sync retry), settings, colour sheet.
 
 **Rule: all colours are editable in ONE place.** `src/shared/theme/colors.ts` holds named tokens (`primary`, `primarySoft`, `background`, `surface`, `text`, `muted`, `warning`, `danger`, `success`, plus a light and a dark set, and the subject palette). Screens and components never contain a hex code: they read `theme.colors.*`. A lint rule (no colour literals outside `theme/`) enforces it.
 
