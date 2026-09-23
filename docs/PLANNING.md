@@ -168,9 +168,35 @@ Phase 1 comes before auth on purpose. Building local-first from the start is wha
 
 ---
 
+## 5b. Design direction (inspiration: Dribbble "task management mobile app")
+
+Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Keitoto, Fireart…). These are inspiration only. We do not copy any design.
+
+**Patterns we keep**
+- Header with a greeting + the date ("Bonjour Awa · mardi 23 sept.").
+- **Horizontal week strip** (L M M J V S D) at the top of Aujourd'hui and Calendrier.
+- One **highlighted card** for the most important item: *Prochain cours* / *Cours en cours*.
+- Large rounded cards (radius 20–24), lots of white space, short labels.
+- **The subject colour is the main visual code:** a coloured bar or light tint on every course, note, devoir and exam card. This makes "the subject as the central element" visible.
+- Chips for filters (subject, status) and segments (Tâches · Devoirs · Examens).
+- Floating, pill-shaped bottom bar with 5 icons + labels.
+- Bottom sheet for quick add (+).
+
+**Patterns we avoid**
+- Charts, stats and progress dashboards (out of MVP scope).
+- Avatars of team members (no collaboration in the MVP).
+- Glassmorphism and heavy gradients (hard to read, slow on low-end Android).
+
+**MySky visual base (to refine in Phase 0)**
+- Primary colour: sky blue. Neutral light background, and **dark mode** from the start.
+- Subject palette: about 12 soft colours that the student picks for each subject.
+- Status colours: late = red, today = orange, done = green/grey.
+- Typography: one sans-serif family (e.g. Inter or Plus Jakarta Sans). Titles 24–28, body 15–16.
+- Accessibility: contrast AA, touch targets ≥ 44 pt, dynamic font size respected.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil.
 
 1. Import model/provider and budget per import (a vision LLM costs a few cents per page).
-2. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
+2. Design: direction set in section 5b. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.
