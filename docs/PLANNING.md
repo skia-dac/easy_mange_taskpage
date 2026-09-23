@@ -30,12 +30,17 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 
 ## 2. Spec issues to fix before implementation
 
-1. **§4 Navigation is empty.** Recommendation (5 tabs, ordered by how often a student uses them):
-   `Aujourd'hui` · `Calendrier` · `À faire` · `Notes` · `Matières`
-   - **À faire** has three segments: Tâches · Devoirs · Examens. A tab called "Tâches" that also holds exams would be misleading.
-   - **Matières** comes last. Students use it mostly for setup and browsing. Every course, note, homework and exam card also links to its subject page, so subjects stay central without needing a prominent tab.
-   - A **"+" button** (bottom sheet: note, tâche, devoir, examen, événement, cours) is on Aujourd'hui, Calendrier, À faire and Notes. It pre-fills the context (the selected day, the current segment).
-   - **Header:** search (all tabs), notifications, profile/settings.
+1. **§4 Navigation — decided (product owner):**
+   `Aujourd'hui` · `Calendrier` · `Notes` · `Tâches` · `Profil`
+   - **Tâches** has three segments: Tâches · Devoirs · Examens.
+   - **Matières** has no tab, but it stays central (spec §13, §101):
+     - Every course, note, devoir and exam card opens its subject page.
+     - Notes and Tâches have a row of subject chips to filter.
+     - Profil has "Mes matières" (the list, and create/edit).
+     - The Aujourd'hui quick-add can create a subject.
+   - **Emploi du temps** (timetables, import, holidays) opens from the Calendrier header and from Profil.
+   - A **"+" button** (note, tâche, devoir, examen, événement, cours) is on Aujourd'hui, Calendrier, Notes and Tâches. It pre-fills the context.
+   - **Header:** search and notifications. Settings are in Profil.
 2. **Apple Sign-In is required, not optional.** App Store guideline 4.8 requires Sign in with Apple when Google login is offered on iOS. §5.1 lists only Google. Add Apple to §5.1.
 3. **Account deletion (§6)** is also required by the App Store. It must delete server data and attachments, not just log the user out.
 4. **"Notes" is ambiguous in French** (course notes vs grades). The spec means *course notes*. State explicitly that grade tracking is out of scope.
@@ -89,7 +94,7 @@ The domain and use cases are plain TypeScript, so they can be unit-tested withou
 
 ```
 app/                          # Expo Router routes only (thin; they call modules/*/ui)
-  (auth)/  (tabs)/today  (tabs)/calendar  (tabs)/subjects  (tabs)/tasks  (tabs)/notes
+  (auth)/  (tabs)/today  (tabs)/calendar  (tabs)/notes  (tabs)/tasks  (tabs)/profile  subjects/  timetables/
 src/modules/
   identity/      auth, profile, preferences
   academic/      subjects, timetables, course-series, course-exceptions, exams, holidays
@@ -165,8 +170,7 @@ Phase 1 comes before auth on purpose. Building local-first from the start is wha
 
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · 5 tabs in the nav bar (which ones: open).
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil.
 
-1. Which 5 tabs? The proposal in §2.1 was not accepted.
-2. Import model/provider and budget per import (a vision LLM costs a few cents per page).
-3. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
+1. Import model/provider and budget per import (a vision LLM costs a few cents per page).
+2. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
