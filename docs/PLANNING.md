@@ -1,4 +1,4 @@
-# Planning — Student Organisation App (Expo, Android + iOS)
+# Planning — MySky (student organisation app, Expo, Android + iOS)
 
 Status: **planning phase**. Nothing below is implemented yet.
 Reference documents:
@@ -30,9 +30,12 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 
 ## 2. Spec issues to fix before implementation
 
-1. **§4 Navigation is empty.** Proposal (5 tabs):
-   `Aujourd'hui` · `Calendrier` · `Matières` · `Tâches` (tâches + devoirs + examens) · `Notes`.
-   Search, Profile/Settings and Notifications are reached from the header. The quick-add “+” button is on Aujourd'hui and Calendrier.
+1. **§4 Navigation is empty.** Recommendation (5 tabs, ordered by how often a student uses them):
+   `Aujourd'hui` · `Calendrier` · `À faire` · `Notes` · `Matières`
+   - **À faire** has three segments: Tâches · Devoirs · Examens. A tab called "Tâches" that also holds exams would be misleading.
+   - **Matières** comes last. Students use it mostly for setup and browsing. Every course, note, homework and exam card also links to its subject page, so subjects stay central without needing a prominent tab.
+   - A **"+" button** (bottom sheet: note, tâche, devoir, examen, événement, cours) is on Aujourd'hui, Calendrier, À faire and Notes. It pre-fills the context (the selected day, the current segment).
+   - **Header:** search (all tabs), notifications, profile/settings.
 2. **Apple Sign-In is required, not optional.** App Store guideline 4.8 requires Sign in with Apple when Google login is offered on iOS. §5.1 lists only Google. Add Apple to §5.1.
 3. **Account deletion (§6)** is also required by the App Store. It must delete server data and attachments, not just log the user out.
 4. **"Notes" is ambiguous in French** (course notes vs grades). The spec means *course notes*. State explicitly that grade tracking is out of scope.
@@ -64,7 +67,7 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 | Files | expo-document-picker, expo-image-picker, expo-file-system | |
 | Import analysis | `ai-import` Edge Function → vision LLM, returns strict JSON with per-field confidence | Produces an `ImportedTimetableDraft` only. It never creates `CourseSeries` (arch. §8). |
 | Search | SQLite FTS5 on the local DB | Works offline, covers all entity types. |
-| i18n | French first (i18next), English-ready | |
+| i18n | **French + English** (i18next + expo-localization). Follows the device language, with an override in settings | All texts in translation files from Phase 0. Dates formatted by locale |
 
 ---
 
@@ -162,10 +165,10 @@ Phase 1 comes before auth on purpose. Building local-first from the start is wha
 
 ## 6. Open questions for the product owner
 
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky**.
+
 1. Confirm the 5 tabs proposed in §2.1.
-2. Backend: Supabase OK? (alternative: Firebase)
-3. App languages: French only, or French + English?
-4. Import model/provider and budget per import (a vision LLM costs a few cents per page).
-5. Minimum OS versions (proposal: iOS 16+, Android 8+).
-6. App name and bundle id (old project used `easyptt` / `easypage`).
-7. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
+2. Import model/provider and budget per import (a vision LLM costs a few cents per page).
+3. Minimum OS versions (proposal: iOS 16+, Android 8+).
+4. Bundle id (proposal: `com.<your-domain>.mysky`). Before the store release, check that "MySky" is available: other apps already use "My Sky".
+5. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
