@@ -150,7 +150,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 
 | Phase | Content | Result |
 |---|---|---|
-| **0. Setup** | Remove the old Flutter code, create the Expo project with the module structure + boundary lint, tests, EAS, Supabase project, design tokens | Empty app runs on both platforms |
+| **0. Setup** | ~~Remove the old Flutter code~~ (done), create the Expo project with the module structure + boundary lint, tests, EAS, Supabase project, design tokens | Empty app runs on both platforms |
 | **1. Local core (offline by design)** | Subjects, timetables, course series (weekly), calendar + Today projections, tasks/assignments/exams/events, confirmations, empty states. Sync metadata columns and the outbox already written, but no server yet | Fully usable app on one device, no account |
 | **2. Accounts + sync** | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
 | **3. Notifications** | Course/homework/task/exam reminders, end-of-course actions with prefilled forms, settings, rolling scheduler | Acceptance criteria 17–19 |
@@ -165,10 +165,8 @@ Phase 1 comes before auth on purpose. Building local-first from the start is wha
 
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky**.
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · 5 tabs in the nav bar (which ones: open).
 
-1. Confirm the 5 tabs proposed in §2.1.
+1. Which 5 tabs? The proposal in §2.1 was not accepted.
 2. Import model/provider and budget per import (a vision LLM costs a few cents per page).
-3. Minimum OS versions (proposal: iOS 16+, Android 8+).
-4. Bundle id (proposal: `com.<your-domain>.mysky`). Before the store release, check that "MySky" is available: other apps already use "My Sky".
-5. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
+3. Is there an existing design (Figma), or do we define a simple design system in Phase 0?
