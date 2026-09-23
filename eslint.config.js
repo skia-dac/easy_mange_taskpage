@@ -58,6 +58,7 @@ module.exports = defineConfig([
   },
   {
     files: ['**/*.test.{ts,tsx}'],
-    rules: { 'no-restricted-syntax': 'off' },
+    // Les tests chargent les écrans avec require() (jest ne gère pas import() dynamique).
+    rules: { 'no-restricted-syntax': 'off', '@typescript-eslint/no-require-imports': 'off' },
   },
 ]);
