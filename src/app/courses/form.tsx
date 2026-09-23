@@ -15,12 +15,14 @@ import {
   getCourseSeries,
   listTimetables,
   occurrencesInRange,
+  splitSeries,
   updateCourse,
   type CourseInput,
 } from '@/modules/academic';
 import { addDaysIso, isoWeekday, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -49,7 +51,10 @@ export default function CourseFormScreen() {
     subjectId?: string;
     timetableId?: string;
     date?: string;
+    /** following : « ce cours et les suivants » à partir de `date` (§27 option 2) */
+    scope?: string;
   }>();
+  const following = params.scope === 'following' && !!params.date;
   const { subjects, byId } = useSubjects();
   const timetables = useLiveQuery(listTimetables, ['timetables'], []);
   const today = toIsoDate(new Date());
@@ -135,7 +140,8 @@ export default function CourseFormScreen() {
 
   const submit = () =>
     run(async () => {
-      if (params.id) await updateCourse(db, params.id, form);
+      if (params.id && following) await splitSeries(db, params.id, params.date as string, form);
+      else if (params.id) await updateCourse(db, params.id, form);
       else await createCourse(db, form);
       router.back();
     });
@@ -173,7 +179,15 @@ export default function CourseFormScreen() {
       }
     >
       <Stack.Screen options={{ title: params.id ? t('courses.edit') : t('courses.new') }} />
-      {params.id && weekly ? <AppText color="muted">{t('courses.editSeriesHint')}</AppText> : null}
+      {params.id && weekly ? (
+        <AppText color="muted">
+          {following
+            ? t('occurrence.followingHint', {
+                date: formatShortDate(params.date as string, labels.lang),
+              })
+            : t('courses.editSeriesHint')}
+        </AppText>
+      ) : null}
       <SelectField
         label={t('courses.subject')}
         required

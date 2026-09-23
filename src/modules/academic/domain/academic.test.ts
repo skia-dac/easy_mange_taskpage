@@ -1,6 +1,8 @@
 import { ValidationError, parseInput } from '@/shared/validation';
 
 import { courseInputSchema, type CourseSeries } from './course';
+import type { CourseException } from './exception';
+import type { OffPeriod } from './offPeriod';
 import { countdown } from './exam';
 import { occurrencesInRange } from './occurrences';
 import { activeTimetable, timetableInputSchema } from './timetable';
@@ -146,5 +148,66 @@ describe('compte à rebours des examens (§68)', () => {
     ['2026-09-22', { kind: 'past' }],
   ])('%s', (date, expected) => {
     expect(countdown(date, '2026-09-23')).toEqual(expected);
+  });
+});
+
+describe('exceptions et vacances (phase 4)', () => {
+  const ex = (
+    date: string,
+    kind: 'cancelled' | 'modified',
+    over: Partial<CourseException> = {},
+  ): CourseException => ({
+    id: `e-${date}`,
+    seriesId: 's1',
+    date,
+    kind,
+    newStartTime: null,
+    newEndTime: null,
+    newRoom: null,
+    newTeacher: null,
+    newTitle: null,
+    note: null,
+    ...over,
+  });
+
+  it('une séance annulée reste visible, marquée annulée (§29)', () => {
+    const r = occurrencesInRange([base], '2026-09-21', '2026-09-27', {
+      exceptions: [ex('2026-09-21', 'cancelled')],
+    });
+    expect(r).toHaveLength(1);
+    expect(r[0]?.status).toBe('cancelled');
+  });
+
+  it('une séance modifiée prend ses nouvelles valeurs, les autres restent comme la série (règle 8)', () => {
+    const r = occurrencesInRange([base], '2026-09-21', '2026-10-04', {
+      exceptions: [
+        ex('2026-09-28', 'modified', {
+          newRoom: 'C04',
+          newStartTime: '09:00',
+          newEndTime: '11:00',
+        }),
+      ],
+    });
+    expect(r.map((o) => [o.date, o.room, o.startTime, o.status])).toEqual([
+      ['2026-09-21', 'B12', '08:00', 'normal'],
+      ['2026-09-28', 'C04', '09:00', 'modified'],
+    ]);
+  });
+
+  it('les vacances avec suspension masquent les séances, sans suspension elles restent (§42)', () => {
+    const holiday: OffPeriod = {
+      id: 'h',
+      name: 'Toussaint',
+      kind: 'holiday',
+      startDate: '2026-10-24',
+      endDate: '2026-11-02',
+      suspendCourses: true,
+    };
+    const shown = occurrencesInRange([base], '2026-10-19', '2026-11-08', { offPeriods: [holiday] });
+    expect(shown.map((o) => o.date)).toEqual(['2026-10-19']);
+    const kept = occurrencesInRange([base], '2026-10-19', '2026-11-08', {
+      offPeriods: [{ ...holiday, suspendCourses: false }],
+    });
+    expect(kept.map((o) => o.date)).toEqual(['2026-10-19', '2026-10-26', '2026-11-02']);
   });
 });

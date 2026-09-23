@@ -21,6 +21,7 @@ import {
   Card,
   Chip,
   EmptyState,
+  IconBadge,
   ListRow,
   SectionHeader,
   SubjectBar,
@@ -122,6 +123,15 @@ export default function TimetablesScreen() {
           </View>
         );
       })}
+
+      <Card>
+        <ListRow
+          title={t('offPeriods.title')}
+          subtitle={t('offPeriods.emptyHint')}
+          leading={<IconBadge icon="sun" color="warning" background="warningSoft" />}
+          onPress={() => router.push('/off-periods')}
+        />
+      </Card>
 
       {withoutTimetable.length > 0 ? (
         <View style={{ gap: spacing.sm }}>

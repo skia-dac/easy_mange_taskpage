@@ -59,7 +59,8 @@
     "nothingTodo": "Nothing to do right now.",
     "noExams": "No exams scheduled.",
     "firstSubject": "Add your first subject to get started.",
-    "firstSubjectHint": "Then add your classes: they will show up here and in the calendar."
+    "firstSubjectHint": "Then add your classes: they will show up here and in the calendar.",
+    "dayOff": "{{name}}: no classes today."
   },
   "countdown": {
     "today": "Today",
@@ -297,5 +298,53 @@
     "event": "Event",
     "course": "Class",
     "subject": "Subject"
+  },
+  "occurrence": {
+    "cancelled": "Cancelled",
+    "modified": "Changed",
+    "cancel": "Mark this class as cancelled",
+    "cancelTitle": "Cancel this class?",
+    "cancelMessage": "The class on {{date}} will be marked “Cancelled” in the calendar. Other sessions don’t change.",
+    "confirmCancel": "Mark cancelled",
+    "restore": "Restore this class",
+    "restoreHint": "This class was changed for this day only. Restoring brings back the series values.",
+    "editTitle": "Edit this class",
+    "editThisOnly": "Edit only {{date}}",
+    "scopeTitle": "What do you want to change?",
+    "scopeMessage": "This class repeats every {{weekday}}.",
+    "scopeThis": "Only this class",
+    "scopeFollowing": "This and following classes",
+    "scopeAll": "The whole series",
+    "deleteScopeTitle": "What do you want to delete?",
+    "deleteThisHint": "Deleting a single session = marking it “Cancelled”.",
+    "overrideHint": "Leave a field empty to keep the usual value.",
+    "note": "Note for this day",
+    "notePlaceholder": "e.g. Class moved to room C04",
+    "save": "Save for this day",
+    "followingHint": "From {{date}} on, sessions will use these values. Earlier sessions don’t change."
+  },
+  "offPeriods": {
+    "title": "Holidays and days off",
+    "new": "New period",
+    "edit": "Edit period",
+    "kind": "Type",
+    "holiday": "Holidays",
+    "day_off": "Day off",
+    "name": "Name",
+    "namePlaceholder": "e.g. Christmas break, Public holiday",
+    "from": "From",
+    "until": "Until",
+    "date": "Date",
+    "suspend": "Suspend classes during this period",
+    "suspendHint": "{{count}} session(s) will be hidden. You can show them again anytime.",
+    "suspendNone": "No class falls in this period.",
+    "save": "Save",
+    "delete": "Delete this period",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteMessage": "Suspended classes will show up again in the calendar.",
+    "empty": "No days off yet.",
+    "emptyHint": "Add your holidays and public holidays: the classes concerned will be suspended.",
+    "suspended": "Classes suspended",
+    "notSuspended": "Classes kept"
   }
 }

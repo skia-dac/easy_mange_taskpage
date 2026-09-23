@@ -2,9 +2,11 @@ import {
   countdown,
   occurrencesInRange,
   type Countdown,
+  type CourseException,
   type CourseSeries,
   type Exam,
   type Occurrence,
+  type OffPeriod,
 } from '@/modules/academic';
 import {
   compareWorkItems,
@@ -22,10 +24,12 @@ export type NextCourse =
  * Le prochain cours du jour (§8) :
  * - « en cours » s'il a commencé et n'est pas fini (minutes = temps restant) ;
  * - sinon le prochain qui n'a pas commencé (minutes = temps avant le début).
+ * Les séances annulées sont ignorées.
  */
 export function nextCourse(todayOccurrences: readonly Occurrence[], now: Date): NextCourse | null {
   const t = now.getTime();
   for (const o of todayOccurrences) {
+    if (o.status === 'cancelled') continue;
     const start = atTime(o.date, o.startTime).getTime();
     const end = atTime(o.date, o.endTime).getTime();
     if (t >= end) continue;
@@ -38,6 +42,8 @@ export function nextCourse(todayOccurrences: readonly Occurrence[], now: Date): 
 
 export type TodayData = {
   series: readonly CourseSeries[];
+  exceptions?: readonly CourseException[];
+  offPeriods?: readonly OffPeriod[];
   exams: readonly Exam[];
   work: readonly WorkItem[];
   events: readonly PersonalEvent[];
@@ -45,6 +51,8 @@ export type TodayData = {
 
 export type TodayView = {
   today: IsoDate;
+  /** Vacances ou jour sans cours qui couvre aujourd'hui. */
+  dayOff: OffPeriod | null;
   next: NextCourse | null;
   courses: Occurrence[];
   overdue: WorkItem[];
@@ -59,7 +67,7 @@ export const EXAM_HORIZON_DAYS = 30;
 /** Tout ce qui concerne la journée (§7) : calculé, jamais stocké (architecture §10.1). */
 export function buildToday(data: TodayData, now: Date): TodayView {
   const today = toIsoDate(now);
-  const courses = occurrencesInRange(data.series, today, today);
+  const courses = occurrencesInRange(data.series, today, today, data);
   const open = data.work.filter((w) => w.status !== 'done');
   const overdue = open.filter((w) => isOverdue(w, now)).sort(compareWorkItems);
   const dueToday = open
@@ -73,8 +81,11 @@ export function buildToday(data: TodayData, now: Date): TodayView {
   const events = data.events
     .filter((e) => e.date === today)
     .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''));
+  const dayOff =
+    (data.offPeriods ?? []).find((p) => p.startDate <= today && today <= p.endDate) ?? null;
   return {
     today,
+    dayOff,
     next: nextCourse(courses, now),
     courses,
     overdue,

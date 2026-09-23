@@ -1,11 +1,15 @@
 import type { Db } from '@/shared/db';
 
 import {
+  toCourseException,
   toCourseSeries,
+  toOffPeriod,
   toExam,
   toSubject,
   toTimetable,
+  type CourseExceptionRow,
   type CourseSeriesRow,
+  type OffPeriodRow,
   type ExamRow,
   type SubjectRow,
   type TimetableRow,
@@ -89,4 +93,41 @@ export async function getExam(db: Db, id: string) {
     id,
   ]);
   return row ? toExam(row) : null;
+}
+
+export async function listCourseExceptions(db: Db, filter: { seriesId?: string } = {}) {
+  const rows = filter.seriesId
+    ? await db.getAllAsync<CourseExceptionRow>(
+        `SELECT * FROM course_exceptions WHERE ${ALIVE} AND series_id = ? ORDER BY date`,
+        [filter.seriesId],
+      )
+    : await db.getAllAsync<CourseExceptionRow>(
+        `SELECT * FROM course_exceptions WHERE ${ALIVE} ORDER BY date`,
+        [],
+      );
+  return rows.map(toCourseException);
+}
+
+export async function getCourseException(db: Db, seriesId: string, date: string) {
+  const row = await db.getFirstAsync<CourseExceptionRow>(
+    `SELECT * FROM course_exceptions WHERE ${ALIVE} AND series_id = ? AND date = ?`,
+    [seriesId, date],
+  );
+  return row ? toCourseException(row) : null;
+}
+
+export async function listOffPeriods(db: Db) {
+  const rows = await db.getAllAsync<OffPeriodRow>(
+    `SELECT * FROM off_periods WHERE ${ALIVE} ORDER BY start_date`,
+    [],
+  );
+  return rows.map(toOffPeriod);
+}
+
+export async function getOffPeriod(db: Db, id: string) {
+  const row = await db.getFirstAsync<OffPeriodRow>(
+    `SELECT * FROM off_periods WHERE id = ? AND ${ALIVE}`,
+    [id],
+  );
+  return row ? toOffPeriod(row) : null;
 }

@@ -26,9 +26,11 @@ export function CourseRow({
   occurrence: Occurrence;
   subjects: SubjectMap;
 }) {
+  const { t } = useTranslation();
   const { spacing } = useTheme();
   const labels = useLabels();
   const subject = subjects.get(occurrence.subjectId);
+  const cancelled = occurrence.status === 'cancelled';
   const details = [labels.courseType(occurrence.courseType), occurrence.room, occurrence.teacher]
     .filter(Boolean)
     .join(' · ');
@@ -36,6 +38,7 @@ export function CourseRow({
     <ListRow
       title={occurrence.title ?? subject?.name ?? ''}
       subtitle={details}
+      struck={cancelled}
       onPress={() =>
         router.push({
           pathname: '/courses/[id]',
@@ -45,13 +48,22 @@ export function CourseRow({
       leading={
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <View style={{ width: 48, alignItems: 'flex-end' }}>
-            <AppText variant="bodyStrong">{occurrence.startTime}</AppText>
+            <AppText variant="bodyStrong" color={cancelled ? 'muted' : 'text'}>
+              {occurrence.startTime}
+            </AppText>
             <AppText variant="caption" color="muted">
               {occurrence.endTime}
             </AppText>
           </View>
           <SubjectBar color={colorOf(subject)} />
         </View>
+      }
+      trailing={
+        cancelled ? (
+          <Chip label={t('occurrence.cancelled')} tone="danger" />
+        ) : occurrence.status === 'modified' ? (
+          <Chip label={t('occurrence.modified')} tone="warning" />
+        ) : undefined
       }
     />
   );

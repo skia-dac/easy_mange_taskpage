@@ -85,4 +85,10 @@ export type Occurrence = {
   room: string | null;
   courseType: CourseType;
   recurrence: Recurrence;
+  /** normal : comme la série · modified : modifiée ce jour · cancelled : annulée (reste visible) */
+  status: OccurrenceStatus;
+  exceptionId: string | null;
+  note: string | null;
 };
+
+export type OccurrenceStatus = 'normal' | 'modified' | 'cancelled';

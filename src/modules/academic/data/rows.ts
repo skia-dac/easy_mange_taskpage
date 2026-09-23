@@ -1,5 +1,7 @@
 import type { CourseSeries, CourseType, Recurrence } from '../domain/course';
 import type { Exam } from '../domain/exam';
+import type { CourseException, ExceptionKind } from '../domain/exception';
+import type { OffPeriod, OffPeriodKind } from '../domain/offPeriod';
 import type { Subject } from '../domain/subject';
 import type { Timetable } from '../domain/timetable';
 
@@ -92,4 +94,48 @@ export const toExam = (r: ExamRow): Exam => ({
   durationMinutes: r.duration_minutes,
   room: r.room,
   description: r.description,
+});
+
+export type CourseExceptionRow = {
+  id: string;
+  series_id: string;
+  date: string;
+  kind: string;
+  new_start_time: string | null;
+  new_end_time: string | null;
+  new_room: string | null;
+  new_teacher: string | null;
+  new_title: string | null;
+  note: string | null;
+};
+
+export const toCourseException = (r: CourseExceptionRow): CourseException => ({
+  id: r.id,
+  seriesId: r.series_id,
+  date: r.date,
+  kind: r.kind as ExceptionKind,
+  newStartTime: r.new_start_time,
+  newEndTime: r.new_end_time,
+  newRoom: r.new_room,
+  newTeacher: r.new_teacher,
+  newTitle: r.new_title,
+  note: r.note,
+});
+
+export type OffPeriodRow = {
+  id: string;
+  name: string;
+  kind: string;
+  start_date: string;
+  end_date: string;
+  suspend_courses: number;
+};
+
+export const toOffPeriod = (r: OffPeriodRow): OffPeriod => ({
+  id: r.id,
+  name: r.name,
+  kind: r.kind as OffPeriodKind,
+  startDate: r.start_date,
+  endDate: r.end_date,
+  suspendCourses: r.suspend_courses === 1,
 });

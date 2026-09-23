@@ -15,6 +15,9 @@ const occ = (start: string, end: string, id = start): Occurrence => ({
   room: null,
   courseType: 'lecture',
   recurrence: 'weekly',
+  status: 'normal',
+  exceptionId: null,
+  note: null,
 });
 
 describe('prochain cours (§8, critère 16)', () => {
@@ -39,6 +42,14 @@ describe('prochain cours (§8, critère 16)', () => {
 
   it('après le dernier cours : aucun', () => {
     expect(nextCourse(day, new Date(2026, 8, 23, 16, 0))).toBeNull();
+  });
+
+  it('ignore une séance annulée', () => {
+    const cancelled = [
+      { ...occ('09:00', '11:00'), status: 'cancelled' as const },
+      occ('14:00', '16:00'),
+    ];
+    expect(nextCourse(cancelled, new Date(2026, 8, 23, 8, 0))?.occurrence.startTime).toBe('14:00');
   });
 });
 

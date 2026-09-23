@@ -100,7 +100,14 @@ export async function updateCourse(db: Db, id: string, input: CourseInput) {
 }
 
 export async function deleteCourse(db: Db, id: string) {
-  return write(db, (w) => w.softDelete('course_series', id));
+  return write(db, async (w) => {
+    const exceptions = await w.db.getAllAsync<{ id: string }>(
+      'SELECT id FROM course_exceptions WHERE series_id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    for (const e of exceptions) await w.softDelete('course_exceptions', e.id);
+    await w.softDelete('course_series', id);
+  });
 }
 
 // ---- Examens ----

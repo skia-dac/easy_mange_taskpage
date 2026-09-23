@@ -10,7 +10,16 @@ import { buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { formatDuration, formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
-import { AppText, Button, Card, EmptyState, Fab, Screen, SectionHeader } from '@/shared/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  EmptyState,
+  Fab,
+  IconBadge,
+  Screen,
+  SectionHeader,
+} from '@/shared/ui';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
@@ -41,6 +50,17 @@ export default function TodayScreen() {
           </Card>
         ) : null}
 
+        {view?.dayOff ? (
+          <Card>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <IconBadge icon="sun" color="warning" background="warningSoft" />
+              <AppText variant="bodyStrong" style={{ flex: 1 }}>
+                {t('today.dayOff', { name: view.dayOff.name })}
+              </AppText>
+            </View>
+          </Card>
+        ) : null}
+
         {view?.next ? (
           <NextCourseCard
             next={view.next}
@@ -50,7 +70,9 @@ export default function TodayScreen() {
           <EmptyState
             icon="sun"
             title={view.courses.length > 0 ? t('today.coursesDone') : t('today.emptyCourses')}
-            message={view.courses.length > 0 ? undefined : t('today.emptyCoursesHint')}
+            message={
+              view.courses.length > 0 || view.dayOff ? undefined : t('today.emptyCoursesHint')
+            }
           />
         ) : null}
 

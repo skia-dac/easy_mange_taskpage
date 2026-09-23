@@ -23,7 +23,7 @@ export function calendarDays(
   for (let d = from; d <= to; d = addDaysIso(d, 1)) days.set(d, []);
   const push = (day: IsoDate, item: CalendarItem) => days.get(day)?.push(item);
 
-  for (const o of occurrencesInRange(data.series, from, to)) {
+  for (const o of occurrencesInRange(data.series, from, to, data)) {
     push(o.date, { kind: 'course', sortTime: o.startTime, occurrence: o });
   }
   for (const e of data.exams) push(e.date, { kind: 'exam', sortTime: e.time ?? '00:00', exam: e });

@@ -131,4 +131,33 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_personal_events_date ON personal_events (date);
     `,
   },
+  {
+    version: 3,
+    name: 'phase 4 : exceptions de cours et périodes sans cours',
+    sql: `
+      CREATE TABLE course_exceptions (${SYNC_COLUMNS},
+        series_id TEXT NOT NULL REFERENCES course_series (id),
+        date TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('cancelled', 'modified')),
+        new_start_time TEXT,
+        new_end_time TEXT,
+        new_room TEXT,
+        new_teacher TEXT,
+        new_title TEXT,
+        note TEXT,
+        CHECK (new_end_time IS NULL OR new_start_time IS NULL OR new_end_time > new_start_time)
+      );
+      CREATE INDEX idx_course_exceptions_series ON course_exceptions (series_id, date);
+
+      CREATE TABLE off_periods (${SYNC_COLUMNS},
+        name TEXT NOT NULL CHECK (length(trim(name)) > 0),
+        kind TEXT NOT NULL CHECK (kind IN ('holiday', 'day_off')),
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        suspend_courses INTEGER NOT NULL DEFAULT 1 CHECK (suspend_courses IN (0, 1)),
+        CHECK (end_date >= start_date)
+      );
+      CREATE INDEX idx_off_periods_dates ON off_periods (start_date, end_date);
+    `,
+  },
 ];

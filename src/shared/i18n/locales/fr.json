@@ -59,7 +59,8 @@
     "nothingTodo": "Rien à faire pour le moment.",
     "noExams": "Aucun examen programmé.",
     "firstSubject": "Ajoute ta première matière pour commencer.",
-    "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier."
+    "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier.",
+    "dayOff": "{{name}} : pas de cours aujourd’hui."
   },
   "countdown": {
     "today": "Aujourd’hui",
@@ -297,5 +298,53 @@
     "event": "Événement",
     "course": "Cours",
     "subject": "Matière"
+  },
+  "occurrence": {
+    "cancelled": "Annulé",
+    "modified": "Modifié",
+    "cancel": "Marquer ce cours comme annulé",
+    "cancelTitle": "Annuler ce cours ?",
+    "cancelMessage": "Le cours du {{date}} sera marqué « Annulé » dans le calendrier. Les autres séances ne changent pas.",
+    "confirmCancel": "Marquer annulé",
+    "restore": "Rétablir ce cours",
+    "restoreHint": "Ce cours a été modifié pour ce jour seulement. Rétablir remet les valeurs de la série.",
+    "editTitle": "Modifier ce cours",
+    "editThisOnly": "Modifier uniquement le {{date}}",
+    "scopeTitle": "Que veux-tu modifier ?",
+    "scopeMessage": "Ce cours se répète chaque {{weekday}}.",
+    "scopeThis": "Uniquement ce cours",
+    "scopeFollowing": "Ce cours et les suivants",
+    "scopeAll": "Toute la série",
+    "deleteScopeTitle": "Que veux-tu supprimer ?",
+    "deleteThisHint": "Supprimer une seule séance = la marquer « Annulé ».",
+    "overrideHint": "Laisse un champ vide pour garder la valeur habituelle.",
+    "note": "Note pour ce jour",
+    "notePlaceholder": "Ex. Cours déplacé en salle C04",
+    "save": "Enregistrer pour ce jour",
+    "followingHint": "À partir du {{date}}, les séances prendront ces valeurs. Les séances précédentes ne changent pas."
+  },
+  "offPeriods": {
+    "title": "Vacances et jours sans cours",
+    "new": "Nouvelle période",
+    "edit": "Modifier la période",
+    "kind": "Type",
+    "holiday": "Vacances",
+    "day_off": "Jour sans cours",
+    "name": "Nom",
+    "namePlaceholder": "Ex. Vacances de Noël, Jour férié",
+    "from": "Du",
+    "until": "Au",
+    "date": "Date",
+    "suspend": "Suspendre les cours pendant cette période",
+    "suspendHint": "{{count}} séance(s) ne s’afficheront pas. Tu peux les réafficher à tout moment.",
+    "suspendNone": "Aucun cours ne tombe pendant cette période.",
+    "save": "Enregistrer",
+    "delete": "Supprimer cette période",
+    "deleteTitle": "Supprimer « {{name}} » ?",
+    "deleteMessage": "Les cours suspendus réapparaîtront dans le calendrier.",
+    "empty": "Aucune période sans cours.",
+    "emptyHint": "Ajoute tes vacances et jours fériés : les cours concernés seront suspendus.",
+    "suspended": "Cours suspendus",
+    "notSuspended": "Cours maintenus"
   }
 }
