@@ -61,7 +61,7 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 | App | **Expo (latest SDK) + TypeScript + Expo Router** | Dev builds (not Expo Go) are needed for Apple/Google sign-in and notifications. |
 | Build / release | **EAS Build + EAS Submit** | Builds iOS without a Mac. |
 | Backend | **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions) | Email, Google and Apple auth built in. Storage for attachments and import files. How the modular monolith maps onto it: section 4. |
-| Local DB | **expo-sqlite + Drizzle ORM** | The local DB is the source of truth for the UI. This gives offline mode directly. |
+| Local DB | **expo-sqlite** + small in-house migration runner (`src/shared/db`) | The local DB is the source of truth for the UI. This gives offline mode directly. An ORM (Drizzle) can be added in phase 1 if queries become repetitive. |
 | Sync | Custom sync engine: outbox push with a version check + pull by server cursor | Behaviour is defined in section 4.4. |
 | State / queries | TanStack Query or Drizzle live queries + Zustand for UI state | |
 | Forms | react-hook-form + zod | The same zod schemas validate forms and import rows. |
@@ -155,7 +155,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 
 | Phase | Content | Result |
 |---|---|---|
-| **0. Setup** | ~~Remove the old Flutter code~~ (done), create the Expo project with the module structure + boundary lint, tests, EAS, Supabase project, design tokens | Empty app runs on both platforms |
+| **0. Setup** ✅ done | ~~Remove the old Flutter code~~ (done), create the Expo project with the module structure + boundary lint, tests, CI, EAS, design tokens, i18n, local DB (Supabase project moved to phase 2) | Empty app runs on both platforms |
 | **1. Local core (offline by design)** | Subjects, timetables, course series (weekly), calendar + Today projections, tasks/assignments/exams/events, confirmations, empty states. Sync metadata columns and the outbox already written, but no server yet | Fully usable app on one device, no account |
 | **2. Accounts + sync** | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
 | **3. Notifications** | Course/homework/task/exam reminders, end-of-course actions with prefilled forms, settings, rolling scheduler | Acceptance criteria 17–19 |
@@ -206,6 +206,6 @@ Ideas kept out of the MVP are described in [`VERSION_2.md`](VERSION_2.md). Main 
 
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
 
 1. Design: direction set in section 5b, mock-ups done. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.

@@ -1,0 +1,43 @@
+{
+  "app": { "name": "MySky" },
+  "tabs": {
+    "today": "Today",
+    "calendar": "Calendar",
+    "notes": "Notes",
+    "tasks": "Tasks",
+    "profile": "Profile"
+  },
+  "today": {
+    "greeting": "Hello",
+    "emptyCourses": "No classes today.",
+    "emptyCoursesHint": "Your classes for the day will show up here."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "empty": "Nothing planned for this day.",
+    "emptyHint": "Your classes, homework and exams will show up here."
+  },
+  "notes": {
+    "title": "Notes",
+    "empty": "You don’t have any notes yet.",
+    "emptyHint": "Your class notes will show up here."
+  },
+  "tasks": {
+    "title": "Tasks",
+    "empty": "Nothing to do right now.",
+    "emptyHint": "Your tasks, homework and exams will show up here."
+  },
+  "profile": {
+    "title": "Profile",
+    "emptySubjects": "Add your first subject to get started.",
+    "emptySubjectsHint": "Your subjects and settings will show up here."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "No internet connection. Your data is kept on your phone.",
+    "saveFailed": "Couldn’t save right now. Your data hasn’t been lost.",
+    "notFound": "This page doesn’t exist.",
+    "retry": "Try again",
+    "backHome": "Back to Today"
+  }
+}

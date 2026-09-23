@@ -1,6 +1,66 @@
 # MySky
 
-Student organisation app for Android and iOS (Expo + Supabase). **Status: planning phase.**
+Application mobile d'organisation pour étudiants (Android et iOS), construite avec **Expo** et **TypeScript**.
+Statut : **phase 0 terminée** (socle technique). Les fonctionnalités arrivent à partir de la phase 1.
 
-- Plan and architecture choices: [`docs/PLANNING.md`](docs/PLANNING.md)
-- `assets/`: logo, onboarding images and font from the previous prototype, kept for reuse.
+- Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
+- Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
+- Idées pour la version 2 : [`docs/VERSION_2.md`](docs/VERSION_2.md)
+- Maquettes : https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
+
+## Lancer l'app
+
+Prérequis : [Node.js](https://nodejs.org) 20 ou plus.
+
+```bash
+npm install        # une seule fois
+npm start          # lance le serveur de développement
+```
+
+Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et scanne le QR code affiché.
+
+## Avant chaque commit
+
+```bash
+npm run check      # types + lint + formatage + tests
+```
+
+| Commande | Rôle |
+|---|---|
+| `npm run typecheck` | Vérifie les types TypeScript |
+| `npm run lint` | Règles de code (0 avertissement autorisé) |
+| `npm run format` | Formate le code automatiquement |
+| `npm test` | Lance les tests |
+| `npm run audit:prod` | Cherche les failles connues dans les dépendances |
+| `npm run doctor` | Diagnostic Expo |
+
+Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`), pour qu'elle soit compatible avec le SDK Expo.
+
+## Organisation du code
+
+```
+src/
+  app/                 Écrans (Expo Router) : un fichier = un écran
+    (tabs)/            Les 5 onglets : Aujourd'hui, Calendrier, Notes, Tâches, Profil
+  modules/             Les 4 domaines de l'architecture
+    identity/          compte, profil, préférences
+    academic/          matières, emplois du temps, cours, examens, vacances
+    productivity/      notes, tâches, devoirs, pièces jointes
+    platform/          notifications, fichiers, import, synchronisation, recherche
+  shared/
+    theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières)
+    theme/tokens.ts    espacements, arrondis, typographie
+    i18n/locales/      textes en français (fr.json) et en anglais (en.json)
+    db/                base de données locale (SQLite) et migrations
+    errors/            erreurs et messages compréhensibles
+    ui/                composants de base (texte, écran, bouton, état vide)
+```
+
+## Changer une couleur
+
+Ouvre `src/shared/theme/colors.ts`, change la valeur (ex. `primary: '#1F5FD6'`), enregistre : tous les écrans suivent.
+Les tests vérifient que le texte reste lisible ; s'ils échouent, la couleur choisie est trop claire ou trop foncée.
+
+## Changer un texte
+
+Ouvre `src/shared/i18n/locales/fr.json` (et `en.json` pour l'anglais). Les deux fichiers doivent avoir les mêmes clés : un test le vérifie.

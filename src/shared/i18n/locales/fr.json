@@ -1,0 +1,43 @@
+{
+  "app": { "name": "MySky" },
+  "tabs": {
+    "today": "Aujourd’hui",
+    "calendar": "Calendrier",
+    "notes": "Notes",
+    "tasks": "Tâches",
+    "profile": "Profil"
+  },
+  "today": {
+    "greeting": "Bonjour",
+    "emptyCourses": "Aucun cours prévu aujourd’hui.",
+    "emptyCoursesHint": "Tes cours du jour apparaîtront ici."
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "empty": "Rien de prévu pour ce jour.",
+    "emptyHint": "Tes cours, devoirs et examens apparaîtront ici."
+  },
+  "notes": {
+    "title": "Notes",
+    "empty": "Tu n’as encore aucune note.",
+    "emptyHint": "Tes notes de cours apparaîtront ici."
+  },
+  "tasks": {
+    "title": "Tâches",
+    "empty": "Rien à faire pour le moment.",
+    "emptyHint": "Tes tâches, devoirs et examens apparaîtront ici."
+  },
+  "profile": {
+    "title": "Profil",
+    "emptySubjects": "Ajoute ta première matière pour commencer.",
+    "emptySubjectsHint": "Tes matières et tes réglages apparaîtront ici."
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Réessaie.",
+    "network": "Pas de connexion Internet. Tes données sont gardées sur ton téléphone.",
+    "saveFailed": "Impossible d’enregistrer pour le moment. Tes données n’ont pas été perdues.",
+    "notFound": "Cette page n’existe pas.",
+    "retry": "Réessayer",
+    "backHome": "Retour à Aujourd’hui"
+  }
+}
