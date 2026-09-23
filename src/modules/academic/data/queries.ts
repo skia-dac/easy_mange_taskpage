@@ -131,3 +131,42 @@ export async function getOffPeriod(db: Db, id: string) {
   );
   return row ? toOffPeriod(row) : null;
 }
+
+/** Nettoie une saisie pour un LIKE : pas de jokers venant de l'utilisateur. */
+export function likePattern(query: string): string {
+  return `%${query.trim().replace(/[%_\\]/g, '')}%`;
+}
+
+export async function searchSubjects(db: Db, query: string) {
+  const q = likePattern(query);
+  const rows = await db.getAllAsync<SubjectRow>(
+    `SELECT * FROM subjects WHERE ${ALIVE} AND (name LIKE ? OR code LIKE ? OR teacher LIKE ?) ORDER BY name COLLATE NOCASE LIMIT 20`,
+    [q, q, q],
+  );
+  return rows.map(toSubject);
+}
+
+/** Cours dont le titre, la salle, le prof. ou le nom de la matière correspond. */
+export async function searchCourseSeries(db: Db, query: string) {
+  const q = likePattern(query);
+  const rows = await db.getAllAsync<CourseSeriesRow>(
+    `SELECT c.* FROM course_series c JOIN subjects s ON s.id = c.subject_id
+     WHERE c.deleted_at IS NULL AND s.deleted_at IS NULL
+       AND (c.title LIKE ? OR c.room LIKE ? OR c.teacher LIKE ? OR s.name LIKE ?)
+     ORDER BY c.weekday, c.start_time LIMIT 20`,
+    [q, q, q, q],
+  );
+  return rows.map(toCourseSeries);
+}
+
+export async function searchExams(db: Db, query: string) {
+  const q = likePattern(query);
+  const rows = await db.getAllAsync<ExamRow>(
+    `SELECT e.* FROM exams e JOIN subjects s ON s.id = e.subject_id
+     WHERE e.deleted_at IS NULL AND s.deleted_at IS NULL
+       AND (e.title LIKE ? OR e.room LIKE ? OR e.description LIKE ? OR s.name LIKE ?)
+     ORDER BY e.date LIMIT 20`,
+    [q, q, q, q],
+  );
+  return rows.map(toExam);
+}

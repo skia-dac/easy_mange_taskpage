@@ -60,3 +60,14 @@ export async function countWorkForSubject(db: Db, subjectId: string) {
     )?.n ?? 0;
   return { tasks: await count('tasks'), assignments: await count('assignments') };
 }
+
+export async function searchWorkItems(db: Db, kind: WorkKind, query: string) {
+  const q = `%${query.trim().replace(/[%_\\]/g, '')}%`;
+  const rows = await db.getAllAsync<WorkItemRow>(
+    `SELECT w.* FROM ${tableOf(kind)} w LEFT JOIN subjects s ON s.id = w.subject_id
+     WHERE w.deleted_at IS NULL AND (w.title LIKE ? OR w.description LIKE ? OR s.name LIKE ?)
+     ORDER BY w.due_date LIMIT 20`,
+    [q, q, q],
+  );
+  return rows.map(toWorkItem(kind));
+}

@@ -163,7 +163,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 | **4. Advanced timetable** ✅ done (before 2 and 3: no server needed) | Per-occurrence edits (3 options), cancellations, holidays/days off with suspension | Criteria 6, rule 8 |
 | **5. Notes** ✅ done (light markup editor, Expo Go compatible; rich editor deferred) | Rich editor, attachments (offline queue), favorites, "take notes" from a course | Criteria 9–10 |
 | **6. Import** | Pick PDF/image → Edge Function → editable preview with uncertain-field flags → duplicate check → create subjects + courses | Criteria 7, 8, 23, 24 |
-| **7. Search + polish** | Global FTS search, error messages, accessibility, store assets, TestFlight / Play internal testing | Launch candidate |
+| **7. Search + polish** ◐ search + onboarding done; polish/store assets pending | Global FTS search, error messages, accessibility, store assets, TestFlight / Play internal testing | Launch candidate |
 
 Phase 1 comes before auth on purpose. Building local-first from the start is what makes offline mode reliable. Adding it at the end rarely works.
 
@@ -196,7 +196,7 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 - Accessibility: contrast AA, touch targets ≥ 44 pt, dynamic font size respected.
 
 **Mock-ups (validated direction):** https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
-- Discovery flow: Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?"
+- Discovery flow (implemented without the account steps, which come with phase 2): Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?"
 - 38 screens covering every screen of spec §98: account (sign-in, forgotten password), 5 tabs + empty state, subjects (list, detail, form, delete with the choice of keeping linked content), timetable (list, course form, edit a repeated course with 3 options, holidays with course suspension), import (choose file → analysis → review), notes editor, forms and details for tâche/devoir/examen/événement, quick add, end of course, search, notifications (with sync retry), settings, colour sheet.
 
 **Rule: all colours are editable in ONE place.** `src/shared/theme/colors.ts` holds named tokens (`primary`, `primarySoft`, `background`, `surface`, `text`, `muted`, `warning`, `danger`, `success`, plus a light and a dark set, and the subject palette). Screens and components never contain a hex code: they read `theme.colors.*`. A lint rule (no colour literals outside `theme/`) enforces it.

@@ -1,9 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
+import { useEffect, useState } from 'react';
 import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { isOnboardingDone } from '@/modules/identity';
+import { useDb } from '@/shared/db';
 import { fonts, useTheme } from '@/shared/theme';
 
 type IconName = ComponentProps<typeof Feather>['name'];
@@ -19,6 +22,15 @@ function tabIcon(name: IconName) {
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const db = useDb();
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    void isOnboardingDone(db).then(setOnboarded, () => setOnboarded(true));
+  }, [db]);
+
+  if (onboarded === null) return null;
+  if (!onboarded) return <Redirect href="/onboarding" />;
 
   return (
     <Tabs

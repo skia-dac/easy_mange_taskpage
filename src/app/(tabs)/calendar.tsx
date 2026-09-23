@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
+import { SearchButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { calendarDays, useAgendaData, type CalendarItem } from '@/projections';
@@ -92,7 +93,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen title={formatMonthYear(selected, labels.lang)}>
+      <Screen title={formatMonthYear(selected, labels.lang)} actions={<SearchButton />}>
         <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
           <View style={{ flex: 1 }}>
             <Segmented

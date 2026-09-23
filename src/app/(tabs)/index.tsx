@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { CourseRow, EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
+import { SearchButton } from '@/components/SearchButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { formatDuration, formatLongDate } from '@/shared/format';
@@ -36,7 +37,11 @@ export default function TodayScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen title={t('today.greeting')} subtitle={formatLongDate(now, i18n.language)}>
+      <Screen
+        title={t('today.greeting')}
+        subtitle={formatLongDate(now, i18n.language)}
+        actions={<SearchButton />}
+      >
         {!loading && subjects.length === 0 ? (
           <Card>
             <View style={{ gap: spacing.md }}>

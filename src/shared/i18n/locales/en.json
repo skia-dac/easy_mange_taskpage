@@ -437,5 +437,36 @@
     "examDays": "Reminders before the exam",
     "daysBefore": "{{count}} day(s) before",
     "examTime": "Reminder time"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Subject, class, note, homework, exam…",
+    "hint": "Type at least 2 characters.",
+    "noResults": "No results for “{{query}}”.",
+    "subjects": "Subjects",
+    "courses": "Classes",
+    "notes": "Notes",
+    "assignments": "Homework",
+    "tasks": "Tasks",
+    "exams": "Exams"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Get started",
+    "title1": "Always know what’s next",
+    "body1": "Your next class, homework and exams show up as soon as you open the app.",
+    "title2": "Your timetable, your subjects",
+    "body2": "Add your subjects and weekly classes: they show up in your calendar, day by day.",
+    "title3": "Nothing slips through",
+    "body3": "A reminder before each class, and a quick prompt at the end to jot down homework in 2 seconds.",
+    "howTitle": "How do you want to start?",
+    "howHint": "You can change your mind later.",
+    "manual": "Create my timetable",
+    "manualHint": "Add your subjects and classes one by one.",
+    "later": "Later",
+    "laterHint": "Explore the app first.",
+    "import": "Import my timetable",
+    "importHint": "Photo or PDF. Coming soon."
   }
 }

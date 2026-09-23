@@ -54,3 +54,13 @@ export async function getLanguagePreference(db: Db): Promise<LanguagePreference>
 export async function setLanguagePreference(db: Db, value: LanguagePreference): Promise<void> {
   await writeSetting(db, KEYS.language, value);
 }
+
+const ONBOARDING_KEY = 'onboarding_done';
+
+export async function isOnboardingDone(db: Db): Promise<boolean> {
+  return (await readSetting(db, ONBOARDING_KEY)) === true;
+}
+
+export async function setOnboardingDone(db: Db): Promise<void> {
+  await writeSetting(db, ONBOARDING_KEY, true);
+}

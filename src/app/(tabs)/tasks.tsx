@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
+import { SearchButton } from '@/components/SearchButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf, listExams } from '@/modules/academic';
 import {
@@ -90,7 +91,7 @@ export default function TasksScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen title={t('tasks.title')}>
+      <Screen title={t('tasks.title')} actions={<SearchButton />}>
         <Segmented
           value={tab}
           onChange={setTab}

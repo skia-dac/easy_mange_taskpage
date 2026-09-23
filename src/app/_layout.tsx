@@ -64,6 +64,11 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
             <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
+            <Stack.Screen name="search" options={{ title: t('search.title') }} />
+            <Stack.Screen
+              name="onboarding"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
           </Stack>
         </SQLiteProvider>
       </Suspense>

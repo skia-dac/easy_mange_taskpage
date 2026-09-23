@@ -437,5 +437,36 @@
     "examDays": "Rappels avant l’examen",
     "daysBefore": "{{count}} jour(s) avant",
     "examTime": "Heure des rappels"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Matière, cours, note, devoir, examen…",
+    "hint": "Tape au moins 2 caractères.",
+    "noResults": "Aucun résultat pour « {{query}} ».",
+    "subjects": "Matières",
+    "courses": "Cours",
+    "notes": "Notes",
+    "assignments": "Devoirs",
+    "tasks": "Tâches",
+    "exams": "Examens"
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "start": "Commencer",
+    "title1": "Sache toujours ce qui t’attend",
+    "body1": "Ton prochain cours, tes devoirs et tes examens s’affichent dès que tu ouvres l’app.",
+    "title2": "Ton emploi du temps, tes matières",
+    "body2": "Ajoute tes matières et tes cours de la semaine : ils apparaissent dans ton calendrier, jour par jour.",
+    "title3": "Rien ne t’échappe",
+    "body3": "Un rappel avant chaque cours, et à la fin un petit message pour noter un devoir en 2 secondes.",
+    "howTitle": "Comment veux-tu commencer ?",
+    "howHint": "Tu pourras changer d’avis plus tard.",
+    "manual": "Créer mon emploi du temps",
+    "manualHint": "Ajoute tes matières et tes cours un par un.",
+    "later": "Plus tard",
+    "laterHint": "Découvre d’abord l’application.",
+    "import": "Importer mon emploi du temps",
+    "importHint": "Photo ou PDF. Bientôt disponible."
   }
 }
