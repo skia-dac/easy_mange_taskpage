@@ -80,6 +80,9 @@ jest.mock('@/hooks/useSubjects', () => ({
   }),
 }));
 jest.mock('@/shared/db', () => ({ ...jest.requireActual('@/shared/db'), useDb: () => ({}) }));
+jest.mock('@/hooks/useProfile', () => ({
+  useProfile: () => ({ profile: { firstName: 'Awa', lastName: 'Diallo' }, loading: false }),
+}));
 
 describe('écran Aujourd’hui', () => {
   beforeEach(async () => {

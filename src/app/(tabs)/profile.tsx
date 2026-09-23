@@ -2,16 +2,77 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
+import { fullName, initials } from '@/modules/identity';
+import { attachmentUri } from '@/modules/platform';
+import { Image } from 'expo-image';
+import { Pressable, View } from 'react-native';
+import { useTheme } from '@/shared/theme';
 import { colorOf } from '@/modules/academic';
 import { AppText, Card, IconBadge, ListRow, Screen, SectionHeader, SubjectDot } from '@/shared/ui';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const { subjects } = useSubjects();
+  const { profile } = useProfile();
+  const { colors, spacing, radius } = useTheme();
+  const name = fullName(profile);
+  const details = [profile?.field, profile?.level, profile?.university, profile?.academicYear]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <Screen title={t('profile.title')}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('profile.edit')}
+        onPress={() => router.push('/profile/edit')}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: spacing.md,
+          padding: spacing.lg,
+          borderRadius: radius.lg,
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 22,
+            backgroundColor: colors.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          {profile?.photoPath ? (
+            <Image
+              source={{ uri: attachmentUri(profile.photoPath) }}
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+            />
+          ) : (
+            <AppText variant="heading" color="onPrimary">
+              {initials(profile) || '?'}
+            </AppText>
+          )}
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <AppText variant="heading">{name || t('profile.noName')}</AppText>
+          <AppText variant="caption" color="muted">
+            {details || t('profile.completeHint')}
+          </AppText>
+        </View>
+        <AppText variant="bodyStrong" color="primary">
+          {t('common.edit')}
+        </AppText>
+      </Pressable>
       <SectionHeader
         title={t('profile.subjects')}
         action={

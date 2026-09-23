@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { ReminderField } from '@/components/ReminderField';
 import {
   createPersonalEvent,
   deletePersonalEvent,
@@ -35,6 +36,7 @@ export default function EventFormScreen() {
     startTime: null,
     endTime: null,
     description: '',
+    reminderAt: null,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<PersonalEventInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -118,6 +120,12 @@ export default function EventFormScreen() {
           />
         </View>
       </View>
+      <ReminderField
+        dueDate={form.date}
+        value={form.reminderAt ?? null}
+        onChange={(reminderAt) => set({ reminderAt })}
+        error={errors.reminderAt}
+      />
       <TextField
         label={t('events.description')}
         value={form.description ?? ''}

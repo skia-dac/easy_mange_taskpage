@@ -71,3 +71,12 @@ export async function searchWorkItems(db: Db, kind: WorkKind, query: string) {
   );
   return rows.map(toWorkItem(kind));
 }
+
+export async function searchPersonalEvents(db: Db, query: string) {
+  const q = `%${query.trim().replace(/[%_\\]/g, '')}%`;
+  const rows = await db.getAllAsync<PersonalEventRow>(
+    `SELECT * FROM personal_events WHERE ${ALIVE} AND (title LIKE ? OR description LIKE ?) ORDER BY date LIMIT 20`,
+    [q, q],
+  );
+  return rows.map(toPersonalEvent);
+}

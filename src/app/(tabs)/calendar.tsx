@@ -140,7 +140,10 @@ export default function CalendarScreen() {
             selected={selected}
             today={today}
             onSelect={setSelected}
-            hasItems={(d) => (days.get(d)?.length ?? 0) > 0}
+            hasItems={(d) => days.get(d)?.some((i) => i.kind !== 'dayOff') ?? false}
+            isOff={(d) =>
+              days.get(d)?.some((i) => i.kind === 'dayOff' && i.period.suspendCourses) ?? false
+            }
           />
         ) : (
           <WeekStrip
@@ -148,7 +151,10 @@ export default function CalendarScreen() {
             selected={selected}
             today={today}
             onSelect={setSelected}
-            hasItems={(d) => (days.get(d)?.length ?? 0) > 0}
+            hasItems={(d) => days.get(d)?.some((i) => i.kind !== 'dayOff') ?? false}
+            isOff={(d) =>
+              days.get(d)?.some((i) => i.kind === 'dayOff' && i.period.suspendCourses) ?? false
+            }
           />
         )}
 
@@ -184,6 +190,7 @@ type DayPickerProps = {
   today: IsoDate;
   onSelect: (d: IsoDate) => void;
   hasItems: (d: IsoDate) => boolean;
+  isOff: (d: IsoDate) => boolean;
 };
 
 function DayCell({
@@ -192,6 +199,7 @@ function DayCell({
   today,
   onSelect,
   hasItems,
+  isOff,
   dimmed,
 }: DayPickerProps & { day: IsoDate; dimmed?: boolean }) {
   const labels = useLabels();
@@ -211,7 +219,11 @@ function DayCell({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 2,
-        backgroundColor: isSelected ? colors.primary : 'transparent',
+        backgroundColor: isSelected
+          ? colors.primary
+          : isOff(day)
+            ? colors.warningSoft
+            : 'transparent',
         borderWidth: isToday && !isSelected ? 1.5 : 0,
         borderColor: colors.primary,
         opacity: dimmed ? 0.45 : 1,

@@ -146,3 +146,32 @@ it('le calendrier rassemble cours, examens et échéances par jour (critère 14)
   expect(days.get('2026-09-24')?.map((i) => i.kind)).toEqual(['exam', 'work']);
   expect(days.get('2026-09-25')).toEqual([]);
 });
+
+it('le calendrier affiche les vacances et masque les cours suspendus (§37, §42)', () => {
+  const holiday = {
+    id: 'h',
+    name: 'Toussaint',
+    kind: 'holiday' as const,
+    startDate: '2026-10-24',
+    endDate: '2026-11-02',
+    suspendCourses: true,
+  };
+  const days = calendarDays(
+    { series: [series], exams: [], work: [], events: [], offPeriods: [holiday] },
+    '2026-10-26',
+    '2026-10-28',
+  );
+  expect(days.get('2026-10-28')?.map((i) => i.kind)).toEqual(['dayOff']);
+  const kept = calendarDays(
+    {
+      series: [series],
+      exams: [],
+      work: [],
+      events: [],
+      offPeriods: [{ ...holiday, suspendCourses: false }],
+    },
+    '2026-10-28',
+    '2026-10-28',
+  );
+  expect(kept.get('2026-10-28')?.map((i) => i.kind)).toEqual(['dayOff', 'course']);
+});

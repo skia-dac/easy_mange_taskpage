@@ -1,4 +1,4 @@
-import { occurrencesInRange, type Exam, type Occurrence } from '@/modules/academic';
+import { occurrencesInRange, type Exam, type Occurrence, type OffPeriod } from '@/modules/academic';
 import type { PersonalEvent, WorkItem } from '@/modules/productivity';
 import { addDaysIso, type IsoDate } from '@/shared/dates';
 
@@ -8,7 +8,8 @@ export type CalendarItem =
   | { kind: 'course'; sortTime: string; occurrence: Occurrence }
   | { kind: 'exam'; sortTime: string; exam: Exam }
   | { kind: 'work'; sortTime: string; item: WorkItem }
-  | { kind: 'event'; sortTime: string; event: PersonalEvent };
+  | { kind: 'event'; sortTime: string; event: PersonalEvent }
+  | { kind: 'dayOff'; sortTime: string; period: OffPeriod };
 
 /**
  * Le calendrier rassemble cours, examens, tâches, devoirs et événements (§37) sans les copier.
@@ -23,6 +24,15 @@ export function calendarDays(
   for (let d = from; d <= to; d = addDaysIso(d, 1)) days.set(d, []);
   const push = (day: IsoDate, item: CalendarItem) => days.get(day)?.push(item);
 
+  for (const p of data.offPeriods ?? []) {
+    for (
+      let d = p.startDate > from ? p.startDate : from;
+      d <= (p.endDate < to ? p.endDate : to);
+      d = addDaysIso(d, 1)
+    ) {
+      push(d, { kind: 'dayOff', sortTime: '', period: p });
+    }
+  }
   for (const o of occurrencesInRange(data.series, from, to, data)) {
     push(o.date, { kind: 'course', sortTime: o.startTime, occurrence: o });
   }

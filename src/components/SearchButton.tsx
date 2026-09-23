@@ -1,19 +1,21 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 
 import { minTouchSize, useTheme } from '@/shared/theme';
 
-/** Bouton loupe des en-têtes : ouvre la recherche globale. */
-export function SearchButton() {
-  const { t } = useTranslation();
+type Props = { icon: ComponentProps<typeof Feather>['name']; label: string; href: Href };
+
+/** Bouton rond des en-têtes d'onglet (recherche, notifications…). */
+export function HeaderButton({ icon, label, href }: Props) {
   const { colors, radius } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('search.title')}
-      onPress={() => router.push('/search')}
+      accessibilityLabel={label}
+      onPress={() => router.push(href)}
       style={({ pressed }) => ({
         width: minTouchSize,
         height: minTouchSize,
@@ -26,7 +28,13 @@ export function SearchButton() {
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <Feather name="search" size={20} color={colors.text} />
+      <Feather name={icon} size={20} color={colors.text} />
     </Pressable>
   );
+}
+
+/** Bouton loupe : ouvre la recherche globale. */
+export function SearchButton() {
+  const { t } = useTranslation();
+  return <HeaderButton icon="search" label={t('search.title')} href="/search" />;
 }

@@ -4,19 +4,31 @@ import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
-import { colorOf, countdown, getExam } from '@/modules/academic';
+import { colorOf, countdown, deleteExam, getExam } from '@/modules/academic';
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { useDb, useLiveQuery } from '@/shared/db';
+import { userMessageKey } from '@/shared/errors';
 import { formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
-import { AppText, Button, Card, EmptyState, IconBadge, ListRow, TextButton } from '@/shared/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  confirmDestructive,
+  EmptyState,
+  IconBadge,
+  ListRow,
+  showError,
+  TextButton,
+} from '@/shared/ui';
 
 export default function ExamDetailScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const now = useNow(60_000);
   const { radius, spacing, scheme } = useTheme();
+  const db = useDb();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { byId } = useSubjects();
   const exam = useLiveQuery((db) => getExam(db, id), ['exams'], [id]);
@@ -100,6 +112,23 @@ export default function ExamDetailScreen() {
           onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: subject.id } })}
         />
       ) : null}
+      <TextButton
+        label={t('exams.delete')}
+        color="danger"
+        onPress={() => {
+          void confirmDestructive(
+            t('exams.deleteTitle'),
+            t('exams.deleteMessage'),
+            t('common.delete'),
+          ).then((ok) => {
+            if (ok)
+              deleteExam(db, e.id).then(
+                () => router.back(),
+                (err: unknown) => showError(userMessageKey(err)),
+              );
+          });
+        }}
+      />
     </ScrollView>
   );
 }

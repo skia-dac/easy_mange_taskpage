@@ -158,3 +158,21 @@ it(`ne dépasse jamais ${MAX_SCHEDULED} notifications, les plus proches d’abor
   for (let i = 1; i < plan.length; i++)
     expect(plan[i]!.fireAt.getTime()).toBeGreaterThanOrEqual(plan[i - 1]!.fireAt.getTime());
 });
+
+it('un événement avec rappel est programmé, et le réglage « événements » peut le couper', () => {
+  const event = {
+    id: 'ev1',
+    title: 'Réunion asso',
+    date: '2026-09-25',
+    startTime: '18:00',
+    endTime: null,
+    description: null,
+    reminderAt: new Date(2026, 8, 25, 17, 30).toISOString(),
+  };
+  expect(planReminders({ ...empty, events: [event] }, prefs, now, names).map((p) => p.id)).toEqual([
+    'event:ev1',
+  ]);
+  expect(
+    planReminders({ ...empty, events: [event] }, { ...prefs, events: false }, now, names),
+  ).toEqual([]);
+});

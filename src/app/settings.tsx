@@ -5,10 +5,13 @@ import { Linking, ScrollView, Switch, View } from 'react-native';
 import { useLabels } from '@/hooks/useLabels';
 import {
   courseReminderOptions,
+  getAppearancePreference,
   getLanguagePreference,
+  setAppearancePreference,
   getNotificationPreferences,
   setLanguagePreference,
   setNotificationPreferences,
+  type AppearancePreference,
   type LanguagePreference,
   type NotificationPreferences,
 } from '@/modules/identity';
@@ -35,16 +38,19 @@ export default function SettingsScreen() {
   const { colors, spacing } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
+  const [appearance, setAppearance] = useState<AppearancePreference>('auto');
   const [granted, setGranted] = useState<boolean | null>(null);
 
   useEffect(() => {
     void Promise.all([
       getNotificationPreferences(db),
       getLanguagePreference(db),
+      getAppearancePreference(db),
       hasPermission(),
-    ]).then(([p, l, g]) => {
+    ]).then(([p, l, a, g]) => {
       setPrefs(p);
       setLang(l);
+      setAppearance(a);
       setGranted(g);
     });
   }, [db]);
@@ -128,7 +134,22 @@ export default function SettingsScreen() {
         {toggle(t('settings.assignments'), 'assignments')}
         {toggle(t('settings.tasks'), 'tasks')}
         {toggle(t('settings.exams'), 'exams')}
+        {toggle(t('settings.events'), 'events')}
       </Card>
+
+      <SectionHeader title={t('settings.appearance')} />
+      <Segmented
+        value={appearance}
+        onChange={(v) => {
+          setAppearance(v);
+          setAppearancePreference(db, v).catch((e: unknown) => showError(userMessageKey(e)));
+        }}
+        options={[
+          { value: 'auto', label: t('settings.appAuto') },
+          { value: 'light', label: t('settings.appLight') },
+          { value: 'dark', label: t('settings.appDark') },
+        ]}
+      />
 
       <SectionHeader title={t('settings.language')} />
       <Segmented

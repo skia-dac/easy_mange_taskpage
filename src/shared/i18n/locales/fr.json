@@ -60,7 +60,8 @@
     "noExams": "Aucun examen programmé.",
     "firstSubject": "Ajoute ta première matière pour commencer.",
     "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier.",
-    "dayOff": "{{name}} : pas de cours aujourd’hui."
+    "dayOff": "{{name}} : pas de cours aujourd’hui.",
+    "greetingName": "Bonjour {{name}}"
   },
   "countdown": {
     "today": "Aujourd’hui",
@@ -104,7 +105,9 @@
     "previous": "Précédent",
     "next": "Suivant",
     "goToday": "Aujourd’hui",
-    "nothing": "Rien"
+    "nothing": "Rien",
+    "dayOff": "{{name}} · pas de cours",
+    "dayOffKept": "{{name}}"
   },
   "calendarItem": {
     "exam": "Examen",
@@ -185,7 +188,9 @@
     "nothing": "Rien pour le moment.",
     "addCourse": "Ajouter un cours",
     "addAssignment": "Ajouter un devoir",
-    "addExam": "Ajouter un examen"
+    "addExam": "Ajouter un examen",
+    "nextOn": "Prochain : {{date}}",
+    "ended": "Terminé"
   },
   "tasks": {
     "title": "Tâches",
@@ -215,7 +220,21 @@
     "addSubject": "Ajouter une matière",
     "version": "Version {{version}}",
     "settings": "Réglages",
-    "settingsHint": "Notifications, langue"
+    "settingsHint": "Notifications, langue",
+    "edit": "Modifier mon profil",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "photo": "Photo",
+    "changePhoto": "Changer la photo",
+    "removePhoto": "Retirer la photo",
+    "university": "Université / école",
+    "field": "Filière",
+    "level": "Niveau d’étude",
+    "academicYear": "Année académique",
+    "academicYearPlaceholder": "Ex. 2026–2027",
+    "save": "Enregistrer le profil",
+    "noName": "Ton profil",
+    "completeHint": "Ajoute ton prénom pour personnaliser l’accueil."
   },
   "timetables": {
     "title": "Emplois du temps",
@@ -265,7 +284,8 @@
     "deleteOnce": "Ce cours sera supprimé.",
     "detailTitle": "Cours",
     "every": "Chaque {{weekday}}",
-    "editSeriesHint": "La modification s’applique à toutes les séances de ce cours."
+    "editSeriesHint": "La modification s’applique à toutes les séances de ce cours.",
+    "notesTitle": "Notes de ce cours"
   },
   "work": {
     "newTask": "Nouvelle tâche",
@@ -402,7 +422,9 @@
     "workBody": "{{title}} · pour le {{date}} {{time}}",
     "examTitle": "Examen : {{subject}}",
     "examBody": "Dans {{days}} jour(s) · {{time}}",
-    "examToday": "Aujourd’hui · {{time}}"
+    "examToday": "Aujourd’hui · {{time}}",
+    "eventTitle": "Événement : {{title}}",
+    "eventBody": "{{date}} {{time}}"
   },
   "settings": {
     "title": "Réglages",
@@ -421,7 +443,12 @@
     "langAuto": "Automatique",
     "langFr": "Français",
     "langEn": "Anglais",
-    "scheduled": "{{count}} rappel(s) programmé(s)"
+    "scheduled": "{{count}} rappel(s) programmé(s)",
+    "appearance": "Apparence",
+    "appAuto": "Automatique",
+    "appLight": "Clair",
+    "appDark": "Sombre",
+    "events": "Rappels d’événements"
   },
   "reminder": {
     "none": "Aucun",
@@ -448,7 +475,8 @@
     "notes": "Notes",
     "assignments": "Devoirs",
     "tasks": "Tâches",
-    "exams": "Examens"
+    "exams": "Examens",
+    "events": "Événements"
   },
   "onboarding": {
     "skip": "Passer",
@@ -468,5 +496,14 @@
     "laterHint": "Découvre d’abord l’application.",
     "import": "Importer mon emploi du temps",
     "importHint": "Photo ou PDF. Bientôt disponible."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "upcoming": "Rappels à venir",
+    "empty": "Aucun rappel programmé.",
+    "emptyHint": "Ajoute des cours, devoirs ou examens avec un rappel : ils apparaîtront ici.",
+    "off": "Les notifications sont désactivées sur ce téléphone.",
+    "settings": "Réglages des rappels",
+    "count": "{{count}} rappel(s) dans les {{days}} prochains jours"
   }
 }

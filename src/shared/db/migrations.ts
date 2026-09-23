@@ -199,4 +199,20 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_attachments_note ON attachments (note_id);
     `,
   },
+  {
+    version: 6,
+    name: 'profil, rappel des événements',
+    sql: `
+      CREATE TABLE profiles (${SYNC_COLUMNS},
+        first_name TEXT NOT NULL DEFAULT '',
+        last_name TEXT NOT NULL DEFAULT '',
+        photo_path TEXT,
+        university TEXT,
+        field TEXT,
+        level TEXT,
+        academic_year TEXT
+      );
+      ALTER TABLE personal_events ADD COLUMN reminder_at TEXT;
+    `,
+  },
 ];

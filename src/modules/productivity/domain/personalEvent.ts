@@ -10,6 +10,11 @@ export const personalEventInputSchema = z
     startTime: optionalTime,
     endTime: optionalTime,
     description: optionalText(1000),
+    /** Date et heure du rappel (ISO), null = aucun (§40). */
+    reminderAt: z.iso
+      .datetime({ offset: true })
+      .nullish()
+      .transform((v) => v ?? null),
   })
   .superRefine((e, ctx) => {
     if (e.endTime && !e.startTime) {

@@ -85,6 +85,7 @@ function eventValues(input: PersonalEventInput) {
     start_time: v.startTime,
     end_time: v.endTime,
     description: v.description,
+    reminder_at: v.reminderAt,
   };
 }
 

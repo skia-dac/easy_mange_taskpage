@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { LanguageGate } from '@/modules/identity';
+import { AppearanceProvider, LanguageGate } from '@/modules/identity';
 import { NotificationsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -26,7 +26,6 @@ import { AppText, Button } from '@/shared/ui';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { t } = useTranslation();
   const { colors } = useTheme();
   const [fontsLoaded, fontError] = useFonts({
     BricolageGrotesque_700Bold,
@@ -46,30 +45,13 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
       <Suspense fallback={<View style={{ flex: 1, backgroundColor: colors.background }} />}>
         <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
           <LanguageGate />
           <NotificationsGate />
-          <Stack
-            screenOptions={{
-              headerBackTitle: t('common.back'),
-              headerTintColor: colors.primary,
-              headerStyle: { backgroundColor: colors.background },
-              headerTitleStyle: { color: colors.text, fontFamily: fonts.bodyBold },
-              headerShadowVisible: false,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
-            <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
-            <Stack.Screen name="search" options={{ title: t('search.title') }} />
-            <Stack.Screen
-              name="onboarding"
-              options={{ headerShown: false, gestureEnabled: false }}
-            />
-          </Stack>
+          <AppearanceProvider>
+            <ThemedStack />
+          </AppearanceProvider>
         </SQLiteProvider>
       </Suspense>
     </SafeAreaProvider>
@@ -101,5 +83,33 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
       </AppText>
       <Button label={t('errors.retry')} onPress={retry} />
     </View>
+  );
+}
+
+/** Pile de navigation aux couleurs du thème (clair / sombre selon les réglages). */
+function ThemedStack() {
+  const { t } = useTranslation();
+  const { colors, scheme } = useTheme();
+  return (
+    <>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerBackTitle: t('common.back'),
+          headerTintColor: colors.primary,
+          headerStyle: { backgroundColor: colors.background },
+          headerTitleStyle: { color: colors.text, fontFamily: fonts.bodyBold },
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
+        <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
+        <Stack.Screen name="search" options={{ title: t('search.title') }} />
+        <Stack.Screen name="notifications" options={{ title: t('notifications.title') }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
+      </Stack>
+    </>
   );
 }

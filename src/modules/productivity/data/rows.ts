@@ -37,6 +37,7 @@ export type PersonalEventRow = {
   start_time: string | null;
   end_time: string | null;
   description: string | null;
+  reminder_at: string | null;
 };
 
 export const toPersonalEvent = (r: PersonalEventRow): PersonalEvent => ({
@@ -46,6 +47,7 @@ export const toPersonalEvent = (r: PersonalEventRow): PersonalEvent => ({
   startTime: r.start_time,
   endTime: r.end_time,
   description: r.description,
+  reminderAt: r.reminder_at,
 });
 
 export const tableOf = (kind: WorkKind) => (kind === 'task' ? 'tasks' : 'assignments');

@@ -60,7 +60,8 @@
     "noExams": "No exams scheduled.",
     "firstSubject": "Add your first subject to get started.",
     "firstSubjectHint": "Then add your classes: they will show up here and in the calendar.",
-    "dayOff": "{{name}}: no classes today."
+    "dayOff": "{{name}}: no classes today.",
+    "greetingName": "Hello {{name}}"
   },
   "countdown": {
     "today": "Today",
@@ -104,7 +105,9 @@
     "previous": "Previous",
     "next": "Next",
     "goToday": "Today",
-    "nothing": "Nothing"
+    "nothing": "Nothing",
+    "dayOff": "{{name}} · no classes",
+    "dayOffKept": "{{name}}"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -185,7 +188,9 @@
     "nothing": "Nothing yet.",
     "addCourse": "Add a class",
     "addAssignment": "Add homework",
-    "addExam": "Add an exam"
+    "addExam": "Add an exam",
+    "nextOn": "Next: {{date}}",
+    "ended": "Ended"
   },
   "tasks": {
     "title": "Tasks",
@@ -215,7 +220,21 @@
     "addSubject": "Add a subject",
     "version": "Version {{version}}",
     "settings": "Settings",
-    "settingsHint": "Notifications, language"
+    "settingsHint": "Notifications, language",
+    "edit": "Edit my profile",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "photo": "Photo",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "university": "University / school",
+    "field": "Programme",
+    "level": "Study level",
+    "academicYear": "Academic year",
+    "academicYearPlaceholder": "e.g. 2026–2027",
+    "save": "Save profile",
+    "noName": "Your profile",
+    "completeHint": "Add your first name to personalise the home screen."
   },
   "timetables": {
     "title": "Timetables",
@@ -265,7 +284,8 @@
     "deleteOnce": "This class will be deleted.",
     "detailTitle": "Class",
     "every": "Every {{weekday}}",
-    "editSeriesHint": "Changes apply to all sessions of this class."
+    "editSeriesHint": "Changes apply to all sessions of this class.",
+    "notesTitle": "Notes for this class"
   },
   "work": {
     "newTask": "New task",
@@ -402,7 +422,9 @@
     "workBody": "{{title}} · due {{date}} {{time}}",
     "examTitle": "Exam: {{subject}}",
     "examBody": "In {{days}} day(s) · {{time}}",
-    "examToday": "Today · {{time}}"
+    "examToday": "Today · {{time}}",
+    "eventTitle": "Event: {{title}}",
+    "eventBody": "{{date}} {{time}}"
   },
   "settings": {
     "title": "Settings",
@@ -421,7 +443,12 @@
     "langAuto": "Automatic",
     "langFr": "French",
     "langEn": "English",
-    "scheduled": "{{count}} reminder(s) scheduled"
+    "scheduled": "{{count}} reminder(s) scheduled",
+    "appearance": "Appearance",
+    "appAuto": "Automatic",
+    "appLight": "Light",
+    "appDark": "Dark",
+    "events": "Event reminders"
   },
   "reminder": {
     "none": "None",
@@ -448,7 +475,8 @@
     "notes": "Notes",
     "assignments": "Homework",
     "tasks": "Tasks",
-    "exams": "Exams"
+    "exams": "Exams",
+    "events": "Events"
   },
   "onboarding": {
     "skip": "Skip",
@@ -468,5 +496,14 @@
     "laterHint": "Explore the app first.",
     "import": "Import my timetable",
     "importHint": "Photo or PDF. Coming soon."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "upcoming": "Upcoming reminders",
+    "empty": "No reminder scheduled.",
+    "emptyHint": "Add classes, homework or exams with a reminder: they will show up here.",
+    "off": "Notifications are turned off on this phone.",
+    "settings": "Reminder settings",
+    "count": "{{count}} reminder(s) in the next {{days}} days"
   }
 }

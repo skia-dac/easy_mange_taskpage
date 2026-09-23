@@ -7,7 +7,15 @@ import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { NoteCard } from '@/components/NoteCard';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
-import { colorOf, getSubject, listCourseSeries, listExams } from '@/modules/academic';
+import {
+  colorOf,
+  getSubject,
+  listCourseSeries,
+  listExams,
+  occurrencesInRange,
+} from '@/modules/academic';
+import { addDaysIso, toIsoDate } from '@/shared/dates';
+import { formatShortDate } from '@/shared/format';
 import { compareWorkItems, listNotes, listWorkItems } from '@/modules/productivity';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -155,20 +163,38 @@ export default function SubjectDetailScreen() {
         {(series.data ?? []).length === 0 ? (
           <AppText color="muted">{t('subjects.noCourses')}</AppText>
         ) : null}
-        {(series.data ?? []).map((c) => (
-          <ListRow
-            key={c.id}
-            title={
-              c.recurrence === 'weekly'
-                ? t('courses.every', { weekday: labels.weekday(c.weekday) })
-                : c.validFrom
-            }
-            subtitle={[`${c.startTime} – ${c.endTime}`, labels.courseType(c.courseType), c.room]
-              .filter(Boolean)
-              .join(' · ')}
-            onPress={() => router.push({ pathname: '/courses/[id]', params: { id: c.id } })}
-          />
-        ))}
+        {(series.data ?? []).map((c) => {
+          const today = toIsoDate(now);
+          const next = occurrencesInRange([c], today, addDaysIso(today, 60)).find(
+            (o) => o.status !== 'cancelled',
+          );
+          return (
+            <ListRow
+              key={c.id}
+              title={
+                c.recurrence === 'weekly'
+                  ? t('courses.every', { weekday: labels.weekday(c.weekday) })
+                  : formatShortDate(c.validFrom, labels.lang)
+              }
+              subtitle={[
+                `${c.startTime} – ${c.endTime}`,
+                labels.courseType(c.courseType),
+                c.room,
+                next
+                  ? t('subjects.nextOn', { date: formatShortDate(next.date, labels.lang) })
+                  : t('subjects.ended'),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              onPress={() =>
+                router.push({
+                  pathname: '/courses/[id]',
+                  params: { id: c.id, ...(next ? { date: next.date } : {}) },
+                })
+              }
+            />
+          );
+        })}
       </Card>
 
       <SectionHeader

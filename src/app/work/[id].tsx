@@ -5,7 +5,13 @@ import { ScrollView, View } from 'react-native';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import { getWorkItem, isOverdue, setWorkStatus, type WorkKind } from '@/modules/productivity';
+import {
+  deleteWorkItem,
+  getWorkItem,
+  isOverdue,
+  setWorkStatus,
+  type WorkKind,
+} from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -17,6 +23,7 @@ import {
   Button,
   Card,
   Chip,
+  confirmDestructive,
   EmptyState,
   IconBadge,
   ListRow,
@@ -100,6 +107,23 @@ export default function WorkDetailScreen() {
         </Card>
       ) : null}
       <Button label={done ? t('work.reopen') : t('work.markDone')} onPress={() => void toggle()} />
+      <TextButton
+        label={kind === 'task' ? t('work.deleteTask') : t('work.deleteAssignment')}
+        color="danger"
+        onPress={() => {
+          void confirmDestructive(
+            t('work.deleteTitle', { title: w.title }),
+            t('work.deleteMessage'),
+            t('common.delete'),
+          ).then((ok) => {
+            if (ok)
+              deleteWorkItem(db, kind, w.id).then(
+                () => router.back(),
+                (e: unknown) => showError(userMessageKey(e)),
+              );
+          });
+        }}
+      />
     </ScrollView>
   );
 }

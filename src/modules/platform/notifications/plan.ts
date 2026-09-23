@@ -8,7 +8,8 @@ export type ReminderAction =
   | { kind: 'course'; seriesId: string; date: string }
   | { kind: 'endOfCourse'; seriesId: string; date: string; subjectId: string }
   | { kind: 'work'; workKind: 'task' | 'assignment'; id: string }
-  | { kind: 'exam'; id: string };
+  | { kind: 'exam'; id: string }
+  | { kind: 'event'; id: string };
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */
@@ -100,6 +101,21 @@ export function planReminders(
       },
       action: { kind: 'work', workKind: w.kind, id: w.id },
     });
+  }
+
+  if (prefs.events) {
+    for (const e of data.events) {
+      if (!e.reminderAt) continue;
+      const at = new Date(e.reminderAt);
+      if (Number.isNaN(at.getTime()) || !future(at)) continue;
+      out.push({
+        id: `event:${e.id}`,
+        fireAt: at,
+        title: { key: 'notif.eventTitle', params: { title: e.title } },
+        body: { key: 'notif.eventBody', params: { date: e.date, time: e.startTime ?? '' } },
+        action: { kind: 'event', id: e.id },
+      });
+    }
   }
 
   if (prefs.exams) {

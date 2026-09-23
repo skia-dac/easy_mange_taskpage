@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { CourseRow, EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
-import { SearchButton } from '@/components/SearchButton';
+import { HeaderButton, SearchButton } from '@/components/SearchButton';
+import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
 import { buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { formatDuration, formatLongDate } from '@/shared/format';
@@ -28,6 +29,10 @@ export default function TodayScreen() {
   const now = useNow();
   const agenda = useAgendaData();
   const { subjects, byId, loading } = useSubjects();
+  const { profile } = useProfile();
+  const greeting = profile?.firstName
+    ? t('today.greetingName', { name: profile.firstName })
+    : t('today.greeting');
   const view = useMemo(
     () => (agenda.data ? buildToday(agenda.data, now) : null),
     [agenda.data, now],
@@ -38,9 +43,14 @@ export default function TodayScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Screen
-        title={t('today.greeting')}
+        title={greeting}
         subtitle={formatLongDate(now, i18n.language)}
-        actions={<SearchButton />}
+        actions={
+          <>
+            <SearchButton />
+            <HeaderButton icon="bell" label={t('notifications.title')} href="/notifications" />
+          </>
+        }
       >
         {!loading && subjects.length === 0 ? (
           <Card>
@@ -199,6 +209,36 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
         {info('map-pin', o.room)}
         {info('user', o.teacher)}
       </View>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() =>
+          router.push({
+            pathname: '/notes/[id]',
+            params: {
+              id: 'new',
+              subjectId: o.subjectId,
+              courseSeriesId: o.seriesId,
+              courseDate: o.date,
+            },
+          })
+        }
+        style={({ pressed }) => ({
+          marginTop: spacing.xs,
+          minHeight: 46,
+          borderRadius: radius.md,
+          backgroundColor: colors.onPrimary,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          gap: spacing.sm,
+          opacity: pressed ? 0.85 : 1,
+        })}
+      >
+        <Feather name="file-text" size={18} color={colors.primary} />
+        <AppText variant="bodyStrong" color="primary">
+          {t('notes.takeNotes')}
+        </AppText>
+      </Pressable>
     </Pressable>
   );
 }

@@ -14,6 +14,8 @@ import {
   getCourseSeries,
   restoreOccurrence,
 } from '@/modules/academic';
+import { NoteCard } from '@/components/NoteCard';
+import { listNotes } from '@/modules/productivity';
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -43,6 +45,15 @@ export default function CourseDetailScreen() {
   const exception = useLiveQuery(
     (d) => (date ? getCourseException(d, id, date) : Promise.resolve(null)),
     ['course_exceptions'],
+    [id, date],
+  );
+
+  const notes = useLiveQuery(
+    async (d) =>
+      (await listNotes(d)).filter(
+        (n) => n.courseSeriesId === id && (!date || n.courseDate === date),
+      ),
+    ['notes'],
     [id, date],
   );
 
@@ -218,6 +229,18 @@ export default function CourseDetailScreen() {
             onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: subject.id } })}
           />
         </Card>
+      ) : null}
+      {(notes.data ?? []).length > 0 ? (
+        <>
+          <AppText variant="heading">{t('courses.notesTitle')}</AppText>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+            {(notes.data ?? []).map((n) => (
+              <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
+                <NoteCard note={n} subject={subject} />
+              </View>
+            ))}
+          </View>
+        </>
       ) : null}
       <Button
         label={t('notes.takeNotes')}

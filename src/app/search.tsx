@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, TextInput, View } from 'react-native';
 
-import { ExamRow, WorkRow } from '@/components/AgendaRows';
+import { EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
 import { NoteCard } from '@/components/NoteCard';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -23,7 +23,15 @@ import {
 } from '@/shared/ui';
 import { countResults, emptyResults, MIN_QUERY_LENGTH, searchAll } from '@/workflows';
 
-const TABLES = ['subjects', 'course_series', 'notes', 'assignments', 'tasks', 'exams'];
+const TABLES = [
+  'subjects',
+  'course_series',
+  'notes',
+  'assignments',
+  'tasks',
+  'exams',
+  'personal_events',
+];
 
 /** Recherche globale (§81–83) : résultats regroupés par type. */
 export default function SearchScreen() {
@@ -181,6 +189,16 @@ export default function SearchScreen() {
             <Card>
               {r.exams.map((e) => (
                 <ExamRow key={e.id} exam={e} subjects={byId} now={now} />
+              ))}
+            </Card>
+          </>
+        ) : null}
+        {r.events.length > 0 ? (
+          <>
+            <SectionHeader title={t('search.events')} />
+            <Card>
+              {r.events.map((e) => (
+                <EventRow key={e.id} event={e} />
               ))}
             </Card>
           </>

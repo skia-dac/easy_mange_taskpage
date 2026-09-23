@@ -29,7 +29,9 @@ export function Screen({ title, subtitle, children, actions }: Props) {
               {title}
             </AppText>
           </View>
-          {actions}
+          {actions ? (
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>{actions}</View>
+          ) : null}
         </View>
         {children}
       </ScrollView>

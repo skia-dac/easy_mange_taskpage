@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { darkColors, lightColors, type ColorTokens } from './colors';
@@ -23,8 +24,14 @@ export function getTheme(scheme: ColorScheme): Theme {
   };
 }
 
-/** Thème courant, qui suit le mode clair / sombre du téléphone. */
+export type AppearanceMode = 'auto' | 'light' | 'dark';
+
+/** Choix de l'utilisateur (Réglages → Apparence). 'auto' = suit le téléphone. */
+export const AppearanceContext = createContext<AppearanceMode>('auto');
+
+/** Thème courant : le choix de l'utilisateur, sinon le mode clair / sombre du téléphone. */
 export function useTheme(): Theme {
-  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-  return getTheme(scheme);
+  const system = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const mode = useContext(AppearanceContext);
+  return getTheme(mode === 'auto' ? system : mode);
 }

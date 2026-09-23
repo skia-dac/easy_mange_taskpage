@@ -11,6 +11,7 @@ export const notificationPreferencesSchema = z.object({
   tasks: z.boolean(),
   exams: z.boolean(),
   endOfCourse: z.boolean(),
+  events: z.boolean().default(true),
   courseReminderMinutes: z.union([
     z.literal(0),
     z.literal(10),
@@ -28,8 +29,12 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   tasks: true,
   exams: true,
   endOfCourse: true,
+  events: true,
   courseReminderMinutes: 15,
 };
 
 export const languagePreferenceSchema = z.enum(['auto', 'fr', 'en']);
 export type LanguagePreference = z.infer<typeof languagePreferenceSchema>;
+
+export const appearancePreferenceSchema = z.enum(['auto', 'light', 'dark']);
+export type AppearancePreference = z.infer<typeof appearancePreferenceSchema>;

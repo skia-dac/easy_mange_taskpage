@@ -2,14 +2,20 @@ import { nowIso, notifyChange, type Db } from '@/shared/db';
 import { logger } from '@/shared/logger';
 
 import {
+  appearancePreferenceSchema,
   defaultNotificationPreferences,
   languagePreferenceSchema,
   notificationPreferencesSchema,
+  type AppearancePreference,
   type LanguagePreference,
   type NotificationPreferences,
 } from '../domain/preferences';
 
-const KEYS = { notifications: 'notifications', language: 'language' } as const;
+const KEYS = {
+  notifications: 'notifications',
+  language: 'language',
+  appearance: 'appearance',
+} as const;
 
 async function readSetting(db: Db, key: string): Promise<unknown> {
   const row = await db.getFirstAsync<{ value: string }>(
@@ -63,4 +69,13 @@ export async function isOnboardingDone(db: Db): Promise<boolean> {
 
 export async function setOnboardingDone(db: Db): Promise<void> {
   await writeSetting(db, ONBOARDING_KEY, true);
+}
+
+export async function getAppearancePreference(db: Db): Promise<AppearancePreference> {
+  const parsed = appearancePreferenceSchema.safeParse(await readSetting(db, KEYS.appearance));
+  return parsed.success ? parsed.data : 'auto';
+}
+
+export async function setAppearancePreference(db: Db, value: AppearancePreference): Promise<void> {
+  await writeSetting(db, KEYS.appearance, value);
 }

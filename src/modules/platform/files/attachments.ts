@@ -72,8 +72,8 @@ async function importFile(
   };
 }
 
-/** Choisit une image dans la galerie. null si l'utilisateur annule. */
-export async function pickImage(noteId: string): Promise<PickedFile | null> {
+/** Choisit une image dans la galerie et la copie dans le dossier `folder` (ex. l'id d'une note, ou « profile »). null si annulé. */
+export async function pickImage(folder: string): Promise<PickedFile | null> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return null;
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -85,7 +85,7 @@ export async function pickImage(noteId: string): Promise<PickedFile | null> {
   if (!asset) return null;
   const name = asset.fileName ?? `image.${extensionOf('', asset.mimeType ?? 'image/jpeg')}`;
   return importFile(
-    noteId,
+    folder,
     asset.uri,
     name,
     asset.mimeType ?? null,
