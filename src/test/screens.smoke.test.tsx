@@ -16,7 +16,7 @@ import {
 } from '@/modules/academic';
 import { saveProfile } from '@/modules/identity';
 import { createNote, createPersonalEvent, createWorkItem } from '@/modules/productivity';
-import type { Db } from '@/shared/mockDb';
+import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
 
