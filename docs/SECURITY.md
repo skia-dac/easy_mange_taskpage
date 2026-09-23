@@ -53,6 +53,14 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Taille maximale : 25 Mo par fichier. Le nom d'origine est gardé pour l'affichage seulement ; le fichier est renommé avec un identifiant.
 - Supprimer une note ou une pièce jointe supprime aussi le fichier local.
 
+## 4d. Même application sur iPhone et Android
+
+- Les écrans n'ont **aucun code spécifique à une plateforme** : un test (`src/shared/platformGuard.test.ts`) refuse `Platform.OS`, `Alert.alert` et les options iOS-only en dehors de `src/shared/ui/` et `src/modules/platform/`.
+- Les menus à choix multiples utilisent `ChoiceSheet` (identique partout) et non la boîte native, qui limite Android à 3 boutons.
+- Les champs date/heure affichent le même bouton partout ; seul le sélecteur qui s'ouvre est natif (fenêtre iPhone, boîte Android).
+- Onglets, polices, couleurs, icônes (Feather), cartes et formulaires sont dessinés par l'app, pas par le système : même rendu sur les deux.
+- Les seules différences volontaires : la barre d'état, le clavier et le geste retour, gérés par le système de chaque téléphone.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

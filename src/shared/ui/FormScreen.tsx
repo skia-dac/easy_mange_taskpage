@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../theme';
 import { Button } from './Button';
+import { KeyboardAvoiding } from './KeyboardAvoiding';
 
 type Props = {
   children: ReactNode;
@@ -16,14 +17,10 @@ type Props = {
 
 /** Formulaire : champs qui défilent au-dessus du clavier, gros bouton « Enregistrer » en bas. */
 export function FormScreen({ children, submitLabel, onSubmit, saving, footer }: Props) {
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
+    <KeyboardAvoiding>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -38,6 +35,6 @@ export function FormScreen({ children, submitLabel, onSubmit, saving, footer }: 
           {footer}
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoiding>
   );
 }

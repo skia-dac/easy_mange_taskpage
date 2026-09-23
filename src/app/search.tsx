@@ -1,8 +1,7 @@
-import Feather from '@expo/vector-icons/Feather';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, TextInput, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
 import { NoteCard } from '@/components/NoteCard';
@@ -10,13 +9,14 @@ import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { useLiveQuery } from '@/shared/db';
-import { fonts, minTouchSize, useTheme } from '@/shared/theme';
+import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
 import {
   AppText,
   Card,
   EmptyState,
   ListRow,
+  SearchInput,
   SectionHeader,
   SubjectBar,
   SubjectDot,
@@ -38,7 +38,7 @@ export default function SearchScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const now = useNow();
-  const { colors, radius, spacing } = useTheme();
+  const { colors, spacing } = useTheme();
   const [query, setQuery] = useState('');
   const { byId } = useSubjects();
   const trimmed = query.trim();
@@ -55,38 +55,13 @@ export default function SearchScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ title: t('search.title') }} />
       <View style={{ padding: spacing.xl, paddingBottom: spacing.sm }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: spacing.sm,
-            minHeight: minTouchSize + 6,
-            borderRadius: radius.md,
-            backgroundColor: colors.surface,
-            borderWidth: 1.5,
-            borderColor: colors.primary,
-            paddingHorizontal: spacing.md,
-          }}
-        >
-          <Feather name="search" size={18} color={colors.muted} />
-          <TextInput
-            accessibilityLabel={t('search.title')}
-            autoFocus
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('search.placeholder')}
-            placeholderTextColor={colors.muted}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-            style={{
-              flex: 1,
-              color: colors.text,
-              fontFamily: fonts.body,
-              fontSize: 16,
-              minHeight: minTouchSize,
-            }}
-          />
-        </View>
+        <SearchInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('search.placeholder')}
+          autoFocus
+          emphasized
+        />
       </View>
       <ScrollView
         keyboardShouldPersistTaps="handled"

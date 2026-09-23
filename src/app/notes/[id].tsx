@@ -3,15 +3,7 @@ import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-} from 'react-native';
+import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { NoteContent } from '@/components/NoteContent';
 import { NoteEditor } from '@/components/NoteEditor';
@@ -52,6 +44,7 @@ import {
   Chip,
   confirmDestructive,
   EmptyState,
+  KeyboardAvoiding,
   SelectField,
   showError,
   TextButton,
@@ -357,11 +350,7 @@ export default function NoteScreen() {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
+    <KeyboardAvoiding>
       <Stack.Screen options={{ title: '', headerRight }} />
       {editing ? (
         <View style={{ flex: 1 }}>
@@ -396,7 +385,7 @@ export default function NoteScreen() {
           <TextButton label={t('notes.delete')} color="danger" onPress={() => void remove()} />
         </ScrollView>
       )}
-    </KeyboardAvoidingView>
+    </KeyboardAvoiding>
   );
 }
 

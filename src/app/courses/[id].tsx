@@ -1,7 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -26,12 +27,14 @@ import {
   Button,
   Card,
   Chip,
+  ChoiceSheet,
   confirmDestructive,
   EmptyState,
   IconBadge,
   ListRow,
   showError,
   TextButton,
+  type ChoiceOption,
 } from '@/shared/ui';
 
 export default function CourseDetailScreen() {
@@ -57,6 +60,7 @@ export default function CourseDetailScreen() {
     [id, date],
   );
 
+  const [sheet, setSheet] = useState<'edit' | 'delete' | null>(null);
   if (course.loading || exception.loading) return null;
   const c = course.data;
   if (!c) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
@@ -82,65 +86,61 @@ export default function CourseDetailScreen() {
   const fail = (e: unknown) => showError(userMessageKey(e));
 
   /** Modifier : une seule séance, cette séance et les suivantes, ou toute la série (§27). */
-  const edit = () => {
-    if (!weekly || !date) {
-      router.push({ pathname: '/courses/form', params: { id: c.id } });
-      return;
-    }
-    Alert.alert(
-      t('occurrence.scopeTitle'),
-      t('occurrence.scopeMessage', { weekday: labels.weekday(c.weekday) }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('occurrence.scopeThis'),
-          onPress: () =>
-            router.push({ pathname: '/courses/occurrence', params: { seriesId: c.id, date } }),
-        },
-        {
-          text: t('occurrence.scopeFollowing'),
-          onPress: () =>
-            router.push({
-              pathname: '/courses/form',
-              params: { id: c.id, scope: 'following', date },
-            }),
-        },
-        {
-          text: t('occurrence.scopeAll'),
-          onPress: () =>
-            router.push({ pathname: '/courses/form', params: { id: c.id, scope: 'all' } }),
-        },
-      ],
+  /** Modifier ou supprimer : une seule séance, cette séance et les suivantes, ou toute la série (§27, §28). */
+
+  const deleteAll = async () => {
+    const ok = await confirmDestructive(
+      t('courses.deleteTitle'),
+      weekly
+        ? t('courses.deleteSeries', { weekday: labels.weekday(c.weekday) })
+        : t('courses.deleteOnce'),
+      t('common.delete'),
     );
+    if (ok) deleteCourse(db, c.id).then(() => router.dismissAll(), fail);
   };
 
-  /** Supprimer : même principe (§28). Une seule séance = la marquer annulée. */
-  const remove = () => {
-    const deleteAll = async () => {
-      const ok = await confirmDestructive(
-        t('courses.deleteTitle'),
-        weekly
-          ? t('courses.deleteSeries', { weekday: labels.weekday(c.weekday) })
-          : t('courses.deleteOnce'),
-        t('common.delete'),
-      );
-      if (ok) deleteCourse(db, c.id).then(() => router.dismissAll(), fail);
-    };
-    if (!weekly || !date) {
-      void deleteAll();
-      return;
-    }
-    Alert.alert(t('occurrence.deleteScopeTitle'), t('occurrence.deleteThisHint'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('occurrence.scopeThis'), onPress: () => void cancel() },
-      {
-        text: t('occurrence.scopeFollowing'),
-        style: 'destructive',
-        onPress: () => endSeriesBefore(db, c.id, date).then(() => router.back(), fail),
-      },
-      { text: t('occurrence.scopeAll'), style: 'destructive', onPress: () => void deleteAll() },
-    ]);
+  const edit = () => {
+    if (!weekly || !date) router.push({ pathname: '/courses/form', params: { id: c.id } });
+    else setSheet('edit');
   };
+
+  const remove = () => {
+    if (!weekly || !date) void deleteAll();
+    else setSheet('delete');
+  };
+
+  const editOptions: ChoiceOption[] = [
+    {
+      label: t('occurrence.scopeThis'),
+      onPress: () =>
+        router.push({ pathname: '/courses/occurrence', params: { seriesId: c.id, date } }),
+    },
+    {
+      label: t('occurrence.scopeFollowing'),
+      onPress: () =>
+        router.push({ pathname: '/courses/form', params: { id: c.id, scope: 'following', date } }),
+    },
+    {
+      label: t('occurrence.scopeAll'),
+      onPress: () => router.push({ pathname: '/courses/form', params: { id: c.id, scope: 'all' } }),
+    },
+  ];
+
+  const deleteOptions: ChoiceOption[] = [
+    {
+      label: t('occurrence.scopeThis'),
+      hint: t('occurrence.deleteThisHint'),
+      onPress: () => void cancel(),
+    },
+    {
+      label: t('occurrence.scopeFollowing'),
+      destructive: true,
+      onPress: () => {
+        if (date) endSeriesBefore(db, c.id, date).then(() => router.back(), fail);
+      },
+    },
+    { label: t('occurrence.scopeAll'), destructive: true, onPress: () => void deleteAll() },
+  ];
 
   const cancel = async () => {
     if (!date) return;
@@ -281,6 +281,19 @@ export default function CourseDetailScreen() {
         <TextButton label={t('occurrence.cancel')} color="warning" onPress={() => void cancel()} />
       ) : null}
       <TextButton label={t('courses.delete')} color="danger" onPress={remove} />
+      <ChoiceSheet
+        visible={sheet === 'edit'}
+        title={t('occurrence.scopeTitle')}
+        message={t('occurrence.scopeMessage', { weekday: labels.weekday(c.weekday) })}
+        options={editOptions}
+        onClose={() => setSheet(null)}
+      />
+      <ChoiceSheet
+        visible={sheet === 'delete'}
+        title={t('occurrence.deleteScopeTitle')}
+        options={deleteOptions}
+        onClose={() => setSheet(null)}
+      />
     </ScrollView>
   );
 }

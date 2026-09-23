@@ -1,7 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { NoteCard } from '@/components/NoteCard';
@@ -24,13 +25,16 @@ import { useNow } from '@/shared/useNow';
 import {
   AppText,
   Card,
+  ChoiceSheet,
+  confirmDestructive,
   EmptyState,
   ListRow,
   SectionHeader,
   showError,
   TextButton,
+  type ChoiceOption,
 } from '@/shared/ui';
-import { deleteSubject, subjectUsage } from '@/workflows';
+import { deleteSubject, subjectUsage, type SubjectUsage } from '@/workflows';
 
 export default function SubjectDetailScreen() {
   const { t } = useTranslation();
@@ -61,6 +65,7 @@ export default function SubjectDetailScreen() {
     [id],
   );
 
+  const [deleteSheet, setDeleteSheet] = useState<SubjectUsage | null>(null);
   const s = subject.data;
   if (subject.loading) return null;
   if (!s) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
@@ -69,41 +74,40 @@ export default function SubjectDetailScreen() {
   const strong = scheme === 'dark' ? color.strongDark : color.strong;
   const soft = scheme === 'dark' ? color.softDark : color.soft;
 
+  /** Suppression (§16) : on annonce ce qui est lié, puis on laisse choisir. */
+  const doDelete = (mode: 'keepWork' | 'deleteAll') =>
+    deleteSubject(db, s.id, mode).then(
+      () => router.back(),
+      (e: unknown) => showError(userMessageKey(e)),
+    );
   const askDelete = async () => {
     try {
       const usage = await subjectUsage(db, s.id);
-      const total = usage.courses + usage.exams + usage.tasks + usage.assignments;
-      const done = () => router.back();
-      const doDelete = (mode: 'keepWork' | 'deleteAll') =>
-        deleteSubject(db, s.id, mode).then(done, (e: unknown) => showError(userMessageKey(e)));
-      const title = t('subjects.deleteTitle', { name: s.name });
+      const total = usage.courses + usage.exams + usage.tasks + usage.assignments + usage.notes;
       if (total === 0) {
-        Alert.alert(title, t('subjects.deleteNothing'), [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('common.delete'),
-            style: 'destructive',
-            onPress: () => void doDelete('deleteAll'),
-          },
-        ]);
+        const ok = await confirmDestructive(
+          t('subjects.deleteTitle', { name: s.name }),
+          t('subjects.deleteNothing'),
+          t('common.delete'),
+        );
+        if (ok) await doDelete('deleteAll');
         return;
       }
-      const buttons = [
-        { text: t('common.cancel'), style: 'cancel' as const },
-        ...(usage.tasks + usage.assignments > 0
-          ? [{ text: t('subjects.keepWork'), onPress: () => void doDelete('keepWork') }]
-          : []),
-        {
-          text: t('subjects.deleteAll'),
-          style: 'destructive' as const,
-          onPress: () => void doDelete('deleteAll'),
-        },
-      ];
-      Alert.alert(title, t('subjects.deleteUsage', usage), buttons);
+      setDeleteSheet(usage);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+  const deleteOptions: ChoiceOption[] = [
+    ...(deleteSheet && deleteSheet.tasks + deleteSheet.assignments + deleteSheet.notes > 0
+      ? [{ label: t('subjects.keepWork'), onPress: () => void doDelete('keepWork') }]
+      : []),
+    {
+      label: t('subjects.deleteAll'),
+      destructive: true,
+      onPress: () => void doDelete('deleteAll'),
+    },
+  ];
 
   const info = (icon: 'user' | 'map-pin' | 'hash' | 'layers', text: string | null) =>
     text ? (
@@ -254,6 +258,13 @@ export default function SubjectDetailScreen() {
       </Card>
 
       <TextButton label={t('subjects.delete')} color="danger" onPress={() => void askDelete()} />
+      <ChoiceSheet
+        visible={deleteSheet !== null}
+        title={t('subjects.deleteTitle', { name: s.name })}
+        message={deleteSheet ? t('subjects.deleteUsage', deleteSheet) : undefined}
+        options={deleteOptions}
+        onClose={() => setDeleteSheet(null)}
+      />
     </ScrollView>
   );
 }

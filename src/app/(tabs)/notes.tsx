@@ -1,20 +1,27 @@
-import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { listNotes, searchNotes } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
-import { fonts, minTouchSize, useTheme } from '@/shared/theme';
-import { ChoiceChips, EmptyState, Fab, Screen, SectionHeader, SubjectDot } from '@/shared/ui';
+import { useTheme } from '@/shared/theme';
+import {
+  ChoiceChips,
+  EmptyState,
+  Fab,
+  Screen,
+  SearchInput,
+  SectionHeader,
+  SubjectDot,
+} from '@/shared/ui';
 
 export default function NotesScreen() {
   const { t } = useTranslation();
-  const { colors, radius, spacing } = useTheme();
+  const { spacing } = useTheme();
   const [query, setQuery] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const { subjects, byId } = useSubjects();
@@ -45,37 +52,7 @@ export default function NotesScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Screen title={t('notes.title')}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: spacing.sm,
-            minHeight: minTouchSize + 4,
-            borderRadius: radius.md,
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            paddingHorizontal: spacing.md,
-          }}
-        >
-          <Feather name="search" size={18} color={colors.muted} />
-          <TextInput
-            accessibilityLabel={t('notes.search')}
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('notes.search')}
-            placeholderTextColor={colors.muted}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-            style={{
-              flex: 1,
-              color: colors.text,
-              fontFamily: fonts.body,
-              fontSize: 16,
-              minHeight: minTouchSize,
-            }}
-          />
-        </View>
+        <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
         {subjects.length > 0 ? (
           <ChoiceChips
             scroll
