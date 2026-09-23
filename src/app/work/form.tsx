@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ReminderField } from '@/components/ReminderField';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -54,6 +55,7 @@ export default function WorkFormScreen() {
     dueTime: null,
     priority: 'normal',
     status: 'todo',
+    reminderAt: null,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -143,6 +145,12 @@ export default function WorkFormScreen() {
         value={form.dueTime ?? null}
         onChange={(dueTime) => set({ dueTime })}
         error={errors.dueTime}
+      />
+      <ReminderField
+        dueDate={form.dueDate}
+        value={form.reminderAt ?? null}
+        onChange={(reminderAt) => set({ reminderAt })}
+        error={errors.reminderAt}
       />
       <ChoiceChips
         label={t('work.priority')}

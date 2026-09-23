@@ -68,6 +68,7 @@ const series: CourseSeries = {
   startTime: '09:00',
   endTime: '11:00',
   description: null,
+  reminderMinutes: null,
 };
 const work = (over: Partial<WorkItem>): WorkItem => ({
   id: 'w',
@@ -80,6 +81,7 @@ const work = (over: Partial<WorkItem>): WorkItem => ({
   priority: 'normal',
   status: 'todo',
   completedAt: null,
+  reminderAt: null,
   ...over,
 });
 const exam = (id: string, date: string): Exam => ({
@@ -91,6 +93,8 @@ const exam = (id: string, date: string): Exam => ({
   durationMinutes: null,
   room: null,
   description: null,
+  reminderDays: [],
+  reminderTime: '09:00',
 });
 
 describe('Aujourd’hui (§7–11)', () => {

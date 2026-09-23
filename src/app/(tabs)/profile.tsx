@@ -50,6 +50,16 @@ export default function ProfileScreen() {
         />
       </Card>
 
+      <SectionHeader title={t('profile.settings')} />
+      <Card>
+        <ListRow
+          title={t('profile.settings')}
+          subtitle={t('profile.settingsHint')}
+          leading={<IconBadge icon="settings" />}
+          onPress={() => router.push('/settings')}
+        />
+      </Card>
+
       <AppText variant="caption" color="muted" style={{ textAlign: 'center' }}>
         {t('profile.version', { version: Constants.expoConfig?.version ?? '' })}
       </AppText>

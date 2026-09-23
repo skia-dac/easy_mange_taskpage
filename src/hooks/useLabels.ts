@@ -15,6 +15,12 @@ export function useLabels() {
     status: (v: WorkStatus) => t(`status.${v}`),
     weekday: (n: number, style: 'short' | 'long' = 'long') => weekdayName(n, lang, style),
     duration: formatDuration,
+    reminderMinutes: (m: number) =>
+      m === 0
+        ? t('reminder.none')
+        : m === 60
+          ? t('reminder.hour')
+          : t('reminder.minutes', { count: m }),
     countdown: (c: Countdown) =>
       c.kind === 'inDays' ? t('countdown.inDays', { count: c.days }) : t(`countdown.${c.kind}`),
   };

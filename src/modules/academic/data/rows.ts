@@ -55,6 +55,7 @@ export type CourseSeriesRow = {
   valid_until: string;
   recurrence: string;
   description: string | null;
+  reminder_minutes: number | null;
 };
 
 export const toCourseSeries = (r: CourseSeriesRow): CourseSeries => ({
@@ -72,6 +73,7 @@ export const toCourseSeries = (r: CourseSeriesRow): CourseSeries => ({
   validUntil: r.valid_until,
   recurrence: r.recurrence as Recurrence,
   description: r.description,
+  reminderMinutes: r.reminder_minutes,
 });
 
 export type ExamRow = {
@@ -83,7 +85,18 @@ export type ExamRow = {
   duration_minutes: number | null;
   room: string | null;
   description: string | null;
+  reminder_days: string;
+  reminder_time: string;
 };
+
+function parseDays(json: string): number[] {
+  try {
+    const v: unknown = JSON.parse(json);
+    return Array.isArray(v) ? v.filter((n): n is number => typeof n === 'number') : [];
+  } catch {
+    return [];
+  }
+}
 
 export const toExam = (r: ExamRow): Exam => ({
   id: r.id,
@@ -94,6 +107,8 @@ export const toExam = (r: ExamRow): Exam => ({
   durationMinutes: r.duration_minutes,
   room: r.room,
   description: r.description,
+  reminderDays: parseDays(r.reminder_days),
+  reminderTime: r.reminder_time,
 });
 
 export type CourseExceptionRow = {

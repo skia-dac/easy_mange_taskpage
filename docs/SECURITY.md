@@ -41,6 +41,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Si la base du téléphone vient d'une version plus récente de l'app, on ne la modifie pas.
 - Une migration publiée n'est **jamais** modifiée : on en ajoute une nouvelle.
 
+## 4b. Notifications
+
+- Programmées **sur le téléphone** (aucun serveur, aucune donnée envoyée). Reprogrammées à chaque changement de données, au retour de l'app, et limitées à 60 (limite iOS : 64).
+- Le contenu d'une notification contient seulement la matière, l'heure et le titre de l'élément : pas de description ni de note.
+- Les données attachées à une notification sont vérifiées (`readResponse`) avant d'ouvrir un écran.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

@@ -15,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { LanguageGate } from '@/modules/identity';
+import { NotificationsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -47,6 +49,8 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Suspense fallback={<View style={{ flex: 1, backgroundColor: colors.background }} />}>
         <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
+          <LanguageGate />
+          <NotificationsGate />
           <Stack
             screenOptions={{
               headerBackTitle: t('common.back'),
@@ -59,6 +63,7 @@ export default function RootLayout() {
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
+            <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
           </Stack>
         </SQLiteProvider>
       </Suspense>

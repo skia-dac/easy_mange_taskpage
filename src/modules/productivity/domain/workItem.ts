@@ -21,6 +21,11 @@ export const workItemInputSchema = z.object({
   dueTime: optionalTime,
   priority: z.enum(priorities),
   status: z.enum(workStatuses),
+  /** Date et heure du rappel (ISO), null = aucun (§73, §75). */
+  reminderAt: z.iso
+    .datetime({ offset: true })
+    .nullish()
+    .transform((v) => v ?? null),
 });
 
 export type WorkItemInput = z.input<typeof workItemInputSchema>;

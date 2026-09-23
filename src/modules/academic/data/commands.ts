@@ -85,6 +85,7 @@ function courseValues(input: CourseInput) {
     valid_until: v.validUntil,
     recurrence: v.recurrence,
     description: v.description,
+    reminder_minutes: v.reminderMinutes,
   };
 }
 
@@ -121,6 +122,8 @@ function examValues(input: ExamInput) {
     duration_minutes: v.durationMinutes,
     room: v.room,
     description: v.description,
+    reminder_days: JSON.stringify(v.reminderDays),
+    reminder_time: v.reminderTime,
   };
 }
 

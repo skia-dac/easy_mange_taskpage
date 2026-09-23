@@ -37,6 +37,8 @@ export const courseInputSchema = z
     startTime: time,
     endTime: time,
     description: optionalText(500),
+    /** Minutes avant le cours ; null = réglage général ; 0 = aucun. */
+    reminderMinutes: z.number().int().min(0).max(1440).nullish(),
   })
   .superRefine((c, ctx) => {
     if (timeToMinutes(c.endTime) <= timeToMinutes(c.startTime)) {
@@ -66,6 +68,7 @@ export const courseInputSchema = z
       startTime: c.startTime,
       endTime: c.endTime,
       description: c.description,
+      reminderMinutes: c.reminderMinutes ?? null,
     };
   });
 

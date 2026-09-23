@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { daysBetween, type IsoDate } from '@/shared/dates';
-import { isoDate, optionalText, optionalTime, requiredId } from '@/shared/validation';
+import { isoDate, optionalText, optionalTime, requiredId, time } from '@/shared/validation';
 
 /** Règle 6 : un examen a obligatoirement une matière et une date. */
 export const examInputSchema = z.object({
@@ -18,7 +18,12 @@ export const examInputSchema = z.object({
     .transform((v) => v ?? null),
   room: optionalText(40),
   description: optionalText(1000),
+  /** Jours avant l'examen où envoyer un rappel (§74), ex. [7, 1]. */
+  reminderDays: z.array(z.number().int().min(0).max(60)).default([]),
+  reminderTime: time.default('09:00'),
 });
+
+export const examReminderOptions = [7, 3, 1] as const;
 
 export type ExamInput = z.input<typeof examInputSchema>;
 export type Exam = z.output<typeof examInputSchema> & { id: string };

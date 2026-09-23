@@ -5,12 +5,20 @@ import { View } from 'react-native';
 
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useSubjects } from '@/hooks/useSubjects';
-import { createExam, deleteExam, getExam, updateExam, type ExamInput } from '@/modules/academic';
+import {
+  createExam,
+  deleteExam,
+  examReminderOptions,
+  getExam,
+  updateExam,
+  type ExamInput,
+} from '@/modules/academic';
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
 import {
+  ChoiceChips,
   confirmDestructive,
   DateTimeField,
   FormScreen,
@@ -37,6 +45,8 @@ export default function ExamFormScreen() {
     duration: '',
     room: '',
     description: '',
+    reminderDays: [7, 1],
+    reminderTime: '09:00',
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -157,6 +167,31 @@ export default function ExamFormScreen() {
           />
         </View>
       </View>
+      <ChoiceChips
+        label={t('reminder.examDays')}
+        options={examReminderOptions.map((d) => ({
+          value: d,
+          label: t('reminder.daysBefore', { count: d }),
+        }))}
+        selected={form.reminderDays ?? []}
+        onToggle={(d) =>
+          set({
+            reminderDays: (form.reminderDays ?? []).includes(d)
+              ? (form.reminderDays ?? []).filter((x) => x !== d)
+              : [...(form.reminderDays ?? []), d].sort((a, b) => b - a),
+          })
+        }
+      />
+      {(form.reminderDays ?? []).length > 0 ? (
+        <DateTimeField
+          label={t('reminder.examTime')}
+          mode="time"
+          required
+          value={form.reminderTime ?? '09:00'}
+          onChange={(v) => set({ reminderTime: v ?? '09:00' })}
+          error={errors.reminderTime}
+        />
+      ) : null}
       <TextField
         label={t('exams.description')}
         value={form.description ?? ''}

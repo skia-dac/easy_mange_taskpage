@@ -22,6 +22,7 @@ const base: CourseSeries = {
   startTime: '08:00',
   endTime: '10:00',
   description: null,
+  reminderMinutes: null,
 };
 
 describe('occurrencesInRange — cours récurrents', () => {

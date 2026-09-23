@@ -11,6 +11,7 @@ export type WorkItemRow = {
   priority: string;
   status: string;
   completed_at: string | null;
+  reminder_at: string | null;
 };
 
 export const toWorkItem =
@@ -26,6 +27,7 @@ export const toWorkItem =
     priority: r.priority as Priority,
     status: r.status as WorkStatus,
     completedAt: r.completed_at,
+    reminderAt: r.reminder_at,
   });
 
 export type PersonalEventRow = {

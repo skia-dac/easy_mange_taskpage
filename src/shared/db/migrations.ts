@@ -160,4 +160,15 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_off_periods_dates ON off_periods (start_date, end_date);
     `,
   },
+  {
+    version: 4,
+    name: 'phase 3 : rappels',
+    sql: `
+      ALTER TABLE course_series ADD COLUMN reminder_minutes INTEGER;
+      ALTER TABLE assignments ADD COLUMN reminder_at TEXT;
+      ALTER TABLE tasks ADD COLUMN reminder_at TEXT;
+      ALTER TABLE exams ADD COLUMN reminder_days TEXT NOT NULL DEFAULT '[]';
+      ALTER TABLE exams ADD COLUMN reminder_time TEXT NOT NULL DEFAULT '09:00';
+    `,
+  },
 ];

@@ -21,6 +21,7 @@ function workValues(input: WorkItemInput) {
     priority: v.priority,
     status: v.status,
     completed_at: v.status === 'done' ? nowIso() : null,
+    reminder_at: v.reminderAt,
   };
 }
 

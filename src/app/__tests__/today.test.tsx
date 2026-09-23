@@ -37,6 +37,7 @@ const series: CourseSeries = {
   startTime: '09:00',
   endTime: '11:00',
   description: null,
+  reminderMinutes: null,
 };
 const late: WorkItem = {
   id: 'w1',
@@ -49,6 +50,7 @@ const late: WorkItem = {
   priority: 'normal',
   status: 'todo',
   completedAt: null,
+  reminderAt: null,
 };
 const exam: Exam = {
   id: 'e1',
@@ -59,6 +61,8 @@ const exam: Exam = {
   durationMinutes: null,
   room: null,
   description: null,
+  reminderDays: [],
+  reminderTime: '09:00',
 };
 
 let mockAgenda: TodayData = { series: [series], exams: [exam], work: [late], events: [] };

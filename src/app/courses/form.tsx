@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
+import { courseReminderOptions } from '@/modules/identity';
 import {
   activeTimetable,
   courseInputSchema,
@@ -74,6 +75,7 @@ export default function CourseFormScreen() {
     startTime: '08:00',
     endTime: '10:00',
     description: '',
+    reminderMinutes: null,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -325,6 +327,18 @@ export default function CourseFormScreen() {
           />
         </View>
       </View>
+      <ChoiceChips
+        label={t('reminder.label')}
+        options={[
+          { value: null, label: t('reminder.default') },
+          ...courseReminderOptions.map((m) => ({
+            value: m as number | null,
+            label: labels.reminderMinutes(m),
+          })),
+        ]}
+        selected={[form.reminderMinutes ?? null]}
+        onToggle={(reminderMinutes) => set({ reminderMinutes })}
+      />
       <TextField
         label={t('courses.titleField')}
         value={form.title ?? ''}

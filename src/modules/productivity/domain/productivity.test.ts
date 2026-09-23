@@ -14,6 +14,7 @@ const item = (over: Partial<WorkItem> = {}): WorkItem => ({
   priority: 'normal',
   status: 'todo',
   completedAt: null,
+  reminderAt: null,
   ...over,
 });
 

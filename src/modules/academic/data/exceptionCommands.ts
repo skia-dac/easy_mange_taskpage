@@ -78,6 +78,7 @@ function seriesValues(input: CourseInput): Values {
     valid_until: v.validUntil,
     recurrence: v.recurrence,
     description: v.description,
+    reminder_minutes: v.reminderMinutes,
   };
 }
 

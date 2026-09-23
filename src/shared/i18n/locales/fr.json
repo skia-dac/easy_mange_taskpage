@@ -145,7 +145,9 @@
     "timetableHint": "Tes emplois du temps et tes cours",
     "emptySubjects": "Ajoute ta première matière pour commencer.",
     "addSubject": "Ajouter une matière",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "settings": "Réglages",
+    "settingsHint": "Notifications, langue"
   },
   "subjects": {
     "title": "Mes matières",
@@ -346,5 +348,55 @@
     "emptyHint": "Ajoute tes vacances et jours fériés : les cours concernés seront suspendus.",
     "suspended": "Cours suspendus",
     "notSuspended": "Cours maintenus"
+  },
+  "notif": {
+    "channel": "Rappels",
+    "courseTitle": "{{subject}} bientôt",
+    "courseBody": "Dans {{minutes}} min · {{time}} {{room}}",
+    "endTitle": "Cours terminé : {{subject}}",
+    "endBody": "Quelque chose à ajouter ?",
+    "actionAssignment": "Ajouter un devoir",
+    "actionTask": "Ajouter une tâche",
+    "actionNothing": "Rien à ajouter",
+    "taskTitle": "Rappel de tâche",
+    "assignmentTitle": "Rappel de devoir",
+    "workBody": "{{title}} · pour le {{date}} {{time}}",
+    "examTitle": "Examen : {{subject}}",
+    "examBody": "Dans {{days}} jour(s) · {{time}}",
+    "examToday": "Aujourd’hui · {{time}}"
+  },
+  "settings": {
+    "title": "Réglages",
+    "notifications": "Notifications",
+    "permissionOff": "Les notifications sont désactivées pour MySky. Active-les dans les Réglages de ton téléphone pour recevoir tes rappels.",
+    "openSettings": "Ouvrir les réglages du téléphone",
+    "allow": "Autoriser les notifications",
+    "courses": "Rappels de cours",
+    "courseMinutes": "Avant chaque cours",
+    "assignments": "Rappels de devoirs",
+    "tasks": "Rappels de tâches",
+    "exams": "Rappels d’examens",
+    "endOfCourse": "Fin de cours",
+    "endOfCourseHint": "« Quelque chose à ajouter ? » à la fin de chaque cours",
+    "language": "Langue",
+    "langAuto": "Automatique",
+    "langFr": "Français",
+    "langEn": "Anglais",
+    "scheduled": "{{count}} rappel(s) programmé(s)"
+  },
+  "reminder": {
+    "none": "Aucun",
+    "default": "Par défaut",
+    "minutes": "{{count}} min",
+    "hour": "1 h",
+    "label": "Rappel",
+    "dayBefore": "La veille à 18:00",
+    "sameDay": "Le jour même à 09:00",
+    "custom": "Personnalisé",
+    "customDate": "Date du rappel",
+    "customTime": "Heure du rappel",
+    "examDays": "Rappels avant l’examen",
+    "daysBefore": "{{count}} jour(s) avant",
+    "examTime": "Heure des rappels"
   }
 }
