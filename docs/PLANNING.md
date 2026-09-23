@@ -200,6 +200,10 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 
 **Rule: all colours are editable in ONE place.** `src/shared/theme/colors.ts` holds named tokens (`primary`, `primarySoft`, `background`, `surface`, `text`, `muted`, `warning`, `danger`, `success`, plus a light and a dark set, and the subject palette). Screens and components never contain a hex code: they read `theme.colors.*`. A lint rule (no colour literals outside `theme/`) enforces it.
 
+## 5c. Future versions
+
+Ideas kept out of the MVP are described in [`VERSION_2.md`](VERSION_2.md). Main one: a school or teacher publishes **courses and a class timetable** from the app, with or without an account, and shares a **code**; students enter the code and receive them automatically.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16+, Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
