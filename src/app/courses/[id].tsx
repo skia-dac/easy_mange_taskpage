@@ -14,7 +14,7 @@ import {
   getCourseSeries,
   restoreOccurrence,
 } from '@/modules/academic';
-import { fromIsoDate } from '@/shared/dates';
+import { fromIsoDate, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDate, formatLongDate, formatShortDate } from '@/shared/format';
@@ -219,6 +219,20 @@ export default function CourseDetailScreen() {
           />
         </Card>
       ) : null}
+      <Button
+        label={t('notes.takeNotes')}
+        onPress={() =>
+          router.push({
+            pathname: '/notes/[id]',
+            params: {
+              id: 'new',
+              subjectId: c.subjectId,
+              courseSeriesId: c.id,
+              courseDate: date ?? toIsoDate(new Date()),
+            },
+          })
+        }
+      />
       <Button
         label={t('subjects.addAssignment')}
         onPress={() =>

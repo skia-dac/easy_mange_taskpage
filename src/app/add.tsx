@@ -24,6 +24,13 @@ export default function AddScreen() {
 
   const tiles: Tile[] = [
     {
+      label: t('add.note'),
+      icon: 'file-text',
+      color: 'primary',
+      background: 'primarySoft',
+      href: { pathname: '/notes/[id]', params: { id: 'new' } },
+    },
+    {
       label: t('add.assignment'),
       icon: 'book',
       color: 'primary',

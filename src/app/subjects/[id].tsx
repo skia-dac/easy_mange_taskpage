@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
+import { NoteCard } from '@/components/NoteCard';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf, getSubject, listCourseSeries, listExams } from '@/modules/academic';
-import { compareWorkItems, listWorkItems } from '@/modules/productivity';
+import { compareWorkItems, listNotes, listWorkItems } from '@/modules/productivity';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
@@ -39,6 +40,7 @@ export default function SubjectDetailScreen() {
     [id],
   );
   const exams = useLiveQuery((d) => listExams(d, { subjectId: id }), ['exams'], [id]);
+  const notes = useLiveQuery((d) => listNotes(d, { subjectId: id }), ['notes'], [id]);
   const work = useLiveQuery(
     async (d) => {
       const [tasks, assignments] = await Promise.all([
@@ -168,6 +170,26 @@ export default function SubjectDetailScreen() {
           />
         ))}
       </Card>
+
+      <SectionHeader
+        title={t('subjects.notes')}
+        action={{
+          label: t('notes.takeNotes'),
+          onPress: () =>
+            router.push({ pathname: '/notes/[id]', params: { id: 'new', subjectId: s.id } }),
+        }}
+      />
+      {(notes.data ?? []).length === 0 ? (
+        <AppText color="muted">{t('subjects.noNotes')}</AppText>
+      ) : (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+          {(notes.data ?? []).slice(0, 4).map((n) => (
+            <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
+              <NoteCard note={n} subject={s} />
+            </View>
+          ))}
+        </View>
+      )}
 
       <SectionHeader
         title={t('subjects.work')}

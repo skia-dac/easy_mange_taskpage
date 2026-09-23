@@ -67,7 +67,7 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 | Forms | react-hook-form + zod | The same zod schemas validate forms and import rows. |
 | Dates | date-fns + date-fns-tz, rrule for recurrence | |
 | Calendar UI | `@howljs/calendar-kit` (day/week) + `react-native-calendars` (month/agenda) | |
-| Rich notes | **10tap-editor** (TipTap-based) | Covers titles, bold, italic, lists, checklists. Store content as JSON + plain text for search. |
+| Rich notes | Light markup (`# titre`, `**gras**`, `_italique_`, `- liste`, `1. liste`, `[ ] case`) + toolbar, rendered natively | Works in Expo Go (no native editor needed), plain text is searchable and syncs as text. 10tap-editor can replace it later if a dev build is adopted. |
 | Notifications | expo-notifications (local), with action buttons for end of course | Rolling scheduling window of about 60 notifications, refilled on app open and in background. |
 | Files | expo-document-picker, expo-image-picker, expo-file-system | |
 | Import analysis | `ai-import` Edge Function → vision LLM, returns strict JSON with per-field confidence | Produces an `ImportedTimetableDraft` only. It never creates `CourseSeries` (arch. §8). |
@@ -161,7 +161,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 | **2. Accounts + sync** | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
 | **3. Notifications** ✅ done | Course/homework/task/exam reminders, end-of-course actions with prefilled forms, settings, rolling scheduler | Acceptance criteria 17–19 |
 | **4. Advanced timetable** ✅ done (before 2 and 3: no server needed) | Per-occurrence edits (3 options), cancellations, holidays/days off with suspension | Criteria 6, rule 8 |
-| **5. Notes** | Rich editor, attachments (offline queue), favorites, "take notes" from a course | Criteria 9–10 |
+| **5. Notes** ✅ done (light markup editor, Expo Go compatible; rich editor deferred) | Rich editor, attachments (offline queue), favorites, "take notes" from a course | Criteria 9–10 |
 | **6. Import** | Pick PDF/image → Edge Function → editable preview with uncertain-field flags → duplicate check → create subjects + courses | Criteria 7, 8, 23, 24 |
 | **7. Search + polish** | Global FTS search, error messages, accessibility, store assets, TestFlight / Play internal testing | Launch candidate |
 

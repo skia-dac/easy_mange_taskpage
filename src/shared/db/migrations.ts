@@ -171,4 +171,32 @@ export const migrations: readonly Migration[] = [
       ALTER TABLE exams ADD COLUMN reminder_time TEXT NOT NULL DEFAULT '09:00';
     `,
   },
+  {
+    version: 5,
+    name: 'phase 5 : notes et pièces jointes',
+    sql: `
+      CREATE TABLE notes (${SYNC_COLUMNS},
+        title TEXT NOT NULL,
+        content TEXT NOT NULL DEFAULT '',
+        subject_id TEXT REFERENCES subjects (id),
+        course_series_id TEXT REFERENCES course_series (id),
+        course_date TEXT,
+        is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1))
+      );
+      CREATE INDEX idx_notes_subject ON notes (subject_id);
+      CREATE INDEX idx_notes_updated ON notes (updated_at);
+
+      CREATE TABLE attachments (${SYNC_COLUMNS},
+        note_id TEXT NOT NULL REFERENCES notes (id),
+        kind TEXT NOT NULL CHECK (kind IN ('image', 'file')),
+        name TEXT NOT NULL,
+        mime_type TEXT,
+        size INTEGER,
+        local_path TEXT NOT NULL,
+        remote_path TEXT,
+        upload_status TEXT NOT NULL DEFAULT 'pending' CHECK (upload_status IN ('pending', 'uploaded', 'failed'))
+      );
+      CREATE INDEX idx_attachments_note ON attachments (note_id);
+    `,
+  },
 ];

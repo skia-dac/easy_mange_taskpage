@@ -1,21 +1,31 @@
 import { listCourseSeries, listExams, removeSubjectAndCourses } from '@/modules/academic';
 import {
+  countNotesForSubject,
   countWorkForSubject,
+  deleteNotesOfSubject,
   deleteWorkOfSubject,
+  detachNotesFromSubject,
   detachWorkFromSubject,
 } from '@/modules/productivity';
 import { write, type Db } from '@/shared/db';
 
-export type SubjectUsage = { courses: number; exams: number; tasks: number; assignments: number };
+export type SubjectUsage = {
+  courses: number;
+  exams: number;
+  tasks: number;
+  assignments: number;
+  notes: number;
+};
 
 /** Ce qui est lié à une matière : affiché AVANT de la supprimer (spécification §16). */
 export async function subjectUsage(db: Db, subjectId: string): Promise<SubjectUsage> {
-  const [series, exams, work] = await Promise.all([
+  const [series, exams, work, notes] = await Promise.all([
     listCourseSeries(db, { subjectId }),
     listExams(db, { subjectId }),
     countWorkForSubject(db, subjectId),
+    countNotesForSubject(db, subjectId),
   ]);
-  return { courses: series.length, exams: exams.length, ...work };
+  return { courses: series.length, exams: exams.length, ...work, notes };
 }
 
 /**
@@ -31,8 +41,13 @@ export async function deleteSubject(db: Db, subjectId: string, mode: 'keepWork' 
       [subjectId],
     );
     for (const e of exams) await w.softDelete('exams', e.id);
-    if (mode === 'keepWork') await detachWorkFromSubject(w, subjectId);
-    else await deleteWorkOfSubject(w, subjectId);
+    if (mode === 'keepWork') {
+      await detachWorkFromSubject(w, subjectId);
+      await detachNotesFromSubject(w, subjectId);
+    } else {
+      await deleteWorkOfSubject(w, subjectId);
+      await deleteNotesOfSubject(w, subjectId);
+    }
     await removeSubjectAndCourses(w, subjectId);
   });
 }

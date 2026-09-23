@@ -136,6 +136,7 @@ describe('suppression d’une matière (§16)', () => {
       exams: 1,
       tasks: 1,
       assignments: 1,
+      notes: 0,
     });
   });
 

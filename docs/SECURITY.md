@@ -47,6 +47,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Le contenu d'une notification contient seulement la matière, l'heure et le titre de l'élément : pas de description ni de note.
 - Les données attachées à une notification sont vérifiées (`readResponse`) avant d'ouvrir un écran.
 
+## 4c. Pièces jointes
+
+- Copiées dans le dossier privé de l'app (`Paths.document/attachments/<note>/`), inaccessible aux autres apps. Le chemin stocké est **relatif** (le chemin absolu change à chaque mise à jour iOS).
+- Taille maximale : 25 Mo par fichier. Le nom d'origine est gardé pour l'affichage seulement ; le fichier est renommé avec un identifiant.
+- Supprimer une note ou une pièce jointe supprime aussi le fichier local.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.
