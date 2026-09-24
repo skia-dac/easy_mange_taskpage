@@ -478,7 +478,9 @@
     "quiet": "silencieux",
     "week": "Semaine",
     "weekStart": "Premier jour de la semaine",
-    "weekStartHint": "Change l’ordre des jours dans le calendrier"
+    "weekStartHint": "Change l’ordre des jours dans le calendrier",
+    "widgets": "Widgets",
+    "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui » ou « Tâches » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go."
   },
   "reminder": {
     "none": "Aucun",
@@ -646,5 +648,19 @@
     "message": "Déverrouille pour voir tes cours, notes et tâches.",
     "unlock": "Déverrouiller",
     "prompt": "Déverrouiller MySky"
+  },
+  "widget": {
+    "nextCourse": "Prochain cours",
+    "noCourse": "Pas de cours aujourd’hui",
+    "ongoing": "En cours",
+    "inMinutes": "dans {{count}} min",
+    "inHours": "dans {{hours}} h {{minutes}}",
+    "today": "Aujourd’hui",
+    "tasks": "À faire",
+    "noTask": "Rien à faire, profite !",
+    "overdue": "En retard",
+    "exams": "Examens",
+    "cancelled": "Annulé",
+    "more": "+{{count}}"
   }
 }

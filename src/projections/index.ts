@@ -5,3 +5,13 @@ export type { NextCourse, TodayData, TodayView } from './today';
 export { useAgendaData } from './useAgendaData';
 export { weekStats } from './stats';
 export type { WeekStats } from './stats';
+export { buildWidgetData, buildWidgetTimeline, pickWidgetTheme, WIDGET_URL } from './widget';
+export type {
+  WidgetCourse,
+  WidgetData,
+  WidgetLabels,
+  WidgetTask,
+  WidgetTexts,
+  WidgetTheme,
+  WidgetTimelineEntry,
+} from './widget';

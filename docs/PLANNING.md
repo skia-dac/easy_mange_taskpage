@@ -230,7 +230,21 @@ Requested by the product owner after the MVP walk-through. All local, no account
 | App lock | Réglages › Confidentialité | `expo-local-authentication` (Face ID / Touch ID / passcode). Locks at launch and after 30 s in background. Only offered when biometrics or a passcode are set up. |
 | Focus mode | Réglages › Mode focus | Two switches: no reminders during a class (end-of-class kept), no reminders during a study session (session end kept). Applied in `planReminders` (`applyFocus`), tested. |
 
-**Home-screen widget (next course, today's tasks) — not done, needs a development build.** A widget is native code (WidgetKit on iOS, Glance/AppWidget on Android) that Expo Go cannot run. Path when ready: `npx expo prebuild`-free config plugin such as `@bacons/apple-targets` for the iOS widget, an Android `AppWidgetProvider` via a config plugin, a shared JSON written by the app (next course, today's tasks) in an App Group, and `eas build --profile development` on a paid Apple developer account for iPhone testing. Estimated 2–3 days once the dev build works.
+### Home-screen widgets (24 Sep 2026)
+
+Three widgets, same content on both platforms, built in TypeScript only (no Swift/Kotlin written by hand):
+
+| Widget | iPhone (`expo-widgets`, WidgetKit) | Android (`react-native-android-widget`) |
+|---|---|---|
+| **Prochain cours** | small, medium, Lock Screen rectangular + inline | 2×2, resizable |
+| **Aujourd'hui** (classes of the day, then tasks and exams) | medium, large | 4×3, resizable |
+| **Tâches** (due today + overdue) | small, medium, large | 2×2, resizable |
+
+How it works: `src/projections/widget.ts` turns the agenda into plain, already-translated props (`buildWidgetData`) and, for iOS, a timeline with one entry at each class start/end and at midnight (`buildWidgetTimeline`), so "next class" moves on without the app running. `WidgetsGate` (root layout) pushes the data on every data change and when the app comes to the foreground. On Android the app also writes `widget-snapshot.json` in its documents folder; the background task handler (`index.ts` → `widgetTaskHandler`) re-renders from it every 30 min. Tapping a widget opens the app (`mysky://`). Colours come from `colors.ts` through props (light and dark variants), never hard-coded in the widgets.
+
+**Not testable in Expo Go.** Widgets are native extensions: they need a development build (`eas build --profile development`) and, on iPhone, an Apple developer account. In Expo Go the widget modules are absent; `syncWidgets` catches the error and logs it, the app keeps working. Layouts are typechecked and linted, and the data projection is unit-tested, but the rendering itself has not been seen on a device yet: expect a round of visual tuning (spacing, sizes) after the first dev build.
+
+Ideas for later: a « Révision » widget with the running timer (Live Activity on iPhone), a « Semaine » widget with the 7-day study chart, a configurable widget showing one chosen subject.
 
 ## 6. Open questions for the product owner
 

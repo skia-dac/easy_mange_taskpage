@@ -74,6 +74,11 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - **Export .ics et PDF** : fichiers écrits dans le **cache** de l'app puis passés à la feuille de partage du système ; l'utilisateur choisit où ils vont. Tout le texte est échappé (RFC 5545 pour l'ics, HTML pour le PDF) ; aucune ressource externe dans le PDF.
 - **Sessions de révision** : seuls la matière, l'heure de début/fin et la durée sont enregistrés. Le mode focus ne touche qu'aux notifications de l'app, jamais aux réglages du téléphone.
 
+## 4g. Widgets
+
+- Les widgets reçoivent uniquement des **textes déjà calculés** (titres de cours, heures, salles, titres de tâches) ; aucun accès à la base, aux notes ni aux pièces jointes. Sur iPhone les données vivent dans le groupe d'apps `group.com.skiadac.mysky`, sur Android dans `widget-snapshot.json` du dossier privé de l'app.
+- Le contenu d'un widget est visible sur l'écran d'accueil et l'écran verrouillé : il n'affiche jamais de description ni de contenu de note.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

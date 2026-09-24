@@ -16,7 +16,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppearanceProvider, LanguageGate } from '@/modules/identity';
-import { BackupGate, LockGate, NotificationsGate } from '@/modules/platform';
+import { BackupGate, LockGate, NotificationsGate, WidgetsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -50,6 +50,7 @@ export default function RootLayout() {
           <LanguageGate />
           <NotificationsGate />
           <BackupGate />
+          <WidgetsGate />
           <AppearanceProvider>
             <ThemedStack />
             <LockGate />

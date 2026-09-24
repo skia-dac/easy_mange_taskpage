@@ -360,6 +360,13 @@ export default function SettingsScreen() {
         ]}
       />
 
+      <SectionHeader title={t('settings.widgets')} />
+      <Card>
+        <AppText variant="caption" color="muted">
+          {t('settings.widgetsHint')}
+        </AppText>
+      </Card>
+
       <SectionHeader title={t('data.title')} />
       <Card>
         <View style={{ gap: spacing.md }}>

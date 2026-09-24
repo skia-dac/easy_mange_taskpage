@@ -76,6 +76,83 @@
         {
           "faceIDPermission": "MySky utilise Face ID pour déverrouiller l’application."
         }
+      ],
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.com.skiadac.mysky",
+          "widgets": [
+            {
+              "name": "NextCourseWidget",
+              "displayName": "Prochain cours",
+              "description": "Ton prochain cours, son heure et sa salle.",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium",
+                  "accessoryRectangular",
+                  "accessoryInline"
+                ]
+              }
+            },
+            {
+              "name": "TodayWidget",
+              "displayName": "Aujourd’hui",
+              "description": "Tes cours du jour, puis tes tâches et examens proches.",
+              "ios": {
+                "supportedFamilies": ["systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "TasksWidget",
+              "displayName": "Tâches",
+              "description": "Ce qu’il te reste à faire aujourd’hui et en retard.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            }
+          ]
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "NextCourse",
+              "label": "MySky · Prochain cours",
+              "description": "Ton prochain cours, son heure et sa salle.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Today",
+              "label": "MySky · Aujourd’hui",
+              "description": "Tes cours du jour, puis tes tâches et examens proches.",
+              "minWidth": "320dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Tasks",
+              "label": "MySky · Tâches",
+              "description": "Ce qu’il te reste à faire aujourd’hui et en retard.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "scheme": "mysky",

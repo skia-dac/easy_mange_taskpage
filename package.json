@@ -1,10 +1,11 @@
 {
   "name": "mysky",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
+    "@expo/ui": "~57.0.19",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
     "date-fns": "^4.4.0",
@@ -29,11 +30,13 @@
     "expo-sqlite": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
+    "expo-widgets": "~57.0.20",
     "i18next": "^26.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-i18next": "^17.0.15",
     "react-native": "0.86.3",
+    "react-native-android-widget": "^0.22.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "zod": "^4.6.5"
@@ -70,7 +73,11 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^expo-widgets$": "<rootDir>/src/test/mocks/expoWidgets.ts",
+      "^@expo/ui/swift-ui$": "<rootDir>/src/test/mocks/swiftUi.ts",
+      "^@expo/ui/swift-ui/modifiers$": "<rootDir>/src/test/mocks/swiftUiModifiers.ts",
+      "^react-native-android-widget$": "<rootDir>/src/test/mocks/androidWidget.ts"
     },
     "testPathIgnorePatterns": [
       "/node_modules/",

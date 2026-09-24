@@ -478,7 +478,9 @@
     "quiet": "silent",
     "week": "Week",
     "weekStart": "First day of the week",
-    "weekStartHint": "Changes the order of days in the calendar"
+    "weekStartHint": "Changes the order of days in the calendar",
+    "widgets": "Widgets",
+    "widgetsHint": "Add “Next class”, “Today” or “Tasks” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go."
   },
   "reminder": {
     "none": "None",
@@ -646,5 +648,19 @@
     "message": "Unlock to see your classes, notes and tasks.",
     "unlock": "Unlock",
     "prompt": "Unlock MySky"
+  },
+  "widget": {
+    "nextCourse": "Next class",
+    "noCourse": "No classes today",
+    "ongoing": "In progress",
+    "inMinutes": "in {{count}} min",
+    "inHours": "in {{hours}} h {{minutes}}",
+    "today": "Today",
+    "tasks": "To do",
+    "noTask": "Nothing to do, enjoy!",
+    "overdue": "Overdue",
+    "exams": "Exams",
+    "cancelled": "Cancelled",
+    "more": "+{{count}}"
   }
 }
