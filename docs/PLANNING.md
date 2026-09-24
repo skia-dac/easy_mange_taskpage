@@ -251,6 +251,19 @@ How it works: `src/projections/widget.ts` turns the agenda, study sessions and g
 
 **Not testable in Expo Go.** Widgets and Live Activities are native extensions: they need a development build (`eas build --profile development`) and, on iPhone, an Apple developer account. In Expo Go the widget modules are absent; `syncWidgets` catches the error and logs it, the app keeps working. Layouts are typechecked and linted, both config plugins were verified with `expo prebuild` (10 Android providers + configuration activity, 10 Swift widget files + app group on iOS), and the data projection is unit-tested, but the rendering itself has not been seen on a device yet: expect a round of visual tuning (spacing, sizes) after the first dev build. Known Android limit: the « Révision » widget cannot tick every second (widgets there refresh on events only), so it shows the end time; iPhone gets the live countdown through the Live Activity.
 
+## 5f. Proposed — habit board « Mes habitudes » (not built yet, 24 Sep 2026)
+
+Requested by the product owner: track daily or weekly habits (go to school, sport, drink water, revise…), tick them each day, and see over time what was respected and what was not, with an **optional** reason when a habit is missed.
+
+Proposed design, waiting for validation:
+
+- **Habit**: name, icon, colour, frequency (every day · chosen weekdays · N times a week), optional daily target (e.g. 8 glasses of water, counted with a "+1" button), optional reminder time.
+- **Daily check-in**: done / not done / skipped for a valid reason (sick, holiday). When a day is missed, a reason can be added (quick chips + free text). Never mandatory.
+- **Board**: "Aujourd'hui" card with today's habits and one-tap check; a full screen with streaks, completion rate per habit (week / month), a month heat-map, and a weekly review "respected / not respected" with the reasons grouped.
+- **Data**: tables `habits` and `habit_logs` (habit, date, count, status, reason) with `SYNC_COLUMNS`, new migration; evolution computed as a projection, never stored.
+- **Links with the rest**: reminders go through the existing planner (focus mode respected); a finished study session can tick a « Réviser » habit automatically; a « Habitudes » widget (interactive tick on iOS 17+).
+- **Scope note**: not in the MVP spec. It stays motivational, not "gamification" (no points, badges or leaderboards, which the spec excludes).
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
