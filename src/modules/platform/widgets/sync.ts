@@ -5,10 +5,59 @@ import type { WidgetData, WidgetTimelineEntry } from '@/projections';
 import { logger } from '@/shared/logger';
 
 import { ANDROID_WIDGETS, renderAndroidWidget } from './android/widgets';
+import ExamsWidget from './ios/ExamsWidget';
+import GradesWidget from './ios/GradesWidget';
+import MonthWidget from './ios/MonthWidget';
 import NextCourseWidget from './ios/NextCourseWidget';
+import QuickAddWidget from './ios/QuickAddWidget';
+import StudyActivity from './ios/StudyActivity';
+import SubjectWidget from './ios/SubjectWidget';
 import TasksWidget from './ios/TasksWidget';
 import TodayWidget from './ios/TodayWidget';
-import { writeWidgetSnapshot } from './snapshot';
+import WeekWidget from './ios/WeekWidget';
+import { readWidgetConfig, writeWidgetSnapshot } from './snapshot';
+
+const IOS_WIDGETS = [
+  NextCourseWidget,
+  TodayWidget,
+  TasksWidget,
+  WeekWidget,
+  SubjectWidget,
+  ExamsWidget,
+  QuickAddWidget,
+  GradesWidget,
+  MonthWidget,
+];
+
+/** Démarre, met à jour ou termine la Live Activity « Révision » selon la session en cours. */
+function syncStudyActivity(current: WidgetData): void {
+  const instances = StudyActivity.getInstances();
+  const study = current.study;
+  const props = study
+    ? {
+        study,
+        labels: {
+          studyRunning: current.labels.studyRunning,
+          breakRunning: current.labels.breakRunning,
+          untilTime: current.labels.untilTime,
+        },
+        light: current.light,
+        dark: current.dark,
+      }
+    : null;
+  if (!props) {
+    for (const i of instances) void i.end('immediate');
+    return;
+  }
+  if (instances.length === 0) {
+    StudyActivity.start(props, current.links.study, new Date(study!.endsAt));
+    return;
+  }
+  instances.forEach((i, idx) => {
+    if (idx === 0) void i.update(props, new Date(study!.endsAt));
+    else void i.end('immediate');
+  });
+}
 
 /**
  * Pousse les données vers les widgets de l'écran d'accueil.
@@ -20,14 +69,19 @@ export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void
   if (!current) return;
   try {
     if (Platform.OS === 'ios') {
-      for (const w of [NextCourseWidget, TodayWidget, TasksWidget]) w.updateTimeline(timeline);
+      for (const w of IOS_WIDGETS) w.updateTimeline(timeline);
+      syncStudyActivity(current);
     } else if (Platform.OS === 'android') {
       writeWidgetSnapshot(current);
+      const config = readWidgetConfig();
       await Promise.all(
         ANDROID_WIDGETS.map((name) =>
           requestWidgetUpdate({
             widgetName: name,
-            renderWidget: () => renderAndroidWidget(name, current),
+            renderWidget: (info) =>
+              renderAndroidWidget(name, current, {
+                subjectId: config[String(info.widgetId)]?.subjectId ?? null,
+              }),
           }),
         ),
       );

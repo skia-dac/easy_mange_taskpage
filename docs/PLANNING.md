@@ -232,19 +232,24 @@ Requested by the product owner after the MVP walk-through. All local, no account
 
 ### Home-screen widgets (24 Sep 2026)
 
-Three widgets, same content on both platforms, built in TypeScript only (no Swift/Kotlin written by hand):
+Ten widgets and one Live Activity, same content on both platforms, built in TypeScript only (no Swift/Kotlin written by hand):
 
-| Widget | iPhone (`expo-widgets`, WidgetKit) | Android (`react-native-android-widget`) |
-|---|---|---|
-| **Prochain cours** | small, medium, Lock Screen rectangular + inline | 2×2, resizable |
-| **Aujourd'hui** (classes of the day, then tasks and exams) | medium, large | 4×3, resizable |
-| **Tâches** (due today + overdue) | small, medium, large | 2×2, resizable |
+| Widget | iPhone (`expo-widgets`, WidgetKit) | Android (`react-native-android-widget`) | Content |
+|---|---|---|---|
+| **Prochain cours** | small, medium, Lock Screen rectangular + inline | 2×2 | Next class, time, room, "in 25 min" / "in progress" |
+| **Aujourd'hui** | medium, large | 4×3 | Classes of the day (cancelled struck through), then tasks and exams |
+| **Tâches** | small, medium, large | 2×2 | Due today + overdue, with counter |
+| **Révision** | **Live Activity** (Lock Screen + Dynamic Island, live countdown) | 2×2 widget (end time + "Start" button) | Running study session or break |
+| **Semaine** | medium, large | 4×2 | Study minutes per day (bars), weekly total, active-day streak |
+| **Matière** | small, medium, **configurable** (long-press → subject name) | 2×2, **configurable** (long-press → pick a subject) | Next class, next due item, next exam, average, open tasks |
+| **Examens** | small, medium | 2×2 | Countdown of the next exams (60 days) |
+| **Notes rapides** | medium | 4×1 | Three buttons: new note, new task, new homework (deep links) |
+| **Moyenne** | small, medium | 2×2 | Overall average, latest grade, per-subject averages |
+| **Mois** | large | 4×4 | Month grid with dots for classes, due items, exams |
 
-How it works: `src/projections/widget.ts` turns the agenda into plain, already-translated props (`buildWidgetData`) and, for iOS, a timeline with one entry at each class start/end and at midnight (`buildWidgetTimeline`), so "next class" moves on without the app running. `WidgetsGate` (root layout) pushes the data on every data change and when the app comes to the foreground. On Android the app also writes `widget-snapshot.json` in its documents folder; the background task handler (`index.ts` → `widgetTaskHandler`) re-renders from it every 30 min. Tapping a widget opens the app (`mysky://`). Colours come from `colors.ts` through props (light and dark variants), never hard-coded in the widgets.
+How it works: `src/projections/widget.ts` turns the agenda, study sessions and grades into plain, already-translated props (`buildWidgetData`, one object shared by every widget) and, for iOS, a timeline with one entry at each class start/end, at the end of the study session and at midnight (`buildWidgetTimeline`), so widgets move on without the app running. `WidgetsGate` (root layout) pushes the data on every data change and when the app comes to the foreground, and starts/updates/ends the Live Activity. On Android the app also writes `widget-snapshot.json` (data) and `widget-config.json` (subject chosen per widget id) in its documents folder; the background task handler and the configuration screen (`index.ts`) work from those files, without opening the database. Tapping a widget opens the app (`mysky://…` deep links: `notes/new`, `work/form?kind=task`, `study`, `grades`, `calendar`). Colours come from `colors.ts` through props (light and dark variants), never hard-coded in the widgets.
 
-**Not testable in Expo Go.** Widgets are native extensions: they need a development build (`eas build --profile development`) and, on iPhone, an Apple developer account. In Expo Go the widget modules are absent; `syncWidgets` catches the error and logs it, the app keeps working. Layouts are typechecked and linted, and the data projection is unit-tested, but the rendering itself has not been seen on a device yet: expect a round of visual tuning (spacing, sizes) after the first dev build.
-
-Ideas for later: a « Révision » widget with the running timer (Live Activity on iPhone), a « Semaine » widget with the 7-day study chart, a configurable widget showing one chosen subject.
+**Not testable in Expo Go.** Widgets and Live Activities are native extensions: they need a development build (`eas build --profile development`) and, on iPhone, an Apple developer account. In Expo Go the widget modules are absent; `syncWidgets` catches the error and logs it, the app keeps working. Layouts are typechecked and linted, both config plugins were verified with `expo prebuild` (10 Android providers + configuration activity, 10 Swift widget files + app group on iOS), and the data projection is unit-tested, but the rendering itself has not been seen on a device yet: expect a round of visual tuning (spacing, sizes) after the first dev build. Known Android limit: the « Révision » widget cannot tick every second (widgets there refresh on events only), so it shows the end time; iPhone gets the live countdown through the Live Activity.
 
 ## 6. Open questions for the product owner
 

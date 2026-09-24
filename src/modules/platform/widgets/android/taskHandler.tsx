@@ -1,6 +1,6 @@
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 
-import { readWidgetSnapshot } from '../snapshot';
+import { readWidgetConfig, readWidgetSnapshot } from '../snapshot';
 import { ANDROID_WIDGETS, renderAndroidWidget, type AndroidWidgetName } from './widgets';
 
 /**
@@ -15,7 +15,9 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
     case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED': {
       const data = readWidgetSnapshot();
-      if (data) props.renderWidget(renderAndroidWidget(name, data));
+      if (!data) break;
+      const subjectId = readWidgetConfig()[String(props.widgetInfo.widgetId)]?.subjectId ?? null;
+      props.renderWidget(renderAndroidWidget(name, data, { subjectId }));
       break;
     }
     default:

@@ -43,3 +43,4 @@ export { safeFileName, shareIcs, sharePdf } from './export/share';
 export { WidgetsGate } from './widgets/WidgetsGate';
 export { syncWidgets } from './widgets/sync';
 export { widgetTaskHandler } from './widgets/android/taskHandler';
+export { SubjectConfigScreen } from './widgets/android/SubjectConfigScreen';

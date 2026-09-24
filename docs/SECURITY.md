@@ -76,7 +76,7 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 
 ## 4g. Widgets
 
-- Les widgets reçoivent uniquement des **textes déjà calculés** (titres de cours, heures, salles, titres de tâches) ; aucun accès à la base, aux notes ni aux pièces jointes. Sur iPhone les données vivent dans le groupe d'apps `group.com.skiadac.mysky`, sur Android dans `widget-snapshot.json` du dossier privé de l'app.
+- Les widgets reçoivent uniquement des **textes déjà calculés** (titres de cours, heures, salles, titres de tâches) ; aucun accès à la base, aux notes ni aux pièces jointes. Sur iPhone les données vivent dans le groupe d'apps `group.com.skiadac.mysky`, sur Android dans `widget-snapshot.json` (données) et `widget-config.json` (matière choisie par widget) du dossier privé de l'app. La Live Activity « Révision » n'affiche que la matière et l'heure de fin.
 - Le contenu d'un widget est visible sur l'écran d'accueil et l'écran verrouillé : il n'affiche jamais de description ni de contenu de note.
 
 ## 5. Erreurs

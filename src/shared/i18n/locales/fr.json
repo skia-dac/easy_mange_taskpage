@@ -480,7 +480,7 @@
     "weekStart": "Premier jour de la semaine",
     "weekStartHint": "Change l’ordre des jours dans le calendrier",
     "widgets": "Widgets",
-    "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui » ou « Tâches » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go."
+    "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui », « Tâches », « Révision », « Semaine », « Matière », « Examens », « Notes rapides », « Moyenne » ou « Mois » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go."
   },
   "reminder": {
     "none": "Aucun",
@@ -661,6 +661,28 @@
     "overdue": "En retard",
     "exams": "Examens",
     "cancelled": "Annulé",
-    "more": "+{{count}}"
+    "more": "+{{count}}",
+    "study": "Révision",
+    "studyRunning": "Session en cours",
+    "breakRunning": "Pause",
+    "studyIdle": "Aucune session en cours",
+    "studyStart": "Lancer une session",
+    "untilTime": "jusqu’à",
+    "week": "Cette semaine",
+    "weekTotal": "Révision cette semaine",
+    "streak": "Série",
+    "streakDays": "{{count}} jour(s) d’affilée",
+    "subject": "Matière",
+    "subjectPick": "Choisis la matière à afficher",
+    "subjectNone": "Ajoute une matière dans MySky pour l’afficher ici.",
+    "noExam": "Aucun examen dans les 60 prochains jours",
+    "quickNote": "Note",
+    "quickTask": "Tâche",
+    "quickAssignment": "Devoir",
+    "grades": "Mes notes",
+    "noGrade": "Aucune note pour le moment",
+    "lastGrade": "Dernière",
+    "overall": "Moyenne générale",
+    "month": "Ce mois-ci"
   }
 }

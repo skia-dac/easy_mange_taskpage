@@ -480,7 +480,7 @@
     "weekStart": "First day of the week",
     "weekStartHint": "Changes the order of days in the calendar",
     "widgets": "Widgets",
-    "widgetsHint": "Add “Next class”, “Today” or “Tasks” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go."
+    "widgetsHint": "Add “Next class”, “Today”, “Tasks”, “Study”, “Week”, “Subject”, “Exams”, “Quick add”, “Average” or “Month” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go."
   },
   "reminder": {
     "none": "None",
@@ -661,6 +661,28 @@
     "overdue": "Overdue",
     "exams": "Exams",
     "cancelled": "Cancelled",
-    "more": "+{{count}}"
+    "more": "+{{count}}",
+    "study": "Study",
+    "studyRunning": "Session running",
+    "breakRunning": "Break",
+    "studyIdle": "No session running",
+    "studyStart": "Start a session",
+    "untilTime": "until",
+    "week": "This week",
+    "weekTotal": "Study this week",
+    "streak": "Streak",
+    "streakDays": "{{count}} day(s) in a row",
+    "subject": "Subject",
+    "subjectPick": "Choose the subject to show",
+    "subjectNone": "Add a subject in MySky to show it here.",
+    "noExam": "No exam in the next 60 days",
+    "quickNote": "Note",
+    "quickTask": "Task",
+    "quickAssignment": "Homework",
+    "grades": "My grades",
+    "noGrade": "No grade yet",
+    "lastGrade": "Latest",
+    "overall": "Overall average",
+    "month": "This month"
   }
 }

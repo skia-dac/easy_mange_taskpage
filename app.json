@@ -110,6 +110,65 @@
               "ios": {
                 "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
               }
+            },
+            {
+              "name": "WeekWidget",
+              "displayName": "Semaine",
+              "description": "Tes minutes de révision par jour et ta série de jours actifs.",
+              "ios": {
+                "supportedFamilies": ["systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "SubjectWidget",
+              "displayName": "Matière",
+              "description": "Une matière au choix : prochain cours, prochaine échéance, moyenne.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"],
+                "configuration": {
+                  "title": "Matière",
+                  "description": "Tape le nom de la matière à afficher (vide = la première).",
+                  "parameters": {
+                    "subject": {
+                      "title": "Nom de la matière",
+                      "type": "string",
+                      "default": ""
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "ExamsWidget",
+              "displayName": "Examens",
+              "description": "Compte à rebours de tes prochains examens.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "QuickAddWidget",
+              "displayName": "Notes rapides",
+              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "ios": {
+                "supportedFamilies": ["systemMedium"]
+              }
+            },
+            {
+              "name": "GradesWidget",
+              "displayName": "Moyenne",
+              "description": "Ta moyenne générale, ta dernière note et tes moyennes par matière.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "MonthWidget",
+              "displayName": "Mois",
+              "description": "Le mois en cours avec tes cours, échéances et examens.",
+              "ios": {
+                "supportedFamilies": ["systemLarge"]
+              }
             }
           ]
         }
@@ -148,6 +207,84 @@
               "minHeight": "120dp",
               "targetCellWidth": 2,
               "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Study",
+              "label": "MySky · Révision",
+              "description": "Ta session de révision en cours, ou un bouton pour en lancer une.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Week",
+              "label": "MySky · Semaine",
+              "description": "Tes minutes de révision par jour et ta série de jours actifs.",
+              "minWidth": "320dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Subject",
+              "label": "MySky · Matière",
+              "description": "Une matière au choix : prochain cours, prochaine échéance, moyenne.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000,
+              "widgetFeatures": "reconfigurable"
+            },
+            {
+              "name": "Exams",
+              "label": "MySky · Examens",
+              "description": "Compte à rebours de tes prochains examens.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "QuickAdd",
+              "label": "MySky · Notes rapides",
+              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "minWidth": "320dp",
+              "minHeight": "60dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Grades",
+              "label": "MySky · Moyenne",
+              "description": "Ta moyenne générale, ta dernière note et tes moyennes par matière.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Month",
+              "label": "MySky · Mois",
+              "description": "Le mois en cours avec tes cours, échéances et examens.",
+              "minWidth": "320dp",
+              "minHeight": "240dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
             }

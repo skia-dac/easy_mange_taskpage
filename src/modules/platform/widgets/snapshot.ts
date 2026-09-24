@@ -24,3 +24,28 @@ export function readWidgetSnapshot(): WidgetData | null {
     return null;
   }
 }
+
+/** Réglage par widget Android (id → matière choisie), pour le widget « Matière ». */
+const CONFIG_FILE = 'widget-config.json';
+export type WidgetConfigMap = Record<string, { subjectId: string | null }>;
+
+export function readWidgetConfig(): WidgetConfigMap {
+  try {
+    const f = new File(Paths.document, CONFIG_FILE);
+    if (!f.exists) return {};
+    const parsed: unknown = JSON.parse(f.textSync());
+    return parsed && typeof parsed === 'object' ? (parsed as WidgetConfigMap) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function writeWidgetConfig(widgetId: number, subjectId: string | null): void {
+  try {
+    const map = readWidgetConfig();
+    map[String(widgetId)] = { subjectId };
+    new File(Paths.document, CONFIG_FILE).write(JSON.stringify(map));
+  } catch (e) {
+    logger.error(e, { where: 'writeWidgetConfig' });
+  }
+}

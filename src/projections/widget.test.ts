@@ -91,14 +91,19 @@ const data: TodayData = {
   ],
 };
 const subjects = new Map([
-  ['mkt', { id: 'mkt', name: 'Marketing' }],
-  ['fin', { id: 'fin', name: 'Finance' }],
+  ['mkt', { id: 'mkt', name: 'Marketing', colorId: 'blue' }],
+  ['fin', { id: 'fin', name: 'Finance', colorId: 'teal' }],
 ]) as never;
 const texts = {
   t: (key: string, params?: Record<string, string | number>) =>
     `${key}${params ? JSON.stringify(params) : ''}`,
   formatDate: () => 'Mercredi 23 septembre',
   subjectName: (id: string) => (id === 'mkt' ? 'Marketing' : 'Finance'),
+  weekdayShort: (n: number) =>
+    ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'][n - 1] ?? '',
+  monthTitle: () => 'Septembre 2026',
+  duration: (m: number) => `${m} min`,
+  locale: 'fr',
 };
 const themes = { light: lightColors, dark: darkColors };
 
@@ -133,5 +138,89 @@ describe('données des widgets', () => {
     expect(hours).toEqual(['8:30', '9:0', '11:0', '14:0', '16:0', '0:0']);
     expect(entries[1]?.props.next?.ongoing).toBe(true);
     expect(entries[5]?.props.courses).toEqual([]);
+  });
+
+  it('prépare les données des autres widgets : révision, semaine, matières, notes, examens, mois', () => {
+    const session = {
+      id: 'st',
+      subjectId: 'mkt',
+      startedAt: new Date(2026, 8, 23, 8, 20).toISOString(),
+      endedAt: null,
+      plannedMinutes: 25,
+      kind: 'focus' as const,
+    };
+    const graded = {
+      ...data.exams[0]!,
+      id: 'e0',
+      title: 'Contrôle',
+      date: '2026-09-15',
+      grade: 15,
+    };
+    const w = buildWidgetData(
+      { ...data, studySession: session, exams: [...data.exams, graded] },
+      subjects,
+      now,
+      texts,
+      themes,
+      {
+        sessions: [
+          {
+            ...session,
+            endedAt: new Date(2026, 8, 22, 9, 0).toISOString(),
+            id: 'old',
+            startedAt: new Date(2026, 8, 22, 8, 0).toISOString(),
+          },
+        ],
+        weekStart: 1,
+      },
+    );
+    expect(w.study).toMatchObject({
+      kind: 'focus',
+      subject: 'Marketing',
+      endsAtTime: '08:45',
+      plannedMinutes: 25,
+    });
+    expect(w.week.days.map((d) => d.minutes)).toEqual([0, 60, 0, 0, 0, 0, 0]);
+    expect(w.week.days[2]?.today).toBe(true);
+    expect(w.week.total).toBe('60 min');
+    const mkt = w.subjects.find((s) => s.id === 'mkt')!;
+    expect(mkt).toMatchObject({
+      name: 'Marketing',
+      nextCourse: '09:00',
+      nextCourseRoom: 'B12',
+      openTasks: 1,
+      average: '15',
+    });
+    expect(mkt.nextDue).toBe('Étude de cas · mar.');
+    expect(w.subjects.find((s) => s.id === 'fin')?.nextCourse).toBe('14:00');
+    expect(w.grades.overall).toBe('15');
+    expect(w.grades.last).toEqual({ title: 'Contrôle', subject: 'Marketing', value: '15' });
+    expect(w.upcomingExams.map((e) => e.when)).toEqual(['countdown.inDays{"count":2}']);
+    expect(w.month.title).toBe('Septembre 2026');
+    expect(w.month.cells).toHaveLength(42);
+    const todayCell = w.month.cells.find((c) => c.today)!;
+    expect(todayCell).toMatchObject({ day: 23, inMonth: true, course: true });
+    expect(w.month.cells.find((c) => c.inMonth && c.day === 25)?.exam).toBe(true);
+    expect(w.month.cells.find((c) => c.inMonth && c.day === 22)?.due).toBe(true);
+    expect(w.links.note).toBe('mysky://notes/new');
+  });
+
+  it('ajoute la fin de session de révision à la chronologie', () => {
+    const session = {
+      id: 'st',
+      subjectId: null,
+      startedAt: new Date(2026, 8, 23, 8, 20).toISOString(),
+      endedAt: null,
+      plannedMinutes: 25,
+      kind: 'focus' as const,
+    };
+    const entries = buildWidgetTimeline(
+      { ...data, studySession: session },
+      subjects,
+      now,
+      texts,
+      themes,
+    );
+    expect(entries.map((e) => `${e.date.getHours()}:${e.date.getMinutes()}`)).toContain('8:45');
   });
 });
