@@ -158,7 +158,7 @@ A `ReminderScheduler` in `platform/notifications` watches domain changes (create
 |---|---|---|
 | **0. Setup** ✅ done | ~~Remove the old Flutter code~~ (done), create the Expo project with the module structure + boundary lint, tests, CI, EAS, design tokens, i18n, local DB (Supabase project moved to phase 2) | Empty app runs on both platforms |
 | **1. Local core (offline by design)** ✅ done | Subjects, timetables, course series (weekly), calendar + Today projections, tasks/assignments/exams/events, confirmations, empty states. Sync metadata columns and the outbox already written, but no server yet | Fully usable app on one device, no account |
-| **2. Accounts + sync** | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
+| **2. Accounts + sync** ✅ built (needs a Supabase project to go live, see §5g) | Email/Google/Apple auth, profile, onboarding, Supabase schemas + RLS, `sync` function (versions, idempotence), conflict screen, retry, account deletion | Data restored on a new device |
 | **3. Notifications** ✅ done | Course/homework/task/exam reminders, end-of-course actions with prefilled forms, settings, rolling scheduler | Acceptance criteria 17–19 |
 | **4. Advanced timetable** ✅ done (before 2 and 3: no server needed) | Per-occurrence edits (3 options), cancellations, holidays/days off with suspension | Criteria 6, rule 8 |
 | **5. Notes** ✅ done (light markup editor, Expo Go compatible; rich editor deferred) | Rich editor, attachments (offline queue), favorites, "take notes" from a course | Criteria 9–10 |
@@ -213,7 +213,7 @@ Done after a walk-through showed gaps between "module exists" and "module comple
 
 **Polish (24 Sep 2026):** a loading screen while the database opens and while the first-launch check runs (no more blank screen); « Supprimer toutes mes données » in settings (double confirmation, wipes the database, attachments, backups and scheduled reminders, then returns to the intro); automatic daily backup of the whole local database to a JSON file in the app's private folder (last 7 kept, manual backup / share / restore from settings, attachments excluded — see `docs/SECURITY.md` §4e); sound and vibration toggles for reminders (Android: one channel per combination, since a channel cannot be changed once created); first day of the week (Monday / Saturday / Sunday) used by the calendar.
 
-**Still out of scope until external accounts exist:** accounts + sync (phase 2, Supabase), timetable import (phase 6, AI key), store assets (7b).
+**Still out of scope until external accounts exist:** timetable import (phase 6, AI key), store assets (7b). Accounts + sync are built (§5g) and go live as soon as a Supabase project is configured.
 
 ## 5e. Lot 2 — engagement features (24 Sep 2026)
 
@@ -262,6 +262,18 @@ Validated by the product owner: card on Aujourd'hui + full screen from Profil, s
 - **Links**: a focus study session of ≥ 5 min ticks habits marked "tick with study sessions" (same transaction as the end of the session); habit reminders go through `planReminders` (7-day horizon, skipped once done, focus mode respected, setting « Rappels d'habitudes »); weekly statistics show "Habitudes respectées" and habits count as active days for the streak; « Habitudes » widget on iPhone and Android.
 - **Rules** (pure, tested in `productivity/domain/habit.ts`): a day is done when the target is reached; past scheduled days with nothing logged count as missed; today never counts against you until it is over; "N times a week" streaks count weeks.
 - Not gamification: no points, badges or leaderboards.
+
+## 5g. Accounts and sync (built 24 Sep 2026)
+
+Requested by the product owner for this version. The account is **optional**: without a configured Supabase project, or without signing in, the app keeps working fully offline on one phone.
+
+- **Auth** (`identity/auth`): email + password (8+ chars, a letter and a digit), Apple and Google (Supabase OAuth in the phone's secure browser, PKCE), email confirmation and password reset by deep link (`mysky://auth/callback`, `mysky://auth/reset`), change password, sign out of this phone only (keep or erase the phone's copy), **account deletion** (Edge Function `delete-account`: files then user, rows cascade). Session kept in the Keychain / Keystore (`expo-secure-store`, chunked), never in plain storage.
+- **Ownership**: the first account that signs in adopts the phone's existing data (it is pushed on the first sync). If another account's data is on the phone, the user must erase it first; data is never mixed.
+- **Sync engine** (`platform/sync`): push = the `sync_outbox` grouped per item with the known version, sent to the SQL function `mysky_push` (idempotent by mutation id, optimistic versioning). Pull = rows with `server_updated_at` > per-table cursor, parents first, local unsent edits never overwritten. Conflict = the most recent `updated_at` wins; if the server's wins, the local copy is saved in `sync_conflicts` (count shown on the account page, kept in backups). Files (attachments, profile photo) follow their rows in the private bucket `mysky-files/<user id>/…`. Runs at launch, on foreground, 4 s after a change and every 5 min; one run at a time; offline → retried later.
+- **Server** (`supabase/`): schema **generated from the phone's schema** (test fails if out of date), RLS `user_id = auth.uid()` on every table, storage policy per user folder. Verified on a real Postgres engine (PGlite) by `npm run test:server` (part of `npm run check`): versions, replay, conflicts, isolation between two users, cascade delete.
+- **Screens**: Profil › Compte et synchronisation (`/account`), `/auth/sign-in`, `/auth/sign-up`, `/auth/forgot`, `/auth/callback`, `/auth/reset`; onboarding offers « J'ai déjà un compte ».
+- **To go live** (product owner): create the Supabase project (choose the region), run the SQL, deploy the function, set redirect URLs and providers, fill `.env.local` — step by step in `supabase/README.md`. Then fill `serverRegion` in `src/shared/legal.ts`.
+- **Legal note (Cameroon, Law No. 2024/017)**: with accounts, the publisher processes personal data; hosting outside Cameroon is a cross-border transfer that the law subjects to prior authorisation by the data protection authority. To check with a local lawyer before launch.
 
 ## 6. Open questions for the product owner
 

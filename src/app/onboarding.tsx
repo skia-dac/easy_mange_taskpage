@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { setOnboardingDone } from '@/modules/identity';
+import { setOnboardingDone, useAuth } from '@/modules/identity';
 import { useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
 import { useTheme } from '@/shared/theme';
@@ -29,7 +29,8 @@ export default function OnboardingScreen() {
   const last = steps.length;
   const step = steps[index];
 
-  const finish = async (then: 'today' | 'subject') => {
+  const { enabled: accounts } = useAuth();
+  const finish = async (then: 'today' | 'subject' | 'account') => {
     try {
       await setOnboardingDone(db);
     } catch (e) {
@@ -37,6 +38,7 @@ export default function OnboardingScreen() {
     }
     router.replace('/');
     if (then === 'subject') router.push('/subjects/form');
+    if (then === 'account') router.push('/auth/sign-in');
   };
 
   if (index === last || !step) {
@@ -82,6 +84,14 @@ export default function OnboardingScreen() {
             () => undefined,
             true,
           )}
+          {accounts
+            ? choice(
+                'log-in',
+                t('onboarding.account'),
+                t('onboarding.accountHint'),
+                () => void finish('account'),
+              )
+            : null}
           {choice(
             'compass',
             t('onboarding.later'),

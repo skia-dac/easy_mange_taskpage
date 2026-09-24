@@ -12,6 +12,8 @@ import {
   getNotificationPreferences,
   getWeekStart,
   isAppLockEnabled,
+  signOut,
+  useAuth,
   setAppearancePreference,
   setAppLockEnabled,
   setLanguagePreference,
@@ -80,6 +82,7 @@ export default function SettingsScreen() {
   const [granted, setGranted] = useState<boolean | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
   const [appLock, setAppLock] = useState(false);
+  const auth = useAuth();
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [busy, setBusy] = useState(false);
@@ -193,6 +196,8 @@ export default function SettingsScreen() {
       );
       if (!second) return;
       await wipeAllData(db);
+      // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau.
+      if (auth.userId) await signOut();
       router.replace('/onboarding');
     });
 

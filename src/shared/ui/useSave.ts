@@ -10,7 +10,8 @@ import { showError } from './dialogs';
  * - erreurs de saisie → affichées sous chaque champ ;
  * - autre erreur → message clair, les données saisies restent à l'écran.
  */
-export function useSave() {
+/** `messageKey` : traduction d'une erreur non liée à un champ (par défaut `userMessageKey`). */
+export function useSave(messageKey: (error: unknown) => string = userMessageKey) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -26,7 +27,7 @@ export function useSave() {
         setErrors(error.fields);
       } else {
         logger.error(error, { where: 'useSave' });
-        showError(userMessageKey(error));
+        showError(messageKey(error));
       }
       return undefined;
     } finally {

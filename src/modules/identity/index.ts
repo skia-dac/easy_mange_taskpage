@@ -6,3 +6,20 @@ export * from './domain/preferences';
 export * from './domain/profile';
 export { LanguageGate } from './LanguageGate';
 export { AppearanceProvider } from './AppearanceProvider';
+export * from './domain/auth';
+export { getSupabase } from './auth/client';
+export { AuthProvider, useAuth } from './auth/AuthProvider';
+export type { AuthState } from './auth/AuthProvider';
+export {
+  AccountError,
+  accountMessageKey,
+  completeFromUrl,
+  deleteRemoteAccount,
+  redirectUrl,
+  sendPasswordReset,
+  signIn,
+  signInWithProvider,
+  signOut,
+  signUp,
+  updatePassword,
+} from './auth/service';

@@ -4,6 +4,25 @@ import { newId, nowIso } from './ids';
 import type { Db, SqlValue } from './types';
 
 /** Tables métier synchronisées (toutes ont les colonnes SYNC_COLUMNS). */
+/** Tables synchronisées avec le compte, dans l'ordre des dépendances (parents d'abord). */
+export const SYNCED_TABLES = [
+  'profiles',
+  'subjects',
+  'timetables',
+  'course_series',
+  'course_exceptions',
+  'off_periods',
+  'exams',
+  'tasks',
+  'assignments',
+  'personal_events',
+  'notes',
+  'attachments',
+  'study_sessions',
+  'habits',
+  'habit_logs',
+] as const;
+
 export type EntityTable =
   | 'subjects'
   | 'timetables'
@@ -100,7 +119,7 @@ export class EntityWriter {
       `UPDATE ${table} SET deleted_at = ?, updated_at = ?, sync_status = 'pending_delete' WHERE id = ?`,
       [now, now, id],
     );
-    await this.enqueue(table, id, 'delete', { deleted_at: now }, current.version);
+    await this.enqueue(table, id, 'delete', { deleted_at: now, updated_at: now }, current.version);
   }
 
   private async current(table: EntityTable, id: string): Promise<SyncState> {

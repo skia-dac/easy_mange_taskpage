@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
-import { fullName, initials } from '@/modules/identity';
+import { fullName, initials, useAuth } from '@/modules/identity';
 import { attachmentUri } from '@/modules/platform';
 import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   const { profile } = useProfile();
   const { colors, spacing, radius } = useTheme();
   const name = fullName(profile);
+  const auth = useAuth();
   const details = [profile?.field, profile?.level, profile?.university, profile?.academicYear]
     .filter(Boolean)
     .join(' · ');
@@ -73,6 +74,22 @@ export default function ProfileScreen() {
           {t('common.edit')}
         </AppText>
       </Pressable>
+      {auth.enabled ? (
+        <Card>
+          <ListRow
+            title={t('account.title')}
+            subtitle={auth.email ?? t('account.noAccount')}
+            leading={
+              <IconBadge
+                icon={auth.userId ? 'cloud' : 'cloud-off'}
+                color={auth.userId ? 'success' : 'primary'}
+                background={auth.userId ? 'successSoft' : 'primarySoft'}
+              />
+            }
+            onPress={() => router.push('/account')}
+          />
+        </Card>
+      ) : null}
       <SectionHeader
         title={t('profile.subjects')}
         action={

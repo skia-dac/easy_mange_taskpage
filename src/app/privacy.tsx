@@ -18,7 +18,7 @@ const SECTIONS = [
   'security',
   'minors',
   'rights',
-  'future',
+  'account',
   'changes',
 ] as const;
 
@@ -55,6 +55,7 @@ export default function PrivacyScreen() {
   const params = {
     publisher: LEGAL.publisher || t('privacy.toFill'),
     email: LEGAL.contactEmail || t('privacy.toFill'),
+    region: LEGAL.serverRegion || t('privacy.toFill'),
     interpolation: { escapeValue: false },
   };
 

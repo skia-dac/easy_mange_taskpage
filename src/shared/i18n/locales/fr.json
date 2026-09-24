@@ -535,7 +535,9 @@
     "later": "Plus tard",
     "laterHint": "Découvre d’abord l’application.",
     "import": "Importer mon emploi du temps",
-    "importHint": "Photo ou PDF. Bientôt disponible."
+    "importHint": "Photo ou PDF. Bientôt disponible.",
+    "account": "J’ai déjà un compte",
+    "accountHint": "Retrouve tes données d’un autre téléphone"
   },
   "notifications": {
     "title": "Notifications",
@@ -786,24 +788,109 @@
       "off": "pas prévu"
     }
   },
+  "account": {
+    "title": "Compte et synchronisation",
+    "noAccount": "Pas de compte · données sur ce téléphone",
+    "why": "Retrouve tes données partout",
+    "whyHint": "Avec un compte, tes cours, notes, tâches et habitudes sont copiés sur le serveur de MySky : tu les retrouves sur un autre téléphone et tu ne perds rien si tu changes d’appareil.",
+    "optional": "Le compte est facultatif. Sans compte, tout reste sur ce téléphone.",
+    "unavailable": "Comptes pas encore disponibles",
+    "unavailableHint": "Cette version de MySky n’est pas encore reliée à un serveur. Tout fonctionne sans compte, sur ce téléphone.",
+    "signedIn": "Connecté",
+    "security": "Sécurité",
+    "signOut": "Se déconnecter",
+    "signOutHint": "Tes données restent sur ton compte. Que faire de la copie de ce téléphone ?",
+    "signOutKeep": "Garder mes données sur ce téléphone",
+    "signOutKeepHint": "Tu continues à les utiliser hors connexion",
+    "signOutErase": "Effacer ce téléphone",
+    "signOutEraseHint": "Pour un téléphone prêté ou partagé. Tes données restent sur ton compte.",
+    "delete": "Supprimer mon compte",
+    "deleteTitle": "Supprimer ton compte ?",
+    "deleteMessage": "Ton compte, toutes tes données sur le serveur (y compris les fichiers joints) et les données de ce téléphone seront supprimés.",
+    "deleteContinue": "Continuer",
+    "deleteAgainTitle": "Dernière vérification",
+    "deleteAgainMessage": "Cette action est définitive et ne peut pas être annulée.",
+    "deleteConfirm": "Supprimer mon compte",
+    "otherTitle": "Données d’un autre compte",
+    "otherMessage": "Ce téléphone contient les données d’un autre compte MySky. Pour continuer avec ce compte, elles seront effacées de ce téléphone (elles restent sur l’autre compte).",
+    "otherConfirm": "Effacer et continuer"
+  },
+  "auth": {
+    "signInTitle": "Connexion",
+    "signUpTitle": "Créer un compte",
+    "signUpHint": "Ton compte sert à synchroniser tes données entre tes appareils.",
+    "signIn": "Se connecter",
+    "createAccount": "Créer mon compte",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "passwordRules": "Au moins {{min}} caractères, avec une lettre et un chiffre",
+    "forgot": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ? En créer un",
+    "haveAccount": "Déjà un compte ? Se connecter",
+    "or": "ou",
+    "withApple": "Continuer avec Apple",
+    "withGoogle": "Continuer avec Google",
+    "checkMailTitle": "Vérifie ta boîte mail",
+    "checkMail": "Nous avons envoyé un lien à {{email}}. Ouvre-le sur ce téléphone pour activer ton compte.",
+    "privacyNotice": "En créant un compte, tes données sont copiées sur le serveur de MySky pour la synchronisation. Voir la politique de confidentialité.",
+    "forgotTitle": "Mot de passe oublié",
+    "forgotHint": "Entre ton adresse e-mail : tu recevras un lien pour choisir un nouveau mot de passe.",
+    "sendLink": "Envoyer le lien",
+    "linkSent": "Si un compte existe pour cette adresse, un e-mail vient d’être envoyé. Ouvre le lien sur ce téléphone.",
+    "finishing": "Connexion en cours…",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "savePassword": "Enregistrer le mot de passe",
+    "passwordSavedTitle": "Mot de passe modifié",
+    "passwordSaved": "Ton nouveau mot de passe est enregistré.",
+    "changePassword": "Changer le mot de passe",
+    "error": {
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "emailNotConfirmed": "Confirme d’abord ton adresse avec le lien reçu par e-mail.",
+      "emailTaken": "Un compte existe déjà avec cette adresse. Connecte-toi.",
+      "emailInvalid": "Cette adresse e-mail n’est pas valide.",
+      "passwordShort": "Le mot de passe doit faire au moins 8 caractères.",
+      "passwordWeak": "Le mot de passe doit contenir au moins une lettre et un chiffre.",
+      "passwordMismatch": "Les deux mots de passe ne sont pas identiques.",
+      "samePassword": "Choisis un mot de passe différent de l’ancien.",
+      "tooMany": "Trop d’essais. Réessaie dans quelques minutes.",
+      "linkExpired": "Ce lien a expiré ou a déjà servi. Demande-en un nouveau.",
+      "notConfigured": "Les comptes ne sont pas disponibles dans cette version.",
+      "deleteFailed": "Le compte n’a pas pu être supprimé. Vérifie ta connexion et réessaie."
+    }
+  },
+  "sync": {
+    "title": "Synchronisation",
+    "upToDate": "À jour",
+    "running": "Synchronisation en cours…",
+    "offline": "Hors connexion : envoi à la prochaine connexion",
+    "error": "La synchronisation a échoué, nouvel essai bientôt",
+    "pending": "{{count}} modification(s) à envoyer",
+    "last": "Dernière synchronisation : {{date}}",
+    "never": "Pas encore synchronisé",
+    "now": "Synchroniser maintenant",
+    "hint": "La synchronisation est automatique : au lancement, au retour dans l’app et quelques secondes après chaque modification.",
+    "conflicts": "{{count}} modification(s) faite(s) ici remplacée(s) par une version plus récente d’un autre appareil. Elles sont gardées dans la sauvegarde locale."
+  },
   "privacy": {
     "title": "Politique de confidentialité",
     "updated": "Dernière mise à jour : 24 septembre 2026",
     "intro": "Cette politique explique quelles données MySky utilise, où elles sont gardées et ce que tu peux en faire. Elle s'applique à l'application MySky sur iPhone et Android.",
     "toFill": "[à compléter]",
     "open": "Politique de confidentialité",
-    "openHint": "Tes données restent sur ton téléphone",
+    "openHint": "Ce que MySky fait de tes données",
     "who": {
       "title": "Qui publie MySky",
-      "body": "MySky est une application d'organisation pour élèves et étudiants, publiée par {{publisher}}, au Cameroun.\n\nPour toute question sur cette politique ou sur tes données, écris à : {{email}}"
+      "body": "MySky est une application d'organisation pour élèves et étudiants, publiée par {{publisher}}, au Cameroun. {{publisher}} est responsable du traitement des données liées aux comptes MySky.\n\nPour toute question sur cette politique ou sur tes données, écris à : {{email}}"
     },
     "summary": {
       "title": "L’essentiel",
-      "body": "• Tes données restent sur ton téléphone.\n• Il n'y a ni compte ni serveur MySky : nous ne recevons aucune de tes données.\n• Pas de publicité, pas de mesure d'audience, pas de pistage.\n• Rien n'est vendu ni partagé avec qui que ce soit.\n• Tu peux tout supprimer à tout moment depuis l'app."
+      "body": "• Sans compte, tes données restent uniquement sur ton téléphone : nous n'en recevons aucune.\n• Le compte est facultatif. Si tu en crées un, tes données sont aussi copiées sur le serveur de MySky pour être synchronisées entre tes appareils.\n• Pas de publicité, pas de mesure d'audience, pas de pistage.\n• Rien n'est vendu ni partagé à des fins commerciales.\n• Tu peux tout supprimer à tout moment depuis l'app, compte compris."
     },
     "data": {
       "title": "Les données que tu enregistres",
-      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions de révision et tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif) ;\n• tes réglages.\n\nCes données sont enregistrées uniquement sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels et tes statistiques."
+      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions de révision et tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif) ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
     },
     "permissions": {
       "title": "Autorisations du téléphone",
@@ -811,7 +898,7 @@
     },
     "leaves": {
       "title": "Ce qui peut quitter ton téléphone",
-      "body": "Rien ne quitte ton téléphone sans une action de ta part :\n\n• Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.\n• Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky."
+      "body": "Rien ne quitte ton téléphone sans une action de ta part :\n\n• Compte : si tu te connectes, tes données sont synchronisées avec le serveur de MySky (voir ci-dessous).\n• Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.\n• Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky."
     },
     "visible": {
       "title": "Widgets, notifications et écran verrouillé",
@@ -819,23 +906,23 @@
     },
     "retention": {
       "title": "Durée de conservation et suppression",
-      "body": "Tes données sont gardées tant que tu les conserves. MySky fait chaque jour une sauvegarde locale et garde les 7 dernières.\n\n• Tu peux supprimer chaque élément depuis l'app.\n• Réglages › Mes données › « Supprimer toutes mes données » efface tout : la base, les pièces jointes, les sauvegardes et les rappels programmés.\n• Désinstaller MySky efface aussi ses données du téléphone (sauf une éventuelle sauvegarde iCloud de ton appareil)."
+      "body": "Tes données sont gardées tant que tu les conserves. MySky fait chaque jour une sauvegarde locale et garde les 7 dernières.\n\n• Tu peux supprimer chaque élément depuis l'app.\n• Réglages › Mes données › « Supprimer toutes mes données » efface tout : la base, les pièces jointes, les sauvegardes et les rappels programmés.\n• Désinstaller MySky efface aussi ses données du téléphone (sauf une éventuelle sauvegarde iCloud de ton appareil).\n• Compte › « Supprimer mon compte » supprime ton compte et toutes tes données du serveur, fichiers compris, puis celles du téléphone. Sans cette action, les données d'un compte sont gardées tant que le compte existe."
     },
     "security": {
       "title": "Sécurité",
-      "body": "Tes données sont dans l'espace privé de l'app et ne sont envoyées à aucun serveur. Tu peux ajouter le verrouillage par Face ID, Touch ID ou code dans Réglages › Confidentialité. Protège aussi ton téléphone par un code : c'est la première protection de tes données."
+      "body": "Sur le téléphone, tes données sont dans l'espace privé de l'app, et ta session de connexion est gardée dans le trousseau sécurisé du téléphone. Avec un compte, les échanges avec le serveur sont chiffrés (HTTPS) et chaque compte ne peut lire que ses propres données (règles de sécurité appliquées par la base elle-même). Ton mot de passe n'est jamais stocké en clair. Tu peux ajouter le verrouillage par Face ID, Touch ID ou code dans Réglages › Confidentialité. Protège aussi ton téléphone par un code : c'est la première protection de tes données."
     },
     "minors": {
       "title": "Élèves mineurs",
-      "body": "MySky peut être utilisée par des élèves mineurs. L'app ne collecte aucune donnée et n'envoie rien à personne. Si tu es mineur, parle de ton utilisation de MySky avec tes parents ou ton responsable légal."
+      "body": "MySky peut être utilisée par des élèves mineurs, avec ou sans compte. Si tu es mineur, demande l'accord de tes parents ou de ton responsable légal avant de créer un compte, et parle-leur de ton utilisation de MySky."
     },
     "rights": {
       "title": "Tes droits",
-      "body": "La loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun te reconnaît notamment un droit d'information, d'accès, de rectification, d'effacement, de portabilité et d'opposition.\n\nDans MySky, tu exerces ces droits toi-même, directement dans l'app : tu vois et modifies tes données, tu les supprimes, et tu les exportes (sauvegarde, note en PDF, calendrier .ics). Comme nous ne détenons aucune de tes données, nous ne pouvons ni les consulter ni les modifier à ta place.\n\nPour toute question : {{email}}. Tu peux aussi saisir l'Autorité de protection des données à caractère personnel prévue par cette loi. Si tu vis dans un autre pays, tu gardes aussi les droits prévus par la loi de ton pays (par exemple le RGPD dans l'Union européenne)."
+      "body": "La loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun te reconnaît notamment un droit d'information, d'accès, de rectification, d'effacement, de portabilité et d'opposition.\n\nDans MySky, tu exerces ces droits toi-même, directement dans l'app : tu vois et modifies tes données, tu les supprimes (compte compris), et tu les exportes (sauvegarde, note en PDF, calendrier .ics). Pour les données de ton compte, tu peux aussi nous écrire : nous répondons dans un délai d'un mois.\n\nPour toute question : {{email}}. Tu peux aussi saisir l'Autorité de protection des données à caractère personnel prévue par cette loi. Si tu vis dans un autre pays, tu gardes aussi les droits prévus par la loi de ton pays (par exemple le RGPD dans l'Union européenne)."
     },
-    "future": {
-      "title": "Comptes et synchronisation (à venir)",
-      "body": "Une prochaine version proposera un compte pour retrouver tes données sur plusieurs appareils. Avant cela, cette politique sera mise à jour pour expliquer quelles données iront sur un serveur, où il se trouve et pourquoi. Tu en seras informé dans l'app avant que quoi que ce soit ne quitte ton téléphone."
+    "account": {
+      "title": "Compte et synchronisation",
+      "body": "Le compte est facultatif. Tu peux le créer avec ton adresse e-mail et un mot de passe, ou avec Apple ou Google.\n\n• Données du compte : ton adresse e-mail, ton prénom et ton nom si tu les donnes, et, avec Apple ou Google, l'identifiant que ce service nous transmet. Apple et Google ne reçoivent aucune de tes données MySky.\n• Données synchronisées : tout ce que tu enregistres dans l'app (voir « Les données que tu enregistres »), y compris tes pièces jointes et ta photo de profil.\n• Pourquoi : uniquement pour te connecter et retrouver tes données sur tes appareils. Base légale : ton consentement, donné en créant le compte, et que tu peux retirer en supprimant le compte.\n• Où : chez notre hébergeur Supabase, dans la région {{region}}. Les données peuvent donc être hébergées hors du Cameroun ; ce transfert est fait dans le cadre prévu par la loi n° 2024/017.\n• Qui y a accès : toi seul depuis l'app. L'hébergeur agit pour notre compte et n'utilise pas tes données pour lui-même. Nous n'y accédons que si c'est nécessaire pour répondre à ta demande ou à une obligation légale.\n• Déconnexion : tu choisis de garder ou d'effacer la copie du téléphone ; les données restent sur ton compte."
     },
     "changes": {
       "title": "Modifications de cette politique",

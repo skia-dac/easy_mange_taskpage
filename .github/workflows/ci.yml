@@ -32,6 +32,8 @@ jobs:
         run: npm run format:check
       - name: Tests
         run: npm test -- --ci
+      - name: Server schema on Postgres
+        run: npm run test:server
       - name: Audit sécurité des dépendances (niveau élevé et critique)
         run: npm run audit:prod
       - name: Diagnostic Expo

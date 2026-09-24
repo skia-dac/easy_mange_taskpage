@@ -26,8 +26,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 
 ## 3. Données de l'utilisateur
 
-- **Serveur (phase 2)** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS.
-- **Téléphone** : les jetons de connexion seront stockés avec `expo-secure-store` (trousseau iOS / keystore Android), jamais en clair.
+- **Serveur** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS. Le schéma est généré depuis celui du téléphone et vérifié sur un vrai Postgres (`npm run test:server`) : un utilisateur ne peut ni lire ni modifier les lignes d'un autre.
+- **Écritures serveur** : uniquement par la fonction `mysky_push` (liste blanche des tables, droits de l'utilisateur appelant, versions pour détecter les conflits, identifiant de modification pour ne jamais appliquer deux fois la même).
+- **Fichiers** : bucket privé `mysky-files`, chaque utilisateur limité à son dossier `<id>/`.
+- **Suppression du compte** : fonction serveur `delete-account` (clé service_role côté serveur uniquement) : fichiers puis compte, les lignes partent en cascade.
+- **Téléphone** : la session de connexion est stockée avec `expo-secure-store` (trousseau iOS / keystore Android, accessible après le premier déverrouillage, jamais copiée sur un autre appareil), découpée en morceaux, jamais en clair.
+- **Mots de passe** : 8 caractères minimum avec une lettre et un chiffre ; gérés par Supabase Auth, jamais stockés par l'app.
 - La sauvegarde automatique Android est désactivée (`allowBackup: false`) pour que la base locale ne soit pas copiée hors du téléphone.
 - **Requêtes SQL** : toujours avec des paramètres (`db.runAsync('… WHERE id = ?', [id])`), jamais en collant du texte (risque d'injection SQL).
 - **Journaux** : passer par `src/shared/logger.ts`. Aucune donnée personnelle (contenu de note, email, mot de passe) dans les logs. En production, rien n'est affiché.
@@ -88,8 +92,8 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 ## 4i. Politique de confidentialité
 
 - Texte unique en français et en anglais : `docs/PRIVACY_POLICY.md`, affiché dans l’app (Réglages › Confidentialité › Politique de confidentialité, clés `privacy.*`) et publié en page web pour l’App Store et Google Play.
-- Elle décrit l’app telle qu’elle est : aucune donnée collectée, rien n’est envoyé sur Internet. **Elle doit être mise à jour avant la phase 2** (comptes, synchronisation, import par IA), et la déclaration « App Privacy » / « Data safety » des stores avec.
-- Cadre légal : loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun (en vigueur depuis le 23 juin 2026). Avec les comptes, prévoir le registre des traitements et les formalités auprès de l’Autorité de protection des données.
+- Elle décrit l’app telle qu’elle est : sans compte, rien ne quitte le téléphone ; avec un compte (facultatif), les données sont synchronisées chez Supabase. Les réponses « App Privacy » / « Data safety » sont dans `docs/PRIVACY_POLICY.md`. **À mettre à jour** avant l’import par IA, et renseigner la région du serveur (`src/shared/legal.ts`).
+- Cadre légal : loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun (en vigueur depuis le 23 juin 2026). Avec les comptes, prévoir le registre des traitements, les formalités auprès de l’Autorité de protection des données et, si le serveur est hors du Cameroun, l’autorisation de transfert.
 
 ## 5. Erreurs
 

@@ -1,10 +1,12 @@
 /**
  * Informations légales affichées dans la politique de confidentialité (app et page publique).
- * À remplir avant la publication sur les stores. Vide = « [à compléter] » affiché.
+ * Vide = « [à compléter] » affiché.
  */
 export const LEGAL = {
-  /** Nom de la personne ou de l'entreprise qui publie MySky. */
-  publisher: '',
+  /** Personne ou entreprise qui publie MySky (responsable du traitement). */
+  publisher: 'Sopgwi Kamga Yvan Armel',
   /** Adresse e-mail de contact pour les questions sur les données. */
-  contactEmail: '',
+  contactEmail: 'kamgayvanarmel@gmail.com',
+  /** Région Supabase choisie à la création du projet (ex. « Europe — Francfort »). */
+  serverRegion: '',
 } as const;

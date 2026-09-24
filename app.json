@@ -309,7 +309,9 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "scheme": "mysky",
     "experiments": {

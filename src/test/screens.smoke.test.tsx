@@ -56,6 +56,12 @@ jest.mock('expo-router', () => {
       React.createElement(React.Fragment, null, children),
   };
 });
+const signedOut = { enabled: false, loading: false, session: null, userId: null, email: null };
+let mockAuth: Record<string, unknown> = signedOut;
+jest.mock('@/modules/identity', () => ({
+  ...jest.requireActual('@/modules/identity'),
+  useAuth: () => mockAuth,
+}));
 jest.mock('@/modules/platform', () => ({
   ...jest.requireActual('@/modules/platform'),
   hasPermission: async () => true,
@@ -169,7 +175,18 @@ type Case = {
   name: string;
   load: () => { default: ComponentType };
   params?: Record<string, string>;
+  /** État de connexion simulé (par défaut : comptes pas configurés). */
+  auth?: Record<string, unknown>;
   expect: string[];
+};
+
+const enabledOut = { ...signedOut, enabled: true };
+const signedIn = {
+  enabled: true,
+  loading: false,
+  session: { user: { id: 'user-1', email: 'awa@example.com' } },
+  userId: 'user-1',
+  email: 'awa@example.com',
 };
 
 const cases: Case[] = [
@@ -383,7 +400,63 @@ const cases: Case[] = [
   {
     name: 'Politique de confidentialité',
     load: () => require('@/app/privacy') as { default: ComponentType },
-    expect: ['Tes données restent sur ton téléphone.', 'loi n° 2024/017', '[à compléter]'],
+    expect: [
+      'Sans compte, tes données restent',
+      'loi n° 2024/017',
+      'Sopgwi Kamga Yvan Armel',
+      'Compte et synchronisation',
+    ],
+  },
+  {
+    name: 'Compte — comptes pas configurés',
+    load: () => require('@/app/account/index') as { default: ComponentType },
+    expect: ['Comptes pas encore disponibles'],
+  },
+  {
+    name: 'Compte — pas connecté',
+    load: () => require('@/app/account/index') as { default: ComponentType },
+    auth: enabledOut,
+    expect: ['Retrouve tes données partout', 'Créer mon compte', 'Le compte est facultatif'],
+  },
+  {
+    name: 'Compte — connecté',
+    load: () => require('@/app/account/index') as { default: ComponentType },
+    auth: signedIn,
+    expect: [
+      'awa@example.com',
+      'Synchroniser maintenant',
+      'Supprimer mon compte',
+      'Se déconnecter',
+    ],
+  },
+  {
+    name: 'Connexion',
+    load: () => require('@/app/auth/sign-in') as { default: ComponentType },
+    auth: enabledOut,
+    expect: [
+      'Se connecter',
+      'Mot de passe oublié ?',
+      'Continuer avec Apple',
+      'Continuer avec Google',
+    ],
+  },
+  {
+    name: 'Inscription',
+    load: () => require('@/app/auth/sign-up') as { default: ComponentType },
+    auth: enabledOut,
+    expect: ['Créer mon compte', 'Confirmer le mot de passe', 'Au moins 8 caractères'],
+  },
+  {
+    name: 'Mot de passe oublié',
+    load: () => require('@/app/auth/forgot') as { default: ComponentType },
+    auth: enabledOut,
+    expect: ['Envoyer le lien'],
+  },
+  {
+    name: 'Nouveau mot de passe',
+    load: () => require('@/app/auth/reset') as { default: ComponentType },
+    auth: signedIn,
+    expect: ['Enregistrer le mot de passe'],
   },
   {
     name: 'Onboarding',
@@ -399,6 +472,7 @@ const cases: Case[] = [
 
 describe.each(cases)('écran $name', (c) => {
   it('s’affiche avec ses données', async () => {
+    mockAuth = c.auth ?? signedOut;
     for (const k of Object.keys(mockParams)) delete mockParams[k];
     for (const [k, v] of Object.entries(c.params ?? {}))
       mockParams[k] = k.toLowerCase().endsWith('id') ? (ids[v] ?? v) : v;

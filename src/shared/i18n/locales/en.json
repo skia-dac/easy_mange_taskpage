@@ -535,7 +535,9 @@
     "later": "Later",
     "laterHint": "Explore the app first.",
     "import": "Import my timetable",
-    "importHint": "Photo or PDF. Coming soon."
+    "importHint": "Photo or PDF. Coming soon.",
+    "account": "I already have an account",
+    "accountHint": "Get your data back from another phone"
   },
   "notifications": {
     "title": "Notifications",
@@ -786,24 +788,109 @@
       "off": "not planned"
     }
   },
+  "account": {
+    "title": "Account and sync",
+    "noAccount": "No account · data on this phone",
+    "why": "Find your data everywhere",
+    "whyHint": "With an account, your classes, notes, tasks and habits are copied to the MySky server: you find them on another phone and lose nothing if you change devices.",
+    "optional": "An account is optional. Without one, everything stays on this phone.",
+    "unavailable": "Accounts not available yet",
+    "unavailableHint": "This version of MySky is not connected to a server yet. Everything works without an account, on this phone.",
+    "signedIn": "Signed in",
+    "security": "Security",
+    "signOut": "Sign out",
+    "signOutHint": "Your data stays on your account. What should happen to this phone’s copy?",
+    "signOutKeep": "Keep my data on this phone",
+    "signOutKeepHint": "You keep using them offline",
+    "signOutErase": "Erase this phone",
+    "signOutEraseHint": "For a borrowed or shared phone. Your data stays on your account.",
+    "delete": "Delete my account",
+    "deleteTitle": "Delete your account?",
+    "deleteMessage": "Your account, all your data on the server (including attached files) and this phone’s data will be deleted.",
+    "deleteContinue": "Continue",
+    "deleteAgainTitle": "Last check",
+    "deleteAgainMessage": "This cannot be undone.",
+    "deleteConfirm": "Delete my account",
+    "otherTitle": "Data from another account",
+    "otherMessage": "This phone holds data from another MySky account. To continue with this account, it will be erased from this phone (it stays on the other account).",
+    "otherConfirm": "Erase and continue"
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signUpTitle": "Create an account",
+    "signUpHint": "Your account syncs your data between your devices.",
+    "signIn": "Sign in",
+    "createAccount": "Create my account",
+    "email": "Email address",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "passwordRules": "At least {{min}} characters, with a letter and a digit",
+    "forgot": "Forgot your password?",
+    "noAccount": "No account yet? Create one",
+    "haveAccount": "Already have an account? Sign in",
+    "or": "or",
+    "withApple": "Continue with Apple",
+    "withGoogle": "Continue with Google",
+    "checkMailTitle": "Check your inbox",
+    "checkMail": "We sent a link to {{email}}. Open it on this phone to activate your account.",
+    "privacyNotice": "By creating an account, your data is copied to the MySky server for syncing. See the privacy policy.",
+    "forgotTitle": "Forgot password",
+    "forgotHint": "Enter your email address: you will receive a link to choose a new password.",
+    "sendLink": "Send the link",
+    "linkSent": "If an account exists for this address, an email has just been sent. Open the link on this phone.",
+    "finishing": "Signing you in…",
+    "newPasswordTitle": "New password",
+    "newPassword": "New password",
+    "savePassword": "Save password",
+    "passwordSavedTitle": "Password changed",
+    "passwordSaved": "Your new password is saved.",
+    "changePassword": "Change password",
+    "error": {
+      "invalidCredentials": "Wrong email or password.",
+      "emailNotConfirmed": "First confirm your address with the link sent by email.",
+      "emailTaken": "An account already exists with this address. Sign in.",
+      "emailInvalid": "This email address is not valid.",
+      "passwordShort": "The password must be at least 8 characters.",
+      "passwordWeak": "The password must contain at least one letter and one digit.",
+      "passwordMismatch": "The two passwords do not match.",
+      "samePassword": "Choose a password different from the old one.",
+      "tooMany": "Too many attempts. Try again in a few minutes.",
+      "linkExpired": "This link has expired or was already used. Ask for a new one.",
+      "notConfigured": "Accounts are not available in this version.",
+      "deleteFailed": "The account could not be deleted. Check your connection and try again."
+    }
+  },
+  "sync": {
+    "title": "Sync",
+    "upToDate": "Up to date",
+    "running": "Syncing…",
+    "offline": "Offline: will send when connected",
+    "error": "Sync failed, retrying soon",
+    "pending": "{{count}} change(s) to send",
+    "last": "Last sync: {{date}}",
+    "never": "Not synced yet",
+    "now": "Sync now",
+    "hint": "Sync is automatic: at launch, when you come back to the app and a few seconds after each change.",
+    "conflicts": "{{count}} change(s) made here replaced by a newer version from another device. They are kept in the local backup."
+  },
   "privacy": {
     "title": "Privacy policy",
     "updated": "Last updated: 24 September 2026",
     "intro": "This policy explains which data MySky uses, where it is kept and what you can do with it. It applies to the MySky app on iPhone and Android.",
     "toFill": "[to be completed]",
     "open": "Privacy policy",
-    "openHint": "Your data stays on your phone",
+    "openHint": "What MySky does with your data",
     "who": {
       "title": "Who publishes MySky",
-      "body": "MySky is an organisation app for pupils and students, published by {{publisher}}, in Cameroon.\n\nFor any question about this policy or your data, write to: {{email}}"
+      "body": "MySky is an organisation app for pupils and students, published by {{publisher}}, in Cameroon. {{publisher}} is the controller of the data linked to MySky accounts.\n\nFor any question about this policy or your data, write to: {{email}}"
     },
     "summary": {
       "title": "In short",
-      "body": "• Your data stays on your phone.\n• There is no MySky account or server: we receive none of your data.\n• No ads, no analytics, no tracking.\n• Nothing is sold or shared with anyone.\n• You can delete everything at any time from the app."
+      "body": "• Without an account, your data stays only on your phone: we receive none of it.\n• An account is optional. If you create one, your data is also copied to the MySky server so it syncs between your devices.\n• No ads, no analytics, no tracking.\n• Nothing is sold or shared for commercial purposes.\n• You can delete everything at any time from the app, account included."
     },
     "data": {
       "title": "The data you enter",
-      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study sessions and habits, with the reasons you note when a habit is not done (optional);\n• your settings.\n\nThis data is stored only on your phone, in the app's private space, which other apps cannot access. It is only used to make MySky work: show your day, your calendar, your reminders and your statistics."
+      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study sessions and habits, with the reasons you note when a habit is not done (optional);\n• your settings.\n\nThis data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
     },
     "permissions": {
       "title": "Phone permissions",
@@ -811,7 +898,7 @@
     },
     "leaves": {
       "title": "What can leave your phone",
-      "body": "Nothing leaves your phone unless you do it:\n\n• Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.\n• Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky."
+      "body": "Nothing leaves your phone unless you do it:\n\n• Account: if you sign in, your data is synced with the MySky server (see below).\n• Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.\n• Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky."
     },
     "visible": {
       "title": "Widgets, notifications and lock screen",
@@ -819,23 +906,23 @@
     },
     "retention": {
       "title": "Retention and deletion",
-      "body": "Your data is kept as long as you keep it. MySky makes a local backup every day and keeps the last 7.\n\n• You can delete each item from the app.\n• Settings › My data › “Delete all my data” erases everything: the database, attachments, backups and scheduled reminders.\n• Uninstalling MySky also erases its data from the phone (except a possible iCloud backup of your device)."
+      "body": "Your data is kept as long as you keep it. MySky makes a local backup every day and keeps the last 7.\n\n• You can delete each item from the app.\n• Settings › My data › “Delete all my data” erases everything: the database, attachments, backups and scheduled reminders.\n• Uninstalling MySky also erases its data from the phone (except a possible iCloud backup of your device).\n• Account › “Delete my account” deletes your account and all your data from the server, files included, then from the phone. Otherwise, an account's data is kept as long as the account exists."
     },
     "security": {
       "title": "Security",
-      "body": "Your data is in the app's private space and is not sent to any server. You can add a Face ID, Touch ID or passcode lock in Settings › Privacy. Also protect your phone with a passcode: it is the first protection of your data."
+      "body": "On the phone, your data is in the app's private space, and your sign-in session is kept in the phone's secure keychain. With an account, exchanges with the server are encrypted (HTTPS) and each account can only read its own data (security rules enforced by the database itself). Your password is never stored in plain text. You can add a Face ID, Touch ID or passcode lock in Settings › Privacy. Also protect your phone with a passcode: it is the first protection of your data."
     },
     "minors": {
       "title": "Minors",
-      "body": "MySky can be used by pupils under the age of majority. The app collects no data and sends nothing to anyone. If you are a minor, talk about your use of MySky with your parents or legal guardian."
+      "body": "MySky can be used by pupils under the age of majority, with or without an account. If you are a minor, ask your parents or legal guardian before creating an account, and talk to them about your use of MySky."
     },
     "rights": {
       "title": "Your rights",
-      "body": "Cameroon's Law No. 2024/017 of 23 December 2024 on the protection of personal data gives you in particular the rights to information, access, rectification, erasure, portability and objection.\n\nIn MySky you exercise these rights yourself, directly in the app: you view and edit your data, delete it, and export it (backup, note as PDF, .ics calendar). Since we hold none of your data, we can neither view nor change it for you.\n\nFor any question: {{email}}. You can also contact the Personal Data Protection Authority provided for by that law. If you live in another country, you also keep the rights given by your country's law (for example the GDPR in the European Union)."
+      "body": "Cameroon's Law No. 2024/017 of 23 December 2024 on the protection of personal data gives you in particular the rights to information, access, rectification, erasure, portability and objection.\n\nIn MySky you exercise these rights yourself, directly in the app: you view and edit your data, delete it (account included), and export it (backup, note as PDF, .ics calendar). For your account data you can also write to us: we answer within one month.\n\nFor any question: {{email}}. You can also contact the Personal Data Protection Authority provided for by that law. If you live in another country, you also keep the rights given by your country's law (for example the GDPR in the European Union)."
     },
-    "future": {
-      "title": "Accounts and sync (coming later)",
-      "body": "A future version will offer an account so you can find your data on several devices. Before that, this policy will be updated to explain which data will go to a server, where it is and why. You will be told in the app before anything leaves your phone."
+    "account": {
+      "title": "Account and sync",
+      "body": "An account is optional. You can create it with your email address and a password, or with Apple or Google.\n\n• Account data: your email address, your first and last name if you give them, and, with Apple or Google, the identifier that service sends us. Apple and Google receive none of your MySky data.\n• Synced data: everything you enter in the app (see “The data you enter”), including your attachments and profile photo.\n• Why: only to sign you in and let you find your data on your devices. Legal basis: your consent, given when you create the account, which you can withdraw by deleting the account.\n• Where: with our host Supabase, in the {{region}} region. Data may therefore be hosted outside Cameroon; this transfer is made within the framework of Law No. 2024/017.\n• Who can access it: only you, from the app. The host acts on our behalf and does not use your data for itself. We only access it when needed to answer your request or a legal obligation.\n• Signing out: you choose to keep or erase the phone's copy; the data stays on your account."
     },
     "changes": {
       "title": "Changes to this policy",

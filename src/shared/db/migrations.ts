@@ -262,4 +262,23 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_habit_logs_habit_date ON habit_logs (habit_id, date);
     `,
   },
+  {
+    version: 9,
+    name: 'synchronisation : conflits et fichiers envoyés',
+    sql: `
+      CREATE TABLE sync_conflicts (
+        id TEXT PRIMARY KEY NOT NULL,
+        entity TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        local_payload TEXT NOT NULL,
+        server_payload TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        resolved_at TEXT
+      );
+      CREATE TABLE sync_files (
+        path TEXT PRIMARY KEY NOT NULL,
+        synced_at TEXT NOT NULL
+      );
+    `,
+  },
 ];

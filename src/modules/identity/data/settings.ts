@@ -37,13 +37,18 @@ async function readSetting(db: Db, key: string): Promise<unknown> {
   }
 }
 
-async function writeSetting(db: Db, key: string, value: unknown): Promise<void> {
+/** `silent` : n'avertit pas les écrans (données techniques de synchronisation, écrites souvent). */
+async function writeSetting(db: Db, key: string, value: unknown, silent = false): Promise<void> {
   await db.runAsync(
     `INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
     [key, JSON.stringify(value), nowIso()],
   );
-  notifyChange(['app_settings']);
+  if (!silent) notifyChange(['app_settings']);
+}
+
+async function deleteSetting(db: Db, key: string): Promise<void> {
+  await db.runAsync('DELETE FROM app_settings WHERE key = ?', [key]);
 }
 
 export async function getNotificationPreferences(db: Db): Promise<NotificationPreferences> {
@@ -112,4 +117,39 @@ export async function isAppLockEnabled(db: Db): Promise<boolean> {
 
 export async function setAppLockEnabled(db: Db, value: boolean): Promise<void> {
   await writeSetting(db, KEYS.appLock, value);
+}
+
+/** Compte auquel appartiennent les données de ce téléphone (id Supabase), ou null. */
+export async function getAccountOwner(db: Db): Promise<string | null> {
+  const v = await readSetting(db, 'account_owner');
+  return typeof v === 'string' ? v : null;
+}
+
+export async function setAccountOwner(db: Db, userId: string | null): Promise<void> {
+  if (userId) await writeSetting(db, 'account_owner', userId);
+  else await deleteSetting(db, 'account_owner');
+}
+
+/** Curseur de synchronisation d'une table : dernière date serveur reçue. */
+export async function getSyncCursor(db: Db, table: string): Promise<string | null> {
+  const v = await readSetting(db, `sync_cursor:${table}`);
+  return typeof v === 'string' ? v : null;
+}
+
+export async function setSyncCursor(db: Db, table: string, cursor: string): Promise<void> {
+  await writeSetting(db, `sync_cursor:${table}`, cursor, true);
+}
+
+/** Efface tous les curseurs (prochaine synchronisation = tout recevoir à nouveau). */
+export async function clearSyncCursors(db: Db): Promise<void> {
+  await db.runAsync("DELETE FROM app_settings WHERE key LIKE 'sync_cursor:%'", []);
+}
+
+export async function getLastSyncAt(db: Db): Promise<string | null> {
+  const v = await readSetting(db, 'last_sync_at');
+  return typeof v === 'string' ? v : null;
+}
+
+export async function setLastSyncAt(db: Db, iso: string): Promise<void> {
+  await writeSetting(db, 'last_sync_at', iso);
 }

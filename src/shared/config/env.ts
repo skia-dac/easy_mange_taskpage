@@ -15,7 +15,9 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
   const clean = (v: string | undefined) => (v && v.trim() !== '' ? v.trim() : undefined);
   return schema.parse({
     supabaseUrl: clean(raw.EXPO_PUBLIC_SUPABASE_URL),
-    supabaseAnonKey: clean(raw.EXPO_PUBLIC_SUPABASE_ANON_KEY),
+    // Nouveau nom Supabase (« publishable ») ou ancien nom (« anon ») : même rôle, clé publique.
+    supabaseAnonKey:
+      clean(raw.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ?? clean(raw.EXPO_PUBLIC_SUPABASE_ANON_KEY),
   });
 }
 
@@ -23,4 +25,10 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
 export const env: Env = parseEnv({
   EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
   EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+  EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 });
+
+/** Les comptes et la synchronisation sont disponibles quand le projet Supabase est configuré. */
+export function accountsConfigured(e: Env = env): boolean {
+  return !!e.supabaseUrl && !!e.supabaseAnonKey;
+}

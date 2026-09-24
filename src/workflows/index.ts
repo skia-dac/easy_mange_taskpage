@@ -3,3 +3,11 @@ export type { SubjectUsage } from './deleteSubject';
 export { countResults, emptyResults, MIN_QUERY_LENGTH, searchAll } from './search';
 export type { SearchResults } from './search';
 export { wipeAllData } from './wipeAllData';
+export {
+  claimLocalData,
+  deleteAccountEverywhere,
+  fillProfileFromSignUp,
+  replaceLocalDataWithAccount,
+  signOutFromPhone,
+} from './account';
+export type { ClaimResult } from './account';

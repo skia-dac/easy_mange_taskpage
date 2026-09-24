@@ -1,6 +1,6 @@
 export { notifyChange, subscribeToChanges } from './changes';
 export { DATABASE_NAME, setupDatabase } from './database';
-export { EntityWriter, write } from './entityWriter';
+export { EntityWriter, SYNCED_TABLES, write } from './entityWriter';
 export type { EntityTable, Values } from './entityWriter';
 export { newId, nowIso } from './ids';
 export { migrate, validateMigrations } from './migrate';

@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AppearanceProvider, LanguageGate } from '@/modules/identity';
+import { AccountGate } from '@/components/AccountGate';
+import { AppearanceProvider, AuthProvider, LanguageGate } from '@/modules/identity';
 import { BackupGate, LockGate, NotificationsGate, WidgetsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -47,14 +48,17 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Suspense fallback={<LoadingScreen message={t('loading.database')} />}>
         <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
-          <LanguageGate />
-          <NotificationsGate />
-          <BackupGate />
-          <WidgetsGate />
-          <AppearanceProvider>
-            <ThemedStack />
-            <LockGate />
-          </AppearanceProvider>
+          <AuthProvider>
+            <LanguageGate />
+            <NotificationsGate />
+            <AccountGate />
+            <BackupGate />
+            <WidgetsGate />
+            <AppearanceProvider>
+              <ThemedStack />
+              <LockGate />
+            </AppearanceProvider>
+          </AuthProvider>
         </SQLiteProvider>
       </Suspense>
     </SafeAreaProvider>
@@ -115,6 +119,7 @@ function ThemedStack() {
         <Stack.Screen name="study" options={{ title: t('study.title') }} />
         <Stack.Screen name="stats" options={{ title: t('stats.title') }} />
         <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
+        <Stack.Screen name="account/index" options={{ title: t('account.title') }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
     </>
