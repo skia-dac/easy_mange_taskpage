@@ -9,12 +9,17 @@ import {
   type AppearancePreference,
   type LanguagePreference,
   type NotificationPreferences,
+  defaultWeekStart,
+  weekStartSchema,
+  type WeekStart,
 } from '../domain/preferences';
 
 const KEYS = {
   notifications: 'notifications',
   language: 'language',
   appearance: 'appearance',
+  weekStart: 'week_start',
+  lastBackupAt: 'last_backup_at',
 } as const;
 
 async function readSetting(db: Db, key: string): Promise<unknown> {
@@ -78,4 +83,23 @@ export async function getAppearancePreference(db: Db): Promise<AppearancePrefere
 
 export async function setAppearancePreference(db: Db, value: AppearancePreference): Promise<void> {
   await writeSetting(db, KEYS.appearance, value);
+}
+
+export async function getWeekStart(db: Db): Promise<WeekStart> {
+  const parsed = weekStartSchema.safeParse(await readSetting(db, KEYS.weekStart));
+  return parsed.success ? parsed.data : defaultWeekStart;
+}
+
+export async function setWeekStart(db: Db, value: WeekStart): Promise<void> {
+  await writeSetting(db, KEYS.weekStart, weekStartSchema.parse(value));
+}
+
+/** Date (ISO) de la dernière sauvegarde automatique, ou null. */
+export async function getLastBackupAt(db: Db): Promise<string | null> {
+  const value = await readSetting(db, KEYS.lastBackupAt);
+  return typeof value === 'string' ? value : null;
+}
+
+export async function setLastBackupAt(db: Db, isoDate: string): Promise<void> {
+  await writeSetting(db, KEYS.lastBackupAt, isoDate);
 }

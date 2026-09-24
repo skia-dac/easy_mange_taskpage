@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { listSubjects } from '@/modules/academic';
-import { getNotificationPreferences } from '@/modules/identity';
+import { getNotificationPreferences, type NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
@@ -20,24 +20,68 @@ export const ACTIONS = {
 
 let configured = false;
 
+/**
+ * Canaux Android : un canal ne peut plus être modifié une fois créé (c'est le système qui décide),
+ * on en crée donc un par combinaison son / vibration et on choisit le bon à chaque rappel.
+ */
+const CHANNELS = {
+  full: 'reminders',
+  silent: 'reminders-silent',
+  noVibration: 'reminders-novibration',
+  quiet: 'reminders-quiet',
+} as const;
+
+export function channelFor(prefs: Pick<NotificationPreferences, 'sound' | 'vibrate'>): string {
+  if (prefs.sound && prefs.vibrate) return CHANNELS.full;
+  if (prefs.sound) return CHANNELS.noVibration;
+  if (prefs.vibrate) return CHANNELS.silent;
+  return CHANNELS.quiet;
+}
+
+async function createChannels(): Promise<void> {
+  const name = i18n.t('notif.channel');
+  const importance = Notifications.AndroidImportance.HIGH;
+  await Promise.all([
+    Notifications.setNotificationChannelAsync(CHANNELS.full, {
+      name,
+      importance,
+      enableVibrate: true,
+    }),
+    Notifications.setNotificationChannelAsync(CHANNELS.noVibration, {
+      name: `${name} · ${i18n.t('settings.noVibration')}`,
+      importance,
+      enableVibrate: false,
+      vibrationPattern: [0],
+    }),
+    Notifications.setNotificationChannelAsync(CHANNELS.silent, {
+      name: `${name} · ${i18n.t('settings.noSound')}`,
+      importance,
+      sound: null,
+      enableVibrate: true,
+    }),
+    Notifications.setNotificationChannelAsync(CHANNELS.quiet, {
+      name: `${name} · ${i18n.t('settings.quiet')}`,
+      importance,
+      sound: null,
+      enableVibrate: false,
+      vibrationPattern: [0],
+    }),
+  ]);
+}
+
 /** À appeler une fois au démarrage : comportement quand l'app est ouverte, et boutons de fin de cours. */
 export async function configureNotifications(): Promise<void> {
   if (configured) return;
   configured = true;
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
+    handleNotification: async (notification) => ({
       shouldShowBanner: true,
       shouldShowList: true,
-      shouldPlaySound: true,
+      shouldPlaySound: notification.request.content.sound !== null,
       shouldSetBadge: false,
     }),
   });
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('reminders', {
-      name: i18n.t('notif.channel'),
-      importance: Notifications.AndroidImportance.HIGH,
-    });
-  }
+  if (Platform.OS === 'android') await createChannels();
   await Notifications.setNotificationCategoryAsync(END_OF_COURSE_CATEGORY, [
     {
       identifier: ACTIONS.addAssignment,
@@ -90,11 +134,16 @@ export async function syncScheduledNotifications(
   const byId = new Map(subjects.map((s) => [s.id, s.name]));
   const plan = planReminders(data, prefs, now, { subjectName: (id) => byId.get(id) ?? '' });
   await Notifications.cancelAllScheduledNotificationsAsync();
-  await Promise.all(plan.map(scheduleOne));
+  await Promise.all(plan.map((r) => scheduleOne(r, prefs)));
   return plan.length;
 }
 
-async function scheduleOne(r: PlannedReminder): Promise<void> {
+/** Annule tous les rappels programmés (suppression des données). */
+export async function cancelAllReminders(): Promise<void> {
+  await Notifications.cancelAllScheduledNotificationsAsync();
+}
+
+async function scheduleOne(r: PlannedReminder, prefs: NotificationPreferences): Promise<void> {
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: r.id,
@@ -103,12 +152,12 @@ async function scheduleOne(r: PlannedReminder): Promise<void> {
         body: i18n.t(r.body.key, r.body.params),
         data: r.action,
         categoryIdentifier: r.category === 'endOfCourse' ? END_OF_COURSE_CATEGORY : undefined,
-        sound: true,
+        sound: prefs.sound,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: r.fireAt,
-        channelId: Platform.OS === 'android' ? 'reminders' : undefined,
+        channelId: Platform.OS === 'android' ? channelFor(prefs) : undefined,
       },
     });
   } catch (e) {

@@ -59,3 +59,16 @@ export function atTime(day: IsoDate, time: Time): Date {
 export function startOfIsoWeek(value: IsoDate): IsoDate {
   return addDaysIso(value, 1 - isoWeekday(value));
 }
+
+/**
+ * Premier jour de la semaine contenant `value`, selon le jour choisi par l'utilisateur
+ * (1 = lundi … 7 = dimanche). `startOfIsoWeek` est le cas lundi.
+ */
+export function startOfWeekOn(value: IsoDate, weekStart: number): IsoDate {
+  return addDaysIso(value, -((isoWeekday(value) - weekStart + 7) % 7));
+}
+
+/** Les 7 jours de la semaine (numéros ISO) dans l'ordre d'affichage, à partir de `weekStart`. */
+export function weekdayOrder(weekStart: number): number[] {
+  return Array.from({ length: 7 }, (_, i) => ((weekStart - 1 + i) % 7) + 1);
+}

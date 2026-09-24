@@ -211,6 +211,8 @@ Done after a walk-through showed gaps between "module exists" and "module comple
 
 **Safety nets now in place:** `src/test/screens.smoke.test.tsx` renders **every screen** against a real SQLite database seeded with a subject, timetable, class (with a cancelled session), exam, task, homework, event, note and holiday, and checks the expected texts; `src/shared/i18n/keys.test.ts` fails if a translation key used in code is missing.
 
+**Polish (24 Sep 2026):** a loading screen while the database opens and while the first-launch check runs (no more blank screen); « Supprimer toutes mes données » in settings (double confirmation, wipes the database, attachments, backups and scheduled reminders, then returns to the intro); automatic daily backup of the whole local database to a JSON file in the app's private folder (last 7 kept, manual backup / share / restore from settings, attachments excluded — see `docs/SECURITY.md` §4e); sound and vibration toggles for reminders (Android: one channel per combination, since a channel cannot be changed once created); first day of the week (Monday / Saturday / Sunday) used by the calendar.
+
 **Still out of scope until external accounts exist:** accounts + sync (phase 2, Supabase), timetable import (phase 6, AI key), store assets (7b).
 
 ## 6. Open questions for the product owner

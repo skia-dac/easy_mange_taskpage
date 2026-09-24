@@ -451,7 +451,17 @@
     "appAuto": "Automatic",
     "appLight": "Light",
     "appDark": "Dark",
-    "events": "Event reminders"
+    "events": "Event reminders",
+    "sound": "Sound",
+    "soundHint": "Plays a sound with each reminder",
+    "vibrate": "Vibration",
+    "vibrateHint": "On iPhone, vibration follows the phone setting",
+    "noSound": "no sound",
+    "noVibration": "no vibration",
+    "quiet": "silent",
+    "week": "Week",
+    "weekStart": "First day of the week",
+    "weekStartHint": "Changes the order of days in the calendar"
   },
   "reminder": {
     "none": "None",
@@ -508,5 +518,43 @@
     "off": "Notifications are turned off on this phone.",
     "settings": "Reminder settings",
     "count": "{{count}} reminder(s) in the next {{days}} days"
+  },
+  "loading": {
+    "database": "Opening your data…"
+  },
+  "data": {
+    "title": "My data",
+    "wipe": "Delete all my data",
+    "wipeHint": "Erases subjects, classes, notes, tasks, settings, attachments and backups from this phone. Cannot be undone.",
+    "wipeTitle": "Delete all your data?",
+    "wipeMessage": "Everything will be erased from this phone, including backups. Share a backup first if you want to keep a copy.",
+    "wipeConfirm": "Continue",
+    "wipeAgainTitle": "Last check",
+    "wipeAgainMessage": "This cannot be undone. Really delete all your data?",
+    "wipeAgainConfirm": "Delete everything"
+  },
+  "backup": {
+    "title": "Local backup",
+    "hint": "A copy of your data is made every day in the app’s private folder (last 7 kept). Attached files are not included.",
+    "last": "Last backup: {{date}}",
+    "never": "No backup yet",
+    "now": "Back up now",
+    "doneTitle": "Backup done",
+    "doneMessage": "Your data has been copied to the app folder.",
+    "share": "Share a backup",
+    "shareTitle": "MySky backup",
+    "shareMessage": "Choose the backup to send (Files, email, AirDrop…).",
+    "shareUnavailable": "Sharing is not available on this phone.",
+    "restore": "Restore a backup",
+    "restoreHint": "Current data will be replaced by the backup.",
+    "chooseFile": "Choose a file…",
+    "restoreTitle": "Restore this backup?",
+    "restoreMessage": "Backup from {{date}} ({{count}} item(s)). Your current data will be replaced.",
+    "restoreConfirm": "Restore",
+    "restoredTitle": "Data restored",
+    "restoredMessage": "Your data has been replaced by the backup.",
+    "unreadable": "This file is not a readable MySky backup.",
+    "tooRecent": "This backup comes from a newer version of MySky. Update the app.",
+    "size": "{{kb}} KB"
   }
 }

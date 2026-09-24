@@ -451,7 +451,17 @@
     "appAuto": "Automatique",
     "appLight": "Clair",
     "appDark": "Sombre",
-    "events": "Rappels d’événements"
+    "events": "Rappels d’événements",
+    "sound": "Son",
+    "soundHint": "Joue un son à chaque rappel",
+    "vibrate": "Vibration",
+    "vibrateHint": "Sur iPhone, la vibration suit le réglage du téléphone",
+    "noSound": "sans son",
+    "noVibration": "sans vibration",
+    "quiet": "silencieux",
+    "week": "Semaine",
+    "weekStart": "Premier jour de la semaine",
+    "weekStartHint": "Change l’ordre des jours dans le calendrier"
   },
   "reminder": {
     "none": "Aucun",
@@ -508,5 +518,43 @@
     "off": "Les notifications sont désactivées sur ce téléphone.",
     "settings": "Réglages des rappels",
     "count": "{{count}} rappel(s) dans les {{days}} prochains jours"
+  },
+  "loading": {
+    "database": "Ouverture de tes données…"
+  },
+  "data": {
+    "title": "Mes données",
+    "wipe": "Supprimer toutes mes données",
+    "wipeHint": "Efface matières, cours, notes, tâches, réglages, pièces jointes et sauvegardes de ce téléphone. Irréversible.",
+    "wipeTitle": "Supprimer toutes tes données ?",
+    "wipeMessage": "Tout sera effacé de ce téléphone, y compris les sauvegardes. Partage d’abord une sauvegarde si tu veux garder une copie.",
+    "wipeConfirm": "Continuer",
+    "wipeAgainTitle": "Dernière vérification",
+    "wipeAgainMessage": "Cette action est définitive. Supprimer vraiment toutes tes données ?",
+    "wipeAgainConfirm": "Tout supprimer"
+  },
+  "backup": {
+    "title": "Sauvegarde locale",
+    "hint": "Une copie de tes données est faite chaque jour dans le dossier privé de l’app (7 dernières gardées). Les fichiers joints ne sont pas inclus.",
+    "last": "Dernière sauvegarde : {{date}}",
+    "never": "Aucune sauvegarde pour le moment",
+    "now": "Sauvegarder maintenant",
+    "doneTitle": "Sauvegarde faite",
+    "doneMessage": "Tes données ont été copiées dans le dossier de l’app.",
+    "share": "Partager une sauvegarde",
+    "shareTitle": "Sauvegarde MySky",
+    "shareMessage": "Choisis la sauvegarde à envoyer (Fichiers, mail, AirDrop…).",
+    "shareUnavailable": "Le partage n’est pas disponible sur ce téléphone.",
+    "restore": "Restaurer une sauvegarde",
+    "restoreHint": "Les données actuelles seront remplacées par celles de la sauvegarde.",
+    "chooseFile": "Choisir un fichier…",
+    "restoreTitle": "Restaurer cette sauvegarde ?",
+    "restoreMessage": "Sauvegarde du {{date}} ({{count}} élément(s)). Tes données actuelles seront remplacées.",
+    "restoreConfirm": "Restaurer",
+    "restoredTitle": "Données restaurées",
+    "restoredMessage": "Tes données ont été remplacées par la sauvegarde.",
+    "unreadable": "Ce fichier n’est pas une sauvegarde MySky lisible.",
+    "tooRecent": "Cette sauvegarde vient d’une version plus récente de MySky. Mets l’app à jour.",
+    "size": "{{kb}} Ko"
   }
 }

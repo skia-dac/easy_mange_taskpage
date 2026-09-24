@@ -8,8 +8,16 @@ import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
 import { SearchButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useWeekStart } from '@/hooks/useWeekStart';
 import { calendarDays, useAgendaData, type CalendarItem } from '@/projections';
-import { addDaysIso, fromIsoDate, startOfIsoWeek, toIsoDate, type IsoDate } from '@/shared/dates';
+import {
+  addDaysIso,
+  fromIsoDate,
+  startOfWeekOn,
+  toIsoDate,
+  weekdayOrder,
+  type IsoDate,
+} from '@/shared/dates';
 import { formatLongDate, formatMonthYear } from '@/shared/format';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
@@ -17,9 +25,9 @@ import { AppText, Card, EmptyState, Fab, Screen, Segmented, SectionHeader } from
 
 type ViewMode = 'day' | 'week' | 'month';
 
-function monthGrid(anyDay: IsoDate): IsoDate[] {
+function monthGrid(anyDay: IsoDate, weekStartDay: number): IsoDate[] {
   const first = `${anyDay.slice(0, 7)}-01`;
-  const start = startOfIsoWeek(first);
+  const start = startOfWeekOn(first, weekStartDay);
   return Array.from({ length: 42 }, (_, i) => addDaysIso(start, i));
 }
 
@@ -33,15 +41,16 @@ export default function CalendarScreen() {
   const [selected, setSelected] = useState<IsoDate>(today);
   const agenda = useAgendaData();
   const { byId } = useSubjects();
+  const weekStartDay = useWeekStart();
 
-  const weekStart = startOfIsoWeek(selected);
+  const weekStart = startOfWeekOn(selected, weekStartDay);
   const range = useMemo(() => {
     if (mode === 'month') {
-      const grid = monthGrid(selected);
+      const grid = monthGrid(selected, weekStartDay);
       return { from: grid[0]!, to: grid[41]! };
     }
     return { from: weekStart, to: addDaysIso(weekStart, 6) };
-  }, [mode, selected, weekStart]);
+  }, [mode, selected, weekStart, weekStartDay]);
 
   const days = useMemo(
     () =>
@@ -250,9 +259,10 @@ function DayCell({
 
 function WeekdayHeader() {
   const labels = useLabels();
+  const weekStartDay = useWeekStart();
   return (
     <View style={{ flexDirection: 'row' }}>
-      {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+      {weekdayOrder(weekStartDay).map((n) => (
         <AppText key={n} variant="caption" color="muted" style={{ flex: 1, textAlign: 'center' }}>
           {labels.weekday(n, 'short')}
         </AppText>
@@ -277,7 +287,8 @@ function WeekStrip({ start, ...rest }: DayPickerProps & { start: IsoDate }) {
 
 function MonthGrid(props: DayPickerProps) {
   const { spacing } = useTheme();
-  const grid = monthGrid(props.selected);
+  const weekStartDay = useWeekStart();
+  const grid = monthGrid(props.selected, weekStartDay);
   const month = props.selected.slice(0, 7);
   return (
     <Card style={{ padding: spacing.sm, gap: spacing.xs }}>

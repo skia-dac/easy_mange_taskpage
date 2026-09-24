@@ -128,3 +128,13 @@ export function formatSize(bytes: number | null): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} Ko`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
+
+/** Supprime le dossier des pièces jointes (suppression de toutes les données). */
+export function deleteAllAttachments(): void {
+  try {
+    const dir = new Directory(Paths.document, ROOT);
+    if (dir.exists) dir.delete();
+  } catch {
+    logger.warn('Dossier des pièces jointes non supprimé');
+  }
+}

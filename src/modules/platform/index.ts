@@ -20,3 +20,20 @@ export {
   pickImage,
 } from './files/attachments';
 export type { PickedFile } from './files/attachments';
+export { cancelAllReminders } from './notifications/scheduler';
+export { deleteAllAttachments } from './files/attachments';
+export {
+  autoBackupIfDue,
+  BACKUPS_KEPT,
+  deleteAllBackups,
+  listBackups,
+  pickBackupFile,
+  readBackup,
+  restoreBackup,
+  shareBackup,
+  writeBackup,
+} from './backup/files';
+export type { BackupFile } from './backup/files';
+export { clearDatabase, snapshotSummary } from './backup/snapshot';
+export type { BackupSnapshot } from './backup/snapshot';
+export { BackupGate } from './backup/BackupGate';

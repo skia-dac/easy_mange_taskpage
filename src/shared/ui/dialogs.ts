@@ -25,3 +25,8 @@ export function confirmDestructive(
 export function showError(messageKey: string): void {
   Alert.alert(i18n.t('errors.title'), i18n.t(messageKey));
 }
+
+/** Message d'information simple (titre + texte déjà traduits). */
+export function showInfo(title: string, message: string): void {
+  Alert.alert(title, message);
+}

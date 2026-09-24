@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { isOnboardingDone } from '@/modules/identity';
 import { useDb } from '@/shared/db';
 import { fonts, useTheme } from '@/shared/theme';
+import { LoadingScreen } from '@/shared/ui';
 
 type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -29,7 +30,7 @@ export default function TabsLayout() {
     void isOnboardingDone(db).then(setOnboarded, () => setOnboarded(true));
   }, [db]);
 
-  if (onboarded === null) return null;
+  if (onboarded === null) return <LoadingScreen />;
   if (!onboarded) return <Redirect href="/onboarding" />;
 
   return (

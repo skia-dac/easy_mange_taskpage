@@ -57,3 +57,14 @@ export function formatDuration(minutes: number): string {
   const m = minutes % 60;
   return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`;
 }
+
+/** « 24 sept. 2026, 10:30 » */
+export function formatDateTime(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}

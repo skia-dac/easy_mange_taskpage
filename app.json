@@ -69,7 +69,8 @@
           "photosPermission": "MySky accède à tes photos pour les joindre à tes notes.",
           "cameraPermission": "MySky utilise l’appareil photo pour joindre une photo à tes notes."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "scheme": "mysky",
     "experiments": {

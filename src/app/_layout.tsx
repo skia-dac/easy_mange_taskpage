@@ -16,17 +16,17 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppearanceProvider, LanguageGate } from '@/modules/identity';
-import { NotificationsGate } from '@/modules/platform';
+import { BackupGate, NotificationsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 import { fonts, useTheme } from '@/shared/theme';
-import { AppText, Button } from '@/shared/ui';
+import { AppText, Button, LoadingScreen } from '@/shared/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { colors } = useTheme();
+  const { t } = useTranslation();
   const [fontsLoaded, fontError] = useFonts({
     BricolageGrotesque_700Bold,
     PlusJakartaSans_400Regular,
@@ -45,10 +45,11 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <Suspense fallback={<View style={{ flex: 1, backgroundColor: colors.background }} />}>
+      <Suspense fallback={<LoadingScreen message={t('loading.database')} />}>
         <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
           <LanguageGate />
           <NotificationsGate />
+          <BackupGate />
           <AppearanceProvider>
             <ThemedStack />
           </AppearanceProvider>

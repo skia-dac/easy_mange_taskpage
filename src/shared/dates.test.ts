@@ -6,8 +6,10 @@ import {
   isoWeekday,
   isTime,
   startOfIsoWeek,
+  startOfWeekOn,
   timeToMinutes,
   toIsoDate,
+  weekdayOrder,
 } from './dates';
 
 describe('dates', () => {
@@ -51,5 +53,22 @@ describe('dates', () => {
     expect(timeToMinutes('09:30')).toBe(570);
     expect(toIsoDate(atTime('2026-09-23', '09:30'))).toBe('2026-09-23');
     expect(atTime('2026-09-23', '09:30').getHours()).toBe(9);
+  });
+});
+
+describe('semaine qui commence un autre jour', () => {
+  it('lundi par défaut, samedi ou dimanche selon le réglage', () => {
+    // 2026-09-23 est un mercredi
+    expect(startOfWeekOn('2026-09-23', 1)).toBe('2026-09-21');
+    expect(startOfWeekOn('2026-09-23', 7)).toBe('2026-09-20');
+    expect(startOfWeekOn('2026-09-23', 6)).toBe('2026-09-19');
+    expect(startOfWeekOn('2026-09-20', 7)).toBe('2026-09-20');
+    expect(startOfWeekOn('2026-09-21', 1)).toBe(startOfIsoWeek('2026-09-21'));
+  });
+
+  it('ordonne les jours à partir du premier jour choisi', () => {
+    expect(weekdayOrder(1)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(weekdayOrder(7)).toEqual([7, 1, 2, 3, 4, 5, 6]);
+    expect(weekdayOrder(6)).toEqual([6, 7, 1, 2, 3, 4, 5]);
   });
 });
