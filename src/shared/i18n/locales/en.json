@@ -785,5 +785,61 @@
       "pending": "to do",
       "off": "not planned"
     }
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "updated": "Last updated: 24 September 2026",
+    "intro": "This policy explains which data MySky uses, where it is kept and what you can do with it. It applies to the MySky app on iPhone and Android.",
+    "toFill": "[to be completed]",
+    "open": "Privacy policy",
+    "openHint": "Your data stays on your phone",
+    "who": {
+      "title": "Who publishes MySky",
+      "body": "MySky is an organisation app for pupils and students, published by {{publisher}}, in Cameroon.\n\nFor any question about this policy or your data, write to: {{email}}"
+    },
+    "summary": {
+      "title": "In short",
+      "body": "• Your data stays on your phone.\n• There is no MySky account or server: we receive none of your data.\n• No ads, no analytics, no tracking.\n• Nothing is sold or shared with anyone.\n• You can delete everything at any time from the app."
+    },
+    "data": {
+      "title": "The data you enter",
+      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study sessions and habits, with the reasons you note when a habit is not done (optional);\n• your settings.\n\nThis data is stored only on your phone, in the app's private space, which other apps cannot access. It is only used to make MySky work: show your day, your calendar, your reminders and your statistics."
+    },
+    "permissions": {
+      "title": "Phone permissions",
+      "body": "MySky asks for a permission only when you need it. Each one is optional:\n\n• Notifications: for your reminders. They are scheduled by the phone itself, without going through the internet.\n• Photos and camera: to attach a picture to a note or pick your profile photo. Only the pictures you choose are copied into the app.\n• Files: to attach a document or restore a backup.\n• Face ID, Touch ID or passcode: only if you turn on the app lock. The check is done by the phone; MySky only receives “succeeded” or “failed”, never your face or fingerprint.\n\nYou can withdraw a permission at any time in your phone settings."
+    },
+    "leaves": {
+      "title": "What can leave your phone",
+      "body": "Nothing leaves your phone unless you do it:\n\n• Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.\n• Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky."
+    },
+    "visible": {
+      "title": "Widgets, notifications and lock screen",
+      "body": "If you add a MySky widget, it shows information (classes, tasks, exams, habits, average) on your home screen or lock screen: anyone who sees your phone can read it. Widgets and notifications never show the content of your notes or the reasons for missed habits, only titles, times and rooms."
+    },
+    "retention": {
+      "title": "Retention and deletion",
+      "body": "Your data is kept as long as you keep it. MySky makes a local backup every day and keeps the last 7.\n\n• You can delete each item from the app.\n• Settings › My data › “Delete all my data” erases everything: the database, attachments, backups and scheduled reminders.\n• Uninstalling MySky also erases its data from the phone (except a possible iCloud backup of your device)."
+    },
+    "security": {
+      "title": "Security",
+      "body": "Your data is in the app's private space and is not sent to any server. You can add a Face ID, Touch ID or passcode lock in Settings › Privacy. Also protect your phone with a passcode: it is the first protection of your data."
+    },
+    "minors": {
+      "title": "Minors",
+      "body": "MySky can be used by pupils under the age of majority. The app collects no data and sends nothing to anyone. If you are a minor, talk about your use of MySky with your parents or legal guardian."
+    },
+    "rights": {
+      "title": "Your rights",
+      "body": "Cameroon's Law No. 2024/017 of 23 December 2024 on the protection of personal data gives you in particular the rights to information, access, rectification, erasure, portability and objection.\n\nIn MySky you exercise these rights yourself, directly in the app: you view and edit your data, delete it, and export it (backup, note as PDF, .ics calendar). Since we hold none of your data, we can neither view nor change it for you.\n\nFor any question: {{email}}. You can also contact the Personal Data Protection Authority provided for by that law. If you live in another country, you also keep the rights given by your country's law (for example the GDPR in the European Union)."
+    },
+    "future": {
+      "title": "Accounts and sync (coming later)",
+      "body": "A future version will offer an account so you can find your data on several devices. Before that, this policy will be updated to explain which data will go to a server, where it is and why. You will be told in the app before anything leaves your phone."
+    },
+    "changes": {
+      "title": "Changes to this policy",
+      "body": "The date of the last update is shown at the top. If this policy changes in an important way, you will be told in the app."
+    }
   }
 }

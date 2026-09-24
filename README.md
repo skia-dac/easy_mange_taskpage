@@ -6,6 +6,7 @@ Statut : **phases 1, 3, 4, 5, 7a et lot 2 terminés** : suivi d'habitudes (« Me
 - Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
 - Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
 - Idées pour la version 2 : [`docs/VERSION_2.md`](docs/VERSION_2.md)
+- Politique de confidentialité (texte de l’app et de la page publique pour les stores) : [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md). Nom de l’éditeur et e-mail de contact à remplir dans `src/shared/legal.ts`.
 - Maquettes : https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
 
 ## Lancer l'app

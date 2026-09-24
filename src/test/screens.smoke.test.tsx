@@ -334,7 +334,14 @@ const cases: Case[] = [
   {
     name: 'Réglages',
     load: () => require('@/app/settings') as { default: ComponentType },
-    expect: ['Rappels de cours', 'Apparence', 'Langue', 'Mode focus', 'Verrouiller MySky'],
+    expect: [
+      'Rappels de cours',
+      'Apparence',
+      'Langue',
+      'Mode focus',
+      'Verrouiller MySky',
+      'Politique de confidentialité',
+    ],
   },
   {
     name: 'Profil — modifier',
@@ -372,6 +379,11 @@ const cases: Case[] = [
     load: () => require('@/app/habits/form') as { default: ComponentType },
     params: { id: 'habit' },
     expect: ['Enregistrer l’habitude', 'Cocher avec la révision'],
+  },
+  {
+    name: 'Politique de confidentialité',
+    load: () => require('@/app/privacy') as { default: ComponentType },
+    expect: ['Tes données restent sur ton téléphone.', 'loi n° 2024/017', '[à compléter]'],
   },
   {
     name: 'Onboarding',

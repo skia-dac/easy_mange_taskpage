@@ -785,5 +785,61 @@
       "pending": "à faire",
       "off": "pas prévu"
     }
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "updated": "Dernière mise à jour : 24 septembre 2026",
+    "intro": "Cette politique explique quelles données MySky utilise, où elles sont gardées et ce que tu peux en faire. Elle s'applique à l'application MySky sur iPhone et Android.",
+    "toFill": "[à compléter]",
+    "open": "Politique de confidentialité",
+    "openHint": "Tes données restent sur ton téléphone",
+    "who": {
+      "title": "Qui publie MySky",
+      "body": "MySky est une application d'organisation pour élèves et étudiants, publiée par {{publisher}}, au Cameroun.\n\nPour toute question sur cette politique ou sur tes données, écris à : {{email}}"
+    },
+    "summary": {
+      "title": "L’essentiel",
+      "body": "• Tes données restent sur ton téléphone.\n• Il n'y a ni compte ni serveur MySky : nous ne recevons aucune de tes données.\n• Pas de publicité, pas de mesure d'audience, pas de pistage.\n• Rien n'est vendu ni partagé avec qui que ce soit.\n• Tu peux tout supprimer à tout moment depuis l'app."
+    },
+    "data": {
+      "title": "Les données que tu enregistres",
+      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions de révision et tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif) ;\n• tes réglages.\n\nCes données sont enregistrées uniquement sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels et tes statistiques."
+    },
+    "permissions": {
+      "title": "Autorisations du téléphone",
+      "body": "MySky demande une autorisation seulement au moment où tu en as besoin. Chacune est facultative :\n\n• Notifications : pour tes rappels. Ils sont programmés par le téléphone lui-même, sans passer par Internet.\n• Photos et appareil photo : pour joindre une image à une note ou choisir ta photo de profil. Seules les images que tu choisis sont copiées dans l'app.\n• Fichiers : pour joindre un document ou restaurer une sauvegarde.\n• Face ID, Touch ID ou code : seulement si tu actives le verrouillage de l'app. La vérification est faite par le téléphone ; MySky reçoit uniquement « réussi » ou « échoué », jamais ton visage ni ton empreinte.\n\nTu peux retirer une autorisation à tout moment dans les réglages de ton téléphone."
+    },
+    "leaves": {
+      "title": "Ce qui peut quitter ton téléphone",
+      "body": "Rien ne quitte ton téléphone sans une action de ta part :\n\n• Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.\n• Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky."
+    },
+    "visible": {
+      "title": "Widgets, notifications et écran verrouillé",
+      "body": "Si tu ajoutes un widget MySky, il affiche des informations (cours, tâches, examens, habitudes, moyenne) sur ton écran d'accueil ou ton écran verrouillé : toute personne qui voit ton téléphone peut les lire. Les widgets et les notifications n'affichent jamais le contenu de tes notes ni les raisons de tes habitudes manquées, seulement des titres, des heures et des salles."
+    },
+    "retention": {
+      "title": "Durée de conservation et suppression",
+      "body": "Tes données sont gardées tant que tu les conserves. MySky fait chaque jour une sauvegarde locale et garde les 7 dernières.\n\n• Tu peux supprimer chaque élément depuis l'app.\n• Réglages › Mes données › « Supprimer toutes mes données » efface tout : la base, les pièces jointes, les sauvegardes et les rappels programmés.\n• Désinstaller MySky efface aussi ses données du téléphone (sauf une éventuelle sauvegarde iCloud de ton appareil)."
+    },
+    "security": {
+      "title": "Sécurité",
+      "body": "Tes données sont dans l'espace privé de l'app et ne sont envoyées à aucun serveur. Tu peux ajouter le verrouillage par Face ID, Touch ID ou code dans Réglages › Confidentialité. Protège aussi ton téléphone par un code : c'est la première protection de tes données."
+    },
+    "minors": {
+      "title": "Élèves mineurs",
+      "body": "MySky peut être utilisée par des élèves mineurs. L'app ne collecte aucune donnée et n'envoie rien à personne. Si tu es mineur, parle de ton utilisation de MySky avec tes parents ou ton responsable légal."
+    },
+    "rights": {
+      "title": "Tes droits",
+      "body": "La loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun te reconnaît notamment un droit d'information, d'accès, de rectification, d'effacement, de portabilité et d'opposition.\n\nDans MySky, tu exerces ces droits toi-même, directement dans l'app : tu vois et modifies tes données, tu les supprimes, et tu les exportes (sauvegarde, note en PDF, calendrier .ics). Comme nous ne détenons aucune de tes données, nous ne pouvons ni les consulter ni les modifier à ta place.\n\nPour toute question : {{email}}. Tu peux aussi saisir l'Autorité de protection des données à caractère personnel prévue par cette loi. Si tu vis dans un autre pays, tu gardes aussi les droits prévus par la loi de ton pays (par exemple le RGPD dans l'Union européenne)."
+    },
+    "future": {
+      "title": "Comptes et synchronisation (à venir)",
+      "body": "Une prochaine version proposera un compte pour retrouver tes données sur plusieurs appareils. Avant cela, cette politique sera mise à jour pour expliquer quelles données iront sur un serveur, où il se trouve et pourquoi. Tu en seras informé dans l'app avant que quoi que ce soit ne quitte ton téléphone."
+    },
+    "changes": {
+      "title": "Modifications de cette politique",
+      "body": "La date de dernière mise à jour est indiquée en haut. Si cette politique change de façon importante, tu en seras informé dans l'app."
+    }
   }
 }

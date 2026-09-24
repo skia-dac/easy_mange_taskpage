@@ -49,6 +49,8 @@ import {
   ChoiceChips,
   ChoiceSheet,
   confirmDestructive,
+  IconBadge,
+  ListRow,
   LoadingScreen,
   SectionHeader,
   Segmented,
@@ -319,6 +321,12 @@ export default function SettingsScreen() {
       <SectionHeader title={t('lock.section')} />
       <Card>
         {switchRow(t('lock.enable'), t('lock.enableHint'), appLock, (v) => void toggleAppLock(v))}
+        <ListRow
+          title={t('privacy.open')}
+          subtitle={t('privacy.openHint')}
+          leading={<IconBadge icon="shield" color="success" background="successSoft" />}
+          onPress={() => router.push('/privacy')}
+        />
       </Card>
 
       <SectionHeader title={t('settings.week')} />

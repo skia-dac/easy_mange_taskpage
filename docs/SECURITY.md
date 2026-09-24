@@ -85,6 +85,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - La raison d'un jour manqué est **facultative** et limitée à 200 caractères. Elle n'apparaît ni dans les notifications ni dans les widgets.
 - Supprimer une habitude supprime aussi son historique, après confirmation.
 
+## 4i. Politique de confidentialité
+
+- Texte unique en français et en anglais : `docs/PRIVACY_POLICY.md`, affiché dans l’app (Réglages › Confidentialité › Politique de confidentialité, clés `privacy.*`) et publié en page web pour l’App Store et Google Play.
+- Elle décrit l’app telle qu’elle est : aucune donnée collectée, rien n’est envoyé sur Internet. **Elle doit être mise à jour avant la phase 2** (comptes, synchronisation, import par IA), et la déclaration « App Privacy » / « Data safety » des stores avec.
+- Cadre légal : loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun (en vigueur depuis le 23 juin 2026). Avec les comptes, prévoir le registre des traitements et les formalités auprès de l’Autorité de protection des données.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.
