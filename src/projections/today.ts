@@ -13,6 +13,8 @@ import {
   isOverdue,
   type PersonalEvent,
   type WorkItem,
+  type Habit,
+  type HabitLog,
   type StudySession,
 } from '@/modules/productivity';
 import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
@@ -50,6 +52,9 @@ export type TodayData = {
   events: readonly PersonalEvent[];
   /** Session de révision en cours (minuteur), s'il y en a une. */
   studySession?: StudySession | null;
+  habits?: readonly Habit[];
+  /** Journal des habitudes (des 60 derniers jours à aujourd'hui). */
+  habitLogs?: readonly HabitLog[];
 };
 
 export type TodayView = {

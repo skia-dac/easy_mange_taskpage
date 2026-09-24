@@ -25,6 +25,8 @@ export const BACKUP_TABLES = [
   'notes',
   'attachments',
   'study_sessions',
+  'habits',
+  'habit_logs',
 ] as const;
 
 export const BACKUP_FORMAT = 'mysky-backup';

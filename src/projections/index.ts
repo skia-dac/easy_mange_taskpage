@@ -16,6 +16,7 @@ export type {
   WidgetCourse,
   WidgetData,
   WidgetExtras,
+  WidgetHabit,
   WidgetLabels,
   WidgetLinks,
   WidgetMonthCell,

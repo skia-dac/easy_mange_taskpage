@@ -169,6 +169,14 @@
               "ios": {
                 "supportedFamilies": ["systemLarge"]
               }
+            },
+            {
+              "name": "HabitsWidget",
+              "displayName": "Habitudes",
+              "description": "Tes habitudes du jour, faites ou non.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
             }
           ]
         }
@@ -285,6 +293,17 @@
               "minHeight": "240dp",
               "targetCellWidth": 4,
               "targetCellHeight": 4,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Habits",
+              "label": "MySky · Habitudes",
+              "description": "Tes habitudes du jour, faites ou non.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
             }

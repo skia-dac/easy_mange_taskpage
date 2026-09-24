@@ -46,7 +46,9 @@
     "invalidDuration": "Enter a duration in minutes (e.g. 120).",
     "invalidGrade": "Enter a valid grade (e.g. 14.5).",
     "invalidCoefficient": "Enter a coefficient greater than 0.",
-    "gradeTooHigh": "The grade is higher than the maximum."
+    "gradeTooHigh": "The grade is higher than the maximum.",
+    "pickDays": "Pick at least one day.",
+    "invalidCount": "Enter a number between 1 and 50."
   },
   "today": {
     "greeting": "Hello",
@@ -248,7 +250,8 @@
     "progress": "My progress",
     "gradesHint": "Averages per subject and history",
     "studyHint": "Study timer and weekly time",
-    "statsHint": "Class hours, tasks, study, streak"
+    "statsHint": "Class hours, tasks, study, streak",
+    "habitsHint": "Daily habits, streaks, weekly review"
   },
   "timetables": {
     "title": "Timetables",
@@ -444,7 +447,10 @@
     "studyEndTitle": "Session complete",
     "studyEndBody": "{{minutes}} min of study, well done. Break time?",
     "breakEndTitle": "Break over",
-    "breakEndBody": "Ready to continue?"
+    "breakEndBody": "Ready to continue?",
+    "habitTitle": "{{name}}",
+    "habitBody": "Remember today’s habit.",
+    "habitBodyCount": "Goal: {{target}} {{unit}} today."
   },
   "settings": {
     "title": "Settings",
@@ -480,7 +486,9 @@
     "weekStart": "First day of the week",
     "weekStartHint": "Changes the order of days in the calendar",
     "widgets": "Widgets",
-    "widgetsHint": "Add “Next class”, “Today”, “Tasks”, “Study”, “Week”, “Subject”, “Exams”, “Quick add”, “Average” or “Month” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go."
+    "widgetsHint": "Add “Next class”, “Today”, “Tasks”, “Study”, “Week”, “Subject”, “Exams”, “Quick add”, “Average” or “Month” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go.",
+    "habits": "Habit reminders",
+    "habitsHint": "At the time set on each habit, if not done yet"
   },
   "reminder": {
     "none": "None",
@@ -630,7 +638,8 @@
     "streak": "Active-day streak",
     "streakValue": "{{count}} day(s)",
     "studyByDay": "Study per day",
-    "hint": "A day is “active” when you complete a task or do a study session."
+    "hint": "A day is “active” when you complete a task or do a study session.",
+    "habits": "Habits kept"
   },
   "focus": {
     "title": "Focus mode",
@@ -683,6 +692,98 @@
     "noGrade": "No grade yet",
     "lastGrade": "Latest",
     "overall": "Overall average",
-    "month": "This month"
+    "month": "This month",
+    "habits": "Habits",
+    "noHabit": "No habit planned today"
+  },
+  "habits": {
+    "title": "My habits",
+    "todayTitle": "Today’s habits",
+    "startTitle": "Track your habits",
+    "startHint": "Going to class, sport, drinking water… tick them each day and see your progress.",
+    "empty": "No habits yet",
+    "emptyHint": "Add a suggestion below or create your own with the + button.",
+    "today": "Today",
+    "review": "Review",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "respectedCount": "{{count}} of {{total}} habit(s) kept",
+    "weekRange": "From {{from}} to {{to}}",
+    "noReason": "No reason noted",
+    "topReasons": "Most frequent reasons: {{list}}",
+    "all": "All my habits",
+    "rate30": "{{rate}} over 30 days",
+    "suggestions": "Suggestions",
+    "suggest": {
+      "school": "Go to class",
+      "study": "Study",
+      "sport": "Exercise",
+      "water": "Drink water",
+      "sleep": "Sleep before midnight"
+    },
+    "suggestUnit": {
+      "water": "glasses"
+    },
+    "new": "New habit",
+    "edit": "Edit habit",
+    "save": "Save habit",
+    "delete": "Delete habit",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteMessage": "The habit and all its history will be deleted.",
+    "name": "Name",
+    "namePlaceholder": "E.g. Exercise",
+    "icon": "Icon",
+    "color": "Colour",
+    "frequency": "Frequency",
+    "freq": {
+      "daily": "Every day",
+      "weekdays": "Some days",
+      "weekly": "X times / week",
+      "weeklyCount": "{{count}} time(s) a week"
+    },
+    "weekdays": "Which days?",
+    "timesPerWeek": "How many times a week?",
+    "target": "Daily goal",
+    "targetHint": "1 = a simple checkbox",
+    "unit": "Unit",
+    "unitPlaceholder": "E.g. glasses",
+    "reminder": "Reminder (optional)",
+    "autoStudy": "Tick with study sessions",
+    "autoStudyHint": "A study session of at least 5 min ticks this habit.",
+    "autoStudyOn": "This habit is ticked automatically when you finish a study session.",
+    "done": "Done",
+    "missed": "Not done",
+    "excused": "Excused",
+    "excusedHint": "An excused day (sick, holiday) does not break your streak.",
+    "reasonOptional": "Why? (optional)",
+    "reasonText": "Add details if you like",
+    "reason": {
+      "tired": "Tired",
+      "noTime": "No time",
+      "forgot": "Forgot",
+      "sick": "Sick",
+      "other": "Other"
+    },
+    "clearDay": "Clear this day",
+    "more": "Log the day for {{name}}",
+    "addOne": "Add 1 to {{name}}",
+    "progressCount": "{{count}} / {{target}} {{unit}}",
+    "progressWeek": "{{done}} / {{target}} this week",
+    "streakDays": "{{count}} day(s) in a row",
+    "streakWeeks": "{{count}} week(s) in a row",
+    "streak": "Streak",
+    "rate7Label": "Last 7 days",
+    "rate30Label": "Last 30 days",
+    "calendarHint": "Tap a day to log it: done, not done (with a reason if you like) or excused.",
+    "missedDays": "Missed and excused days",
+    "noMisses": "Nothing missed so far, well done!",
+    "state": {
+      "done": "done",
+      "partial": "started",
+      "missed": "not done",
+      "excused": "excused",
+      "pending": "to do",
+      "off": "not planned"
+    }
   }
 }

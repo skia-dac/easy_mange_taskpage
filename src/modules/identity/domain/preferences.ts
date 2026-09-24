@@ -12,6 +12,8 @@ export const notificationPreferencesSchema = z.object({
   exams: z.boolean(),
   endOfCourse: z.boolean(),
   events: z.boolean().default(true),
+  /** Rappels des habitudes (à l'heure choisie sur chaque habitude). */
+  habits: z.boolean().default(true),
   /** Son de la notification (iPhone et Android). */
   sound: z.boolean().default(true),
   /** Vibration (Android : canal dédié ; iPhone : suit le réglage du téléphone). */
@@ -38,6 +40,7 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   exams: true,
   endOfCourse: true,
   events: true,
+  habits: true,
   sound: true,
   vibrate: true,
   focusDuringCourses: false,

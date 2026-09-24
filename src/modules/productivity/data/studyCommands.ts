@@ -6,6 +6,7 @@ import {
   type StudySession,
   type StudySessionInput,
 } from '../domain/studySession';
+import { markStudyHabits } from './habitCommands';
 
 export type StudySessionRow = {
   id: string;
@@ -47,8 +48,20 @@ export async function startStudySession(db: Db, input: StudySessionInput): Promi
 }
 
 /** Termine la session (arrêt manuel ou fin du minuteur). `endedAt` ≤ fin prévue. */
+/** Minutes de travail minimum pour qu'une session coche l'habitude « Réviser ». */
+export const STUDY_HABIT_MIN_MINUTES = 5;
+
 export async function endStudySession(db: Db, id: string, endedAt = nowIso()): Promise<void> {
-  await write(db, (w) => w.update('study_sessions', id, { ended_at: endedAt }));
+  await write(db, async (w) => {
+    const row = await w.db.getFirstAsync<StudySessionRow>(
+      'SELECT * FROM study_sessions WHERE id = ?',
+      [id],
+    );
+    await w.update('study_sessions', id, { ended_at: endedAt });
+    if (!row || row.kind !== 'focus' || row.ended_at !== null) return;
+    const minutes = (new Date(endedAt).getTime() - new Date(row.started_at).getTime()) / 60_000;
+    if (minutes >= STUDY_HABIT_MIN_MINUTES) await markStudyHabits(w, endedAt);
+  });
 }
 
 export async function deleteStudySession(db: Db, id: string): Promise<void> {

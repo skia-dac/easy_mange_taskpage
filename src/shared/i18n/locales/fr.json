@@ -46,7 +46,9 @@
     "invalidDuration": "Entre une durée en minutes (ex. 120).",
     "invalidGrade": "Entre une note valide (ex. 14,5).",
     "invalidCoefficient": "Entre un coefficient supérieur à 0.",
-    "gradeTooHigh": "La note dépasse le barème."
+    "gradeTooHigh": "La note dépasse le barème.",
+    "pickDays": "Choisis au moins un jour.",
+    "invalidCount": "Entre un nombre entre 1 et 50."
   },
   "today": {
     "greeting": "Bonjour",
@@ -248,7 +250,8 @@
     "progress": "Ma progression",
     "gradesHint": "Moyennes par matière et évolution",
     "studyHint": "Minuteur de révision et temps de la semaine",
-    "statsHint": "Heures de cours, tâches, révision, série"
+    "statsHint": "Heures de cours, tâches, révision, série",
+    "habitsHint": "Habitudes du jour, séries, bilan de la semaine"
   },
   "timetables": {
     "title": "Emplois du temps",
@@ -444,7 +447,10 @@
     "studyEndTitle": "Session terminée",
     "studyEndBody": "{{minutes}} min de révision, bravo. Une pause ?",
     "breakEndTitle": "Pause terminée",
-    "breakEndBody": "On reprend ?"
+    "breakEndBody": "On reprend ?",
+    "habitTitle": "{{name}}",
+    "habitBody": "Pense à ton habitude du jour.",
+    "habitBodyCount": "Objectif : {{target}} {{unit}} aujourd’hui."
   },
   "settings": {
     "title": "Réglages",
@@ -480,7 +486,9 @@
     "weekStart": "Premier jour de la semaine",
     "weekStartHint": "Change l’ordre des jours dans le calendrier",
     "widgets": "Widgets",
-    "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui », « Tâches », « Révision », « Semaine », « Matière », « Examens », « Notes rapides », « Moyenne » ou « Mois » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go."
+    "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui », « Tâches », « Révision », « Semaine », « Matière », « Examens », « Notes rapides », « Moyenne » ou « Mois » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go.",
+    "habits": "Rappels d’habitudes",
+    "habitsHint": "À l’heure choisie sur chaque habitude, si elle n’est pas encore faite"
   },
   "reminder": {
     "none": "Aucun",
@@ -630,7 +638,8 @@
     "streak": "Série de jours actifs",
     "streakValue": "{{count}} jour(s)",
     "studyByDay": "Révision par jour",
-    "hint": "Un jour est « actif » si tu termines une tâche ou fais une session de révision."
+    "hint": "Un jour est « actif » si tu termines une tâche ou fais une session de révision.",
+    "habits": "Habitudes respectées"
   },
   "focus": {
     "title": "Mode focus",
@@ -683,6 +692,98 @@
     "noGrade": "Aucune note pour le moment",
     "lastGrade": "Dernière",
     "overall": "Moyenne générale",
-    "month": "Ce mois-ci"
+    "month": "Ce mois-ci",
+    "habits": "Habitudes",
+    "noHabit": "Aucune habitude prévue aujourd’hui"
+  },
+  "habits": {
+    "title": "Mes habitudes",
+    "todayTitle": "Mes habitudes du jour",
+    "startTitle": "Suivre tes habitudes",
+    "startHint": "Aller en cours, sport, boire de l’eau… coche chaque jour et vois ta progression.",
+    "empty": "Aucune habitude pour le moment",
+    "emptyHint": "Ajoute une suggestion ci-dessous ou crée la tienne avec le bouton +.",
+    "today": "Aujourd’hui",
+    "review": "Bilan",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "Semaine dernière",
+    "respectedCount": "{{count}} sur {{total}} habitude(s) respectée(s)",
+    "weekRange": "Du {{from}} au {{to}}",
+    "noReason": "Pas de raison notée",
+    "topReasons": "Raisons les plus fréquentes : {{list}}",
+    "all": "Toutes mes habitudes",
+    "rate30": "{{rate}} sur 30 jours",
+    "suggestions": "Suggestions",
+    "suggest": {
+      "school": "Aller en cours",
+      "study": "Réviser",
+      "sport": "Faire du sport",
+      "water": "Boire de l’eau",
+      "sleep": "Dormir avant minuit"
+    },
+    "suggestUnit": {
+      "water": "verres"
+    },
+    "new": "Nouvelle habitude",
+    "edit": "Modifier l’habitude",
+    "save": "Enregistrer l’habitude",
+    "delete": "Supprimer l’habitude",
+    "deleteTitle": "Supprimer « {{name}} » ?",
+    "deleteMessage": "L’habitude et tout son historique seront supprimés.",
+    "name": "Nom",
+    "namePlaceholder": "Ex. Faire du sport",
+    "icon": "Icône",
+    "color": "Couleur",
+    "frequency": "Fréquence",
+    "freq": {
+      "daily": "Tous les jours",
+      "weekdays": "Certains jours",
+      "weekly": "X fois / semaine",
+      "weeklyCount": "{{count}} fois par semaine"
+    },
+    "weekdays": "Quels jours ?",
+    "timesPerWeek": "Combien de fois par semaine ?",
+    "target": "Objectif par jour",
+    "targetHint": "1 = une case à cocher",
+    "unit": "Unité",
+    "unitPlaceholder": "Ex. verres",
+    "reminder": "Rappel (facultatif)",
+    "autoStudy": "Cocher avec la révision",
+    "autoStudyHint": "Une session de révision d’au moins 5 min coche cette habitude.",
+    "autoStudyOn": "Cette habitude est cochée automatiquement quand tu termines une session de révision.",
+    "done": "Fait",
+    "missed": "Pas fait",
+    "excused": "Excusé",
+    "excusedHint": "Un jour excusé (malade, vacances) ne casse pas ta série.",
+    "reasonOptional": "Pourquoi ? (facultatif)",
+    "reasonText": "Précise si tu veux",
+    "reason": {
+      "tired": "Fatigue",
+      "noTime": "Pas le temps",
+      "forgot": "Oublié",
+      "sick": "Malade",
+      "other": "Autre"
+    },
+    "clearDay": "Effacer ce jour",
+    "more": "Noter le jour pour {{name}}",
+    "addOne": "Ajouter 1 à {{name}}",
+    "progressCount": "{{count}} / {{target}} {{unit}}",
+    "progressWeek": "{{done}} / {{target}} cette semaine",
+    "streakDays": "{{count}} jour(s) d’affilée",
+    "streakWeeks": "{{count}} semaine(s) d’affilée",
+    "streak": "Série",
+    "rate7Label": "7 derniers jours",
+    "rate30Label": "30 derniers jours",
+    "calendarHint": "Touche un jour pour le noter : fait, pas fait (avec une raison si tu veux) ou excusé.",
+    "missedDays": "Jours manqués et excusés",
+    "noMisses": "Rien de manqué pour le moment, bravo !",
+    "state": {
+      "done": "fait",
+      "partial": "commencé",
+      "missed": "pas fait",
+      "excused": "excusé",
+      "pending": "à faire",
+      "off": "pas prévu"
+    }
   }
 }

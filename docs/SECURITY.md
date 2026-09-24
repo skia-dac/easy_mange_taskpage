@@ -79,6 +79,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Les widgets reçoivent uniquement des **textes déjà calculés** (titres de cours, heures, salles, titres de tâches) ; aucun accès à la base, aux notes ni aux pièces jointes. Sur iPhone les données vivent dans le groupe d'apps `group.com.skiadac.mysky`, sur Android dans `widget-snapshot.json` (données) et `widget-config.json` (matière choisie par widget) du dossier privé de l'app. La Live Activity « Révision » n'affiche que la matière et l'heure de fin.
 - Le contenu d'un widget est visible sur l'écran d'accueil et l'écran verrouillé : il n'affiche jamais de description ni de contenu de note.
 
+## 4h. Habitudes
+
+- Les habitudes et leur journal restent sur le téléphone (tables `habits`, `habit_logs`, avec `SYNC_COLUMNS` pour la phase 2), sont incluses dans la sauvegarde locale et effacées par « Supprimer toutes mes données ».
+- La raison d'un jour manqué est **facultative** et limitée à 200 caractères. Elle n'apparaît ni dans les notifications ni dans les widgets.
+- Supprimer une habitude supprime aussi son historique, après confirmation.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

@@ -1,5 +1,5 @@
 import { occurrencesInRange, type Occurrence } from '@/modules/academic';
-import { plannedEnd } from '@/modules/productivity';
+import { dayState, plannedEnd } from '@/modules/productivity';
 import type { NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
 import { addDaysIso, atTime, toIsoDate } from '@/shared/dates';
@@ -11,7 +11,8 @@ export type ReminderAction =
   | { kind: 'work'; workKind: 'task' | 'assignment'; id: string }
   | { kind: 'exam'; id: string }
   | { kind: 'event'; id: string }
-  | { kind: 'study'; id: string };
+  | { kind: 'study'; id: string }
+  | { kind: 'habit'; id: string };
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */
@@ -27,6 +28,8 @@ export type PlannedReminder = {
 /** iOS garde au plus 64 notifications programmées : on en planifie moins, par ordre de date. */
 export const MAX_SCHEDULED = 60;
 export const HORIZON_DAYS = 45;
+/** Les rappels d'habitudes sont planifiés sur une semaine (ils se répètent chaque jour). */
+export const HABIT_HORIZON_DAYS = 7;
 
 type Named = { subjectName: (id: string) => string };
 
@@ -154,6 +157,30 @@ export function planReminders(
         },
         action: { kind: 'study', id: session.id },
       });
+    }
+  }
+
+  if (prefs.habits !== false) {
+    // 7 jours suffisent : le plan est recalculé à chaque ouverture de l'app.
+    for (const h of data.habits ?? []) {
+      if (!h.reminderTime) continue;
+      for (let i = 0; i < HABIT_HORIZON_DAYS; i++) {
+        const day = addDaysIso(today, i);
+        const state = dayState(h, data.habitLogs ?? [], day, today);
+        if (state !== 'pending' && state !== 'partial') continue;
+        const at = atTime(day, h.reminderTime);
+        if (!future(at)) continue;
+        out.push({
+          id: `habit:${h.id}:${day}`,
+          fireAt: at,
+          title: { key: 'notif.habitTitle', params: { name: h.name } },
+          body: {
+            key: h.target > 1 ? 'notif.habitBodyCount' : 'notif.habitBody',
+            params: { target: h.target, unit: h.unit ?? '' },
+          },
+          action: { kind: 'habit', id: h.id },
+        });
+      }
     }
   }
 

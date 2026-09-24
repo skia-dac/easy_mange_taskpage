@@ -104,6 +104,12 @@ export default function ProfileScreen() {
       <SectionHeader title={t('profile.progress')} />
       <Card>
         <ListRow
+          title={t('habits.title')}
+          subtitle={t('profile.habitsHint')}
+          leading={<IconBadge icon="target" />}
+          onPress={() => router.push('/habits')}
+        />
+        <ListRow
           title={t('grades.title')}
           subtitle={t('profile.gradesHint')}
           leading={<IconBadge icon="award" color="success" background="successSoft" />}

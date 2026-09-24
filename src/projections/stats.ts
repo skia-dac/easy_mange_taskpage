@@ -1,5 +1,10 @@
 import { occurrencesInRange } from '@/modules/academic';
-import { studyTotals, type StudySession } from '@/modules/productivity';
+import {
+  doneInWeek,
+  expectedPerWeek,
+  studyTotals,
+  type StudySession,
+} from '@/modules/productivity';
 import { addDaysIso, daysBetween, timeToMinutes, toIsoDate, type IsoDate } from '@/shared/dates';
 
 import type { TodayData } from './today';
@@ -16,8 +21,11 @@ export type WeekStats = {
   studyMinutes: number;
   /** Minutes de révision par jour de la semaine (7 entrées, dans l'ordre). */
   studyByDay: { day: IsoDate; minutes: number }[];
-  /** Jours consécutifs (jusqu'à aujourd'hui ou hier) avec une tâche terminée ou une révision. */
+  /** Jours consécutifs (jusqu'à aujourd'hui ou hier) avec une tâche terminée, une révision ou une habitude. */
   streakDays: number;
+  /** Habitudes : réussites de la semaine / réussites attendues. */
+  habitsDone: number;
+  habitsExpected: number;
 };
 
 /** Jour (ISO) d'un instant ISO, dans le fuseau du téléphone. */
@@ -62,6 +70,8 @@ export function weekStats(
   });
 
   const activeDays = new Set<IsoDate>(doneDays);
+  for (const l of data.habitLogs ?? [])
+    if (l.status === 'done' && l.count > 0) activeDays.add(l.date);
   for (const s of sessions) {
     if (s.kind === 'focus' && (s.endedAt !== null || s.startedAt <= now.toISOString()))
       activeDays.add(dayOf(s.startedAt));
@@ -73,9 +83,18 @@ export function weekStats(
     cursor = addDaysIso(cursor, -1);
   }
 
+  let habitsDone = 0;
+  let habitsExpected = 0;
+  for (const h of data.habits ?? []) {
+    habitsExpected += expectedPerWeek(h);
+    habitsDone += Math.min(expectedPerWeek(h), doneInWeek(h, data.habitLogs ?? [], from));
+  }
+
   return {
     from,
     to,
+    habitsDone,
+    habitsExpected,
     courseMinutes,
     tasksDone,
     tasksOpen,

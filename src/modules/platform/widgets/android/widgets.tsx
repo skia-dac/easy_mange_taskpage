@@ -14,6 +14,7 @@ export const ANDROID_WIDGETS = [
   'QuickAdd',
   'Grades',
   'Month',
+  'Habits',
 ] as const;
 export type AndroidWidgetName = (typeof ANDROID_WIDGETS)[number];
 
@@ -483,6 +484,42 @@ export function MonthWidget({ data, theme }: Props) {
   );
 }
 
+export function HabitsWidget({ data, theme }: Props) {
+  const done = data.habits.filter((h) => h.done).length;
+  return (
+    <Card data={data} theme={theme} url={data.links.habits}>
+      <Header title={data.labels.habits} right={`${done}/${data.habits.length}`} theme={theme} />
+      {data.habits.length === 0 ? (
+        <TextWidget text={data.labels.noHabit} style={{ fontSize: 13, color: theme.muted }} />
+      ) : null}
+      {data.habits.slice(0, 6).map((h, i) => (
+        <FlexWidget key={`h${i}`} style={ROW}>
+          <FlexWidget
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: h.done ? theme.success : (h.color as `#${string}`),
+            }}
+          />
+          <FlexWidget style={{ flex: 1 }}>
+            <TextWidget
+              text={h.name}
+              maxLines={1}
+              truncate="END"
+              style={{ fontSize: 14, color: h.done ? theme.muted : theme.text }}
+            />
+          </FlexWidget>
+          <TextWidget
+            text={h.done ? '✓' : h.progress}
+            style={{ fontSize: 12, color: h.done ? theme.success : theme.muted }}
+          />
+        </FlexWidget>
+      ))}
+    </Card>
+  );
+}
+
 const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null }) => React.JSX.Element> = {
   NextCourse: NextCourseWidget,
   Today: TodayWidget,
@@ -494,6 +531,7 @@ const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null
   QuickAdd: QuickAddWidget,
   Grades: GradesWidget,
   Month: MonthWidget,
+  Habits: HabitsWidget,
 };
 
 export function renderAndroidWidget(

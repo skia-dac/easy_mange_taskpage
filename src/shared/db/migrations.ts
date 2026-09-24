@@ -234,4 +234,32 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_study_sessions_started ON study_sessions (started_at);
     `,
   },
+  {
+    version: 8,
+    name: 'habitudes',
+    sql: `
+      CREATE TABLE habits (${SYNC_COLUMNS},
+        name TEXT NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'check-circle',
+        color_id TEXT NOT NULL DEFAULT 'blue',
+        frequency TEXT NOT NULL DEFAULT 'daily',
+        weekdays TEXT NOT NULL DEFAULT '[]',
+        times_per_week INTEGER NOT NULL DEFAULT 1,
+        target INTEGER NOT NULL DEFAULT 1,
+        unit TEXT,
+        reminder_time TEXT,
+        auto_study INTEGER NOT NULL DEFAULT 0,
+        position INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE habit_logs (${SYNC_COLUMNS},
+        habit_id TEXT NOT NULL REFERENCES habits (id),
+        date TEXT NOT NULL,
+        count INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'done',
+        reason_code TEXT,
+        reason TEXT
+      );
+      CREATE INDEX idx_habit_logs_habit_date ON habit_logs (habit_id, date);
+    `,
+  },
 ];

@@ -8,7 +8,15 @@ import {
   type Occurrence,
   type Subject,
 } from '@/modules/academic';
-import { compareWorkItems, isOverdue, plannedEnd, type StudySession } from '@/modules/productivity';
+import {
+  compareWorkItems,
+  isDone,
+  isOverdue,
+  isScheduledOn,
+  logOn,
+  plannedEnd,
+  type StudySession,
+} from '@/modules/productivity';
 import {
   addDaysIso,
   atTime,
@@ -20,7 +28,7 @@ import {
   weekdayOrder,
   type IsoDate,
 } from '@/shared/dates';
-import type { ColorTokens } from '@/shared/theme';
+import { subjectColors, type ColorTokens } from '@/shared/theme';
 
 import { weekStats } from './stats';
 import type { TodayData } from './today';
@@ -80,6 +88,8 @@ export type WidgetMonthCell = {
   exam: boolean;
 };
 
+export type WidgetHabit = { name: string; done: boolean; progress: string; color: string };
+
 export type WidgetLabels = {
   nextCourse: string;
   noCourse: string;
@@ -114,6 +124,8 @@ export type WidgetLabels = {
   lastGrade: string;
   overall: string;
   month: string;
+  habits: string;
+  noHabit: string;
 };
 
 export type WidgetLinks = {
@@ -125,6 +137,7 @@ export type WidgetLinks = {
   grades: string;
   calendar: string;
   tasks: string;
+  habits: string;
 };
 
 export type WidgetData = {
@@ -152,6 +165,7 @@ export type WidgetData = {
     subjects: { name: string; average: string; color: string }[];
   };
   month: { title: string; weekdays: string[]; cells: WidgetMonthCell[] };
+  habits: WidgetHabit[];
   labels: WidgetLabels;
   links: WidgetLinks;
   light: WidgetTheme;
@@ -176,6 +190,7 @@ export const WIDGET_LINKS: WidgetLinks = {
   grades: `${WIDGET_URL_BASE()}grades`,
   calendar: `${WIDGET_URL_BASE()}calendar`,
   tasks: `${WIDGET_URL_BASE()}tasks`,
+  habits: `${WIDGET_URL_BASE()}habits`,
 };
 
 function WIDGET_URL_BASE(): string {
@@ -401,6 +416,24 @@ function buildMonth(
   };
 }
 
+function buildHabits(data: TodayData, today: IsoDate, scheme: 'light' | 'dark'): WidgetHabit[] {
+  const logs = data.habitLogs ?? [];
+  return (data.habits ?? [])
+    .filter((h) => isScheduledOn(h, today))
+    .slice(0, 8)
+    .map((h) => {
+      const log = logOn(logs, h.id, today);
+      const count = log?.status === 'done' ? log.count : 0;
+      const c = subjectColors.find((x) => x.id === h.colorId) ?? subjectColors[0]!;
+      return {
+        name: h.name,
+        done: isDone(h, log),
+        progress: h.target > 1 ? `${count}/${h.target}` : '',
+        color: scheme === 'dark' ? c.strongDark : c.strong,
+      };
+    });
+}
+
 export function buildWidgetData(
   data: TodayData,
   subjects: ReadonlyMap<string, Subject>,
@@ -468,6 +501,7 @@ export function buildWidgetData(
     subjects: buildSubjects(data, subjects, now, texts, scheme),
     grades: buildGrades(data, subjects, texts, scheme),
     month: buildMonth(data, extras, now, texts),
+    habits: buildHabits(data, today, scheme),
     links: WIDGET_LINKS,
     labels: {
       nextCourse: texts.t('widget.nextCourse'),
@@ -502,6 +536,8 @@ export function buildWidgetData(
       lastGrade: texts.t('widget.lastGrade'),
       overall: texts.t('widget.overall'),
       month: texts.t('widget.month'),
+      habits: texts.t('widget.habits'),
+      noHabit: texts.t('widget.noHabit'),
     },
     light: pickWidgetTheme(themes.light),
     dark: pickWidgetTheme(themes.dark),

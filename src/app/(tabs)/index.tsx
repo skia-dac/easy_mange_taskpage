@@ -1,12 +1,16 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { CourseRow, EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
 import { HeaderButton, SearchButton } from '@/components/SearchButton';
+import { HabitDaySheet } from '@/components/HabitDaySheet';
+import { HabitRow } from '@/components/HabitRow';
 import { useProfile } from '@/hooks/useProfile';
+import { useWeekStart } from '@/hooks/useWeekStart';
+import { isScheduledOn, logOn, type Habit } from '@/modules/productivity';
 import { useSubjects } from '@/hooks/useSubjects';
 import { buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { formatDuration, formatLongDate } from '@/shared/format';
@@ -39,6 +43,10 @@ export default function TodayScreen() {
   );
 
   const todo = view ? [...view.overdue, ...view.dueToday] : [];
+  const weekStart = useWeekStart();
+  const [habitSheet, setHabitSheet] = useState<Habit | null>(null);
+  const habits = (agenda.data?.habits ?? []).filter((h) => view && isScheduledOn(h, view.today));
+  const habitLogs = agenda.data?.habitLogs ?? [];
 
   return (
     <View style={{ flex: 1 }}>
@@ -126,6 +134,40 @@ export default function TodayScreen() {
         {view ? (
           <>
             <SectionHeader
+              title={t('habits.todayTitle')}
+              action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
+            />
+            {habits.length > 0 ? (
+              <Card>
+                {habits.map((h) => (
+                  <HabitRow
+                    key={h.id}
+                    habit={h}
+                    logs={habitLogs}
+                    day={view.today}
+                    today={view.today}
+                    weekStart={weekStart}
+                    onMore={setHabitSheet}
+                  />
+                ))}
+              </Card>
+            ) : (
+              <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+                <Card>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                    <IconBadge icon="target" />
+                    <View style={{ flex: 1 }}>
+                      <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
+                      <AppText variant="caption" color="muted">
+                        {t('habits.startHint')}
+                      </AppText>
+                    </View>
+                  </View>
+                </Card>
+              </Pressable>
+            )}
+
+            <SectionHeader
               title={t('today.todoTitle')}
               action={{
                 label: t('common.seeAll'),
@@ -173,6 +215,14 @@ export default function TodayScreen() {
         ) : null}
         <View style={{ height: 80 }} />
       </Screen>
+      {habitSheet && view ? (
+        <HabitDaySheet
+          habit={habitSheet}
+          date={view.today}
+          log={logOn(habitLogs, habitSheet.id, view.today)}
+          onClose={() => setHabitSheet(null)}
+        />
+      ) : null}
       <Fab accessibilityLabel={t('add.title')} onPress={() => router.push('/add')} />
     </View>
   );

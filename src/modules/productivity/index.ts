@@ -11,3 +11,5 @@ export * from './domain/workItem';
 export * from './data/studyCommands';
 export * from './domain/studySession';
 export * from './domain/noteHtml';
+export * from './data/habitCommands';
+export * from './domain/habit';

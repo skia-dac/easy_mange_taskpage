@@ -303,6 +303,7 @@ export default function SettingsScreen() {
         {toggle(t('settings.tasks'), 'tasks')}
         {toggle(t('settings.exams'), 'exams')}
         {toggle(t('settings.events'), 'events')}
+        {toggle(t('settings.habits'), 'habits', t('settings.habitsHint'))}
       </Card>
       <Card>
         {toggle(t('settings.sound'), 'sound', t('settings.soundHint'))}

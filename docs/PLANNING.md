@@ -232,7 +232,7 @@ Requested by the product owner after the MVP walk-through. All local, no account
 
 ### Home-screen widgets (24 Sep 2026)
 
-Ten widgets and one Live Activity, same content on both platforms, built in TypeScript only (no Swift/Kotlin written by hand):
+Eleven widgets and one Live Activity, same content on both platforms, built in TypeScript only (no Swift/Kotlin written by hand):
 
 | Widget | iPhone (`expo-widgets`, WidgetKit) | Android (`react-native-android-widget`) | Content |
 |---|---|---|---|
@@ -246,23 +246,22 @@ Ten widgets and one Live Activity, same content on both platforms, built in Type
 | **Notes rapides** | medium | 4×1 | Three buttons: new note, new task, new homework (deep links) |
 | **Moyenne** | small, medium | 2×2 | Overall average, latest grade, per-subject averages |
 | **Mois** | large | 4×4 | Month grid with dots for classes, due items, exams |
+| **Habitudes** | small, medium, large | 2×2 | Today's habits, done or not, with count progress |
 
 How it works: `src/projections/widget.ts` turns the agenda, study sessions and grades into plain, already-translated props (`buildWidgetData`, one object shared by every widget) and, for iOS, a timeline with one entry at each class start/end, at the end of the study session and at midnight (`buildWidgetTimeline`), so widgets move on without the app running. `WidgetsGate` (root layout) pushes the data on every data change and when the app comes to the foreground, and starts/updates/ends the Live Activity. On Android the app also writes `widget-snapshot.json` (data) and `widget-config.json` (subject chosen per widget id) in its documents folder; the background task handler and the configuration screen (`index.ts`) work from those files, without opening the database. Tapping a widget opens the app (`mysky://…` deep links: `notes/new`, `work/form?kind=task`, `study`, `grades`, `calendar`). Colours come from `colors.ts` through props (light and dark variants), never hard-coded in the widgets.
 
 **Not testable in Expo Go.** Widgets and Live Activities are native extensions: they need a development build (`eas build --profile development`) and, on iPhone, an Apple developer account. In Expo Go the widget modules are absent; `syncWidgets` catches the error and logs it, the app keeps working. Layouts are typechecked and linted, both config plugins were verified with `expo prebuild` (10 Android providers + configuration activity, 10 Swift widget files + app group on iOS), and the data projection is unit-tested, but the rendering itself has not been seen on a device yet: expect a round of visual tuning (spacing, sizes) after the first dev build. Known Android limit: the « Révision » widget cannot tick every second (widgets there refresh on events only), so it shows the end time; iPhone gets the live countdown through the Live Activity.
 
-## 5f. Proposed — habit board « Mes habitudes » (not built yet, 24 Sep 2026)
+## 5f. Habit board « Mes habitudes » (built 24 Sep 2026)
 
-Requested by the product owner: track daily or weekly habits (go to school, sport, drink water, revise…), tick them each day, and see over time what was respected and what was not, with an **optional** reason when a habit is missed.
+Validated by the product owner: card on Aujourd'hui + full screen from Profil, suggested habits, study sessions tick « Réviser ».
 
-Proposed design, waiting for validation:
-
-- **Habit**: name, icon, colour, frequency (every day · chosen weekdays · N times a week), optional daily target (e.g. 8 glasses of water, counted with a "+1" button), optional reminder time.
-- **Daily check-in**: done / not done / skipped for a valid reason (sick, holiday). When a day is missed, a reason can be added (quick chips + free text). Never mandatory.
-- **Board**: "Aujourd'hui" card with today's habits and one-tap check; a full screen with streaks, completion rate per habit (week / month), a month heat-map, and a weekly review "respected / not respected" with the reasons grouped.
-- **Data**: tables `habits` and `habit_logs` (habit, date, count, status, reason) with `SYNC_COLUMNS`, new migration; evolution computed as a projection, never stored.
-- **Links with the rest**: reminders go through the existing planner (focus mode respected); a finished study session can tick a « Réviser » habit automatically; a « Habitudes » widget (interactive tick on iOS 17+).
-- **Scope note**: not in the MVP spec. It stays motivational, not "gamification" (no points, badges or leaderboards, which the spec excludes).
+- **Habit** (`habits`): name, icon, colour, frequency (every day · chosen weekdays · N times a week), daily target with unit (8 glasses, "+1" button), optional reminder time, "tick with study sessions".
+- **Day log** (`habit_logs`): done (count) / not done / excused, optional reason (quick chips: tired, no time, forgot, sick, other + free text, never mandatory). An excused day does not break the streak.
+- **Where**: « Mes habitudes du jour » card on Aujourd'hui (tick, +1, "…" to log not done / excused with a reason); `/habits` board (today, weekly review "X of Y habits kept" with missed days and reasons, most frequent reasons, all habits with 30-day rate, suggestions to add in one tap); `/habits/[id]` (streak, 7/30-day rates, month calendar coloured by day state — tap a day to log it — missed/excused days with reasons); `/habits/form`.
+- **Links**: a focus study session of ≥ 5 min ticks habits marked "tick with study sessions" (same transaction as the end of the session); habit reminders go through `planReminders` (7-day horizon, skipped once done, focus mode respected, setting « Rappels d'habitudes »); weekly statistics show "Habitudes respectées" and habits count as active days for the streak; « Habitudes » widget on iPhone and Android.
+- **Rules** (pure, tested in `productivity/domain/habit.ts`): a day is done when the target is reached; past scheduled days with nothing logged count as missed; today never counts against you until it is over; "N times a week" streaks count weeks.
+- Not gamification: no points, badges or leaderboards.
 
 ## 6. Open questions for the product owner
 

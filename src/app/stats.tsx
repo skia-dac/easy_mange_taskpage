@@ -70,6 +70,13 @@ export default function StatsScreen() {
       label: t('stats.study'),
     },
     {
+      icon: 'target',
+      color: 'primary',
+      background: 'primarySoft',
+      value: stats.habitsExpected > 0 ? `${stats.habitsDone}/${stats.habitsExpected}` : '—',
+      label: t('stats.habits'),
+    },
+    {
       icon: 'zap',
       color: 'warning',
       background: 'warningSoft',

@@ -223,4 +223,63 @@ describe('données des widgets', () => {
     );
     expect(entries.map((e) => `${e.date.getHours()}:${e.date.getMinutes()}`)).toContain('8:45');
   });
+
+  it('liste les habitudes du jour pour le widget « Habitudes »', () => {
+    const habitBase = {
+      icon: 'check-circle',
+      frequency: 'daily' as const,
+      weekdays: [],
+      timesPerWeek: 1,
+      unit: null,
+      reminderTime: null,
+      autoStudy: false,
+      position: 0,
+    };
+    const w = buildWidgetData(
+      {
+        ...data,
+        habits: [
+          { ...habitBase, id: 'a', name: 'Eau', colorId: 'teal', target: 8 },
+          { ...habitBase, id: 'b', name: 'Lire', colorId: 'blue', target: 1 },
+          {
+            ...habitBase,
+            id: 'c',
+            name: 'Week-end',
+            colorId: 'blue',
+            target: 1,
+            frequency: 'weekdays',
+            weekdays: [6, 7],
+          },
+        ],
+        habitLogs: [
+          {
+            id: 'l1',
+            habitId: 'a',
+            date: '2026-09-23',
+            count: 3,
+            status: 'done',
+            reasonCode: null,
+            reason: null,
+          },
+          {
+            id: 'l2',
+            habitId: 'b',
+            date: '2026-09-23',
+            count: 1,
+            status: 'done',
+            reasonCode: null,
+            reason: null,
+          },
+        ],
+      },
+      subjects,
+      now,
+      texts,
+      themes,
+    );
+    expect(w.habits.map((h) => [h.name, h.done, h.progress])).toEqual([
+      ['Eau', false, '3/8'],
+      ['Lire', true, ''],
+    ]);
+  });
 });

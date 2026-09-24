@@ -4,7 +4,14 @@ import {
   listExams,
   listOffPeriods,
 } from '@/modules/academic';
-import { getActiveStudySession, listPersonalEvents, listWorkItems } from '@/modules/productivity';
+import {
+  getActiveStudySession,
+  listHabitLogs,
+  listHabits,
+  listPersonalEvents,
+  listWorkItems,
+} from '@/modules/productivity';
+import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useLiveQuery, type Db } from '@/shared/db';
 
 import type { TodayData } from './today';
@@ -18,20 +25,35 @@ const TABLES = [
   'assignments',
   'personal_events',
   'study_sessions',
+  'habits',
+  'habit_logs',
 ] as const;
 
 async function loadAgenda(db: Db): Promise<TodayData> {
-  const [series, exceptions, offPeriods, exams, tasks, assignments, events, studySession] =
-    await Promise.all([
-      listCourseSeries(db),
-      listCourseExceptions(db),
-      listOffPeriods(db),
-      listExams(db),
-      listWorkItems(db, 'task'),
-      listWorkItems(db, 'assignment'),
-      listPersonalEvents(db),
-      getActiveStudySession(db),
-    ]);
+  const today = toIsoDate(new Date());
+  const [
+    series,
+    exceptions,
+    offPeriods,
+    exams,
+    tasks,
+    assignments,
+    events,
+    studySession,
+    habits,
+    habitLogs,
+  ] = await Promise.all([
+    listCourseSeries(db),
+    listCourseExceptions(db),
+    listOffPeriods(db),
+    listExams(db),
+    listWorkItems(db, 'task'),
+    listWorkItems(db, 'assignment'),
+    listPersonalEvents(db),
+    getActiveStudySession(db),
+    listHabits(db),
+    listHabitLogs(db, addDaysIso(today, -400), addDaysIso(today, 7)),
+  ]);
   return {
     series,
     exceptions,
@@ -40,6 +62,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     work: [...tasks, ...assignments],
     events,
     studySession,
+    habits,
+    habitLogs,
   };
 }
 

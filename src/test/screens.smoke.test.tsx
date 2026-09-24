@@ -16,10 +16,14 @@ import {
 } from '@/modules/academic';
 import { saveProfile } from '@/modules/identity';
 import {
+  addHabitCount,
+  createHabit,
   createNote,
   createPersonalEvent,
   createWorkItem,
   endStudySession,
+  setHabitDone,
+  setHabitMissed,
   startStudySession,
 } from '@/modules/productivity';
 import type { Db } from '@/shared/db';
@@ -111,6 +115,20 @@ beforeAll(async () => {
     plannedMinutes: 25,
   });
   await endStudySession(mockDb, study, '2026-09-22T08:25:00.000Z');
+  ids.habit = await createHabit(mockDb, {
+    name: 'Faire du sport',
+    icon: 'activity',
+    colorId: 'green',
+  });
+  ids.water = await createHabit(mockDb, {
+    name: 'Boire de l’eau',
+    icon: 'droplet',
+    target: 8,
+    unit: 'verres',
+  });
+  await setHabitDone(mockDb, ids.habit, '2026-09-21', true);
+  await setHabitMissed(mockDb, ids.habit, '2026-09-22', 'missed', 'tired', 'Nuit courte');
+  await addHabitCount(mockDb, ids.water, '2026-09-23', 3);
   ids.task = await createWorkItem(mockDb, 'task', {
     title: 'Réviser le chapitre 3',
     dueDate: '2026-09-23',
@@ -161,6 +179,8 @@ const cases: Case[] = [
     expect: [
       'Bonjour Awa',
       'COURS EN COURS',
+      'Mes habitudes du jour',
+      'Boire de l’eau',
       'Étude de cas Marketing',
       'Réunion asso',
       'Dans 19 jours',
@@ -334,7 +354,24 @@ const cases: Case[] = [
   {
     name: 'Statistiques',
     load: () => require('@/app/stats') as { default: ComponentType },
-    expect: ['Heures de cours', 'Série'],
+    expect: ['Heures de cours', 'Série', 'Habitudes respectées'],
+  },
+  {
+    name: 'Mes habitudes',
+    load: () => require('@/app/habits/index') as { default: ComponentType },
+    expect: ['Faire du sport', '3 / 8 verres', 'Fatigue', 'Nuit courte', 'Suggestions'],
+  },
+  {
+    name: 'Détail habitude',
+    load: () => require('@/app/habits/[id]') as { default: ComponentType },
+    params: { id: 'habit' },
+    expect: ['Faire du sport', 'Tous les jours', 'Jours manqués et excusés', 'Nuit courte'],
+  },
+  {
+    name: 'Formulaire habitude',
+    load: () => require('@/app/habits/form') as { default: ComponentType },
+    params: { id: 'habit' },
+    expect: ['Enregistrer l’habitude', 'Cocher avec la révision'],
   },
   {
     name: 'Onboarding',

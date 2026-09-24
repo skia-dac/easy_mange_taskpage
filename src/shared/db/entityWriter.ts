@@ -17,7 +17,9 @@ export type EntityTable =
   | 'notes'
   | 'attachments'
   | 'profiles'
-  | 'study_sessions';
+  | 'study_sessions'
+  | 'habits'
+  | 'habit_logs';
 
 export type Values = Record<string, SqlValue>;
 
