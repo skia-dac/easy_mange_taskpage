@@ -48,6 +48,7 @@ export default function TodayScreen() {
         actions={
           <>
             <SearchButton />
+            <HeaderButton icon="clock" label={t('study.title')} href="/study" />
             <HeaderButton icon="bell" label={t('notifications.title')} href="/notifications" />
           </>
         }
@@ -63,6 +64,26 @@ export default function TodayScreen() {
               />
             </View>
           </Card>
+        ) : null}
+
+        {agenda.data?.studySession ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/study')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+          >
+            <Card>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <IconBadge icon="clock" />
+                <View style={{ flex: 1 }}>
+                  <AppText variant="bodyStrong">{t('study.bannerTitle')}</AppText>
+                  <AppText variant="caption" color="muted">
+                    {t('study.bannerHint')}
+                  </AppText>
+                </View>
+              </View>
+            </Card>
+          </Pressable>
         ) : null}
 
         {view?.dayOff ? (

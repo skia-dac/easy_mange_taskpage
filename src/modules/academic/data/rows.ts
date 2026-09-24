@@ -87,6 +87,9 @@ export type ExamRow = {
   description: string | null;
   reminder_days: string;
   reminder_time: string;
+  grade: number | null;
+  grade_max: number;
+  coefficient: number;
 };
 
 function parseDays(json: string): number[] {
@@ -109,6 +112,9 @@ export const toExam = (r: ExamRow): Exam => ({
   description: r.description,
   reminderDays: parseDays(r.reminder_days),
   reminderTime: r.reminder_time,
+  grade: r.grade,
+  gradeMax: r.grade_max,
+  coefficient: r.coefficient,
 });
 
 export type CourseExceptionRow = {

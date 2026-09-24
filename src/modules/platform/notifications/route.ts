@@ -39,5 +39,7 @@ export function routeForResponse(r: NotificationResponse): Href | null {
       return { pathname: '/exams/[id]', params: { id: a.id } };
     case 'event':
       return { pathname: '/events/form', params: { id: a.id } };
+    case 'study':
+      return '/study';
   }
 }

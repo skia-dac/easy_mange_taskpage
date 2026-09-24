@@ -18,6 +18,7 @@ import {
   formatSize,
   pickDocument,
   pickImage,
+  sharePdf,
 } from '@/modules/platform';
 import {
   addAttachment,
@@ -25,6 +26,7 @@ import {
   deleteNote,
   getNote,
   listAttachments,
+  noteToHtml,
   removeAttachment,
   saveNoteContent,
   setNoteFavorite,
@@ -231,6 +233,19 @@ export default function NoteScreen() {
     }
   };
 
+  const sharePdfFile = async () => {
+    const html = noteToHtml(content, {
+      title: title.trim() || t('notes.untitled'),
+      subtitle: subjectId ? byId.get(subjectId)?.name : undefined,
+      footer: t('notes.pdfFooter', { date: formatDate(toIsoDate(new Date()), labels.lang) }),
+    });
+    try {
+      if (!(await sharePdf(html, title, t('notes.sharePdf')))) showError('backup.shareUnavailable');
+    } catch (e) {
+      fail(e);
+    }
+  };
+
   const remove = async () => {
     if (!noteId) {
       router.back();
@@ -273,6 +288,21 @@ export default function NoteScreen() {
       >
         <Feather name="star" size={22} color={favorite ? colors.warning : colors.muted} />
       </Pressable>
+      {noteId && !editing ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('notes.sharePdf')}
+          onPress={() => void sharePdfFile()}
+          style={{
+            width: minTouchSize,
+            height: minTouchSize,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Feather name="share" size={22} color={colors.muted} />
+        </Pressable>
+      ) : null}
       <TextButton
         label={editing ? t('notes.done') : t('notes.edit')}
         onPress={() => setEditing(!editing)}

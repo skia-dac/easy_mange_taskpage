@@ -37,3 +37,6 @@ export type { BackupFile } from './backup/files';
 export { clearDatabase, snapshotSummary } from './backup/snapshot';
 export type { BackupSnapshot } from './backup/snapshot';
 export { BackupGate } from './backup/BackupGate';
+export { canUseAppLock, LockGate } from './lock/LockGate';
+export { buildIcs } from './export/ics';
+export { safeFileName, shareIcs, sharePdf } from './export/share';

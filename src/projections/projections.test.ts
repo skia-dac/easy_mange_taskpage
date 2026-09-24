@@ -82,6 +82,7 @@ const work = (over: Partial<WorkItem>): WorkItem => ({
   status: 'todo',
   completedAt: null,
   reminderAt: null,
+  repeat: 'none',
   ...over,
 });
 const exam = (id: string, date: string): Exam => ({
@@ -95,6 +96,9 @@ const exam = (id: string, date: string): Exam => ({
   description: null,
   reminderDays: [],
   reminderTime: '09:00',
+  grade: null,
+  gradeMax: 20,
+  coefficient: 1,
 });
 
 describe('Aujourd’hui (§7–11)', () => {

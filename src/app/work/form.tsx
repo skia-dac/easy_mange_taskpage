@@ -11,6 +11,7 @@ import {
   deleteWorkItem,
   getWorkItem,
   priorities,
+  repeatRules,
   updateWorkItem,
   workStatuses,
   type WorkItemInput,
@@ -56,6 +57,7 @@ export default function WorkFormScreen() {
     priority: 'normal',
     status: 'todo',
     reminderAt: null,
+    repeat: 'none',
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -157,6 +159,12 @@ export default function WorkFormScreen() {
         options={priorities.map((p) => ({ value: p, label: labels.priority(p) }))}
         selected={[form.priority]}
         onToggle={(priority) => set({ priority })}
+      />
+      <ChoiceChips
+        label={t('work.repeat')}
+        options={repeatRules.map((r) => ({ value: r, label: t(`repeat.${r}`) }))}
+        selected={[form.repeat ?? 'none']}
+        onToggle={(repeat) => set({ repeat })}
       />
       <ChoiceChips
         label={t('work.status')}

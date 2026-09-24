@@ -20,6 +20,7 @@ const KEYS = {
   appearance: 'appearance',
   weekStart: 'week_start',
   lastBackupAt: 'last_backup_at',
+  appLock: 'app_lock',
 } as const;
 
 async function readSetting(db: Db, key: string): Promise<unknown> {
@@ -102,4 +103,13 @@ export async function getLastBackupAt(db: Db): Promise<string | null> {
 
 export async function setLastBackupAt(db: Db, isoDate: string): Promise<void> {
   await writeSetting(db, KEYS.lastBackupAt, isoDate);
+}
+
+/** Verrouillage de l'app par Face ID / Touch ID / code du téléphone. */
+export async function isAppLockEnabled(db: Db): Promise<boolean> {
+  return (await readSetting(db, KEYS.appLock)) === true;
+}
+
+export async function setAppLockEnabled(db: Db, value: boolean): Promise<void> {
+  await writeSetting(db, KEYS.appLock, value);
 }

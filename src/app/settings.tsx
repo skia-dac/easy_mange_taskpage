@@ -11,7 +11,9 @@ import {
   getLastBackupAt,
   getNotificationPreferences,
   getWeekStart,
+  isAppLockEnabled,
   setAppearancePreference,
+  setAppLockEnabled,
   setLanguagePreference,
   setNotificationPreferences,
   setWeekStart,
@@ -22,6 +24,7 @@ import {
   type WeekStart,
 } from '@/modules/identity';
 import {
+  canUseAppLock,
   ensurePermission,
   hasPermission,
   listBackups,
@@ -74,6 +77,7 @@ export default function SettingsScreen() {
   const [weekStart, setWeekStartState] = useState<WeekStart>(1);
   const [granted, setGranted] = useState<boolean | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
+  const [appLock, setAppLock] = useState(false);
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [busy, setBusy] = useState(false);
@@ -91,12 +95,14 @@ export default function SettingsScreen() {
       getAppearancePreference(db),
       getWeekStart(db),
       hasPermission(),
-    ]).then(([p, l, a, w, g]) => {
+      isAppLockEnabled(db),
+    ]).then(([p, l, a, w, g, lock]) => {
       setPrefs(p);
       setLang(l);
       setAppearance(a);
       setWeekStartState(w);
       setGranted(g);
+      setAppLock(lock);
       void refreshBackups();
     });
   }, [db, refreshBackups]);
@@ -188,6 +194,44 @@ export default function SettingsScreen() {
       router.replace('/onboarding');
     });
 
+  const toggleAppLock = async (value: boolean) => {
+    if (value && !(await canUseAppLock())) {
+      showError('lock.unavailable');
+      return;
+    }
+    setAppLock(value);
+    setAppLockEnabled(db, value).catch((e: unknown) => showError(userMessageKey(e)));
+  };
+
+  const switchRow = (
+    label: string,
+    hint: string,
+    value: boolean,
+    onChange: (v: boolean) => void,
+  ) => (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.md,
+        paddingVertical: spacing.sm,
+      }}
+    >
+      <View style={{ flex: 1, gap: 2 }}>
+        <AppText variant="bodyStrong">{label}</AppText>
+        <AppText variant="caption" color="muted">
+          {hint}
+        </AppText>
+      </View>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ true: colors.success, false: colors.border }}
+      />
+    </View>
+  );
+
   const toggle = (label: string, key: keyof NotificationPreferences, hint?: string) => (
     <View
       style={{
@@ -263,6 +307,17 @@ export default function SettingsScreen() {
       <Card>
         {toggle(t('settings.sound'), 'sound', t('settings.soundHint'))}
         {toggle(t('settings.vibrate'), 'vibrate', t('settings.vibrateHint'))}
+      </Card>
+
+      <SectionHeader title={t('focus.title')} />
+      <Card>
+        {toggle(t('focus.duringCourses'), 'focusDuringCourses', t('focus.duringCoursesHint'))}
+        {toggle(t('focus.duringStudy'), 'focusDuringStudy', t('focus.duringStudyHint'))}
+      </Card>
+
+      <SectionHeader title={t('lock.section')} />
+      <Card>
+        {switchRow(t('lock.enable'), t('lock.enableHint'), appLock, (v) => void toggleAppLock(v))}
       </Card>
 
       <SectionHeader title={t('settings.week')} />

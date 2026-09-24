@@ -1,5 +1,5 @@
 import type { PersonalEvent } from '../domain/personalEvent';
-import type { Priority, WorkItem, WorkKind, WorkStatus } from '../domain/workItem';
+import type { Priority, RepeatRule, WorkItem, WorkKind, WorkStatus } from '../domain/workItem';
 
 export type WorkItemRow = {
   id: string;
@@ -12,6 +12,7 @@ export type WorkItemRow = {
   status: string;
   completed_at: string | null;
   reminder_at: string | null;
+  repeat_rule: string;
 };
 
 export const toWorkItem =
@@ -28,6 +29,7 @@ export const toWorkItem =
     status: r.status as WorkStatus,
     completedAt: r.completed_at,
     reminderAt: r.reminder_at,
+    repeat: r.repeat_rule as RepeatRule,
   });
 
 export type PersonalEventRow = {

@@ -115,6 +115,7 @@ describe('devoirs, tâches, examens', () => {
     status: 'todo',
     completedAt: null,
     reminderAt: new Date(2026, 8, 28, 18, 0).toISOString(),
+    repeat: 'none',
   };
   const exam: Exam = {
     id: 'x1',
@@ -127,6 +128,9 @@ describe('devoirs, tâches, examens', () => {
     description: null,
     reminderDays: [7, 1, 1],
     reminderTime: '20:00',
+    grade: null,
+    gradeMax: 20,
+    coefficient: 1,
   };
 
   it('un devoir avec rappel est programmé, pas un devoir terminé', () => {
@@ -168,6 +172,7 @@ it('un événement avec rappel est programmé, et le réglage « événements »
     endTime: null,
     description: null,
     reminderAt: new Date(2026, 8, 25, 17, 30).toISOString(),
+    repeat: 'none',
   };
   expect(planReminders({ ...empty, events: [event] }, prefs, now, names).map((p) => p.id)).toEqual([
     'event:ev1',

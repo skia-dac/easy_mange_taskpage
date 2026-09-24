@@ -6,6 +6,7 @@ export * from './data/queries';
 export * from './domain/course';
 export * from './domain/exam';
 export * from './domain/exception';
+export * from './domain/grades';
 export * from './domain/offPeriod';
 export * from './domain/occurrences';
 export * from './domain/subject';

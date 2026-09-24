@@ -16,6 +16,10 @@ export const notificationPreferencesSchema = z.object({
   sound: z.boolean().default(true),
   /** Vibration (Android : canal dédié ; iPhone : suit le réglage du téléphone). */
   vibrate: z.boolean().default(true),
+  /** Mode focus : aucun rappel pendant un cours (sauf « fin de cours »). */
+  focusDuringCourses: z.boolean().default(false),
+  /** Mode focus : aucun rappel pendant une session de révision (sauf sa fin). */
+  focusDuringStudy: z.boolean().default(true),
   courseReminderMinutes: z.union([
     z.literal(0),
     z.literal(10),
@@ -36,6 +40,8 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   events: true,
   sound: true,
   vibrate: true,
+  focusDuringCourses: false,
+  focusDuringStudy: true,
   courseReminderMinutes: 15,
 };
 

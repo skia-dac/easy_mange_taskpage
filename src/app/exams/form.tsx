@@ -18,6 +18,7 @@ import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
 import {
+  AppText,
   ChoiceChips,
   confirmDestructive,
   DateTimeField,
@@ -29,7 +30,12 @@ import {
   useSave,
 } from '@/shared/ui';
 
-type Form = Omit<ExamInput, 'durationMinutes'> & { duration: string };
+type Form = Omit<ExamInput, 'durationMinutes' | 'grade' | 'gradeMax' | 'coefficient'> & {
+  duration: string;
+  grade: string;
+  gradeMax: string;
+  coefficient: string;
+};
 
 export default function ExamFormScreen() {
   const { t } = useTranslation();
@@ -47,6 +53,9 @@ export default function ExamFormScreen() {
     description: '',
     reminderDays: [7, 1],
     reminderTime: '09:00',
+    grade: '',
+    gradeMax: '20',
+    coefficient: '1',
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -54,15 +63,31 @@ export default function ExamFormScreen() {
   useEffect(() => {
     if (!params.id) return;
     void getExam(db, params.id).then(
-      (e) => e && setForm({ ...e, duration: e.durationMinutes ? String(e.durationMinutes) : '' }),
+      (e) =>
+        e &&
+        setForm({
+          ...e,
+          duration: e.durationMinutes ? String(e.durationMinutes) : '',
+          grade: e.grade === null ? '' : String(e.grade),
+          gradeMax: String(e.gradeMax),
+          coefficient: String(e.coefficient),
+        }),
     );
   }, [db, params.id]);
 
   const toInput = (): ExamInput => {
-    const { duration, ...rest } = form;
+    const { duration, grade, gradeMax, coefficient, ...rest } = form;
     const trimmed = duration.trim();
     // Texte non numérique → NaN : refusé par la validation avec un message clair.
-    return { ...rest, durationMinutes: trimmed === '' ? null : Number(trimmed) };
+    // Les notes acceptent la virgule (« 14,5 »).
+    const num = (v: string) => Number(v.trim().replace(',', '.'));
+    return {
+      ...rest,
+      durationMinutes: trimmed === '' ? null : Number(trimmed),
+      grade: grade.trim() === '' ? null : num(grade),
+      gradeMax: gradeMax.trim() === '' ? 20 : num(gradeMax),
+      coefficient: coefficient.trim() === '' ? 1 : num(coefficient),
+    };
   };
 
   const submit = () =>
@@ -200,6 +225,40 @@ export default function ExamFormScreen() {
         placeholder={t('common.optional')}
         multiline
       />
+      <AppText variant="heading">{t('grades.section')}</AppText>
+      <AppText variant="caption" color="muted">
+        {t('grades.sectionHint')}
+      </AppText>
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+        <View style={{ flex: 1 }}>
+          <TextField
+            label={t('grades.grade')}
+            value={form.grade}
+            onChangeText={(grade) => set({ grade })}
+            error={errors.grade}
+            placeholder="—"
+            keyboardType="decimal-pad"
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <TextField
+            label={t('grades.gradeMax')}
+            value={form.gradeMax}
+            onChangeText={(gradeMax) => set({ gradeMax })}
+            error={errors.gradeMax}
+            keyboardType="decimal-pad"
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <TextField
+            label={t('grades.coefficient')}
+            value={form.coefficient}
+            onChangeText={(coefficient) => set({ coefficient })}
+            error={errors.coefficient}
+            keyboardType="decimal-pad"
+          />
+        </View>
+      </View>
     </FormScreen>
   );
 }

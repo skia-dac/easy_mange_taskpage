@@ -2,7 +2,7 @@ import { write, type Db, type EntityWriter } from '@/shared/db';
 import { parseInput } from '@/shared/validation';
 
 import { courseInputSchema, type CourseInput } from '../domain/course';
-import { examInputSchema, type ExamInput } from '../domain/exam';
+import { examSchema, type ExamInput } from '../domain/exam';
 import { subjectInputSchema, type SubjectInput } from '../domain/subject';
 import { timetableInputSchema, type TimetableInput } from '../domain/timetable';
 
@@ -113,7 +113,7 @@ export async function deleteCourse(db: Db, id: string) {
 
 // ---- Examens ----
 function examValues(input: ExamInput) {
-  const v = parseInput(examInputSchema, input);
+  const v = parseInput(examSchema, input);
   return {
     subject_id: v.subjectId,
     title: v.title,
@@ -124,6 +124,9 @@ function examValues(input: ExamInput) {
     description: v.description,
     reminder_days: JSON.stringify(v.reminderDays),
     reminder_time: v.reminderTime,
+    grade: v.grade,
+    grade_max: v.gradeMax,
+    coefficient: v.coefficient,
   };
 }
 

@@ -43,7 +43,10 @@
     "endAfterStart": "The end time must be after the start time.",
     "untilAfterFrom": "The end date must be after the start date.",
     "subjectRequired": "Choose a subject.",
-    "invalidDuration": "Enter a duration in minutes (e.g. 120)."
+    "invalidDuration": "Enter a duration in minutes (e.g. 120).",
+    "invalidGrade": "Enter a valid grade (e.g. 14.5).",
+    "invalidCoefficient": "Enter a coefficient greater than 0.",
+    "gradeTooHigh": "The grade is higher than the maximum."
   },
   "today": {
     "greeting": "Hello",
@@ -109,7 +112,9 @@
     "goToday": "Today",
     "nothing": "Nothing",
     "dayOff": "{{name}} · no classes",
-    "dayOffKept": "{{name}}"
+    "dayOffKept": "{{name}}",
+    "export": "Export calendar",
+    "exportTitle": "MySky calendar (.ics)"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -150,7 +155,10 @@
     "attachmentMissing": "File not found on this phone.",
     "attachmentTooBig": "This file is over {{max}} MB.",
     "updated": "Edited on {{date}}",
-    "empty2": "Empty note"
+    "empty2": "Empty note",
+    "untitled": "Untitled",
+    "sharePdf": "Share as PDF",
+    "pdfFooter": "Exported from MySky on {{date}}"
   },
   "editor": {
     "heading": "Heading",
@@ -236,7 +244,11 @@
     "academicYearPlaceholder": "e.g. 2026–2027",
     "save": "Save profile",
     "noName": "Your profile",
-    "completeHint": "Add your first name to personalise the home screen."
+    "completeHint": "Add your first name to personalise the home screen.",
+    "progress": "My progress",
+    "gradesHint": "Averages per subject and history",
+    "studyHint": "Study timer and weekly time",
+    "statsHint": "Class hours, tasks, study, streak"
   },
   "timetables": {
     "title": "Timetables",
@@ -317,7 +329,8 @@
     "completedOn": "Completed on {{date}}",
     "markDone": "Mark as done",
     "reopen": "Mark as not done",
-    "prefilled": "Subject taken from your class."
+    "prefilled": "Subject taken from your class.",
+    "repeat": "Repeat"
   },
   "exams": {
     "new": "New exam",
@@ -427,7 +440,11 @@
     "examBody": "In {{days}} day(s) · {{time}}",
     "examToday": "Today · {{time}}",
     "eventTitle": "Event: {{title}}",
-    "eventBody": "{{date}} {{time}}"
+    "eventBody": "{{date}} {{time}}",
+    "studyEndTitle": "Session complete",
+    "studyEndBody": "{{minutes}} min of study, well done. Break time?",
+    "breakEndTitle": "Break over",
+    "breakEndBody": "Ready to continue?"
   },
   "settings": {
     "title": "Settings",
@@ -556,5 +573,78 @@
     "unreadable": "This file is not a readable MySky backup.",
     "tooRecent": "This backup comes from a newer version of MySky. Update the app.",
     "size": "{{kb}} KB"
+  },
+  "grades": {
+    "title": "My grades",
+    "section": "Result",
+    "sectionHint": "Fill in once the exam is graded. The average is computed out of 20.",
+    "grade": "Grade",
+    "gradeMax": "Out of",
+    "coefficient": "Weight",
+    "notGraded": "Not graded yet",
+    "result": "{{grade}} / {{max}} · {{on20}} / 20",
+    "gradeLabel": "Grade",
+    "gradeWithCoef": "Grade · weight {{coef}}",
+    "overall": "Overall average",
+    "overallHint": "{{count}} graded exam(s). Every subject counts the same.",
+    "on20": "{{value}} / 20",
+    "subjectAverage": "Average · {{count}} graded exam(s)",
+    "chart": "Grade history in {{subject}}",
+    "empty": "No grades yet",
+    "emptyHint": "Open a past exam, tap “Edit” and enter your grade: the average shows up here.",
+    "howTo": "To add a grade, open the exam and edit it."
+  },
+  "repeat": {
+    "none": "Never",
+    "daily": "Every day",
+    "weekly": "Every week",
+    "monthly": "Every month"
+  },
+  "study": {
+    "title": "Study",
+    "subject": "Subject",
+    "preset": "Duration",
+    "presetLabel": "{{work}} min + {{rest}} min",
+    "start": "Start a session",
+    "startBreak": "Take the break",
+    "stop": "Stop",
+    "focusRunning": "Session running",
+    "breakRunning": "Break",
+    "focusHint": "You’ll get a notification when it ends, even if the app is closed.",
+    "done": "Well done, session complete!",
+    "breakDone": "Break over, ready to go on?",
+    "week": "This week",
+    "weekTotal": "Study time this week",
+    "weekChart": "Study minutes per day",
+    "bannerTitle": "Study session in progress",
+    "bannerHint": "Tap to see the timer"
+  },
+  "stats": {
+    "title": "Statistics",
+    "range": "Week from {{from}} to {{to}}",
+    "courses": "Class hours",
+    "tasksDone": "Tasks done · {{open}} to do",
+    "study": "Study time",
+    "streak": "Active-day streak",
+    "streakValue": "{{count}} day(s)",
+    "studyByDay": "Study per day",
+    "hint": "A day is “active” when you complete a task or do a study session."
+  },
+  "focus": {
+    "title": "Focus mode",
+    "duringCourses": "Quiet during classes",
+    "duringCoursesHint": "No reminders during a class (except “End of class”)",
+    "duringStudy": "Quiet during a study session",
+    "duringStudyHint": "No reminders while the timer runs"
+  },
+  "lock": {
+    "section": "Privacy",
+    "enable": "Lock MySky",
+    "enableHint": "Face ID, Touch ID or phone passcode when opening and after 30 s in the background",
+    "unavailable": "No Face ID, Touch ID or passcode is set up on this phone.",
+    "title": "MySky is locked",
+    "message": "Unlock to see your classes, notes and tasks.",
+    "unlock": "Unlock",
+    "prompt": "Unlock MySky"
   }
 }

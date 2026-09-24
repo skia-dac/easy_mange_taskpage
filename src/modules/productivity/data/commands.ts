@@ -3,12 +3,13 @@ import { parseInput } from '@/shared/validation';
 
 import { personalEventInputSchema, type PersonalEventInput } from '../domain/personalEvent';
 import {
+  nextOccurrenceInput,
   workItemInputSchema,
   type WorkItemInput,
   type WorkKind,
   type WorkStatus,
 } from '../domain/workItem';
-import { tableOf } from './rows';
+import { tableOf, toWorkItem, type WorkItemRow } from './rows';
 
 function workValues(input: WorkItemInput) {
   const v = parseInput(workItemInputSchema, input);
@@ -22,7 +23,22 @@ function workValues(input: WorkItemInput) {
     status: v.status,
     completed_at: v.status === 'done' ? nowIso() : null,
     reminder_at: v.reminderAt,
+    repeat_rule: v.repeat,
   };
+}
+
+/**
+ * Tâche répétée qui vient d'être terminée : crée la suivante (une seule fois par passage
+ * à « terminé »). Retourne l'id créé, ou null.
+ */
+async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<string | null> {
+  const row = await w.db.getFirstAsync<WorkItemRow>(`SELECT * FROM ${tableOf(kind)} WHERE id = ?`, [
+    id,
+  ]);
+  if (!row) return null;
+  const next = nextOccurrenceInput(toWorkItem(kind)(row));
+  if (!next) return null;
+  return w.insert(tableOf(kind), workValues(next));
 }
 
 export async function createWorkItem(db: Db, kind: WorkKind, input: WorkItemInput) {
@@ -41,14 +57,23 @@ export async function updateWorkItem(db: Db, kind: WorkKind, id: string, input: 
     if (values.status === 'done' && current?.status === 'done')
       values.completed_at = current.completed_at;
     await w.update(tableOf(kind), id, values);
+    if (values.status === 'done' && current?.status !== 'done') await spawnNext(w, kind, id);
   });
 }
 
 /** Marquer rapidement comme terminé (ou revenir à « à faire »). */
 export async function setWorkStatus(db: Db, kind: WorkKind, id: string, status: WorkStatus) {
-  return write(db, (w) =>
-    w.update(tableOf(kind), id, { status, completed_at: status === 'done' ? nowIso() : null }),
-  );
+  return write(db, async (w) => {
+    const current = await w.db.getFirstAsync<{ status: string }>(
+      `SELECT status FROM ${tableOf(kind)} WHERE id = ?`,
+      [id],
+    );
+    await w.update(tableOf(kind), id, {
+      status,
+      completed_at: status === 'done' ? nowIso() : null,
+    });
+    if (status === 'done' && current?.status !== 'done') await spawnNext(w, kind, id);
+  });
 }
 
 export async function deleteWorkItem(db: Db, kind: WorkKind, id: string) {

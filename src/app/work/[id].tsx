@@ -89,6 +89,13 @@ export default function WorkDetailScreen() {
           subtitle={t('work.due')}
           leading={<IconBadge icon="clock" />}
         />
+        {w.repeat !== 'none' ? (
+          <ListRow
+            title={t(`repeat.${w.repeat}`)}
+            subtitle={t('work.repeat')}
+            leading={<IconBadge icon="repeat" />}
+          />
+        ) : null}
         <ListRow
           title={
             done && w.completedAt

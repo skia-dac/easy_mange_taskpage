@@ -101,6 +101,28 @@ export default function ProfileScreen() {
         />
       </Card>
 
+      <SectionHeader title={t('profile.progress')} />
+      <Card>
+        <ListRow
+          title={t('grades.title')}
+          subtitle={t('profile.gradesHint')}
+          leading={<IconBadge icon="award" color="success" background="successSoft" />}
+          onPress={() => router.push('/grades')}
+        />
+        <ListRow
+          title={t('study.title')}
+          subtitle={t('profile.studyHint')}
+          leading={<IconBadge icon="clock" />}
+          onPress={() => router.push('/study')}
+        />
+        <ListRow
+          title={t('stats.title')}
+          subtitle={t('profile.statsHint')}
+          leading={<IconBadge icon="bar-chart-2" color="warning" background="warningSoft" />}
+          onPress={() => router.push('/stats')}
+        />
+      </Card>
+
       <SectionHeader title={t('profile.timetable')} />
       <Card>
         <ListRow

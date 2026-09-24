@@ -1,4 +1,5 @@
 import { occurrencesInRange, type Occurrence } from '@/modules/academic';
+import { plannedEnd } from '@/modules/productivity';
 import type { NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
 import { addDaysIso, atTime, toIsoDate } from '@/shared/dates';
@@ -9,7 +10,8 @@ export type ReminderAction =
   | { kind: 'endOfCourse'; seriesId: string; date: string; subjectId: string }
   | { kind: 'work'; workKind: 'task' | 'assignment'; id: string }
   | { kind: 'exam'; id: string }
-  | { kind: 'event'; id: string };
+  | { kind: 'event'; id: string }
+  | { kind: 'study'; id: string };
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */
@@ -138,7 +140,65 @@ export function planReminders(
     }
   }
 
-  return out.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime()).slice(0, MAX_SCHEDULED);
+  const session = data.studySession;
+  if (session && session.endedAt === null) {
+    const at = plannedEnd(session);
+    if (future(at)) {
+      out.push({
+        id: `study:${session.id}`,
+        fireAt: at,
+        title: { key: session.kind === 'break' ? 'notif.breakEndTitle' : 'notif.studyEndTitle' },
+        body: {
+          key: session.kind === 'break' ? 'notif.breakEndBody' : 'notif.studyEndBody',
+          params: { minutes: session.plannedMinutes },
+        },
+        action: { kind: 'study', id: session.id },
+      });
+    }
+  }
+
+  const kept = applyFocus(out, data, prefs, now);
+  return kept.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime()).slice(0, MAX_SCHEDULED);
+}
+
+type Window = { from: number; to: number };
+
+/**
+ * Mode focus : retire les rappels qui tomberaient pendant un cours ou une session de révision.
+ * La fin de cours et la fin de session restent : ce sont elles qui marquent la sortie du focus.
+ */
+export function applyFocus(
+  reminders: PlannedReminder[],
+  data: TodayData,
+  prefs: Pick<NotificationPreferences, 'focusDuringCourses' | 'focusDuringStudy'>,
+  now: Date,
+): PlannedReminder[] {
+  const windows: Window[] = [];
+  if (prefs.focusDuringCourses) {
+    const today = toIsoDate(now);
+    for (const o of occurrencesInRange(data.series, today, addDaysIso(today, HORIZON_DAYS), data)) {
+      if (o.status === 'cancelled') continue;
+      windows.push({
+        from: atTime(o.date, o.startTime).getTime(),
+        to: atTime(o.date, o.endTime).getTime(),
+      });
+    }
+  }
+  const session = data.studySession;
+  if (prefs.focusDuringStudy && session && session.endedAt === null && session.kind === 'focus') {
+    windows.push({
+      from: new Date(session.startedAt).getTime(),
+      to: plannedEnd(session).getTime(),
+    });
+  }
+  if (windows.length === 0) return reminders;
+  const exempt = (r: PlannedReminder) =>
+    r.action.kind === 'endOfCourse' || r.action.kind === 'study';
+  return reminders.filter((r) => {
+    if (exempt(r)) return true;
+    const t = r.fireAt.getTime();
+    return !windows.some((w) => w.from <= t && t < w.to);
+  });
 }
 
 /** Pour les tests et l'écran de réglages : la prochaine séance concernée par un rappel. */

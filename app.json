@@ -70,7 +70,13 @@
           "cameraPermission": "MySky utilise l’appareil photo pour joindre une photo à tes notes."
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "MySky utilise Face ID pour déverrouiller l’application."
+        }
+      ]
     ],
     "scheme": "mysky",
     "experiments": {

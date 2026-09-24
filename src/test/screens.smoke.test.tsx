@@ -15,7 +15,13 @@ import {
   createTimetable,
 } from '@/modules/academic';
 import { saveProfile } from '@/modules/identity';
-import { createNote, createPersonalEvent, createWorkItem } from '@/modules/productivity';
+import {
+  createNote,
+  createPersonalEvent,
+  createWorkItem,
+  endStudySession,
+  startStudySession,
+} from '@/modules/productivity';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
@@ -91,6 +97,20 @@ beforeAll(async () => {
     reminderDays: [7, 1],
     reminderTime: '09:00',
   });
+  await createExam(mockDb, {
+    subjectId: ids.subject,
+    title: 'Contrôle continu',
+    date: '2026-09-15',
+    grade: 14.5,
+    gradeMax: 20,
+    coefficient: 2,
+  });
+  const study = await startStudySession(mockDb, {
+    subjectId: ids.subject,
+    startedAt: '2026-09-22T08:00:00.000Z',
+    plannedMinutes: 25,
+  });
+  await endStudySession(mockDb, study, '2026-09-22T08:25:00.000Z');
   ids.task = await createWorkItem(mockDb, 'task', {
     title: 'Réviser le chapitre 3',
     dueDate: '2026-09-23',
@@ -245,7 +265,7 @@ const cases: Case[] = [
     name: 'Détail examen',
     load: () => require('@/app/exams/[id]') as { default: ComponentType },
     params: { id: 'exam' },
-    expect: ['Marketing stratégique', 'Dans 19 jours', 'Amphi B'],
+    expect: ['Marketing stratégique', 'Dans 19 jours', 'Amphi B', 'Pas encore noté'],
   },
   {
     name: 'Formulaire examen',
@@ -294,12 +314,27 @@ const cases: Case[] = [
   {
     name: 'Réglages',
     load: () => require('@/app/settings') as { default: ComponentType },
-    expect: ['Rappels de cours', 'Apparence', 'Langue'],
+    expect: ['Rappels de cours', 'Apparence', 'Langue', 'Mode focus', 'Verrouiller MySky'],
   },
   {
     name: 'Profil — modifier',
     load: () => require('@/app/profile/edit') as { default: ComponentType },
     expect: ['Enregistrer le profil'],
+  },
+  {
+    name: 'Notes d’examen',
+    load: () => require('@/app/grades') as { default: ComponentType },
+    expect: ['MOYENNE GÉNÉRALE', '14,5', 'Contrôle continu'],
+  },
+  {
+    name: 'Révision',
+    load: () => require('@/app/study') as { default: ComponentType },
+    expect: ['Lancer une session', '25 min'],
+  },
+  {
+    name: 'Statistiques',
+    load: () => require('@/app/stats') as { default: ComponentType },
+    expect: ['Heures de cours', 'Série'],
   },
   {
     name: 'Onboarding',

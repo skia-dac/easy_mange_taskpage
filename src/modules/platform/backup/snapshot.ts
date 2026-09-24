@@ -24,6 +24,7 @@ export const BACKUP_TABLES = [
   'personal_events',
   'notes',
   'attachments',
+  'study_sessions',
 ] as const;
 
 export const BACKUP_FORMAT = 'mysky-backup';

@@ -51,6 +51,7 @@ const late: WorkItem = {
   status: 'todo',
   completedAt: null,
   reminderAt: null,
+  repeat: 'none',
 };
 const exam: Exam = {
   id: 'e1',
@@ -63,6 +64,9 @@ const exam: Exam = {
   description: null,
   reminderDays: [],
   reminderTime: '09:00',
+  grade: null,
+  gradeMax: 20,
+  coefficient: 1,
 };
 
 let mockAgenda: TodayData = { series: [series], exams: [exam], work: [late], events: [] };

@@ -21,6 +21,22 @@ export const examInputSchema = z.object({
   /** Jours avant l'examen où envoyer un rappel (§74), ex. [7, 1]. */
   reminderDays: z.array(z.number().int().min(0).max(60)).default([]),
   reminderTime: time.default('09:00'),
+  /** Note obtenue (null tant que l'examen n'est pas corrigé). */
+  grade: z
+    .number()
+    .min(0, { error: 'validation.invalidGrade' })
+    .nullish()
+    .transform((v) => v ?? null),
+  /** Barème (20 par défaut). */
+  gradeMax: z.number().positive({ error: 'validation.invalidGrade' }).default(20),
+  /** Coefficient dans la moyenne de la matière. */
+  coefficient: z.number().positive({ error: 'validation.invalidCoefficient' }).default(1),
+});
+
+/** Zod ne permet pas de comparer deux champs dans `object()` : vérification séparée. */
+export const examSchema = examInputSchema.superRefine((e, ctx) => {
+  if (e.grade !== null && e.grade > e.gradeMax)
+    ctx.addIssue({ code: 'custom', path: ['grade'], message: 'validation.gradeTooHigh' });
 });
 
 export const examReminderOptions = [7, 3, 1] as const;

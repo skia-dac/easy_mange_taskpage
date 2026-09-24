@@ -215,6 +215,23 @@ Done after a walk-through showed gaps between "module exists" and "module comple
 
 **Still out of scope until external accounts exist:** accounts + sync (phase 2, Supabase), timetable import (phase 6, AI key), store assets (7b).
 
+## 5e. Lot 2 — engagement features (24 Sep 2026)
+
+Requested by the product owner after the MVP walk-through. All local, no account needed; all covered by `npm run check` (unit tests on real SQLite + every screen rendered).
+
+| Feature | Where | Notes |
+|---|---|---|
+| Exam grades and averages | exam form (« Résultat »), exam page, subject page, **Profil › Mes notes** (`/grades`) | `grade`, `grade_max`, `coefficient` on `exams` (migration v7). Weighted average per subject on 20, overall = mean of subject averages, bar chart of the history (drawn with views, no library). |
+| Study timer (Pomodoro) | **Profil › Révision** (`/study`), clock icon on Today | `study_sessions` table. Presets 25/5, 45/10, 50/10, 90/15, linked to a subject. End-of-session notification even when the app is closed (planned like the other reminders). Weekly total per subject and per day. |
+| Recurring tasks | task/homework form (« Répéter ») | `repeat_rule` on `tasks` and `assignments`. When a repeating item is marked done, the next one is created (due date, time and reminder shifted), exactly once. |
+| Share a note as PDF | note page, share icon | `noteToHtml` (markup → escaped HTML) + `expo-print` + `expo-sharing`. |
+| Calendar export (.ics) | calendar tab, share icon | `buildIcs`: classes (30 days back, 180 ahead, cancelled sessions excluded), exams, events, open tasks/homework (all-day). Opens in Calendrier iPhone / Google Agenda. |
+| Weekly statistics | **Profil › Statistiques** (`/stats`) | Class hours, tasks done/open, study minutes per day, active-day streak (a day counts with a completed task or a study session). Pure projection `weekStats`, tested. |
+| App lock | Réglages › Confidentialité | `expo-local-authentication` (Face ID / Touch ID / passcode). Locks at launch and after 30 s in background. Only offered when biometrics or a passcode are set up. |
+| Focus mode | Réglages › Mode focus | Two switches: no reminders during a class (end-of-class kept), no reminders during a study session (session end kept). Applied in `planReminders` (`applyFocus`), tested. |
+
+**Home-screen widget (next course, today's tasks) — not done, needs a development build.** A widget is native code (WidgetKit on iOS, Glance/AppWidget on Android) that Expo Go cannot run. Path when ready: `npx expo prebuild`-free config plugin such as `@bacons/apple-targets` for the iOS widget, an Android `AppWidgetProvider` via a config plugin, a shared JSON written by the app (next course, today's tasks) in an App Group, and `eas build --profile development` on a paid Apple developer account for iPhone testing. Estimated 2–3 days once the dev build works.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).

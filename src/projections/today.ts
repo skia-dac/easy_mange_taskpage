@@ -13,6 +13,7 @@ import {
   isOverdue,
   type PersonalEvent,
   type WorkItem,
+  type StudySession,
 } from '@/modules/productivity';
 import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
 
@@ -47,6 +48,8 @@ export type TodayData = {
   exams: readonly Exam[];
   work: readonly WorkItem[];
   events: readonly PersonalEvent[];
+  /** Session de révision en cours (minuteur), s'il y en a une. */
+  studySession?: StudySession | null;
 };
 
 export type TodayView = {

@@ -215,4 +215,23 @@ export const migrations: readonly Migration[] = [
       ALTER TABLE personal_events ADD COLUMN reminder_at TEXT;
     `,
   },
+  {
+    version: 7,
+    name: 'notes d’examen, tâches récurrentes, sessions de révision',
+    sql: `
+      ALTER TABLE exams ADD COLUMN grade REAL;
+      ALTER TABLE exams ADD COLUMN grade_max REAL NOT NULL DEFAULT 20;
+      ALTER TABLE exams ADD COLUMN coefficient REAL NOT NULL DEFAULT 1;
+      ALTER TABLE tasks ADD COLUMN repeat_rule TEXT NOT NULL DEFAULT 'none';
+      ALTER TABLE assignments ADD COLUMN repeat_rule TEXT NOT NULL DEFAULT 'none';
+      CREATE TABLE study_sessions (${SYNC_COLUMNS},
+        subject_id TEXT REFERENCES subjects (id),
+        started_at TEXT NOT NULL,
+        ended_at TEXT,
+        planned_minutes INTEGER NOT NULL,
+        kind TEXT NOT NULL DEFAULT 'focus'
+      );
+      CREATE INDEX idx_study_sessions_started ON study_sessions (started_at);
+    `,
+  },
 ];

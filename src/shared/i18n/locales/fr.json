@@ -43,7 +43,10 @@
     "endAfterStart": "L’heure de fin doit être après l’heure de début.",
     "untilAfterFrom": "La date de fin doit être après la date de début.",
     "subjectRequired": "Choisis une matière.",
-    "invalidDuration": "Entre une durée en minutes (ex. 120)."
+    "invalidDuration": "Entre une durée en minutes (ex. 120).",
+    "invalidGrade": "Entre une note valide (ex. 14,5).",
+    "invalidCoefficient": "Entre un coefficient supérieur à 0.",
+    "gradeTooHigh": "La note dépasse le barème."
   },
   "today": {
     "greeting": "Bonjour",
@@ -109,7 +112,9 @@
     "goToday": "Aujourd’hui",
     "nothing": "Rien",
     "dayOff": "{{name}} · pas de cours",
-    "dayOffKept": "{{name}}"
+    "dayOffKept": "{{name}}",
+    "export": "Exporter le calendrier",
+    "exportTitle": "Calendrier MySky (.ics)"
   },
   "calendarItem": {
     "exam": "Examen",
@@ -150,7 +155,10 @@
     "attachmentMissing": "Fichier introuvable sur ce téléphone.",
     "attachmentTooBig": "Ce fichier dépasse {{max}} Mo.",
     "updated": "Modifiée le {{date}}",
-    "empty2": "Note vide"
+    "empty2": "Note vide",
+    "untitled": "Sans titre",
+    "sharePdf": "Partager en PDF",
+    "pdfFooter": "Exporté de MySky le {{date}}"
   },
   "editor": {
     "heading": "Titre",
@@ -236,7 +244,11 @@
     "academicYearPlaceholder": "Ex. 2026–2027",
     "save": "Enregistrer le profil",
     "noName": "Ton profil",
-    "completeHint": "Ajoute ton prénom pour personnaliser l’accueil."
+    "completeHint": "Ajoute ton prénom pour personnaliser l’accueil.",
+    "progress": "Ma progression",
+    "gradesHint": "Moyennes par matière et évolution",
+    "studyHint": "Minuteur de révision et temps de la semaine",
+    "statsHint": "Heures de cours, tâches, révision, série"
   },
   "timetables": {
     "title": "Emplois du temps",
@@ -317,7 +329,8 @@
     "completedOn": "Terminé le {{date}}",
     "markDone": "Marquer comme terminé",
     "reopen": "Remettre à faire",
-    "prefilled": "Matière reprise de ton cours."
+    "prefilled": "Matière reprise de ton cours.",
+    "repeat": "Répéter"
   },
   "exams": {
     "new": "Nouvel examen",
@@ -427,7 +440,11 @@
     "examBody": "Dans {{days}} jour(s) · {{time}}",
     "examToday": "Aujourd’hui · {{time}}",
     "eventTitle": "Événement : {{title}}",
-    "eventBody": "{{date}} {{time}}"
+    "eventBody": "{{date}} {{time}}",
+    "studyEndTitle": "Session terminée",
+    "studyEndBody": "{{minutes}} min de révision, bravo. Une pause ?",
+    "breakEndTitle": "Pause terminée",
+    "breakEndBody": "On reprend ?"
   },
   "settings": {
     "title": "Réglages",
@@ -556,5 +573,78 @@
     "unreadable": "Ce fichier n’est pas une sauvegarde MySky lisible.",
     "tooRecent": "Cette sauvegarde vient d’une version plus récente de MySky. Mets l’app à jour.",
     "size": "{{kb}} Ko"
+  },
+  "grades": {
+    "title": "Mes notes",
+    "section": "Résultat",
+    "sectionHint": "À remplir une fois l’examen corrigé. La moyenne est calculée sur 20.",
+    "grade": "Note",
+    "gradeMax": "Sur",
+    "coefficient": "Coef.",
+    "notGraded": "Pas encore noté",
+    "result": "{{grade}} / {{max}} · {{on20}} / 20",
+    "gradeLabel": "Note obtenue",
+    "gradeWithCoef": "Note obtenue · coef. {{coef}}",
+    "overall": "Moyenne générale",
+    "overallHint": "{{count}} examen(s) noté(s). Chaque matière compte autant.",
+    "on20": "{{value}} / 20",
+    "subjectAverage": "Moyenne · {{count}} examen(s) noté(s)",
+    "chart": "Évolution des notes en {{subject}}",
+    "empty": "Aucune note pour le moment",
+    "emptyHint": "Ouvre un examen passé, touche « Modifier » et entre ta note : la moyenne apparaît ici.",
+    "howTo": "Pour ajouter une note, ouvre l’examen et modifie-le."
+  },
+  "repeat": {
+    "none": "Jamais",
+    "daily": "Chaque jour",
+    "weekly": "Chaque semaine",
+    "monthly": "Chaque mois"
+  },
+  "study": {
+    "title": "Révision",
+    "subject": "Matière",
+    "preset": "Durée",
+    "presetLabel": "{{work}} min + {{rest}} min",
+    "start": "Lancer une session",
+    "startBreak": "Prendre la pause",
+    "stop": "Arrêter",
+    "focusRunning": "Session en cours",
+    "breakRunning": "Pause",
+    "focusHint": "Tu recevras une notification à la fin, même si l’app est fermée.",
+    "done": "Bien joué, session terminée !",
+    "breakDone": "Pause terminée, on reprend ?",
+    "week": "Cette semaine",
+    "weekTotal": "Temps de révision cette semaine",
+    "weekChart": "Minutes de révision par jour",
+    "bannerTitle": "Session de révision en cours",
+    "bannerHint": "Touche pour voir le minuteur"
+  },
+  "stats": {
+    "title": "Statistiques",
+    "range": "Semaine du {{from}} au {{to}}",
+    "courses": "Heures de cours",
+    "tasksDone": "Tâches terminées · {{open}} à faire",
+    "study": "Révision",
+    "streak": "Série de jours actifs",
+    "streakValue": "{{count}} jour(s)",
+    "studyByDay": "Révision par jour",
+    "hint": "Un jour est « actif » si tu termines une tâche ou fais une session de révision."
+  },
+  "focus": {
+    "title": "Mode focus",
+    "duringCourses": "Silence pendant les cours",
+    "duringCoursesHint": "Aucun rappel pendant une séance (sauf « Fin de cours »)",
+    "duringStudy": "Silence pendant une session de révision",
+    "duringStudyHint": "Aucun rappel tant que le minuteur tourne"
+  },
+  "lock": {
+    "section": "Confidentialité",
+    "enable": "Verrouiller MySky",
+    "enableHint": "Face ID, Touch ID ou code du téléphone à l’ouverture et après 30 s en arrière-plan",
+    "unavailable": "Aucun Face ID, Touch ID ni code n’est configuré sur ce téléphone.",
+    "title": "MySky est verrouillé",
+    "message": "Déverrouille pour voir tes cours, notes et tâches.",
+    "unlock": "Déverrouiller",
+    "prompt": "Déverrouiller MySky"
   }
 }

@@ -10,9 +10,11 @@ import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import {
   colorOf,
+  formatGrade,
   getSubject,
   listCourseSeries,
   listExams,
+  weightedAverage,
   occurrencesInRange,
 } from '@/modules/academic';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
@@ -28,6 +30,7 @@ import {
   ChoiceSheet,
   confirmDestructive,
   EmptyState,
+  IconBadge,
   ListRow,
   SectionHeader,
   showError,
@@ -52,6 +55,8 @@ export default function SubjectDetailScreen() {
     [id],
   );
   const exams = useLiveQuery((d) => listExams(d, { subjectId: id }), ['exams'], [id]);
+  const average = weightedAverage(exams.data ?? []);
+  const gradedCount = (exams.data ?? []).filter((e) => e.grade !== null).length;
   const notes = useLiveQuery((d) => listNotes(d, { subjectId: id }), ['notes'], [id]);
   const work = useLiveQuery(
     async (d) => {
@@ -251,6 +256,14 @@ export default function SubjectDetailScreen() {
       <Card>
         {(exams.data ?? []).length === 0 ? (
           <AppText color="muted">{t('subjects.nothing')}</AppText>
+        ) : null}
+        {average !== null ? (
+          <ListRow
+            title={t('grades.on20', { value: formatGrade(average, labels.lang) })}
+            subtitle={t('grades.subjectAverage', { count: gradedCount })}
+            leading={<IconBadge icon="award" color="success" background="successSoft" />}
+            onPress={() => router.push('/grades')}
+          />
         ) : null}
         {(exams.data ?? []).map((e) => (
           <ExamRow key={e.id} exam={e} subjects={byId} now={now} />

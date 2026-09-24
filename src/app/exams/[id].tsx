@@ -4,7 +4,14 @@ import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
-import { colorOf, countdown, deleteExam, getExam } from '@/modules/academic';
+import {
+  colorOf,
+  countdown,
+  deleteExam,
+  formatGrade,
+  getExam,
+  gradeOn20,
+} from '@/modules/academic';
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -97,6 +104,24 @@ export default function ExamDetailScreen() {
             leading={<IconBadge icon="map-pin" />}
           />
         ) : null}
+        <ListRow
+          title={
+            e.grade === null
+              ? t('grades.notGraded')
+              : t('grades.result', {
+                  grade: formatGrade(e.grade, labels.lang),
+                  max: formatGrade(e.gradeMax, labels.lang),
+                  on20: formatGrade(gradeOn20(e) ?? 0, labels.lang),
+                })
+          }
+          subtitle={
+            e.coefficient === 1
+              ? t('grades.gradeLabel')
+              : t('grades.gradeWithCoef', { coef: formatGrade(e.coefficient, labels.lang) })
+          }
+          leading={<IconBadge icon="award" color="success" background="successSoft" />}
+          onPress={() => router.push({ pathname: '/exams/form', params: { id: e.id } })}
+        />
       </Card>
       {e.description ? (
         <Card>

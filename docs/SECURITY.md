@@ -68,6 +68,12 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - **Partage** : l'utilisateur peut envoyer une sauvegarde (Fichiers, mail, AirDrop) ; le fichier contient toutes ses données en clair, l'app le dit avant de partager.
 - **Supprimer toutes mes données** : double confirmation, puis base vidée (réglages compris), pièces jointes et sauvegardes effacées, rappels annulés ; l'app repart au premier lancement. Avec les comptes (phase 2), la même action supprimera aussi les données du serveur.
 
+## 4f. Verrouillage, export et partage
+
+- **Verrouillage de l'app** : utilise Face ID / Touch ID / le code du téléphone (`expo-local-authentication`), jamais un mot de passe propre à l'app (rien à stocker). L'écran de verrouillage est opaque ; il revient après 30 s en arrière-plan. Le réglage ne s'active que si le téléphone a une biométrie ou un code configuré.
+- **Export .ics et PDF** : fichiers écrits dans le **cache** de l'app puis passés à la feuille de partage du système ; l'utilisateur choisit où ils vont. Tout le texte est échappé (RFC 5545 pour l'ics, HTML pour le PDF) ; aucune ressource externe dans le PDF.
+- **Sessions de révision** : seuls la matière, l'heure de début/fin et la durée sont enregistrés. Le mode focus ne touche qu'aux notifications de l'app, jamais aux réglages du téléphone.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

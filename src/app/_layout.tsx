@@ -16,7 +16,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppearanceProvider, LanguageGate } from '@/modules/identity';
-import { BackupGate, NotificationsGate } from '@/modules/platform';
+import { BackupGate, LockGate, NotificationsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -52,6 +52,7 @@ export default function RootLayout() {
           <BackupGate />
           <AppearanceProvider>
             <ThemedStack />
+            <LockGate />
           </AppearanceProvider>
         </SQLiteProvider>
       </Suspense>
@@ -109,6 +110,9 @@ function ThemedStack() {
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
         <Stack.Screen name="search" options={{ title: t('search.title') }} />
         <Stack.Screen name="notifications" options={{ title: t('notifications.title') }} />
+        <Stack.Screen name="grades" options={{ title: t('grades.title') }} />
+        <Stack.Screen name="study" options={{ title: t('study.title') }} />
+        <Stack.Screen name="stats" options={{ title: t('stats.title') }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
     </>
