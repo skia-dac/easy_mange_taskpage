@@ -27,6 +27,9 @@ export const BACKUP_TABLES = [
   'study_sessions',
   'habits',
   'habit_logs',
+  'work_subtasks',
+  'revision_blocks',
+  'mood_logs',
   'sync_conflicts',
   'sync_files',
 ] as const;

@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AccountGate } from '@/components/AccountGate';
@@ -45,23 +46,25 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <SafeAreaProvider>
-      <Suspense fallback={<LoadingScreen message={t('loading.database')} />}>
-        <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
-          <AuthProvider>
-            <LanguageGate />
-            <NotificationsGate />
-            <AccountGate />
-            <BackupGate />
-            <WidgetsGate />
-            <AppearanceProvider>
-              <ThemedStack />
-              <LockGate />
-            </AppearanceProvider>
-          </AuthProvider>
-        </SQLiteProvider>
-      </Suspense>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Suspense fallback={<LoadingScreen message={t('loading.database')} />}>
+          <SQLiteProvider databaseName={DATABASE_NAME} onInit={setupDatabase} useSuspense>
+            <AuthProvider>
+              <LanguageGate />
+              <NotificationsGate />
+              <AccountGate />
+              <BackupGate />
+              <WidgetsGate />
+              <AppearanceProvider>
+                <ThemedStack />
+                <LockGate />
+              </AppearanceProvider>
+            </AuthProvider>
+          </SQLiteProvider>
+        </Suspense>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

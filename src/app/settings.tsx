@@ -3,26 +3,33 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, Switch, View } from 'react-native';
 
+import { AccentPicker } from '@/components/AccentPicker';
 import { useLabels } from '@/hooks/useLabels';
 import {
   courseReminderOptions,
+  getAccentPreference,
   getAppearancePreference,
   getLanguagePreference,
   getLastBackupAt,
   getNotificationPreferences,
+  getTextScalePreference,
   getWeekStart,
   isAppLockEnabled,
   signOut,
   useAuth,
+  setAccentPreference,
   setAppearancePreference,
   setAppLockEnabled,
   setLanguagePreference,
   setNotificationPreferences,
+  setTextScalePreference,
   setWeekStart,
   weekStartOptions,
+  type AccentPreference,
   type AppearancePreference,
   type LanguagePreference,
   type NotificationPreferences,
+  type TextScalePreference,
   type WeekStart,
 } from '@/modules/identity';
 import {
@@ -51,6 +58,7 @@ import {
   ChoiceChips,
   ChoiceSheet,
   confirmDestructive,
+  DateTimeField,
   IconBadge,
   ListRow,
   LoadingScreen,
@@ -78,6 +86,8 @@ export default function SettingsScreen() {
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
   const [appearance, setAppearance] = useState<AppearancePreference>('auto');
+  const [accent, setAccent] = useState<AccentPreference>('blue');
+  const [textScale, setTextScale] = useState<TextScalePreference>('normal');
   const [weekStart, setWeekStartState] = useState<WeekStart>(1);
   const [granted, setGranted] = useState<boolean | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
@@ -101,7 +111,11 @@ export default function SettingsScreen() {
       getWeekStart(db),
       hasPermission(),
       isAppLockEnabled(db),
-    ]).then(([p, l, a, w, g, lock]) => {
+      getAccentPreference(db),
+      getTextScalePreference(db),
+    ]).then(([p, l, a, w, g, lock, ac, ts]) => {
+      setAccent(ac);
+      setTextScale(ts);
       setPrefs(p);
       setLang(l);
       setAppearance(a);
@@ -311,6 +325,17 @@ export default function SettingsScreen() {
         {toggle(t('settings.exams'), 'exams')}
         {toggle(t('settings.events'), 'events')}
         {toggle(t('settings.habits'), 'habits', t('settings.habitsHint'))}
+        {toggle(t('settings.revisions'), 'revisions', t('settings.revisionsHint'))}
+        {toggle(t('settings.eveningReview'), 'eveningReview', t('settings.eveningReviewHint'))}
+        {prefs.eveningReview ? (
+          <DateTimeField
+            label={t('settings.eveningReviewTime')}
+            mode="time"
+            required
+            value={prefs.eveningReviewTime ?? '20:30'}
+            onChange={(v) => v && update({ eveningReviewTime: v })}
+          />
+        ) : null}
       </Card>
       <Card>
         {toggle(t('settings.sound'), 'sound', t('settings.soundHint'))}
@@ -362,6 +387,37 @@ export default function SettingsScreen() {
           { value: 'dark', label: t('settings.appDark') },
         ]}
       />
+      <AccentPicker
+        value={accent}
+        onChange={(v) => {
+          setAccent(v);
+          setAccentPreference(db, v).catch((e: unknown) => showError(userMessageKey(e)));
+        }}
+      />
+      <AppText variant="bodyStrong">{t('settings.textSize')}</AppText>
+      <Segmented
+        accessibilityLabel={t('settings.textSize')}
+        value={textScale}
+        onChange={(v) => {
+          setTextScale(v);
+          setTextScalePreference(db, v).catch((e: unknown) => showError(userMessageKey(e)));
+        }}
+        options={(['small', 'normal', 'large', 'xlarge'] as const).map((v) => ({
+          value: v,
+          label: t(`settings.textSizes.${v}`),
+        }))}
+      />
+      <AppText variant="caption" color="muted">
+        {t('settings.textSizeHint')}
+      </AppText>
+      <Card>
+        <ListRow
+          title={t('todayLayout.title')}
+          subtitle={t('todayLayout.hint')}
+          leading={<IconBadge icon="layout" />}
+          onPress={() => router.push('/today-layout')}
+        />
+      </Card>
 
       <SectionHeader title={t('settings.language')} />
       <Segmented

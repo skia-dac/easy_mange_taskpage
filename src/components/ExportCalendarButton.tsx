@@ -26,6 +26,7 @@ export function ExportCalendarButton({ data, subjects }: Props) {
         subjectName: (id) => subjects.get(id)?.name ?? '',
         exam: t('calendarItem.exam'),
         assignment: t('calendarItem.assignment'),
+        revision: t('calendarItem.revision'),
         task: t('calendarItem.task'),
       });
       if (!(await shareIcs(ics, t('calendar.exportTitle')))) showError('backup.shareUnavailable');

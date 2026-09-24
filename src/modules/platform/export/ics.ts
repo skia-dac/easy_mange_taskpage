@@ -8,6 +8,7 @@ type Labels = {
   exam: string;
   assignment: string;
   task: string;
+  revision: string;
 };
 
 /** Jours exportés avant et après aujourd'hui. */
@@ -69,7 +70,7 @@ function vevent(e: Event, stamp: string): string[] {
 
 /**
  * Calendrier iCalendar (.ics) : séances de cours (hors annulées), examens, événements,
- * devoirs et tâches (jour entier). Fonction pure, testée.
+ * révisions prévues, devoirs et tâches (jour entier). Fonction pure, testée.
  */
 export function buildIcs(data: TodayData, labels: Labels, now = new Date()): string {
   const today = toIsoDate(now);
@@ -84,7 +85,7 @@ export function buildIcs(data: TodayData, labels: Labels, now = new Date()): str
   for (const o of occurrencesInRange(data.series, from, to, data)) {
     if (o.status === 'cancelled') continue;
     events.push({
-      uid: `course-${o.seriesId}-${o.date}`,
+      uid: `course-${o.seriesId}-${o.originalDate}`,
       summary: o.title ?? labels.subjectName(o.subjectId),
       location: o.room,
       description: o.teacher,
@@ -114,6 +115,15 @@ export function buildIcs(data: TodayData, labels: Labels, now = new Date()): str
         end,
       });
     } else events.push({ uid: `event-${e.id}`, summary: e.title, allDay: e.date });
+  }
+  for (const b of data.revisionBlocks ?? []) {
+    if (b.status === 'skipped' || b.date < from || b.date > to) continue;
+    events.push({
+      uid: `revision-${b.id}`,
+      summary: `${labels.revision} : ${b.title ?? (b.subjectId ? labels.subjectName(b.subjectId) : '')}`,
+      start: atTime(b.date, b.startTime),
+      end: atTime(b.date, b.endTime),
+    });
   }
   for (const w of data.work) {
     if (w.status === 'done' || w.dueDate < from || w.dueDate > to) continue;

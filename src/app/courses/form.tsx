@@ -237,11 +237,14 @@ export default function CourseFormScreen() {
             label={t('courses.timetable')}
             value={form.timetableId ?? null}
             noneLabel={t('courses.noTimetable')}
-            options={(timetables.data ?? []).map((tt) => ({ value: tt.id, label: tt.name }))}
+            options={(timetables.data ?? [])
+              .filter((tt) => tt.kind === 'courses')
+              .map((tt) => ({ value: tt.id, label: tt.name }))}
             onChange={chooseTimetable}
             footer={{
               label: t('courses.createTimetable'),
-              onPress: () => router.push('/timetables/form'),
+              onPress: () =>
+                router.push({ pathname: '/timetables/form', params: { kind: 'courses' } }),
             }}
           />
           <View style={{ flexDirection: 'row', gap: spacing.md }}>

@@ -16,6 +16,8 @@ import {
   type Habit,
   type HabitLog,
   type StudySession,
+  type RevisionBlock,
+  type MoodLog,
 } from '@/modules/productivity';
 import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
 
@@ -55,6 +57,10 @@ export type TodayData = {
   habits?: readonly Habit[];
   /** Journal des habitudes (des 60 derniers jours à aujourd'hui). */
   habitLogs?: readonly HabitLog[];
+  /** Séances de révision prévues (plan de révision, ajout manuel). */
+  revisionBlocks?: readonly RevisionBlock[];
+  /** Humeur des derniers jours (bilan du soir, statistiques). */
+  moodLogs?: readonly MoodLog[];
 };
 
 export type TodayView = {

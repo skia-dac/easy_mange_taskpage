@@ -8,6 +8,8 @@ import {
   getActiveStudySession,
   listHabitLogs,
   listHabits,
+  listMoodLogs,
+  listRevisionBlocks,
   listPersonalEvents,
   listWorkItems,
 } from '@/modules/productivity';
@@ -27,6 +29,8 @@ const TABLES = [
   'study_sessions',
   'habits',
   'habit_logs',
+  'revision_blocks',
+  'mood_logs',
 ] as const;
 
 async function loadAgenda(db: Db): Promise<TodayData> {
@@ -42,6 +46,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     studySession,
     habits,
     habitLogs,
+    revisionBlocks,
+    moodLogs,
   ] = await Promise.all([
     listCourseSeries(db),
     listCourseExceptions(db),
@@ -53,6 +59,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     getActiveStudySession(db),
     listHabits(db),
     listHabitLogs(db, addDaysIso(today, -400), addDaysIso(today, 7)),
+    listRevisionBlocks(db, { from: addDaysIso(today, -60) }),
+    listMoodLogs(db, addDaysIso(today, -90), today),
   ]);
   return {
     series,
@@ -64,6 +72,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     studySession,
     habits,
     habitLogs,
+    revisionBlocks,
+    moodLogs,
   };
 }
 

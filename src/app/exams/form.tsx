@@ -10,11 +10,12 @@ import {
   deleteExam,
   examReminderOptions,
   getExam,
+  listTimetables,
   updateExam,
   type ExamInput,
 } from '@/modules/academic';
 import { toIsoDate } from '@/shared/dates';
-import { useDb } from '@/shared/db';
+import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
 import {
@@ -41,8 +42,15 @@ export default function ExamFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
   const { spacing } = useTheme();
-  const params = useLocalSearchParams<{ id?: string; subjectId?: string; date?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    subjectId?: string;
+    date?: string;
+    timetableId?: string;
+  }>();
   const { subjects } = useSubjects();
+  const timetables = useLiveQuery(listTimetables, ['timetables'], []);
+  const examTimetables = (timetables.data ?? []).filter((tt) => tt.kind === 'exams');
   const [form, setForm] = useState<Form>({
     subjectId: params.subjectId ?? '',
     title: '',
@@ -56,6 +64,7 @@ export default function ExamFormScreen() {
     grade: '',
     gradeMax: '20',
     coefficient: '1',
+    timetableId: params.timetableId ?? null,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -192,6 +201,15 @@ export default function ExamFormScreen() {
           />
         </View>
       </View>
+      {examTimetables.length > 0 ? (
+        <SelectField
+          label={t('exams.timetable')}
+          value={form.timetableId ?? null}
+          noneLabel={t('courses.noTimetable')}
+          options={examTimetables.map((tt) => ({ value: tt.id, label: tt.name }))}
+          onChange={(timetableId) => set({ timetableId })}
+        />
+      ) : null}
       <ChoiceChips
         label={t('reminder.examDays')}
         options={examReminderOptions.map((d) => ({

@@ -22,6 +22,14 @@ export const notificationPreferencesSchema = z.object({
   focusDuringCourses: z.boolean().default(false),
   /** Mode focus : aucun rappel pendant une session de révision (sauf sa fin). */
   focusDuringStudy: z.boolean().default(true),
+  /** Rappel avant chaque séance de révision prévue. */
+  revisions: z.boolean().default(true),
+  /** Bilan du soir : un rappel chaque jour pour préparer demain. */
+  eveningReview: z.boolean().default(true),
+  eveningReviewTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .default('20:30'),
   courseReminderMinutes: z.union([
     z.literal(0),
     z.literal(10),
@@ -45,6 +53,9 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   vibrate: true,
   focusDuringCourses: false,
   focusDuringStudy: true,
+  revisions: true,
+  eveningReview: true,
+  eveningReviewTime: '20:30',
   courseReminderMinutes: 15,
 };
 
@@ -59,3 +70,33 @@ export const weekStartOptions = [1, 6, 7] as const;
 export const weekStartSchema = z.union([z.literal(1), z.literal(6), z.literal(7)]);
 export type WeekStart = z.infer<typeof weekStartSchema>;
 export const defaultWeekStart: WeekStart = 1;
+
+export const accentPreferenceSchema = z.enum(['blue', 'violet', 'teal', 'green', 'rose', 'orange']);
+export const textScalePreferenceSchema = z.enum(['small', 'normal', 'large', 'xlarge']);
+
+/** Sections de l'écran Aujourd'hui que l'étudiant peut ordonner ou masquer. */
+export const todaySectionIds = [
+  'next',
+  'courses',
+  'revision',
+  'habits',
+  'todo',
+  'events',
+  'exams',
+] as const;
+export type TodaySectionId = (typeof todaySectionIds)[number];
+
+export const todayLayoutSchema = z.object({
+  order: z.array(z.enum(todaySectionIds)),
+  hidden: z.array(z.enum(todaySectionIds)).default([]),
+});
+export type TodayLayout = z.infer<typeof todayLayoutSchema>;
+
+/** Ordre complet : l'ordre enregistré, puis les sections ajoutées depuis (nouvelles versions). */
+export function normalizeTodayLayout(layout: Partial<TodayLayout> | null | undefined): TodayLayout {
+  const order = (layout?.order ?? []).filter(
+    (id, i, all) => todaySectionIds.includes(id) && all.indexOf(id) === i,
+  );
+  for (const id of todaySectionIds) if (!order.includes(id)) order.push(id);
+  return { order, hidden: (layout?.hidden ?? []).filter((id) => todaySectionIds.includes(id)) };
+}

@@ -92,3 +92,39 @@ export const subjectColors: readonly SubjectColor[] = [
   { id: 'red', strong: '#B3261E', soft: '#FCE7E5', strongDark: '#FF8F85', softDark: '#3D1F1D' },
   { id: 'slate', strong: '#475569', soft: '#EBEEF3', strongDark: '#B4BFCF', softDark: '#262E3A' },
 ];
+
+/**
+ * Couleurs principales au choix (Réglages › Apparence). Chacune remplace seulement
+ * `primary`, `primarySoft` et `onPrimary`, en clair et en sombre. Les tests vérifient le contraste.
+ */
+export type AccentColors = Pick<ColorTokens, 'primary' | 'primarySoft' | 'onPrimary'>;
+
+export const accentColors = {
+  blue: {
+    light: { primary: '#1F5FD6', primarySoft: '#E6EEFC', onPrimary: '#FFFFFF' },
+    dark: { primary: '#7AA2FF', primarySoft: '#1E2F55', onPrimary: '#0B1530' },
+  },
+  violet: {
+    light: { primary: '#6D3FD1', primarySoft: '#EFE8FC', onPrimary: '#FFFFFF' },
+    dark: { primary: '#B69CFF', primarySoft: '#2E2450', onPrimary: '#160B33' },
+  },
+  teal: {
+    light: { primary: '#0A7372', primarySoft: '#DFF3F2', onPrimary: '#FFFFFF' },
+    dark: { primary: '#5FD3D1', primarySoft: '#123837', onPrimary: '#04201F' },
+  },
+  green: {
+    light: { primary: '#0E7555', primarySoft: '#E2F3EC', onPrimary: '#FFFFFF' },
+    dark: { primary: '#4CC79A', primarySoft: '#17362C', onPrimary: '#06231A' },
+  },
+  rose: {
+    light: { primary: '#B8316A', primarySoft: '#FBE7EF', onPrimary: '#FFFFFF' },
+    dark: { primary: '#FF8FB8', primarySoft: '#3E1F2C', onPrimary: '#2A0B18' },
+  },
+  orange: {
+    light: { primary: '#B54708', primarySoft: '#FEF0E1', onPrimary: '#FFFFFF' },
+    dark: { primary: '#F5A25D', primarySoft: '#3A2A1C', onPrimary: '#2A1405' },
+  },
+} as const satisfies Record<string, { light: AccentColors; dark: AccentColors }>;
+
+export type AccentId = keyof typeof accentColors;
+export const accentIds = Object.keys(accentColors) as AccentId[];

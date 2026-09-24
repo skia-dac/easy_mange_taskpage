@@ -56,6 +56,7 @@ const data: TodayData = {
       grade: null,
       gradeMax: 20,
       coefficient: 1,
+      timetableId: null,
     },
   ],
   events: [],
@@ -73,6 +74,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: null,
       repeat: 'none',
+      estimatedMinutes: null,
     },
     {
       id: 'w2',
@@ -87,6 +89,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: null,
       repeat: 'none',
+      estimatedMinutes: null,
     },
   ],
 };

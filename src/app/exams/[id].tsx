@@ -15,7 +15,8 @@ import {
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { formatLongDate } from '@/shared/format';
+import { formatLongDate, formatShortDate } from '@/shared/format';
+import { listRevisionBlocks } from '@/modules/productivity';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
 import {
@@ -26,6 +27,7 @@ import {
   EmptyState,
   IconBadge,
   ListRow,
+  SectionHeader,
   showError,
   TextButton,
 } from '@/shared/ui';
@@ -39,6 +41,11 @@ export default function ExamDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { byId } = useSubjects();
   const exam = useLiveQuery((db) => getExam(db, id), ['exams'], [id]);
+  const revisions = useLiveQuery(
+    (db) => listRevisionBlocks(db, { examId: id }),
+    ['revision_blocks'],
+    [id],
+  );
 
   if (exam.loading) return null;
   const e = exam.data;
@@ -131,8 +138,40 @@ export default function ExamDetailScreen() {
           <AppText>{e.description}</AppText>
         </Card>
       ) : null}
+      <SectionHeader title={t('revision.sectionTitle')} />
+      {c.kind !== 'past' && c.kind !== 'today' ? (
+        <Button
+          label={
+            (revisions.data ?? []).some((r) => r.status === 'planned')
+              ? t('revision.replan')
+              : t('revision.plan')
+          }
+          onPress={() => router.push({ pathname: '/revision/plan', params: { examId: e.id } })}
+        />
+      ) : null}
+      {(revisions.data ?? []).length > 0 ? (
+        <Card>
+          {(revisions.data ?? []).map((r) => (
+            <ListRow
+              key={r.id}
+              title={formatShortDate(r.date, labels.lang)}
+              subtitle={`${r.startTime} – ${r.endTime} · ${t(`revision.status.${r.status}`)}`}
+              struck={r.status === 'skipped'}
+              leading={
+                <IconBadge
+                  icon={r.status === 'done' ? 'check' : 'book-open'}
+                  color={r.status === 'done' ? 'success' : 'primary'}
+                  background={r.status === 'done' ? 'successSoft' : 'primarySoft'}
+                />
+              }
+              onPress={() => router.push({ pathname: '/revision/[id]', params: { id: r.id } })}
+            />
+          ))}
+        </Card>
+      ) : null}
       {subject ? (
         <Button
+          variant="secondary"
           label={subject.name}
           onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: subject.id } })}
         />

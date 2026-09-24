@@ -27,3 +27,19 @@ export type {
   WidgetTheme,
   WidgetTimelineEntry,
 } from './widget';
+export { busySlots, defaultPlanOptions, planRevisions } from './revisionPlan';
+export type { ProposedBlock, RevisionPlan, RevisionPlanOptions } from './revisionPlan';
+export {
+  calendarFilters,
+  filterItems,
+  itemSpan,
+  layoutDay,
+  moveTarget,
+  SNAP_MINUTES,
+  visibleHours,
+} from './hourGrid';
+export type { CalendarFilter, MoveTarget, TimedBlock } from './hourGrid';
+export { buildEveningReview } from './review';
+export type { EveningReview } from './review';
+export { moodInsights } from './mood';
+export type { HabitMoodInsight, MoodInsights } from './mood';

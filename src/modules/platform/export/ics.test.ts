@@ -29,6 +29,7 @@ const data: TodayData = {
       seriesId: 'c1',
       date: '2026-09-30',
       kind: 'cancelled',
+      newDate: null,
       newStartTime: null,
       newEndTime: null,
       newRoom: null,
@@ -52,6 +53,7 @@ const data: TodayData = {
       grade: null,
       gradeMax: 20,
       coefficient: 1,
+      timetableId: null,
     },
   ],
   events: [
@@ -79,6 +81,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: null,
       repeat: 'none',
+      estimatedMinutes: null,
     },
     {
       id: 'w2',
@@ -93,6 +96,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: null,
       repeat: 'none',
+      estimatedMinutes: null,
     },
   ],
 };
@@ -100,6 +104,7 @@ const labels = {
   subjectName: () => 'Marketing',
   exam: 'Examen',
   assignment: 'Devoir',
+  revision: 'Révision',
   task: 'Tâche',
 };
 

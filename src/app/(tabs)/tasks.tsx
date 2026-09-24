@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
+import { usePostpone } from '@/components/PostponeSheet';
 import { SearchButton } from '@/components/SearchButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf, listExams } from '@/modules/academic';
@@ -11,6 +12,7 @@ import {
   compareWorkItems,
   isOverdue,
   listWorkItems,
+  subtaskCounts,
   type WorkItem,
   type WorkKind,
 } from '@/modules/productivity';
@@ -18,6 +20,7 @@ import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { useNow } from '@/shared/useNow';
 import {
+  AppText,
   Card,
   ChoiceChips,
   EmptyState,
@@ -46,6 +49,8 @@ export default function TasksScreen() {
     [tab],
   );
   const exams = useLiveQuery(listExams, ['exams'], []);
+  const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
+  const postpone = usePostpone();
 
   const filtered = useMemo(
     () => (work.data ?? []).filter((w) => !subjectId || w.subjectId === subjectId),
@@ -73,7 +78,15 @@ export default function TasksScreen() {
         <SectionHeader title={title} />
         <Card>
           {items.map((w) => (
-            <WorkRow key={w.id} item={w} subjects={byId} now={now} showDate />
+            <WorkRow
+              key={w.id}
+              item={w}
+              subjects={byId}
+              now={now}
+              showDate
+              onPostpone={postpone.open}
+              progress={counts.data?.get(`${w.kind}:${w.id}`)}
+            />
           ))}
         </Card>
       </View>
@@ -146,6 +159,11 @@ export default function TasksScreen() {
           )
         ) : (
           <>
+            {openCount > 0 ? (
+              <AppText variant="caption" color="muted">
+                {t('tasks.swipeHint')}
+              </AppText>
+            ) : null}
             {openCount === 0 ? (
               <EmptyState
                 icon="check-circle"
@@ -174,6 +192,7 @@ export default function TasksScreen() {
         <View style={{ height: 80 }} />
       </Screen>
       <Fab accessibilityLabel={t('add.title')} onPress={add} />
+      {postpone.sheet}
     </View>
   );
 }

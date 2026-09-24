@@ -8,6 +8,7 @@ import {
   isOverdue,
   setWorkStatus,
   type PersonalEvent,
+  type RevisionBlock,
   type WorkItem,
 } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
@@ -15,7 +16,16 @@ import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
-import { AppText, Checkbox, Chip, IconBadge, ListRow, showError, SubjectBar } from '@/shared/ui';
+import {
+  AppText,
+  Checkbox,
+  Chip,
+  IconBadge,
+  ListRow,
+  showError,
+  SubjectBar,
+  SwipeRow,
+} from '@/shared/ui';
 
 type SubjectMap = ReadonlyMap<string, Subject>;
 
@@ -42,7 +52,7 @@ export function CourseRow({
       onPress={() =>
         router.push({
           pathname: '/courses/[id]',
-          params: { id: occurrence.seriesId, date: occurrence.date },
+          params: { id: occurrence.seriesId, date: occurrence.originalDate },
         })
       }
       leading={
@@ -75,11 +85,17 @@ export function WorkRow({
   subjects,
   now,
   showDate,
+  onPostpone,
+  progress,
 }: {
   item: WorkItem;
   subjects: SubjectMap;
   now: Date;
   showDate?: boolean;
+  /** Active le glisser : à droite pour terminer, à gauche pour reporter. */
+  onPostpone?: (item: WorkItem) => void;
+  /** Avancement de la checklist, s'il y en a une. */
+  progress?: { done: number; total: number };
 }) {
   const { t } = useTranslation();
   const labels = useLabels();
@@ -95,11 +111,21 @@ export function WorkRow({
       showError(userMessageKey(e)),
     );
 
-  return (
+  const row = (
     <ListRow
       title={item.title}
       struck={done}
-      subtitle={[t(`calendarItem.${item.kind}`), subject?.name, when].filter(Boolean).join(' · ')}
+      subtitle={[
+        t(`calendarItem.${item.kind}`),
+        subject?.name,
+        when,
+        item.estimatedMinutes ? labels.duration(item.estimatedMinutes) : null,
+        progress && progress.total > 0
+          ? t('subtasks.progress', { done: progress.done, total: progress.total })
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
       leading={<Checkbox checked={done} onToggle={toggle} accessibilityLabel={item.title} />}
       trailing={
         late ? (
@@ -112,6 +138,20 @@ export function WorkRow({
         router.push({ pathname: '/work/[id]', params: { id: item.id, kind: item.kind } })
       }
     />
+  );
+  if (!onPostpone || done) return row;
+  return (
+    <SwipeRow
+      right={{ label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle }}
+      left={{
+        label: t('postpone.action'),
+        icon: 'clock',
+        color: 'warning',
+        onAction: () => onPostpone(item),
+      }}
+    >
+      {row}
+    </SwipeRow>
   );
 }
 
@@ -148,6 +188,34 @@ export function EventRow({ event }: { event: PersonalEvent }) {
       subtitle={[t('calendarItem.event'), time].join(' · ')}
       leading={<IconBadge icon="star" color="warning" background="warningSoft" />}
       onPress={() => router.push({ pathname: '/events/form', params: { id: event.id } })}
+    />
+  );
+}
+
+export function RevisionRow({ block, subjects }: { block: RevisionBlock; subjects: SubjectMap }) {
+  const { t } = useTranslation();
+  const subject = block.subjectId ? subjects.get(block.subjectId) : undefined;
+  const done = block.status === 'done';
+  return (
+    <ListRow
+      title={block.title ?? subject?.name ?? t('calendarItem.revision')}
+      subtitle={[
+        t('calendarItem.revision'),
+        block.title ? subject?.name : null,
+        `${block.startTime} – ${block.endTime}`,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      struck={block.status === 'skipped'}
+      leading={
+        <IconBadge
+          icon={done ? 'check' : 'book-open'}
+          color={done ? 'success' : 'primary'}
+          background={done ? 'successSoft' : 'primarySoft'}
+        />
+      }
+      trailing={done ? <Chip label={t('revision.status.done')} tone="success" /> : undefined}
+      onPress={() => router.push({ pathname: '/revision/[id]', params: { id: block.id } })}
     />
   );
 }

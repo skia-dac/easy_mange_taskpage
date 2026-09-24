@@ -80,7 +80,10 @@ export type CourseSeries = CourseSeriesValues & { id: string };
 export type Occurrence = {
   seriesId: string;
   subjectId: string;
+  /** Jour où la séance a lieu (après un éventuel déplacement). */
   date: IsoDate;
+  /** Jour prévu par la série : c'est la clé de l'exception (annuler, modifier…). */
+  originalDate: IsoDate;
   startTime: Time;
   endTime: Time;
   title: string | null;

@@ -1,10 +1,11 @@
-import { write, type Db, type EntityWriter } from '@/shared/db';
+import type { IsoDate } from '@/shared/dates';
+import { write, type Db, type EntityWriter, type Values } from '@/shared/db';
 import { parseInput } from '@/shared/validation';
 
 import { courseInputSchema, type CourseInput } from '../domain/course';
 import { examSchema, type ExamInput } from '../domain/exam';
 import { subjectInputSchema, type SubjectInput } from '../domain/subject';
-import { timetableInputSchema, type TimetableInput } from '../domain/timetable';
+import { timetableInputSchema, type TimetableInput, type TimetableKind } from '../domain/timetable';
 
 // ---- Matières ----
 function subjectValues(input: SubjectInput) {
@@ -43,7 +44,7 @@ export async function removeSubjectAndCourses(w: EntityWriter, subjectId: string
 // ---- Emplois du temps ----
 function timetableValues(input: TimetableInput) {
   const v = parseInput(timetableInputSchema, input);
-  return { name: v.name, valid_from: v.validFrom, valid_until: v.validUntil };
+  return { name: v.name, valid_from: v.validFrom, valid_until: v.validUntil, kind: v.kind };
 }
 
 export async function createTimetable(db: Db, input: TimetableInput) {
@@ -56,6 +57,34 @@ export async function updateTimetable(db: Db, id: string, input: TimetableInput)
   return write(db, (w) => w.update('timetables', id, values));
 }
 
+/**
+ * Emploi du temps d'un type donné qui couvre `from` → `to` : on prend celui qui chevauche la
+ * période (et on l'agrandit si besoin), sinon on en crée un. Retourne son id.
+ */
+export async function ensureTimetable(
+  w: EntityWriter,
+  kind: TimetableKind,
+  from: IsoDate,
+  to: IsoDate,
+  name: string,
+): Promise<string> {
+  const row = await w.db.getFirstAsync<{ id: string; valid_from: string; valid_until: string }>(
+    `SELECT id, valid_from, valid_until FROM timetables
+     WHERE deleted_at IS NULL AND kind = ? AND valid_from <= ? AND valid_until >= ?
+     ORDER BY valid_from DESC`,
+    [kind, to, from],
+  );
+  if (!row) {
+    const values = timetableValues({ name, kind, validFrom: from, validUntil: to });
+    return w.insert('timetables', values);
+  }
+  const patch: Values = {};
+  if (from < row.valid_from) patch.valid_from = from;
+  if (to > row.valid_until) patch.valid_until = to;
+  if (Object.keys(patch).length) await w.update('timetables', row.id, patch);
+  return row.id;
+}
+
 /** Supprime l'emploi du temps ET ses cours (l'écran demande confirmation avant). */
 export async function deleteTimetable(db: Db, id: string) {
   return write(db, async (w) => {
@@ -64,6 +93,17 @@ export async function deleteTimetable(db: Db, id: string) {
       [id],
     );
     for (const s of series) await w.softDelete('course_series', s.id);
+    // Examens et révisions rattachés : on les garde, simplement détachés de cet emploi du temps.
+    const exams = await w.db.getAllAsync<{ id: string }>(
+      'SELECT id FROM exams WHERE timetable_id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    for (const e of exams) await w.update('exams', e.id, { timetable_id: null });
+    const blocks = await w.db.getAllAsync<{ id: string }>(
+      'SELECT id FROM revision_blocks WHERE timetable_id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    for (const b of blocks) await w.update('revision_blocks', b.id, { timetable_id: null });
     await w.softDelete('timetables', id);
   });
 }
@@ -127,6 +167,7 @@ function examValues(input: ExamInput) {
     grade: v.grade,
     grade_max: v.gradeMax,
     coefficient: v.coefficient,
+    timetable_id: v.timetableId,
   };
 }
 
@@ -141,5 +182,13 @@ export async function updateExam(db: Db, id: string, input: ExamInput) {
 }
 
 export async function deleteExam(db: Db, id: string) {
-  return write(db, (w) => w.softDelete('exams', id));
+  return write(db, async (w) => {
+    // Les révisions prévues restent dans le calendrier, simplement détachées de l'examen.
+    const blocks = await w.db.getAllAsync<{ id: string }>(
+      'SELECT id FROM revision_blocks WHERE exam_id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    for (const b of blocks) await w.update('revision_blocks', b.id, { exam_id: null });
+    await w.softDelete('exams', id);
+  });
 }

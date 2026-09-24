@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-import { addDaysIso, atTime, fromIsoDate, toIsoDate, type IsoDate } from '@/shared/dates';
+import {
+  addDaysIso,
+  atTime,
+  fromIsoDate,
+  isoWeekday,
+  toIsoDate,
+  type IsoDate,
+} from '@/shared/dates';
 import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
 /** Une tâche (académique ou perso) et un devoir ont la même forme mais restent des entités séparées. */
@@ -31,6 +38,14 @@ export const workItemInputSchema = z.object({
     .nullish()
     .transform((v) => v ?? null),
   repeat: z.enum(repeatRules).default('none'),
+  /** Durée estimée en minutes (facultative). */
+  estimatedMinutes: z
+    .number({ error: 'validation.invalidDuration' })
+    .int({ error: 'validation.invalidDuration' })
+    .min(5, { error: 'validation.invalidDuration' })
+    .max(24 * 60, { error: 'validation.invalidDuration' })
+    .nullish()
+    .transform((v) => v ?? null),
 });
 
 export type WorkItemInput = z.input<typeof workItemInputSchema>;
@@ -109,5 +124,53 @@ export function nextOccurrenceInput(item: WorkItem): WorkItemInput | null {
       ? new Date(new Date(item.reminderAt).getTime() + shift).toISOString()
       : null,
     repeat: item.repeat,
+    estimatedMinutes: item.estimatedMinutes,
   };
+}
+
+/** Durées proposées dans le formulaire (minutes). */
+export const estimatePresets = [15, 30, 45, 60, 90, 120] as const;
+
+/** Choix « reporter » proposés en glissant une tâche : demain, dans 2 jours, lundi prochain. */
+export function postponeTargets(today: IsoDate): {
+  tomorrow: IsoDate;
+  inTwoDays: IsoDate;
+  nextMonday: IsoDate;
+} {
+  const wd = isoWeekday(today);
+  return {
+    tomorrow: addDaysIso(today, 1),
+    inTwoDays: addDaysIso(today, 2),
+    nextMonday: addDaysIso(today, 8 - wd),
+  };
+}
+
+/**
+ * Nouvelle échéance d'une tâche reportée : on garde l'écart entre le rappel et l'échéance.
+ * Un rappel déjà passé est décalé du même nombre de jours.
+ */
+export function postponedReminder(
+  item: Pick<WorkItem, 'dueDate' | 'reminderAt'>,
+  dueDate: IsoDate,
+) {
+  if (!item.reminderAt) return null;
+  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(item.dueDate).getTime();
+  return new Date(new Date(item.reminderAt).getTime() + shift).toISOString();
+}
+
+// ---- Sous-tâches ----
+export type Subtask = {
+  id: string;
+  workKind: WorkKind;
+  workId: string;
+  title: string;
+  done: boolean;
+  position: number;
+};
+
+export const subtaskTitleSchema = requiredText(120);
+
+/** Avancement d'une checklist : « 2/5 ». */
+export function subtaskProgress(subtasks: readonly Pick<Subtask, 'done'>[]) {
+  return { done: subtasks.filter((s) => s.done).length, total: subtasks.length };
 }

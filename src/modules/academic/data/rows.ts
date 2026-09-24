@@ -3,7 +3,7 @@ import type { Exam } from '../domain/exam';
 import type { CourseException, ExceptionKind } from '../domain/exception';
 import type { OffPeriod, OffPeriodKind } from '../domain/offPeriod';
 import type { Subject } from '../domain/subject';
-import type { Timetable } from '../domain/timetable';
+import type { Timetable, TimetableKind } from '../domain/timetable';
 
 export type SubjectRow = {
   id: string;
@@ -31,13 +31,20 @@ export const toSubject = (r: SubjectRow): Subject => ({
   updatedAt: r.updated_at,
 });
 
-export type TimetableRow = { id: string; name: string; valid_from: string; valid_until: string };
+export type TimetableRow = {
+  id: string;
+  name: string;
+  valid_from: string;
+  valid_until: string;
+  kind: string;
+};
 
 export const toTimetable = (r: TimetableRow): Timetable => ({
   id: r.id,
   name: r.name,
   validFrom: r.valid_from,
   validUntil: r.valid_until,
+  kind: r.kind as TimetableKind,
 });
 
 export type CourseSeriesRow = {
@@ -90,6 +97,7 @@ export type ExamRow = {
   grade: number | null;
   grade_max: number;
   coefficient: number;
+  timetable_id: string | null;
 };
 
 function parseDays(json: string): number[] {
@@ -115,6 +123,7 @@ export const toExam = (r: ExamRow): Exam => ({
   grade: r.grade,
   gradeMax: r.grade_max,
   coefficient: r.coefficient,
+  timetableId: r.timetable_id,
 });
 
 export type CourseExceptionRow = {
@@ -122,6 +131,7 @@ export type CourseExceptionRow = {
   series_id: string;
   date: string;
   kind: string;
+  new_date: string | null;
   new_start_time: string | null;
   new_end_time: string | null;
   new_room: string | null;
@@ -135,6 +145,7 @@ export const toCourseException = (r: CourseExceptionRow): CourseException => ({
   seriesId: r.series_id,
   date: r.date,
   kind: r.kind as ExceptionKind,
+  newDate: r.new_date ?? null,
   newStartTime: r.new_start_time,
   newEndTime: r.new_end_time,
   newRoom: r.new_room,

@@ -1,4 +1,4 @@
-import { darkColors, lightColors, subjectColors } from './colors';
+import { accentColors, darkColors, lightColors, subjectColors } from './colors';
 
 function luminance(hex: string): number {
   const n = hex.replace('#', '');
@@ -59,4 +59,17 @@ describe('couleurs des matières', () => {
       expect(contrast(s.strongDark, s.softDark)).toBeGreaterThanOrEqual(AA);
     },
   );
+});
+
+describe.each(Object.entries(accentColors))('couleur principale %s', (_id, a) => {
+  it.each([
+    ['clair', a.light, lightColors],
+    ['sombre', a.dark, darkColors],
+  ])('lisible en mode %s', (_mode, c, base) => {
+    expect(contrast(c.onPrimary, c.primary)).toBeGreaterThanOrEqual(AA);
+    expect(contrast(c.primary, c.primarySoft)).toBeGreaterThanOrEqual(AA);
+    // La couleur principale sert aussi de texte (liens, boutons texte) sur le fond et les cartes.
+    expect(contrast(c.primary, base.background)).toBeGreaterThanOrEqual(AA);
+    expect(contrast(c.primary, base.surface)).toBeGreaterThanOrEqual(AA);
+  });
 });

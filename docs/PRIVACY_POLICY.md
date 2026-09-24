@@ -30,7 +30,7 @@ Tu choisis ce que tu enregistres dans MySky :
 - tes matières, emplois du temps, cours, vacances et jours sans cours ;
 - tes notes de cours et leurs pièces jointes (photos, documents) ;
 - tes devoirs, tâches, examens, notes obtenues et événements ;
-- tes sessions de révision et tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif) ;
+- tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif), et ton journal d'humeur et d'énergie (facultatif) ;
 - tes réglages.
 
 Ces données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils.
@@ -126,7 +126,7 @@ You choose what you enter in MySky:
 - your subjects, timetables, classes, holidays and days off;
 - your class notes and their attachments (photos, documents);
 - your homework, tasks, exams, grades and events;
-- your study sessions and habits, with the reasons you note when a habit is not done (optional);
+- your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);
 - your settings.
 
 This data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices.

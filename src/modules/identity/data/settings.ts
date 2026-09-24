@@ -9,6 +9,11 @@ import {
   type AppearancePreference,
   type LanguagePreference,
   type NotificationPreferences,
+  accentPreferenceSchema,
+  normalizeTodayLayout,
+  textScalePreferenceSchema,
+  todayLayoutSchema,
+  type TodayLayout,
   defaultWeekStart,
   weekStartSchema,
   type WeekStart,
@@ -152,4 +157,34 @@ export async function getLastSyncAt(db: Db): Promise<string | null> {
 
 export async function setLastSyncAt(db: Db, iso: string): Promise<void> {
   await writeSetting(db, 'last_sync_at', iso);
+}
+
+export type AccentPreference = 'blue' | 'violet' | 'teal' | 'green' | 'rose' | 'orange';
+export type TextScalePreference = 'small' | 'normal' | 'large' | 'xlarge';
+
+export async function getAccentPreference(db: Db): Promise<AccentPreference> {
+  const parsed = accentPreferenceSchema.safeParse(await readSetting(db, 'accent'));
+  return parsed.success ? parsed.data : 'blue';
+}
+
+export async function setAccentPreference(db: Db, value: AccentPreference): Promise<void> {
+  await writeSetting(db, 'accent', accentPreferenceSchema.parse(value));
+}
+
+export async function getTextScalePreference(db: Db): Promise<TextScalePreference> {
+  const parsed = textScalePreferenceSchema.safeParse(await readSetting(db, 'text_scale'));
+  return parsed.success ? parsed.data : 'normal';
+}
+
+export async function setTextScalePreference(db: Db, value: TextScalePreference): Promise<void> {
+  await writeSetting(db, 'text_scale', textScalePreferenceSchema.parse(value));
+}
+
+export async function getTodayLayout(db: Db): Promise<TodayLayout> {
+  const parsed = todayLayoutSchema.safeParse(await readSetting(db, 'today_layout'));
+  return normalizeTodayLayout(parsed.success ? parsed.data : null);
+}
+
+export async function setTodayLayout(db: Db, layout: TodayLayout): Promise<void> {
+  await writeSetting(db, 'today_layout', normalizeTodayLayout(todayLayoutSchema.parse(layout)));
 }

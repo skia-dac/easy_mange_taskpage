@@ -8,6 +8,7 @@ const occ = (start: string, end: string, id = start): Occurrence => ({
   seriesId: id,
   subjectId: 'mkt',
   date: '2026-09-23',
+  originalDate: '2026-09-23',
   startTime: start,
   endTime: end,
   title: null,
@@ -83,6 +84,7 @@ const work = (over: Partial<WorkItem>): WorkItem => ({
   completedAt: null,
   reminderAt: null,
   repeat: 'none',
+  estimatedMinutes: null,
   ...over,
 });
 const exam = (id: string, date: string): Exam => ({
@@ -99,6 +101,7 @@ const exam = (id: string, date: string): Exam => ({
   grade: null,
   gradeMax: 20,
   coefficient: 1,
+  timetableId: null,
 });
 
 describe('Aujourd’hui (§7–11)', () => {

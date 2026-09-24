@@ -35,6 +35,15 @@ const check = (label, ok, extra) => {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${label}${ok ? '' : ' ' + JSON.stringify(extra)}`);
   if (!ok) failures++;
 };
+
+// Projet créé avec une version plus ancienne du fichier : le relancer ajoute ce qui manque.
+await db.exec('alter table public.tasks drop column estimated_minutes;');
+await db.exec(sql);
+const upgraded = await db.query(
+  `select 1 from information_schema.columns
+   where table_schema = 'public' and table_name = 'tasks' and column_name = 'estimated_minutes'`,
+);
+check('relancer le fichier met à jour un projet existant', upgraded.rows.length === 1);
 async function as(user, fn) {
   await db.exec(
     `set role authenticated; select set_config('request.jwt.claim.sub', '${user}', false);`,

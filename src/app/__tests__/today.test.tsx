@@ -1,11 +1,27 @@
 import { render, screen } from '@testing-library/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { CourseSeries, Exam, Subject } from '@/modules/academic';
 import type { WorkItem } from '@/modules/productivity';
 import type { TodayData } from '@/projections';
 import { i18n } from '@/shared/i18n';
 
-import TodayScreen from '../(tabs)/index';
+import TodayRoute from '../(tabs)/index';
+
+// Les lignes de tâches se glissent : il faut la racine des gestes, comme dans l'app.
+const TodayScreen = () => (
+  <SafeAreaProvider
+    initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 0, left: 0, right: 0, bottom: 0 },
+    }}
+  >
+    <GestureHandlerRootView>
+      <TodayRoute />
+    </GestureHandlerRootView>
+  </SafeAreaProvider>
+);
 
 // Mercredi 23 septembre 2026, 10:18 : le cours de 09:00 à 11:00 est en cours.
 jest.useFakeTimers({ now: new Date(2026, 8, 23, 10, 18) });
@@ -52,6 +68,7 @@ const late: WorkItem = {
   completedAt: null,
   reminderAt: null,
   repeat: 'none',
+  estimatedMinutes: null,
 };
 const exam: Exam = {
   id: 'e1',
@@ -67,6 +84,7 @@ const exam: Exam = {
   grade: null,
   gradeMax: 20,
   coefficient: 1,
+  timetableId: null,
 };
 
 let mockAgenda: TodayData = { series: [series], exams: [exam], work: [late], events: [] };
@@ -83,7 +101,12 @@ jest.mock('@/hooks/useSubjects', () => ({
     loading: false,
   }),
 }));
-jest.mock('@/shared/db', () => ({ ...jest.requireActual('@/shared/db'), useDb: () => ({}) }));
+// Réglages (ordre des sections…) et checklists : valeurs par défaut dans ce test sans base.
+jest.mock('@/shared/db', () => ({
+  ...jest.requireActual('@/shared/db'),
+  useDb: () => ({}),
+  useLiveQuery: () => ({ data: undefined, loading: true, error: null }),
+}));
 jest.mock('@/hooks/useWeekStart', () => ({ useWeekStart: () => 1 }));
 jest.mock('@/hooks/useProfile', () => ({
   useProfile: () => ({ profile: { firstName: 'Awa', lastName: 'Diallo' }, loading: false }),

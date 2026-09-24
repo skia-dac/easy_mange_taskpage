@@ -1,5 +1,5 @@
 import { occurrencesInRange, type Exam, type Occurrence, type OffPeriod } from '@/modules/academic';
-import type { PersonalEvent, WorkItem } from '@/modules/productivity';
+import type { PersonalEvent, RevisionBlock, WorkItem } from '@/modules/productivity';
 import { addDaysIso, type IsoDate } from '@/shared/dates';
 
 import type { TodayData } from './today';
@@ -9,10 +9,12 @@ export type CalendarItem =
   | { kind: 'exam'; sortTime: string; exam: Exam }
   | { kind: 'work'; sortTime: string; item: WorkItem }
   | { kind: 'event'; sortTime: string; event: PersonalEvent }
+  | { kind: 'revision'; sortTime: string; block: RevisionBlock }
   | { kind: 'dayOff'; sortTime: string; period: OffPeriod };
 
 /**
- * Le calendrier rassemble cours, examens, tâches, devoirs et événements (§37) sans les copier.
+ * Le calendrier rassemble cours, examens, tâches, devoirs, événements (§37) et séances de révision
+ * sans les copier.
  * Retourne une entrée par jour de la période (même vide), éléments triés par heure.
  */
 export function calendarDays(
@@ -41,6 +43,9 @@ export function calendarDays(
     push(w.dueDate, { kind: 'work', sortTime: w.dueTime ?? '23:59', item: w });
   for (const e of data.events) {
     push(e.date, { kind: 'event', sortTime: e.startTime ?? '00:00', event: e });
+  }
+  for (const b of data.revisionBlocks ?? []) {
+    push(b.date, { kind: 'revision', sortTime: b.startTime, block: b });
   }
   for (const items of days.values()) items.sort((a, b) => a.sortTime.localeCompare(b.sortTime));
   return days;

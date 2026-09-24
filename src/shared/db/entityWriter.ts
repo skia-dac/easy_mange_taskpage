@@ -21,6 +21,9 @@ export const SYNCED_TABLES = [
   'study_sessions',
   'habits',
   'habit_logs',
+  'work_subtasks',
+  'revision_blocks',
+  'mood_logs',
 ] as const;
 
 export type EntityTable =
@@ -38,7 +41,10 @@ export type EntityTable =
   | 'profiles'
   | 'study_sessions'
   | 'habits'
-  | 'habit_logs';
+  | 'habit_logs'
+  | 'work_subtasks'
+  | 'revision_blocks'
+  | 'mood_logs';
 
 export type Values = Record<string, SqlValue>;
 

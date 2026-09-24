@@ -40,6 +40,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: new Date(2026, 8, 23, 10, 0).toISOString(),
       repeat: 'none',
+      estimatedMinutes: null,
     },
     {
       id: 'w2',
@@ -54,6 +55,7 @@ const data: TodayData = {
       completedAt: null,
       reminderAt: new Date(2026, 8, 23, 8, 10).toISOString(),
       repeat: 'none',
+      estimatedMinutes: null,
     },
   ],
   studySession: {

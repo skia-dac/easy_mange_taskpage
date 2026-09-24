@@ -68,7 +68,8 @@
     "firstSubject": "Add your first subject to get started.",
     "firstSubjectHint": "Then add your classes: they will show up here and in the calendar.",
     "dayOff": "{{name}}: no classes today.",
-    "greetingName": "Hello {{name}}"
+    "greetingName": "Hello {{name}}",
+    "revisionTitle": "Today’s revision"
   },
   "countdown": {
     "today": "Today",
@@ -116,7 +117,20 @@
     "dayOff": "{{name}} · no classes",
     "dayOffKept": "{{name}}",
     "export": "Export calendar",
-    "exportTitle": "MySky calendar (.ics)"
+    "exportTitle": "MySky calendar (.ics)",
+    "hours": "Hours",
+    "filter": {
+      "course": "Classes",
+      "exam": "Exams",
+      "work": "Tasks & homework",
+      "revision": "Revision",
+      "event": "Events"
+    },
+    "hoursHint": "Long-press an item, then drag it to change its day or time.",
+    "moveHint": "Long-press then drag to move",
+    "moveCourseTitle": "Move this class?",
+    "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
+    "moveConfirm": "Move"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -124,7 +138,8 @@
     "task": "Task",
     "event": "Event",
     "due": "due",
-    "allDay": "All day"
+    "allDay": "All day",
+    "revision": "Revision"
   },
   "notes": {
     "title": "Notes",
@@ -221,7 +236,8 @@
     "emptyHint": "Tap + to add a task.",
     "emptyAssignmentsHint": "Tap + to add homework.",
     "noExams": "No exams scheduled.",
-    "noExamsHint": "Tap + to add an exam."
+    "noExamsHint": "Tap + to add an exam.",
+    "swipeHint": "Swipe right to complete, left to postpone."
   },
   "profile": {
     "title": "Profile",
@@ -251,7 +267,9 @@
     "gradesHint": "Averages per subject and history",
     "studyHint": "Study timer and weekly time",
     "statsHint": "Class hours, tasks, study, streak",
-    "habitsHint": "Daily habits, streaks, weekly review"
+    "habitsHint": "Daily habits, streaks, weekly review",
+    "moodHint": "How you feel, and what helps",
+    "reviewHint": "Get ready for tomorrow in 1 minute"
   },
   "timetables": {
     "title": "Timetables",
@@ -271,7 +289,18 @@
     "emptyHint": "Create your timetable (e.g. Semester 1, 1 September to 20 December), then add your classes.",
     "noCourses": "No classes in this timetable.",
     "addCourse": "Add a class",
-    "otherCourses": "Classes without a timetable"
+    "otherCourses": "Classes without a timetable",
+    "kind": "Timetable type",
+    "kinds": {
+      "courses": "Classes",
+      "exams": "Exams",
+      "revision": "Revision"
+    },
+    "deleteKeepMessage": "The exams and revision sessions it contains stay in your calendar.",
+    "noExams": "No exams in this session.",
+    "noRevisions": "No revision planned.",
+    "addExam": "Add an exam",
+    "addRevision": "Add a revision session"
   },
   "courses": {
     "new": "New class",
@@ -333,7 +362,10 @@
     "markDone": "Mark as done",
     "reopen": "Mark as not done",
     "prefilled": "Subject taken from your class.",
-    "repeat": "Repeat"
+    "repeat": "Repeat",
+    "estimate": "Estimated time",
+    "noEstimate": "None",
+    "startStudy": "Start the study timer"
   },
   "exams": {
     "new": "New exam",
@@ -352,7 +384,8 @@
     "deleteMessage": "This can’t be undone.",
     "detailTitle": "Exam",
     "when": "Date and time",
-    "durationLabel": "Duration"
+    "durationLabel": "Duration",
+    "timetable": "Exam session"
   },
   "events": {
     "new": "New event",
@@ -450,7 +483,12 @@
     "breakEndBody": "Ready to continue?",
     "habitTitle": "{{name}}",
     "habitBody": "Remember today’s habit.",
-    "habitBodyCount": "Goal: {{target}} {{unit}} today."
+    "habitBodyCount": "Goal: {{target}} {{unit}} today.",
+    "revisionTitle": "Revision: {{subject}}",
+    "revisionTitlePlain": "Revision",
+    "revisionBody": "In {{minutes}} min, at {{time}}.",
+    "reviewTitle": "Evening review",
+    "reviewBody": "1 minute to get ready for tomorrow."
   },
   "settings": {
     "title": "Settings",
@@ -488,7 +526,29 @@
     "widgets": "Widgets",
     "widgetsHint": "Add “Next class”, “Today”, “Tasks”, “Study”, “Week”, “Subject”, “Exams”, “Quick add”, “Average” or “Month” to your home screen (long-press the home screen, then “Widgets”). Requires the app installed from the App Store / Play Store or a development build, not Expo Go.",
     "habits": "Habit reminders",
-    "habitsHint": "At the time set on each habit, if not done yet"
+    "habitsHint": "At the time set on each habit, if not done yet",
+    "accent": "Main colour",
+    "accents": {
+      "blue": "Blue",
+      "violet": "Purple",
+      "teal": "Teal",
+      "green": "Green",
+      "rose": "Pink",
+      "orange": "Orange"
+    },
+    "textSize": "Text size",
+    "textSizes": {
+      "small": "Small",
+      "normal": "Normal",
+      "large": "Large",
+      "xlarge": "Extra large"
+    },
+    "textSizeHint": "Adds to the size chosen in your phone settings.",
+    "revisions": "Planned revision",
+    "revisionsHint": "10 minutes before each session.",
+    "eveningReview": "Evening review",
+    "eveningReviewHint": "A reminder every evening to get ready for tomorrow.",
+    "eveningReviewTime": "Review time"
   },
   "reminder": {
     "none": "None",
@@ -890,7 +950,7 @@
     },
     "data": {
       "title": "The data you enter",
-      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study sessions and habits, with the reasons you note when a habit is not done (optional);\n• your settings.\n\nThis data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
+      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);\n• your settings.\n\nThis data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
     },
     "permissions": {
       "title": "Phone permissions",
@@ -927,6 +987,131 @@
     "changes": {
       "title": "Changes to this policy",
       "body": "The date of the last update is shown at the top. If this policy changes in an important way, you will be told in the app."
+    }
+  },
+  "revision": {
+    "sectionTitle": "Revision plan",
+    "plan": "Plan my revision",
+    "replan": "Redo the revision plan",
+    "planTitle": "Revision plan",
+    "planFor": "{{subject}} · exam on {{date}}",
+    "planHint": "MySky suggests sessions in your free slots, without overlapping your classes or events. Remove the ones that don’t suit you, then confirm.",
+    "tooLate": "The exam is today or already over.",
+    "tooLateHint": "A revision plan is made before the exam date.",
+    "timetableName": "Revision",
+    "sessions": "Number of sessions",
+    "duration": "Session length",
+    "daysBefore": "Start",
+    "days": "{{count}} d before",
+    "from": "Not before",
+    "to": "Not after",
+    "proposal": "Suggested sessions ({{count}})",
+    "missing": "Not enough free slots: {{count}} session(s) couldn’t be placed. Widen the time range or start earlier.",
+    "noSlot": "No session to suggest with these settings.",
+    "removeSlot": "Remove this session",
+    "replaceInfo": "The {{count}} session(s) still planned for this exam will be replaced.",
+    "validate": "Add to calendar ({{count}})",
+    "new": "New revision",
+    "edit": "Edit revision",
+    "save": "Save revision",
+    "titleLabel": "What you’re revising",
+    "titlePlaceholder": "E.g. Chapters 3 and 4",
+    "detailTitle": "Revision",
+    "forExam": "For the exam",
+    "start": "Start revising",
+    "markDone": "Mark as done",
+    "skip": "Skip it",
+    "backToPlanned": "Set back to planned",
+    "delete": "Delete this revision",
+    "deleteTitle": "Delete the revision?",
+    "deleteMessage": "It will disappear from the calendar.",
+    "status": {
+      "planned": "Planned",
+      "done": "Done",
+      "skipped": "Skipped"
+    }
+  },
+  "subtasks": {
+    "title": "Steps",
+    "progress": "{{done}}/{{total}} steps",
+    "placeholder": "Add a step",
+    "add": "Add the step",
+    "up": "Move up",
+    "down": "Move down",
+    "remove": "Remove the step"
+  },
+  "postpone": {
+    "action": "Postpone",
+    "title": "Postpone until when?",
+    "tomorrow": "Tomorrow",
+    "inTwoDays": "In 2 days",
+    "nextMonday": "Next Monday",
+    "pickDate": "Pick another date…"
+  },
+  "review": {
+    "title": "Evening review",
+    "cardTitle": "Evening review",
+    "cardHint": "1 minute to wrap up today and get ready for tomorrow.",
+    "intro": "Tick what’s done, postpone the rest, and see what’s waiting tomorrow.",
+    "remaining": "What’s left",
+    "allDone": "Everything is done for today. Well done!",
+    "postponeAll": "Postpone all to tomorrow ({{count}})",
+    "revisions": "Today’s revision",
+    "habits": "Your habits",
+    "mood": "Your day",
+    "tomorrow": "Tomorrow · {{date}}",
+    "nothingTomorrow": "Nothing planned tomorrow yet.",
+    "plannedTime": "Work planned tomorrow: {{time}}",
+    "done": "All set for tomorrow"
+  },
+  "mood": {
+    "title": "Mood and energy",
+    "today": "Today",
+    "moodLabel": "Mood",
+    "energyLabel": "Energy",
+    "levels": {
+      "1": "Very bad",
+      "2": "Bad",
+      "3": "Okay",
+      "4": "Good",
+      "5": "Very good"
+    },
+    "energyLevels": {
+      "1": "Drained",
+      "2": "Tired",
+      "3": "Okay",
+      "4": "Fit",
+      "5": "Full of energy"
+    },
+    "note": "A word about your day",
+    "pickBoth": "Pick your mood and energy: it’s saved right away.",
+    "history": "History",
+    "week": "Last 7 days",
+    "noData": "No entries this week yet.",
+    "averages": "Average mood {{mood}}/5 · average energy {{energy}}/5",
+    "energyChart": "Energy over the last 7 days",
+    "habitsTitle": "Your habits and your energy",
+    "habitsEmpty": "Log your mood for a few days (with and without your habits) to see what helps you.",
+    "habitLine": "Energy {{done}}/5 on days done · {{missed}}/5 otherwise",
+    "habitsHint": "Over the last 30 days. It’s a trend, not a rule.",
+    "recent": "Recent entries",
+    "statsEmpty": "Log your mood in the evening review."
+  },
+  "todayLayout": {
+    "title": "Today sections",
+    "hint": "Order and visible sections",
+    "intro": "Choose the order of the Today screen sections, and hide the ones you don’t need.",
+    "customize": "Customize this screen",
+    "show": "Show “{{name}}”",
+    "reset": "Back to the default order",
+    "sections": {
+      "next": "Next class",
+      "courses": "Today’s classes",
+      "revision": "Today’s revision",
+      "habits": "My habits",
+      "todo": "To do",
+      "events": "Events",
+      "exams": "Upcoming exams"
     }
   }
 }

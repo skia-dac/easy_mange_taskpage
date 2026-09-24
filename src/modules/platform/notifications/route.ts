@@ -43,5 +43,9 @@ export function routeForResponse(r: NotificationResponse): Href | null {
       return '/study';
     case 'habit':
       return { pathname: '/habits/[id]', params: { id: a.id } };
+    case 'revision':
+      return { pathname: '/revision/[id]', params: { id: a.id } };
+    case 'review':
+      return '/review';
   }
 }

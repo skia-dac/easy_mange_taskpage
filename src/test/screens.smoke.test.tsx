@@ -3,6 +3,7 @@
  * base SQLite, et montre le texte attendu. C'est le filet qui attrape les liens cassés entre modules.
  */
 import { render, screen } from '@testing-library/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { ComponentType } from 'react';
 
@@ -17,11 +18,14 @@ import {
 import { saveProfile } from '@/modules/identity';
 import {
   addHabitCount,
+  addSubtask,
   createHabit,
+  createRevisionBlock,
   createNote,
   createPersonalEvent,
   createWorkItem,
   endStudySession,
+  saveMoodLog,
   setHabitDone,
   setHabitMissed,
   startStudySession,
@@ -149,6 +153,16 @@ beforeAll(async () => {
     status: 'todo',
     subjectId: ids.subject,
   });
+  await addSubtask(mockDb, 'task', ids.task, 'Lire le résumé');
+  ids.revision = await createRevisionBlock(mockDb, {
+    subjectId: ids.subject,
+    examId: ids.exam,
+    date: '2026-09-23',
+    startTime: '17:00',
+    endTime: '18:00',
+    title: 'Chapitres 1 à 3',
+  });
+  await saveMoodLog(mockDb, { date: '2026-09-22', mood: 4, energy: 3 });
   ids.event = await createPersonalEvent(mockDb, {
     title: 'Réunion asso',
     date: '2026-09-23',
@@ -201,6 +215,9 @@ const cases: Case[] = [
       'Étude de cas Marketing',
       'Réunion asso',
       'Dans 19 jours',
+      'Révisions du jour',
+      'Chapitres 1 à 3',
+      'Personnaliser cet écran',
     ],
   },
   {
@@ -276,6 +293,45 @@ const cases: Case[] = [
     expect: ['Enregistrer pour ce jour'],
   },
   {
+    name: 'Calendrier heures',
+    load: () => require('@/app/(tabs)/calendar') as { default: ComponentType },
+    params: { mode: 'hours' },
+    expect: ['Heures', 'Appui long sur un élément', 'Tâches et devoirs'],
+  },
+  {
+    name: 'Bilan du soir',
+    load: () => require('@/app/review') as { default: ComponentType },
+    expect: ['Ce qui reste', 'Réviser le chapitre 3', 'Tout reporter à demain (2)', 'Humeur'],
+  },
+  {
+    name: 'Humeur et énergie',
+    load: () => require('@/app/mood') as { default: ComponentType },
+    expect: ['7 derniers jours', 'Dernières entrées', 'Tes habitudes et ton énergie'],
+  },
+  {
+    name: 'Sections d’Aujourd’hui',
+    load: () => require('@/app/today-layout') as { default: ComponentType },
+    expect: ['Prochain cours', 'Révisions du jour', 'Revenir à l’ordre par défaut'],
+  },
+  {
+    name: 'Plan de révision',
+    load: () => require('@/app/revision/plan') as { default: ComponentType },
+    params: { examId: 'exam' },
+    expect: ['Séances proposées', 'Ajouter au calendrier'],
+  },
+  {
+    name: 'Détail révision',
+    load: () => require('@/app/revision/[id]') as { default: ComponentType },
+    params: { id: 'revision' },
+    expect: ['Chapitres 1 à 3', 'Commencer la révision', 'Pour l’examen'],
+  },
+  {
+    name: 'Formulaire révision',
+    load: () => require('@/app/revision/form') as { default: ComponentType },
+    params: { id: 'revision' },
+    expect: ['Enregistrer la révision'],
+  },
+  {
     name: 'Vacances',
     load: () => require('@/app/off-periods/index') as { default: ComponentType },
     expect: ['Toussaint', 'Cours suspendus'],
@@ -296,7 +352,13 @@ const cases: Case[] = [
     name: 'Formulaire tâche',
     load: () => require('@/app/work/form') as { default: ComponentType },
     params: { id: 'task', kind: 'task' },
-    expect: ['Enregistrer la tâche', 'Rappel'],
+    expect: ['Enregistrer la tâche', 'Rappel', 'Durée estimée'],
+  },
+  {
+    name: 'Détail tâche avec étapes',
+    load: () => require('@/app/work/[id]') as { default: ComponentType },
+    params: { id: 'task', kind: 'task' },
+    expect: ['Réviser le chapitre 3', 'Lire le résumé', '0/1 étapes', 'Reporter'],
   },
   {
     name: 'Détail examen',
@@ -358,6 +420,10 @@ const cases: Case[] = [
       'Mode focus',
       'Verrouiller MySky',
       'Politique de confidentialité',
+      'Couleur principale',
+      'Taille du texte',
+      'Bilan du soir',
+      'Sections d’Aujourd’hui',
     ],
   },
   {
@@ -484,7 +550,9 @@ describe.each(cases)('écran $name', (c) => {
           insets: { top: 0, left: 0, right: 0, bottom: 0 },
         }}
       >
-        <Screen />
+        <GestureHandlerRootView>
+          <Screen />
+        </GestureHandlerRootView>
       </SafeAreaProvider>,
     );
     for (const text of c.expect) {

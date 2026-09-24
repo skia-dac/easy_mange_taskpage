@@ -121,8 +121,20 @@ describe('saisie d’un cours', () => {
 });
 
 describe('emplois du temps', () => {
-  const s1 = { id: 'a', name: 'Semestre 1', validFrom: '2026-09-01', validUntil: '2026-12-20' };
-  const s2 = { id: 'b', name: 'Semestre 2', validFrom: '2027-01-05', validUntil: '2027-05-30' };
+  const s1 = {
+    id: 'a',
+    name: 'Semestre 1',
+    validFrom: '2026-09-01',
+    validUntil: '2026-12-20',
+    kind: 'courses' as const,
+  };
+  const s2 = {
+    id: 'b',
+    name: 'Semestre 2',
+    validFrom: '2027-01-05',
+    validUntil: '2027-05-30',
+    kind: 'courses' as const,
+  };
 
   it('trouve l’emploi du temps actif selon la date (§21)', () => {
     expect(activeTimetable([s1, s2], '2026-09-23')?.id).toBe('a');
@@ -162,6 +174,7 @@ describe('exceptions et vacances (phase 4)', () => {
     seriesId: 's1',
     date,
     kind,
+    newDate: null,
     newStartTime: null,
     newEndTime: null,
     newRoom: null,
@@ -193,6 +206,26 @@ describe('exceptions et vacances (phase 4)', () => {
       ['2026-09-21', 'B12', '08:00', 'normal'],
       ['2026-09-28', 'C04', '09:00', 'modified'],
     ]);
+  });
+
+  it('une séance déplacée apparaît à son nouveau jour, même si le jour prévu est hors période', () => {
+    const moved = ex('2026-09-28', 'modified', { newDate: '2026-10-01', newStartTime: '14:00' });
+    const week = occurrencesInRange([base], '2026-09-28', '2026-10-04', { exceptions: [moved] });
+    expect(week.map((o) => [o.date, o.originalDate, o.startTime])).toEqual([
+      ['2026-10-01', '2026-09-28', '14:00'],
+    ]);
+    // Semaine suivante déplacée vers la semaine d'avant : visible depuis la semaine d'avant seulement.
+    const back = ex('2026-10-05', 'modified', { newDate: '2026-10-02' });
+    expect(
+      occurrencesInRange([base], '2026-09-28', '2026-10-04', { exceptions: [back] }).map(
+        (o) => o.date,
+      ),
+    ).toEqual(['2026-09-28', '2026-10-02']);
+    expect(
+      occurrencesInRange([base], '2026-10-05', '2026-10-11', { exceptions: [back] }).map(
+        (o) => o.date,
+      ),
+    ).toEqual([]);
   });
 
   it('les vacances avec suspension masquent les séances, sans suspension elles restent (§42)', () => {

@@ -7,8 +7,10 @@ import {
   deleteTimetable,
   getTimetable,
   listCourseSeries,
+  timetableKinds,
   updateTimetable,
   type TimetableInput,
+  type TimetableKind,
 } from '@/modules/academic';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
@@ -17,6 +19,7 @@ import {
   confirmDestructive,
   DateTimeField,
   FormScreen,
+  Segmented,
   showError,
   TextButton,
   TextField,
@@ -26,12 +29,13 @@ import {
 export default function TimetableFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, kind } = useLocalSearchParams<{ id?: string; kind?: TimetableKind }>();
   const today = toIsoDate(new Date());
   const [form, setForm] = useState<TimetableInput>({
     name: '',
     validFrom: today,
     validUntil: addDaysIso(today, 120),
+    kind: kind && timetableKinds.includes(kind) ? kind : 'courses',
   });
   const { errors, saving, run } = useSave();
 
@@ -54,7 +58,9 @@ export default function TimetableFormScreen() {
     const count = (await listCourseSeries(db, { timetableId: id })).length;
     const ok = await confirmDestructive(
       t('timetables.deleteTitle', { name: form.name }),
-      t('timetables.deleteMessage', { count }),
+      form.kind === 'courses' || count > 0
+        ? t('timetables.deleteMessage', { count })
+        : t('timetables.deleteKeepMessage'),
       t('common.delete'),
     );
     if (!ok) return;
@@ -86,6 +92,12 @@ export default function TimetableFormScreen() {
         error={errors.name}
         placeholder={t('timetables.namePlaceholder')}
         autoFocus={!id}
+      />
+      <Segmented
+        accessibilityLabel={t('timetables.kind')}
+        options={timetableKinds.map((k) => ({ value: k, label: t(`timetables.kinds.${k}`) }))}
+        value={form.kind ?? 'courses'}
+        onChange={(k) => set({ kind: k })}
       />
       <DateTimeField
         label={t('timetables.from')}

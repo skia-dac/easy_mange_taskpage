@@ -11,3 +11,6 @@ export {
   signOutFromPhone,
 } from './account';
 export type { ClaimResult } from './account';
+export { saveRevisionPlan } from './revisionPlan';
+export type { SaveRevisionPlan } from './revisionPlan';
+export { moveCalendarItem } from './moveItem';

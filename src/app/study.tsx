@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
@@ -13,6 +13,7 @@ import { colorOf } from '@/modules/academic';
 import {
   endStudySession,
   getActiveStudySession,
+  linkStudySession,
   listStudySessions,
   plannedEnd,
   remainingSeconds,
@@ -55,7 +56,9 @@ export default function StudyScreen() {
   const { colors, spacing, radius } = useTheme();
   const { subjects, byId } = useSubjects();
   const weekStartDay = useWeekStart();
-  const [subjectId, setSubjectId] = useState<string | null>(null);
+  // Lancé depuis une séance de révision : matière préremplie, session rattachée à la séance.
+  const params = useLocalSearchParams<{ subjectId?: string; blockId?: string }>();
+  const [subjectId, setSubjectId] = useState<string | null>(params.subjectId ?? null);
   const [preset, setPreset] = useState(0);
 
   const active = useLiveQuery(getActiveStudySession, ['study_sessions'], []);
@@ -96,7 +99,11 @@ export default function StudyScreen() {
       startedAt: new Date().toISOString(),
       plannedMinutes: kind === 'focus' ? p.work : p.rest,
       kind,
-    }).catch((e: unknown) => showError(userMessageKey(e)));
+    })
+      .then((id) =>
+        kind === 'focus' && params.blockId ? linkStudySession(db, params.blockId, id) : undefined,
+      )
+      .catch((e: unknown) => showError(userMessageKey(e)));
   };
 
   const stop = () => {

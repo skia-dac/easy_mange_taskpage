@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -7,10 +7,19 @@ import { Pressable, View } from 'react-native';
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
 import { ExportCalendarButton } from '@/components/ExportCalendarButton';
 import { SearchButton } from '@/components/SearchButton';
+import { WeekHoursGrid } from '@/components/WeekHoursGrid';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useWeekStart } from '@/hooks/useWeekStart';
-import { calendarDays, useAgendaData, type CalendarItem } from '@/projections';
+import {
+  calendarDays,
+  calendarFilters,
+  filterItems,
+  useAgendaData,
+  type CalendarFilter,
+  type CalendarItem,
+  type MoveTarget,
+} from '@/projections';
 import {
   addDaysIso,
   fromIsoDate,
@@ -19,12 +28,27 @@ import {
   weekdayOrder,
   type IsoDate,
 } from '@/shared/dates';
-import { formatLongDate, formatMonthYear } from '@/shared/format';
+import { useDb } from '@/shared/db';
+import { userMessageKey } from '@/shared/errors';
+import { formatLongDate, formatMonthYear, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
-import { AppText, Card, EmptyState, Fab, Screen, Segmented, SectionHeader } from '@/shared/ui';
+import {
+  AppText,
+  Card,
+  ChoiceChips,
+  confirmAction,
+  EmptyState,
+  Fab,
+  Screen,
+  Segmented,
+  SectionHeader,
+  showError,
+} from '@/shared/ui';
+import { moveCalendarItem } from '@/workflows';
 
-type ViewMode = 'day' | 'week' | 'month';
+type ViewMode = 'day' | 'week' | 'hours' | 'month';
+const viewModes: readonly ViewMode[] = ['day', 'week', 'hours', 'month'];
 
 function monthGrid(anyDay: IsoDate, weekStartDay: number): IsoDate[] {
   const first = `${anyDay.slice(0, 7)}-01`;
@@ -38,7 +62,12 @@ export default function CalendarScreen() {
   const { colors, spacing } = useTheme();
   const now = useNow(60_000);
   const today = toIsoDate(now);
-  const [mode, setMode] = useState<ViewMode>('day');
+  const db = useDb();
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<ViewMode>(
+    viewModes.includes(params.mode as ViewMode) ? (params.mode as ViewMode) : 'day',
+  );
+  const [shown, setShown] = useState<ReadonlySet<CalendarFilter>>(new Set(calendarFilters));
   const [selected, setSelected] = useState<IsoDate>(today);
   const agenda = useAgendaData();
   const { byId } = useSubjects();
@@ -53,13 +82,59 @@ export default function CalendarScreen() {
     return { from: weekStart, to: addDaysIso(weekStart, 6) };
   }, [mode, selected, weekStart, weekStartDay]);
 
-  const days = useMemo(
-    () =>
-      agenda.data
-        ? calendarDays(agenda.data, range.from, range.to)
-        : new Map<IsoDate, CalendarItem[]>(),
-    [agenda.data, range.from, range.to],
-  );
+  const days = useMemo(() => {
+    if (!agenda.data) return new Map<IsoDate, CalendarItem[]>();
+    const all = calendarDays(agenda.data, range.from, range.to);
+    if (shown.size === calendarFilters.length) return all;
+    return new Map([...all].map(([d, items]) => [d, filterItems(items, shown)]));
+  }, [agenda.data, range.from, range.to, shown]);
+
+  const toggleFilter = (f: CalendarFilter) =>
+    setShown((s) => {
+      const next = new Set(s);
+      if (next.has(f)) next.delete(f);
+      else next.add(f);
+      return next.size === 0 ? new Set(calendarFilters) : next;
+    });
+
+  const open = (item: CalendarItem) => {
+    switch (item.kind) {
+      case 'course':
+        return router.push({
+          pathname: '/courses/[id]',
+          params: { id: item.occurrence.seriesId, date: item.occurrence.originalDate },
+        });
+      case 'exam':
+        return router.push({ pathname: '/exams/[id]', params: { id: item.exam.id } });
+      case 'work':
+        return router.push({
+          pathname: '/work/[id]',
+          params: { id: item.item.id, kind: item.item.kind },
+        });
+      case 'event':
+        return router.push({ pathname: '/events/form', params: { id: item.event.id } });
+      case 'revision':
+        return router.push({ pathname: '/revision/[id]', params: { id: item.block.id } });
+      default:
+        return undefined;
+    }
+  };
+
+  const move = async (item: CalendarItem, to: MoveTarget) => {
+    if (item.kind === 'course') {
+      // Un cours revient chaque semaine : on précise que seule cette séance bouge.
+      const ok = await confirmAction(
+        t('calendar.moveCourseTitle'),
+        t('calendar.moveCourseMessage', {
+          date: formatShortDate(to.date, labels.lang),
+          time: to.startTime,
+        }),
+        t('calendar.moveConfirm'),
+      );
+      if (!ok) return;
+    }
+    await moveCalendarItem(db, item, to).catch((e: unknown) => showError(userMessageKey(e)));
+  };
 
   const step = (dir: 1 | -1) => {
     if (mode === 'month') {
@@ -117,11 +192,7 @@ export default function CalendarScreen() {
             <Segmented
               value={mode}
               onChange={setMode}
-              options={[
-                { value: 'day', label: t('calendar.day') },
-                { value: 'week', label: t('calendar.week') },
-                { value: 'month', label: t('calendar.month') },
-              ]}
+              options={viewModes.map((m) => ({ value: m, label: t(`calendar.${m}`) }))}
             />
           </View>
           <Pressable
@@ -153,7 +224,14 @@ export default function CalendarScreen() {
           {navButton('chevron-right', 1)}
         </View>
 
-        {mode === 'month' ? (
+        <ChoiceChips
+          scroll
+          options={calendarFilters.map((f) => ({ value: f, label: t(`calendar.filter.${f}`) }))}
+          selected={[...shown]}
+          onToggle={toggleFilter}
+        />
+
+        {mode === 'hours' ? null : mode === 'month' ? (
           <MonthGrid
             selected={selected}
             today={today}
@@ -176,7 +254,21 @@ export default function CalendarScreen() {
           />
         )}
 
-        {mode === 'week' ? (
+        {mode === 'hours' ? (
+          <>
+            <AppText variant="caption" color="muted">
+              {t('calendar.hoursHint')}
+            </AppText>
+            <WeekHoursGrid
+              weekStart={weekStart}
+              today={today}
+              days={days}
+              subjects={byId}
+              onOpen={open}
+              onMove={(item, to) => void move(item, to)}
+            />
+          </>
+        ) : mode === 'week' ? (
           Array.from({ length: 7 }, (_, i) => addDaysIso(weekStart, i)).map((day) => (
             <View key={day} style={{ gap: spacing.sm }}>
               <SectionHeader title={formatLongDate(fromIsoDate(day), labels.lang)} />

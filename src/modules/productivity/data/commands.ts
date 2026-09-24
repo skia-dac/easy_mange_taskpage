@@ -1,15 +1,19 @@
+import type { IsoDate } from '@/shared/dates';
 import { nowIso, write, type Db, type EntityWriter } from '@/shared/db';
-import { parseInput } from '@/shared/validation';
+import { AppError } from '@/shared/errors';
+import { isoDate, parseInput, time } from '@/shared/validation';
 
 import { personalEventInputSchema, type PersonalEventInput } from '../domain/personalEvent';
 import {
   nextOccurrenceInput,
+  postponedReminder,
   workItemInputSchema,
   type WorkItemInput,
   type WorkKind,
   type WorkStatus,
 } from '../domain/workItem';
 import { tableOf, toWorkItem, type WorkItemRow } from './rows';
+import { copySubtasks, deleteSubtasksOf } from './subtaskCommands';
 
 function workValues(input: WorkItemInput) {
   const v = parseInput(workItemInputSchema, input);
@@ -24,6 +28,7 @@ function workValues(input: WorkItemInput) {
     completed_at: v.status === 'done' ? nowIso() : null,
     reminder_at: v.reminderAt,
     repeat_rule: v.repeat,
+    estimated_minutes: v.estimatedMinutes,
   };
 }
 
@@ -38,7 +43,9 @@ async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<s
   if (!row) return null;
   const next = nextOccurrenceInput(toWorkItem(kind)(row));
   if (!next) return null;
-  return w.insert(tableOf(kind), workValues(next));
+  const newId = await w.insert(tableOf(kind), workValues(next));
+  await copySubtasks(w, kind, id, newId);
+  return newId;
 }
 
 export async function createWorkItem(db: Db, kind: WorkKind, input: WorkItemInput) {
@@ -77,7 +84,38 @@ export async function setWorkStatus(db: Db, kind: WorkKind, id: string, status: 
 }
 
 export async function deleteWorkItem(db: Db, kind: WorkKind, id: string) {
-  return write(db, (w) => w.softDelete(tableOf(kind), id));
+  return write(db, async (w) => {
+    await deleteSubtasksOf(w, kind, id);
+    await w.softDelete(tableOf(kind), id);
+  });
+}
+
+/**
+ * Reporter une tâche (glisser vers la gauche, bilan du soir) ou la déplacer dans la vue semaine.
+ * Le rappel suit l'échéance. `dueTime` absent = on garde l'heure actuelle.
+ */
+export async function rescheduleWorkItem(
+  db: Db,
+  kind: WorkKind,
+  id: string,
+  dueDate: IsoDate,
+  dueTime?: string | null,
+) {
+  parseInput(isoDate, dueDate);
+  if (dueTime) parseInput(time, dueTime);
+  return write(db, async (w) => {
+    const row = await w.db.getFirstAsync<WorkItemRow>(
+      `SELECT * FROM ${tableOf(kind)} WHERE id = ? AND deleted_at IS NULL`,
+      [id],
+    );
+    if (!row) throw new AppError('notFound');
+    const item = toWorkItem(kind)(row);
+    await w.update(tableOf(kind), id, {
+      due_date: dueDate,
+      ...(dueTime === undefined ? {} : { due_time: dueTime }),
+      reminder_at: postponedReminder(item, dueDate),
+    });
+  });
 }
 
 /** Détache les tâches et devoirs d'une matière supprimée (ils restent consultables). */
@@ -89,6 +127,11 @@ export async function detachWorkFromSubject(w: EntityWriter, subjectId: string) 
     );
     for (const r of rows) await w.update(tableOf(kind), r.id, { subject_id: null });
   }
+  const blocks = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM revision_blocks WHERE subject_id = ? AND deleted_at IS NULL',
+    [subjectId],
+  );
+  for (const b of blocks) await w.update('revision_blocks', b.id, { subject_id: null });
 }
 
 /** Supprime les tâches et devoirs d'une matière (option « tout supprimer »). */
@@ -98,8 +141,16 @@ export async function deleteWorkOfSubject(w: EntityWriter, subjectId: string) {
       `SELECT id FROM ${tableOf(kind)} WHERE subject_id = ? AND deleted_at IS NULL`,
       [subjectId],
     );
-    for (const r of rows) await w.softDelete(tableOf(kind), r.id);
+    for (const r of rows) {
+      await deleteSubtasksOf(w, kind, r.id);
+      await w.softDelete(tableOf(kind), r.id);
+    }
   }
+  const blocks = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM revision_blocks WHERE subject_id = ? AND deleted_at IS NULL',
+    [subjectId],
+  );
+  for (const b of blocks) await w.softDelete('revision_blocks', b.id);
 }
 
 function eventValues(input: PersonalEventInput) {

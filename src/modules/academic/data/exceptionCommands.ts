@@ -29,6 +29,7 @@ export async function cancelOccurrence(db: Db, seriesId: string, date: IsoDate) 
   return write(db, (w) =>
     upsertException(w, seriesId, date, {
       kind: 'cancelled',
+      new_date: null,
       new_start_time: null,
       new_end_time: null,
       new_room: null,
@@ -52,6 +53,7 @@ export async function overrideOccurrence(db: Db, input: OccurrenceOverrideInput)
   return write(db, (w) =>
     upsertException(w, v.seriesId, v.date, {
       kind: 'modified',
+      ...(v.newDate === undefined ? {} : { new_date: v.newDate === v.date ? null : v.newDate }),
       new_start_time: v.newStartTime,
       new_end_time: v.newEndTime,
       new_room: v.newRoom,

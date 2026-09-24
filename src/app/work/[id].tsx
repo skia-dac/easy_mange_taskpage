@@ -2,6 +2,8 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
+import { usePostpone } from '@/components/PostponeSheet';
+import { SubtaskList } from '@/components/SubtaskList';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
@@ -40,6 +42,7 @@ export default function WorkDetailScreen() {
   const params = useLocalSearchParams<{ id: string; kind?: string }>();
   const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { byId } = useSubjects();
+  const postpone = usePostpone();
   const item = useLiveQuery(
     (d) => getWorkItem(d, kind, params.id),
     [kind === 'task' ? 'tasks' : 'assignments'],
@@ -89,6 +92,13 @@ export default function WorkDetailScreen() {
           subtitle={t('work.due')}
           leading={<IconBadge icon="clock" />}
         />
+        {w.estimatedMinutes ? (
+          <ListRow
+            title={labels.duration(w.estimatedMinutes)}
+            subtitle={t('work.estimate')}
+            leading={<IconBadge icon="watch" />}
+          />
+        ) : null}
         {w.repeat !== 'none' ? (
           <ListRow
             title={t(`repeat.${w.repeat}`)}
@@ -113,7 +123,19 @@ export default function WorkDetailScreen() {
           <AppText>{w.description}</AppText>
         </Card>
       ) : null}
+      <SubtaskList kind={kind} workId={w.id} />
       <Button label={done ? t('work.reopen') : t('work.markDone')} onPress={() => void toggle()} />
+      {!done ? (
+        <Button variant="secondary" label={t('postpone.action')} onPress={() => postpone.open(w)} />
+      ) : null}
+      {!done && w.subjectId ? (
+        <TextButton
+          label={t('work.startStudy')}
+          onPress={() =>
+            router.push({ pathname: '/study', params: { subjectId: w.subjectId ?? '' } })
+          }
+        />
+      ) : null}
       <TextButton
         label={kind === 'task' ? t('work.deleteTask') : t('work.deleteAssignment')}
         color="danger"
@@ -131,6 +153,7 @@ export default function WorkDetailScreen() {
           });
         }}
       />
+      {postpone.sheet}
     </ScrollView>
   );
 }

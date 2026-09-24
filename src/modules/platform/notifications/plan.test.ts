@@ -1,6 +1,7 @@
 import type { CourseSeries, Exam } from '@/modules/academic';
 import { defaultNotificationPreferences } from '@/modules/identity';
 import type { WorkItem } from '@/modules/productivity';
+import { atTime, toIsoDate } from '@/shared/dates';
 
 import { MAX_SCHEDULED, planReminders } from './plan';
 
@@ -23,7 +24,8 @@ const series: CourseSeries = {
 };
 const names = { subjectName: () => 'Marketing' };
 const now = new Date(2026, 8, 23, 8, 0); // mercredi 23 sept. 08:00
-const prefs = defaultNotificationPreferences;
+// Le bilan du soir est testé à part : ici, seulement les rappels liés aux données.
+const prefs = { ...defaultNotificationPreferences, eveningReview: false };
 const empty = { series: [], exams: [], work: [], events: [] };
 
 describe('rappels de cours (§72) et fin de cours (§76)', () => {
@@ -67,6 +69,7 @@ describe('rappels de cours (§72) et fin de cours (§76)', () => {
             seriesId: 's1',
             date: '2026-09-23',
             kind: 'cancelled',
+            newDate: null,
             newStartTime: null,
             newEndTime: null,
             newRoom: null,
@@ -116,6 +119,7 @@ describe('devoirs, tâches, examens', () => {
     completedAt: null,
     reminderAt: new Date(2026, 8, 28, 18, 0).toISOString(),
     repeat: 'none',
+    estimatedMinutes: null,
   };
   const exam: Exam = {
     id: 'x1',
@@ -131,6 +135,7 @@ describe('devoirs, tâches, examens', () => {
     grade: null,
     gradeMax: 20,
     coefficient: 1,
+    timetableId: null,
   };
 
   it('un devoir avec rappel est programmé, pas un devoir terminé', () => {
@@ -173,6 +178,7 @@ it('un événement avec rappel est programmé, et le réglage « événements »
     description: null,
     reminderAt: new Date(2026, 8, 25, 17, 30).toISOString(),
     repeat: 'none',
+    estimatedMinutes: null,
   };
   expect(planReminders({ ...empty, events: [event] }, prefs, now, names).map((p) => p.id)).toEqual([
     'event:ev1',
@@ -180,4 +186,39 @@ it('un événement avec rappel est programmé, et le réglage « événements »
   expect(
     planReminders({ ...empty, events: [event] }, { ...prefs, events: false }, now, names),
   ).toEqual([]);
+});
+
+describe('révisions et bilan du soir', () => {
+  it('un rappel 10 min avant une séance prévue ; le bilan du soir chaque jour à l’heure choisie', () => {
+    const block = {
+      id: 'r1',
+      subjectId: 'mkt',
+      examId: null,
+      timetableId: null,
+      date: toIsoDate(now),
+      startTime: '23:00',
+      endTime: '23:45',
+      title: null,
+      status: 'planned' as const,
+      studySessionId: null,
+    };
+    const plan = planReminders(
+      { ...empty, revisionBlocks: [block, { ...block, id: 'r2', status: 'done' as const }] },
+      { ...prefs, eveningReview: true, eveningReviewTime: '23:30' },
+      now,
+      names,
+    );
+    const revision = plan.find((p) => p.id === 'revision:r1');
+    expect(revision?.fireAt).toEqual(atTime(block.date, '22:50'));
+    expect(plan.some((p) => p.id === 'revision:r2')).toBe(false);
+    expect(plan.filter((p) => p.action.kind === 'review')).toHaveLength(7);
+    expect(
+      planReminders(
+        { ...empty, revisionBlocks: [block] },
+        { ...prefs, revisions: false },
+        now,
+        names,
+      ),
+    ).toEqual([]);
+  });
 });

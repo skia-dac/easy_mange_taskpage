@@ -22,6 +22,7 @@ const work = (
   completedAt,
   reminderAt: null,
   repeat: 'none' as const,
+  estimatedMinutes: null,
 });
 const session = (day: string, minutes: number): StudySession => ({
   id: day,
@@ -58,6 +59,7 @@ const data: TodayData = {
       seriesId: 'c1',
       date: '2026-09-30',
       kind: 'cancelled',
+      newDate: null,
       newStartTime: null,
       newEndTime: null,
       newRoom: null,

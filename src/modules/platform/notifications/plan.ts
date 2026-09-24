@@ -12,7 +12,9 @@ export type ReminderAction =
   | { kind: 'exam'; id: string }
   | { kind: 'event'; id: string }
   | { kind: 'study'; id: string }
-  | { kind: 'habit'; id: string };
+  | { kind: 'habit'; id: string }
+  | { kind: 'revision'; id: string }
+  | { kind: 'review'; date: string };
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */
@@ -30,6 +32,8 @@ export const MAX_SCHEDULED = 60;
 export const HORIZON_DAYS = 45;
 /** Les rappels d'habitudes sont planifiés sur une semaine (ils se répètent chaque jour). */
 export const HABIT_HORIZON_DAYS = 7;
+/** Rappel avant une séance de révision. */
+export const REVISION_REMINDER_MINUTES = 10;
 
 type Named = { subjectName: (id: string) => string };
 
@@ -59,14 +63,14 @@ export function planReminders(
         const at = new Date(atTime(o.date, o.startTime).getTime() - minutes * 60_000);
         if (future(at)) {
           out.push({
-            id: `course:${o.seriesId}:${o.date}`,
+            id: `course:${o.seriesId}:${o.originalDate}`,
             fireAt: at,
             title: { key: 'notif.courseTitle', params: { subject: o.title ?? subject } },
             body: {
               key: 'notif.courseBody',
               params: { minutes, time: o.startTime, room: o.room ?? '' },
             },
-            action: { kind: 'course', seriesId: o.seriesId, date: o.date },
+            action: { kind: 'course', seriesId: o.seriesId, date: o.originalDate },
           });
         }
       }
@@ -74,14 +78,14 @@ export function planReminders(
         const at = atTime(o.date, o.endTime);
         if (future(at)) {
           out.push({
-            id: `end:${o.seriesId}:${o.date}`,
+            id: `end:${o.seriesId}:${o.originalDate}`,
             fireAt: at,
             title: { key: 'notif.endTitle', params: { subject: o.title ?? subject } },
             body: { key: 'notif.endBody' },
             action: {
               kind: 'endOfCourse',
               seriesId: o.seriesId,
-              date: o.date,
+              date: o.originalDate,
               subjectId: o.subjectId,
             },
             category: 'endOfCourse',
@@ -181,6 +185,46 @@ export function planReminders(
           action: { kind: 'habit', id: h.id },
         });
       }
+    }
+  }
+
+  if (prefs.revisions !== false) {
+    for (const b of data.revisionBlocks ?? []) {
+      if (b.status !== 'planned' || b.date < today || b.date > until) continue;
+      const at = new Date(
+        atTime(b.date, b.startTime).getTime() - REVISION_REMINDER_MINUTES * 60_000,
+      );
+      if (!future(at)) continue;
+      const subject = b.subjectId ? names.subjectName(b.subjectId) : '';
+      out.push({
+        id: `revision:${b.id}`,
+        fireAt: at,
+        title: {
+          key: subject ? 'notif.revisionTitle' : 'notif.revisionTitlePlain',
+          params: { subject },
+        },
+        body: {
+          key: 'notif.revisionBody',
+          params: { minutes: REVISION_REMINDER_MINUTES, time: b.startTime },
+        },
+        action: { kind: 'revision', id: b.id },
+      });
+    }
+  }
+
+  if (prefs.eveningReview) {
+    const time = prefs.eveningReviewTime ?? '20:30';
+    for (let i = 0; i < HABIT_HORIZON_DAYS; i++) {
+      const day = addDaysIso(today, i);
+      const at = atTime(day, time);
+      if (!future(at)) continue;
+      out.push({
+        id: `review:${day}`,
+        fireAt: at,
+        title: { key: 'notif.reviewTitle' },
+        body: { key: 'notif.reviewBody' },
+        action: { kind: 'review', date: day },
+      });
     }
   }
 

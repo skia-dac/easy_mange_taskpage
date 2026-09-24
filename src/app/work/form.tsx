@@ -9,6 +9,7 @@ import { useSubjects } from '@/hooks/useSubjects';
 import {
   createWorkItem,
   deleteWorkItem,
+  estimatePresets,
   getWorkItem,
   priorities,
   repeatRules,
@@ -58,6 +59,7 @@ export default function WorkFormScreen() {
     status: 'todo',
     reminderAt: null,
     repeat: 'none',
+    estimatedMinutes: null,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -153,6 +155,15 @@ export default function WorkFormScreen() {
         value={form.reminderAt ?? null}
         onChange={(reminderAt) => set({ reminderAt })}
         error={errors.reminderAt}
+      />
+      <ChoiceChips
+        label={t('work.estimate')}
+        options={[
+          { value: 0, label: t('work.noEstimate') },
+          ...estimatePresets.map((m) => ({ value: m, label: labels.duration(m) })),
+        ]}
+        selected={[form.estimatedMinutes ?? 0]}
+        onToggle={(m) => set({ estimatedMinutes: m === 0 ? null : m })}
       />
       <ChoiceChips
         label={t('work.priority')}

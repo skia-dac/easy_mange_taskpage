@@ -13,6 +13,7 @@ export type WorkItemRow = {
   completed_at: string | null;
   reminder_at: string | null;
   repeat_rule: string;
+  estimated_minutes: number | null;
 };
 
 export const toWorkItem =
@@ -30,6 +31,7 @@ export const toWorkItem =
     completedAt: r.completed_at,
     reminderAt: r.reminder_at,
     repeat: r.repeat_rule as RepeatRule,
+    estimatedMinutes: r.estimated_minutes ?? null,
   });
 
 export type PersonalEventRow = {

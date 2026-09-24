@@ -198,7 +198,7 @@ export default function SubjectDetailScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/courses/[id]',
-                  params: { id: c.id, ...(next ? { date: next.date } : {}) },
+                  params: { id: c.id, ...(next ? { date: next.originalDate } : {}) },
                 })
               }
             />

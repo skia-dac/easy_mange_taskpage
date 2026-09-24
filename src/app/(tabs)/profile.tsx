@@ -127,6 +127,18 @@ export default function ProfileScreen() {
           onPress={() => router.push('/habits')}
         />
         <ListRow
+          title={t('mood.title')}
+          subtitle={t('profile.moodHint')}
+          leading={<IconBadge icon="smile" color="warning" background="warningSoft" />}
+          onPress={() => router.push('/mood')}
+        />
+        <ListRow
+          title={t('review.title')}
+          subtitle={t('profile.reviewHint')}
+          leading={<IconBadge icon="moon" />}
+          onPress={() => router.push('/review')}
+        />
+        <ListRow
           title={t('grades.title')}
           subtitle={t('profile.gradesHint')}
           leading={<IconBadge icon="award" color="success" background="successSoft" />}

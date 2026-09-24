@@ -1,14 +1,26 @@
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import { useLiveQuery } from '@/shared/db';
-import { AppearanceContext } from '@/shared/theme';
+import { AppearanceContext, defaultThemePrefs, type ThemePrefs } from '@/shared/theme';
 
-import { getAppearancePreference } from './data/settings';
+import {
+  getAccentPreference,
+  getAppearancePreference,
+  getTextScalePreference,
+} from './data/settings';
 
-/** Applique le choix clair / sombre / automatique des réglages à toute l'app. */
+/** Applique les choix d'apparence (clair / sombre, couleur principale, taille du texte) à toute l'app. */
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const pref = useLiveQuery(getAppearancePreference, ['app_settings'], []);
-  return (
-    <AppearanceContext.Provider value={pref.data ?? 'auto'}>{children}</AppearanceContext.Provider>
+  const pref = useLiveQuery(
+    async (db) => ({
+      mode: await getAppearancePreference(db),
+      accent: await getAccentPreference(db),
+      textScale: await getTextScalePreference(db),
+    }),
+    ['app_settings'],
+    [],
   );
+  const value = useMemo<ThemePrefs>(() => pref.data ?? defaultThemePrefs, [pref.data]);
+  return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>;
 }

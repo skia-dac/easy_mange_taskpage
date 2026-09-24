@@ -12,6 +12,8 @@ export type CourseException = {
   seriesId: string;
   date: IsoDate;
   kind: ExceptionKind;
+  /** Séance déplacée à un autre jour (glisser-déposer dans la semaine). */
+  newDate: IsoDate | null;
   newStartTime: string | null;
   newEndTime: string | null;
   newRoom: string | null;
@@ -25,6 +27,8 @@ export const occurrenceOverrideSchema = z
   .object({
     seriesId: requiredId(),
     date: isoDate,
+    /** Absent = on ne touche pas au jour ; null = la séance revient à son jour. */
+    newDate: isoDate.nullable().optional(),
     newStartTime: optionalTime,
     newEndTime: optionalTime,
     newRoom: optionalText(40),

@@ -79,7 +79,10 @@ export default function CourseDetailScreen() {
     title: ex?.newTitle ?? c.title,
   };
   const when = date
-    ? formatLongDate(fromIsoDate(date), labels.lang)
+    ? formatLongDate(
+        fromIsoDate(ex?.kind === 'modified' && ex.newDate ? ex.newDate : date),
+        labels.lang,
+      )
     : weekly
       ? t('courses.every', { weekday: labels.weekday(c.weekday) })
       : formatLongDate(fromIsoDate(c.validFrom), labels.lang);

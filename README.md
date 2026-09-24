@@ -48,13 +48,14 @@ src/
   modules/             Les 4 domaines de l'architecture
     identity/          compte, profil, préférences
     academic/          matières, emplois du temps, cours, examens, vacances
-    productivity/      notes, tâches, devoirs, pièces jointes
+    productivity/      notes, tâches (étapes, durée), devoirs, révisions, habitudes, humeur
     platform/          notifications, fichiers, import, synchronisation, recherche
-  projections/         Aujourd'hui et Calendrier : calculés à partir des données, jamais stockés
+  projections/         Aujourd'hui, Calendrier (vue heures), plan de révision, bilan du soir :
+                       calculés à partir des données, jamais stockés
   workflows/           Actions qui touchent plusieurs modules (ex. supprimer une matière)
   components/          Lignes réutilisables (cours, devoir, examen, événement)
   shared/
-    theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières)
+    theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières + couleurs principales)
     theme/tokens.ts    espacements, arrondis, typographie
     i18n/locales/      textes en français (fr.json) et en anglais (en.json)
     db/                base de données locale (SQLite) et migrations

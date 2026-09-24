@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
 import { daysBetween, type IsoDate } from '@/shared/dates';
-import { isoDate, optionalText, optionalTime, requiredId, time } from '@/shared/validation';
+import {
+  isoDate,
+  optionalId,
+  optionalText,
+  optionalTime,
+  requiredId,
+  time,
+} from '@/shared/validation';
 
 /** Règle 6 : un examen a obligatoirement une matière et une date. */
 export const examInputSchema = z.object({
@@ -31,6 +38,8 @@ export const examInputSchema = z.object({
   gradeMax: z.number().positive({ error: 'validation.invalidGrade' }).default(20),
   /** Coefficient dans la moyenne de la matière. */
   coefficient: z.number().positive({ error: 'validation.invalidCoefficient' }).default(1),
+  /** Session d'examens (emploi du temps de type « examens »), facultative. */
+  timetableId: optionalId,
 });
 
 /** Zod ne permet pas de comparer deux champs dans `object()` : vérification séparée. */

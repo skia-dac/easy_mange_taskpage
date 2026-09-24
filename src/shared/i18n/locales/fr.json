@@ -68,7 +68,8 @@
     "firstSubject": "Ajoute ta première matière pour commencer.",
     "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier.",
     "dayOff": "{{name}} : pas de cours aujourd’hui.",
-    "greetingName": "Bonjour {{name}}"
+    "greetingName": "Bonjour {{name}}",
+    "revisionTitle": "Révisions du jour"
   },
   "countdown": {
     "today": "Aujourd’hui",
@@ -116,7 +117,20 @@
     "dayOff": "{{name}} · pas de cours",
     "dayOffKept": "{{name}}",
     "export": "Exporter le calendrier",
-    "exportTitle": "Calendrier MySky (.ics)"
+    "exportTitle": "Calendrier MySky (.ics)",
+    "hours": "Heures",
+    "filter": {
+      "course": "Cours",
+      "exam": "Examens",
+      "work": "Tâches et devoirs",
+      "revision": "Révisions",
+      "event": "Événements"
+    },
+    "hoursHint": "Appui long sur un élément puis glisse-le pour changer son jour ou son heure.",
+    "moveHint": "Appui long puis glisser pour déplacer",
+    "moveCourseTitle": "Déplacer ce cours ?",
+    "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
+    "moveConfirm": "Déplacer"
   },
   "calendarItem": {
     "exam": "Examen",
@@ -124,7 +138,8 @@
     "task": "Tâche",
     "event": "Événement",
     "due": "à rendre",
-    "allDay": "Toute la journée"
+    "allDay": "Toute la journée",
+    "revision": "Révision"
   },
   "notes": {
     "title": "Notes",
@@ -221,7 +236,8 @@
     "emptyHint": "Appuie sur + pour ajouter une tâche.",
     "emptyAssignmentsHint": "Appuie sur + pour ajouter un devoir.",
     "noExams": "Aucun examen programmé.",
-    "noExamsHint": "Appuie sur + pour ajouter un examen."
+    "noExamsHint": "Appuie sur + pour ajouter un examen.",
+    "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter."
   },
   "profile": {
     "title": "Profil",
@@ -251,7 +267,9 @@
     "gradesHint": "Moyennes par matière et évolution",
     "studyHint": "Minuteur de révision et temps de la semaine",
     "statsHint": "Heures de cours, tâches, révision, série",
-    "habitsHint": "Habitudes du jour, séries, bilan de la semaine"
+    "habitsHint": "Habitudes du jour, séries, bilan de la semaine",
+    "moodHint": "Comment tu te sens, et ce qui t’aide",
+    "reviewHint": "Préparer demain en 1 minute"
   },
   "timetables": {
     "title": "Emplois du temps",
@@ -271,7 +289,18 @@
     "emptyHint": "Crée ton emploi du temps (ex. Semestre 1, du 1er septembre au 20 décembre), puis ajoute tes cours.",
     "noCourses": "Aucun cours dans cet emploi du temps.",
     "addCourse": "Ajouter un cours",
-    "otherCourses": "Cours sans emploi du temps"
+    "otherCourses": "Cours sans emploi du temps",
+    "kind": "Type d’emploi du temps",
+    "kinds": {
+      "courses": "Cours",
+      "exams": "Examens",
+      "revision": "Révisions"
+    },
+    "deleteKeepMessage": "Les examens et révisions qu’il contient restent dans ton calendrier.",
+    "noExams": "Aucun examen dans cette session.",
+    "noRevisions": "Aucune révision prévue.",
+    "addExam": "Ajouter un examen",
+    "addRevision": "Ajouter une révision"
   },
   "courses": {
     "new": "Nouveau cours",
@@ -333,7 +362,10 @@
     "markDone": "Marquer comme terminé",
     "reopen": "Remettre à faire",
     "prefilled": "Matière reprise de ton cours.",
-    "repeat": "Répéter"
+    "repeat": "Répéter",
+    "estimate": "Durée estimée",
+    "noEstimate": "Aucune",
+    "startStudy": "Lancer le minuteur de révision"
   },
   "exams": {
     "new": "Nouvel examen",
@@ -352,7 +384,8 @@
     "deleteMessage": "Cette action est définitive.",
     "detailTitle": "Examen",
     "when": "Date et heure",
-    "durationLabel": "Durée"
+    "durationLabel": "Durée",
+    "timetable": "Session d’examens"
   },
   "events": {
     "new": "Nouvel événement",
@@ -450,7 +483,12 @@
     "breakEndBody": "On reprend ?",
     "habitTitle": "{{name}}",
     "habitBody": "Pense à ton habitude du jour.",
-    "habitBodyCount": "Objectif : {{target}} {{unit}} aujourd’hui."
+    "habitBodyCount": "Objectif : {{target}} {{unit}} aujourd’hui.",
+    "revisionTitle": "Révision : {{subject}}",
+    "revisionTitlePlain": "Révision",
+    "revisionBody": "Dans {{minutes}} min, à {{time}}.",
+    "reviewTitle": "Bilan du soir",
+    "reviewBody": "1 minute pour préparer demain."
   },
   "settings": {
     "title": "Réglages",
@@ -488,7 +526,29 @@
     "widgets": "Widgets",
     "widgetsHint": "Ajoute « Prochain cours », « Aujourd’hui », « Tâches », « Révision », « Semaine », « Matière », « Examens », « Notes rapides », « Moyenne » ou « Mois » sur ton écran d’accueil (appui long sur l’écran d’accueil, puis « Widgets »). Nécessite l’app installée depuis l’App Store / Play Store ou un build de développement, pas Expo Go.",
     "habits": "Rappels d’habitudes",
-    "habitsHint": "À l’heure choisie sur chaque habitude, si elle n’est pas encore faite"
+    "habitsHint": "À l’heure choisie sur chaque habitude, si elle n’est pas encore faite",
+    "accent": "Couleur principale",
+    "accents": {
+      "blue": "Bleu",
+      "violet": "Violet",
+      "teal": "Turquoise",
+      "green": "Vert",
+      "rose": "Rose",
+      "orange": "Orange"
+    },
+    "textSize": "Taille du texte",
+    "textSizes": {
+      "small": "Petit",
+      "normal": "Normal",
+      "large": "Grand",
+      "xlarge": "Très grand"
+    },
+    "textSizeHint": "S’ajoute à la taille choisie dans les réglages du téléphone.",
+    "revisions": "Révisions prévues",
+    "revisionsHint": "10 minutes avant chaque séance.",
+    "eveningReview": "Bilan du soir",
+    "eveningReviewHint": "Un rappel chaque soir pour préparer demain.",
+    "eveningReviewTime": "Heure du bilan"
   },
   "reminder": {
     "none": "Aucun",
@@ -890,7 +950,7 @@
     },
     "data": {
       "title": "Les données que tu enregistres",
-      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions de révision et tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif) ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
+      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif), et ton journal d'humeur et d'énergie (facultatif) ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
     },
     "permissions": {
       "title": "Autorisations du téléphone",
@@ -927,6 +987,131 @@
     "changes": {
       "title": "Modifications de cette politique",
       "body": "La date de dernière mise à jour est indiquée en haut. Si cette politique change de façon importante, tu en seras informé dans l'app."
+    }
+  },
+  "revision": {
+    "sectionTitle": "Plan de révision",
+    "plan": "Planifier mes révisions",
+    "replan": "Refaire le plan de révision",
+    "planTitle": "Plan de révision",
+    "planFor": "{{subject}} · examen le {{date}}",
+    "planHint": "MySky propose des séances dans tes créneaux libres, sans chevaucher tes cours ni tes événements. Retire celles qui ne te vont pas, puis valide.",
+    "tooLate": "L’examen est aujourd’hui ou déjà passé.",
+    "tooLateHint": "Le plan de révision se prépare avant la date de l’examen.",
+    "timetableName": "Révisions",
+    "sessions": "Nombre de séances",
+    "duration": "Durée d’une séance",
+    "daysBefore": "Commencer",
+    "days": "{{count}} j avant",
+    "from": "Pas avant",
+    "to": "Pas après",
+    "proposal": "Séances proposées ({{count}})",
+    "missing": "Pas assez de créneaux libres : {{count}} séance(s) n’ont pas trouvé de place. Élargis la plage horaire ou commence plus tôt.",
+    "noSlot": "Aucune séance à proposer avec ces réglages.",
+    "removeSlot": "Retirer cette séance",
+    "replaceInfo": "Les {{count}} séance(s) encore prévues pour cet examen seront remplacées.",
+    "validate": "Ajouter au calendrier ({{count}})",
+    "new": "Nouvelle révision",
+    "edit": "Modifier la révision",
+    "save": "Enregistrer la révision",
+    "titleLabel": "Ce que tu révises",
+    "titlePlaceholder": "Ex. Chapitres 3 et 4",
+    "detailTitle": "Révision",
+    "forExam": "Pour l’examen",
+    "start": "Commencer la révision",
+    "markDone": "Marquer comme faite",
+    "skip": "Je la passe",
+    "backToPlanned": "Remettre en prévue",
+    "delete": "Supprimer cette révision",
+    "deleteTitle": "Supprimer la révision ?",
+    "deleteMessage": "Elle disparaîtra du calendrier.",
+    "status": {
+      "planned": "Prévue",
+      "done": "Faite",
+      "skipped": "Passée"
+    }
+  },
+  "subtasks": {
+    "title": "Étapes",
+    "progress": "{{done}}/{{total}} étapes",
+    "placeholder": "Ajouter une étape",
+    "add": "Ajouter l’étape",
+    "up": "Monter",
+    "down": "Descendre",
+    "remove": "Retirer l’étape"
+  },
+  "postpone": {
+    "action": "Reporter",
+    "title": "Reporter à quand ?",
+    "tomorrow": "Demain",
+    "inTwoDays": "Dans 2 jours",
+    "nextMonday": "Lundi prochain",
+    "pickDate": "Choisir une autre date…"
+  },
+  "review": {
+    "title": "Bilan du soir",
+    "cardTitle": "Bilan du soir",
+    "cardHint": "1 minute pour clore la journée et préparer demain.",
+    "intro": "Coche ce qui est fait, reporte le reste, et regarde ce qui t’attend demain.",
+    "remaining": "Ce qui reste",
+    "allDone": "Tout est fait pour aujourd’hui. Bravo !",
+    "postponeAll": "Tout reporter à demain ({{count}})",
+    "revisions": "Révisions d’aujourd’hui",
+    "habits": "Tes habitudes",
+    "mood": "Ta journée",
+    "tomorrow": "Demain · {{date}}",
+    "nothingTomorrow": "Rien de prévu demain pour le moment.",
+    "plannedTime": "Travail prévu demain : {{time}}",
+    "done": "C’est prêt pour demain"
+  },
+  "mood": {
+    "title": "Humeur et énergie",
+    "today": "Aujourd’hui",
+    "moodLabel": "Humeur",
+    "energyLabel": "Énergie",
+    "levels": {
+      "1": "Très mauvaise",
+      "2": "Mauvaise",
+      "3": "Moyenne",
+      "4": "Bonne",
+      "5": "Très bonne"
+    },
+    "energyLevels": {
+      "1": "À plat",
+      "2": "Fatigué",
+      "3": "Correcte",
+      "4": "En forme",
+      "5": "Pleine d’énergie"
+    },
+    "note": "Un mot sur ta journée",
+    "pickBoth": "Choisis ton humeur et ton énergie : c’est enregistré tout de suite.",
+    "history": "Historique",
+    "week": "7 derniers jours",
+    "noData": "Pas encore d’entrée cette semaine.",
+    "averages": "Humeur moyenne {{mood}}/5 · énergie moyenne {{energy}}/5",
+    "energyChart": "Énergie des 7 derniers jours",
+    "habitsTitle": "Tes habitudes et ton énergie",
+    "habitsEmpty": "Note ton humeur quelques jours (avec et sans tes habitudes) pour voir ce qui t’aide.",
+    "habitLine": "Énergie {{done}}/5 les jours faits · {{missed}}/5 les autres",
+    "habitsHint": "Sur les 30 derniers jours. C’est une tendance, pas une règle.",
+    "recent": "Dernières entrées",
+    "statsEmpty": "Note ton humeur dans le bilan du soir."
+  },
+  "todayLayout": {
+    "title": "Sections d’Aujourd’hui",
+    "hint": "Ordre et sections affichées",
+    "intro": "Choisis l’ordre des sections de l’écran Aujourd’hui, et masque celles dont tu n’as pas besoin.",
+    "customize": "Personnaliser cet écran",
+    "show": "Afficher « {{name}} »",
+    "reset": "Revenir à l’ordre par défaut",
+    "sections": {
+      "next": "Prochain cours",
+      "courses": "Cours du jour",
+      "revision": "Révisions du jour",
+      "habits": "Mes habitudes",
+      "todo": "À faire",
+      "events": "Événements",
+      "exams": "Examens à venir"
     }
   }
 }

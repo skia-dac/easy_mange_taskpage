@@ -8,12 +8,16 @@ import {
   activeTimetable,
   colorOf,
   listCourseSeries,
+  listExams,
   listTimetables,
+  timetableKinds,
   type CourseSeries,
+  type Timetable,
 } from '@/modules/academic';
+import { listRevisionBlocks } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
-import { formatDate } from '@/shared/format';
+import { formatDate, formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -35,7 +39,9 @@ export default function TimetablesScreen() {
   const { byId } = useSubjects();
   const timetables = useLiveQuery(listTimetables, ['timetables'], []);
   const series = useLiveQuery((db) => listCourseSeries(db), ['course_series'], []);
-  const active = activeTimetable(timetables.data ?? [], toIsoDate(new Date()));
+  const exams = useLiveQuery(listExams, ['exams'], []);
+  const blocks = useLiveQuery((db) => listRevisionBlocks(db), ['revision_blocks'], []);
+  const today = toIsoDate(new Date());
 
   const courseRow = (c: CourseSeries) => {
     const subject = byId.get(c.subjectId);
@@ -58,6 +64,108 @@ export default function TimetablesScreen() {
       />
     );
   };
+
+  const active = (kind: Timetable['kind']) => activeTimetable(timetables.data ?? [], today, kind);
+
+  const contents = (tt: Timetable) => {
+    if (tt.kind === 'exams') {
+      const list = (exams.data ?? []).filter((e) => e.timetableId === tt.id);
+      return (
+        <>
+          {list.length === 0 ? <AppText color="muted">{t('timetables.noExams')}</AppText> : null}
+          {list.map((e) => (
+            <ListRow
+              key={e.id}
+              title={[byId.get(e.subjectId)?.name, e.title].filter(Boolean).join(' · ')}
+              subtitle={[formatShortDate(e.date, labels.lang), e.time, e.room]
+                .filter(Boolean)
+                .join(' · ')}
+              leading={<SubjectBar color={colorOf(byId.get(e.subjectId))} />}
+              onPress={() => router.push({ pathname: '/exams/[id]', params: { id: e.id } })}
+            />
+          ))}
+          <TextButton
+            label={`+ ${t('timetables.addExam')}`}
+            onPress={() =>
+              router.push({
+                pathname: '/exams/form',
+                params: { timetableId: tt.id, date: tt.validFrom > today ? tt.validFrom : today },
+              })
+            }
+          />
+        </>
+      );
+    }
+    if (tt.kind === 'revision') {
+      const list = (blocks.data ?? []).filter((b) => b.timetableId === tt.id);
+      return (
+        <>
+          {list.length === 0 ? (
+            <AppText color="muted">{t('timetables.noRevisions')}</AppText>
+          ) : null}
+          {list.map((b) => {
+            const subject = b.subjectId ? byId.get(b.subjectId) : undefined;
+            return (
+              <ListRow
+                key={b.id}
+                title={b.title ?? subject?.name ?? t('calendarItem.revision')}
+                subtitle={[
+                  formatShortDate(b.date, labels.lang),
+                  `${b.startTime} – ${b.endTime}`,
+                  t(`revision.status.${b.status}`),
+                ].join(' · ')}
+                struck={b.status === 'skipped'}
+                leading={<SubjectBar color={colorOf(subject)} />}
+                onPress={() => router.push({ pathname: '/revision/[id]', params: { id: b.id } })}
+              />
+            );
+          })}
+          <TextButton
+            label={`+ ${t('timetables.addRevision')}`}
+            onPress={() =>
+              router.push({
+                pathname: '/revision/form',
+                params: { date: tt.validFrom > today ? tt.validFrom : today },
+              })
+            }
+          />
+        </>
+      );
+    }
+    const courses = (series.data ?? []).filter((c) => c.timetableId === tt.id);
+    return (
+      <>
+        {courses.length === 0 ? <AppText color="muted">{t('timetables.noCourses')}</AppText> : null}
+        {courses.map(courseRow)}
+        <TextButton
+          label={`+ ${t('timetables.addCourse')}`}
+          onPress={() => router.push({ pathname: '/courses/form', params: { timetableId: tt.id } })}
+        />
+      </>
+    );
+  };
+
+  const timetableSection = (tt: Timetable, isActive: boolean) => (
+    <View key={tt.id} style={{ gap: spacing.sm }}>
+      <SectionHeader
+        title={tt.name}
+        action={{
+          label: t('common.edit'),
+          onPress: () => router.push({ pathname: '/timetables/form', params: { id: tt.id } }),
+        }}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        <AppText color="muted">
+          {t('timetables.period', {
+            from: formatDate(tt.validFrom, labels.lang),
+            until: formatDate(tt.validUntil, labels.lang),
+          })}
+        </AppText>
+        {isActive ? <Chip label={t('timetables.active')} tone="success" /> : null}
+      </View>
+      <Card>{contents(tt)}</Card>
+    </View>
+  );
 
   const withoutTimetable = (series.data ?? []).filter((c) => !c.timetableId);
 
@@ -88,41 +196,24 @@ export default function TimetablesScreen() {
         </>
       ) : null}
 
-      {(timetables.data ?? []).map((tt) => {
-        const courses = (series.data ?? []).filter((c) => c.timetableId === tt.id);
+      {timetableKinds.map((kind) => {
+        const list = (timetables.data ?? []).filter((tt) => tt.kind === kind);
+        if (list.length === 0) return null;
         return (
-          <View key={tt.id} style={{ gap: spacing.sm }}>
-            <SectionHeader
-              title={tt.name}
-              action={{
-                label: t('common.edit'),
-                onPress: () => router.push({ pathname: '/timetables/form', params: { id: tt.id } }),
-              }}
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-              <AppText color="muted">
-                {t('timetables.period', {
-                  from: formatDate(tt.validFrom, labels.lang),
-                  until: formatDate(tt.validUntil, labels.lang),
-                })}
-              </AppText>
-              {active?.id === tt.id ? <Chip label={t('timetables.active')} tone="success" /> : null}
-            </View>
-            <Card>
-              {courses.length === 0 ? (
-                <AppText color="muted">{t('timetables.noCourses')}</AppText>
-              ) : null}
-              {courses.map(courseRow)}
-              <TextButton
-                label={`+ ${t('timetables.addCourse')}`}
-                onPress={() =>
-                  router.push({ pathname: '/courses/form', params: { timetableId: tt.id } })
-                }
-              />
-            </Card>
+          <View key={kind} style={{ gap: spacing.lg }}>
+            <AppText variant="label" color="muted">
+              {t(`timetables.kinds.${kind}`).toLocaleUpperCase()}
+            </AppText>
+            {list.map((tt) => timetableSection(tt, active(kind)?.id === tt.id))}
           </View>
         );
       })}
+      {(timetables.data ?? []).length > 0 ? (
+        <TextButton
+          label={`+ ${t('timetables.new')}`}
+          onPress={() => router.push('/timetables/form')}
+        />
+      ) : null}
 
       <Card>
         <ListRow

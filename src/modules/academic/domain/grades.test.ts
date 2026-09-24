@@ -15,6 +15,7 @@ const exam = (over: Partial<Exam>): Exam => ({
   grade: null,
   gradeMax: 20,
   coefficient: 1,
+  timetableId: null,
   ...over,
 });
 

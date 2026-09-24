@@ -72,3 +72,9 @@ export function startOfWeekOn(value: IsoDate, weekStart: number): IsoDate {
 export function weekdayOrder(weekStart: number): number[] {
   return Array.from({ length: 7 }, (_, i) => ((weekStart - 1 + i) % 7) + 1);
 }
+
+/** Minutes depuis minuit → « HH:mm » (borné à la journée). */
+export function minutesToTime(minutes: number): Time {
+  const m = Math.max(0, Math.min(23 * 60 + 59, Math.round(minutes)));
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+}

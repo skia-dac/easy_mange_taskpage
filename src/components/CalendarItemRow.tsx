@@ -2,7 +2,7 @@ import type { Subject } from '@/modules/academic';
 import type { CalendarItem } from '@/projections';
 
 import { DayOffRow } from './DayOffRow';
-import { CourseRow, EventRow, ExamRow, WorkRow } from './AgendaRows';
+import { CourseRow, EventRow, ExamRow, RevisionRow, WorkRow } from './AgendaRows';
 
 type Props = { item: CalendarItem; subjects: ReadonlyMap<string, Subject>; now: Date };
 
@@ -18,6 +18,8 @@ export function CalendarItemRow({ item, subjects, now }: Props) {
       return <EventRow event={item.event} />;
     case 'dayOff':
       return <DayOffRow period={item.period} />;
+    case 'revision':
+      return <RevisionRow block={item.block} subjects={subjects} />;
   }
 }
 
@@ -33,5 +35,7 @@ export function calendarItemKey(item: CalendarItem): string {
       return `e-${item.event.id}`;
     case 'dayOff':
       return `o-${item.period.id}`;
+    case 'revision':
+      return `r-${item.block.id}`;
   }
 }

@@ -7,6 +7,7 @@ import {
   type StudySessionInput,
 } from '../domain/studySession';
 import { markStudyHabits } from './habitCommands';
+import { markRevisionDoneForSession } from './revisionCommands';
 
 export type StudySessionRow = {
   id: string;
@@ -60,7 +61,10 @@ export async function endStudySession(db: Db, id: string, endedAt = nowIso()): P
     await w.update('study_sessions', id, { ended_at: endedAt });
     if (!row || row.kind !== 'focus' || row.ended_at !== null) return;
     const minutes = (new Date(endedAt).getTime() - new Date(row.started_at).getTime()) / 60_000;
-    if (minutes >= STUDY_HABIT_MIN_MINUTES) await markStudyHabits(w, endedAt);
+    if (minutes >= STUDY_HABIT_MIN_MINUTES) {
+      await markStudyHabits(w, endedAt);
+      await markRevisionDoneForSession(w, id);
+    }
   });
 }
 

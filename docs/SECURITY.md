@@ -95,6 +95,13 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Elle décrit l’app telle qu’elle est : sans compte, rien ne quitte le téléphone ; avec un compte (facultatif), les données sont synchronisées chez Supabase. Les réponses « App Privacy » / « Data safety » sont dans `docs/PRIVACY_POLICY.md`. **À mettre à jour** avant l’import par IA, et renseigner la région du serveur (`src/shared/legal.ts`).
 - Cadre légal : loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun (en vigueur depuis le 23 juin 2026). Avec les comptes, prévoir le registre des traitements, les formalités auprès de l’Autorité de protection des données et, si le serveur est hors du Cameroun, l’autorisation de transfert.
 
+## 4j. Plan de révision, humeur, gestes
+
+- Le plan de révision est **calculé sur le téléphone** (aucune IA, aucun envoi) et rien n'est enregistré avant que l'étudiant valide la proposition.
+- Le journal d'humeur est facultatif ; la note du jour (500 caractères max) n'apparaît ni dans les notifications ni dans les widgets. Il est inclus dans la sauvegarde, la synchronisation (compte) et effacé par « Supprimer toutes mes données ».
+- Glisser pour terminer ou reporter n'efface rien ; supprimer une révision demande confirmation. Déplacer un cours dans la vue heures demande confirmation et ne touche que cette séance.
+- Les nouvelles tables (`work_subtasks`, `revision_blocks`, `mood_logs`) ont les `SYNC_COLUMNS`, passent par l'outbox et sont protégées par RLS côté serveur comme les autres.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

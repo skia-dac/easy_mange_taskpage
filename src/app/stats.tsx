@@ -3,18 +3,19 @@ import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
 
 import { BarChart } from '@/components/BarChart';
 import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import { listStudySessions } from '@/modules/productivity';
-import { useAgendaData, weekStats } from '@/projections';
+import { moodInsights, useAgendaData, weekStats } from '@/projections';
 import { addDaysIso, startOfWeekOn, toIsoDate, weekdayOrder } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { formatDuration, formatShortDate } from '@/shared/format';
 import { useTheme, type ColorTokens } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
-import { AppText, Card, IconBadge, LoadingScreen } from '@/shared/ui';
+import { AppText, Card, IconBadge, ListRow, LoadingScreen } from '@/shared/ui';
 
 type Stat = {
   icon: ComponentProps<typeof Feather>['name'];
@@ -43,6 +44,17 @@ export default function StatsScreen() {
   const stats = useMemo(
     () => (agenda.data ? weekStats(agenda.data, sessions.data ?? [], from, now) : null),
     [agenda.data, sessions.data, from, now],
+  );
+
+  const mood = useMemo(
+    () =>
+      moodInsights(
+        agenda.data?.moodLogs ?? [],
+        agenda.data?.habits ?? [],
+        agenda.data?.habitLogs ?? [],
+        today,
+      ),
+    [agenda.data, today],
   );
 
   if (!stats) return <LoadingScreen />;
@@ -123,6 +135,21 @@ export default function StatsScreen() {
           height={90}
           valueLabel={(v) => (v > 0 ? formatDuration(v) : '')}
           accessibilityLabel={t('stats.studyByDay')}
+        />
+      </Card>
+      <Card>
+        <ListRow
+          title={t('mood.title')}
+          subtitle={
+            mood.week.days === 0
+              ? t('mood.statsEmpty')
+              : t('mood.averages', {
+                  mood: String(mood.week.mood ?? '—'),
+                  energy: String(mood.week.energy ?? '—'),
+                })
+          }
+          leading={<IconBadge icon="smile" color="warning" background="warningSoft" />}
+          onPress={() => router.push('/mood')}
         />
       </Card>
       <AppText variant="caption" color="muted" style={{ textAlign: 'center' }}>

@@ -281,4 +281,42 @@ export const migrations: readonly Migration[] = [
       );
     `,
   },
+  {
+    version: 10,
+    name: 'types d’emploi du temps, sous-tâches, plan de révision, humeur',
+    sql: `
+      ALTER TABLE timetables ADD COLUMN kind TEXT NOT NULL DEFAULT 'courses';
+      ALTER TABLE exams ADD COLUMN timetable_id TEXT REFERENCES timetables (id);
+      ALTER TABLE tasks ADD COLUMN estimated_minutes INTEGER;
+      ALTER TABLE assignments ADD COLUMN estimated_minutes INTEGER;
+      ALTER TABLE course_exceptions ADD COLUMN new_date TEXT;
+      CREATE TABLE work_subtasks (${SYNC_COLUMNS},
+        work_kind TEXT NOT NULL,
+        work_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        done INTEGER NOT NULL DEFAULT 0,
+        position INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_work_subtasks_parent ON work_subtasks (work_kind, work_id);
+      CREATE TABLE revision_blocks (${SYNC_COLUMNS},
+        subject_id TEXT REFERENCES subjects (id),
+        exam_id TEXT REFERENCES exams (id),
+        timetable_id TEXT REFERENCES timetables (id),
+        date TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        title TEXT,
+        status TEXT NOT NULL DEFAULT 'planned',
+        study_session_id TEXT
+      );
+      CREATE INDEX idx_revision_blocks_date ON revision_blocks (date);
+      CREATE TABLE mood_logs (${SYNC_COLUMNS},
+        date TEXT NOT NULL,
+        mood INTEGER NOT NULL,
+        energy INTEGER NOT NULL,
+        note TEXT
+      );
+      CREATE INDEX idx_mood_logs_date ON mood_logs (date);
+    `,
+  },
 ];
