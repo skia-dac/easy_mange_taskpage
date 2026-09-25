@@ -15,6 +15,7 @@ import {
   createSubject,
   createTimetable,
 } from '@/modules/academic';
+import { createGoal, createLoan, createRecurring, createTransaction } from '@/modules/finance';
 import { saveProfile } from '@/modules/identity';
 import {
   addHabitCount,
@@ -163,6 +164,59 @@ beforeAll(async () => {
     title: 'Chapitres 1 à 3',
   });
   await saveMoodLog(mockDb, { date: '2026-09-22', mood: 4, energy: 3 });
+  const XAF = 'XAF';
+  await createTransaction(mockDb, {
+    kind: 'income',
+    amountMinor: 200000,
+    currency: XAF,
+    date: '2026-09-01',
+    categoryId: 'family_in',
+  });
+  ids.expense = await createTransaction(mockDb, {
+    kind: 'expense',
+    amountMinor: 1500,
+    currency: XAF,
+    date: '2026-09-23',
+    categoryId: 'food',
+    note: 'Déjeuner',
+  });
+  ids.charge = await createRecurring(mockDb, {
+    kind: 'charge',
+    name: 'Loyer',
+    categoryId: 'home',
+    amountMinor: 35000,
+    currency: XAF,
+    frequency: 'monthly',
+    dayOfMonth: 28,
+    startDate: '2026-09-01',
+    reminders: [1440],
+  });
+  ids.tontine = await createRecurring(mockDb, {
+    kind: 'tontine',
+    name: 'Tontine du quartier',
+    amountMinor: 5000,
+    currency: XAF,
+    frequency: 'weekly',
+    weekday: 6,
+    time: '15:00',
+    reminders: [1440, 180],
+    startDate: '2026-09-01',
+    payoutDate: '2026-10-10',
+    payoutMinor: 60000,
+  });
+  ids.goal = await createGoal(mockDb, { name: 'Téléphone', targetMinor: 150000, currency: XAF });
+  await createTransaction(mockDb, {
+    kind: 'saving',
+    amountMinor: 20000,
+    currency: XAF,
+    date: '2026-09-05',
+    goalId: ids.goal,
+  });
+  ids.loan = await createLoan(
+    mockDb,
+    { direction: 'lent', person: 'Kevin' },
+    { amountMinor: 10000, currency: XAF, date: '2026-09-10' },
+  );
   ids.event = await createPersonalEvent(mockDb, {
     title: 'Réunion asso',
     date: '2026-09-23',
@@ -218,6 +272,7 @@ const cases: Case[] = [
       'Révisions du jour',
       'Chapitres 1 à 3',
       'Personnaliser cet écran',
+      'Dépensé aujourd’hui : 1 500 FCFA',
     ],
   },
   {
@@ -237,7 +292,7 @@ const cases: Case[] = [
   },
   {
     name: 'Profil',
-    load: () => require('@/app/(tabs)/profile') as { default: ComponentType },
+    load: () => require('@/app/profile/index') as { default: ComponentType },
     expect: ['Awa Diallo', 'Marketing stratégique', 'Réglages'],
   },
   {
@@ -297,6 +352,80 @@ const cases: Case[] = [
     load: () => require('@/app/(tabs)/calendar') as { default: ComponentType },
     params: { mode: 'hours' },
     expect: ['Heures', 'Appui long sur un élément', 'Tâches et devoirs'],
+  },
+  {
+    name: 'Argent',
+    load: () => require('@/app/(tabs)/money') as { default: ComponentType },
+    expect: [
+      'IL TE RESTE',
+      'Loyer',
+      'Tontine du quartier',
+      'Nourriture',
+      'Ton tour : Tontine du quartier',
+    ],
+  },
+  {
+    name: 'Saisie rapide',
+    load: () => require('@/app/money/add') as { default: ComponentType },
+    params: { kind: 'expense' },
+    expect: [
+      'Nourriture',
+      'Chaussures',
+      'Aujourd’hui, par défaut. Touche la date si c’était un autre jour.',
+    ],
+  },
+  {
+    name: 'Modifier une opération',
+    load: () => require('@/app/money/add') as { default: ComponentType },
+    params: { id: 'expense' },
+    expect: ['Supprimer cette opération'],
+  },
+  {
+    name: 'Historique argent',
+    load: () => require('@/app/money/history') as { default: ComponentType },
+    expect: ['Déjeuner', 'Entrées'],
+  },
+  {
+    name: 'Bilan argent',
+    load: () => require('@/app/money/report') as { default: ComponentType },
+    expect: ['Où part ton argent', 'Nourriture', 'D’où vient ton argent'],
+  },
+  {
+    name: 'Charges fixes',
+    load: () => require('@/app/money/recurring') as { default: ComponentType },
+    expect: ['Loyer', 'Tontine du quartier', 'Le 28 de chaque mois'],
+  },
+  {
+    name: 'Formulaire tontine',
+    load: () => require('@/app/money/recurring-form') as { default: ComponentType },
+    params: { id: 'tontine' },
+    expect: ['Ton tour', 'Compter automatiquement comme entrée', 'la veille'],
+  },
+  {
+    name: 'Épargne',
+    load: () => require('@/app/money/goals') as { default: ComponentType },
+    expect: ['Téléphone', 'Mettre de côté'],
+  },
+  {
+    name: 'Objectif',
+    load: () => require('@/app/money/goal-form') as { default: ComponentType },
+    params: { id: 'goal' },
+    expect: ['Enregistrer l’objectif'],
+  },
+  {
+    name: 'Prêts',
+    load: () => require('@/app/money/loans') as { default: ComponentType },
+    expect: ['Kevin', 'On m’a rendu…'],
+  },
+  {
+    name: 'Nouveau prêt',
+    load: () => require('@/app/money/loan-form') as { default: ComponentType },
+    expect: ['Prêté à'],
+  },
+  {
+    name: 'Réglages argent',
+    load: () => require('@/app/money/settings') as { default: ComponentType },
+    expect: ['Ta période de budget', 'Masquer les montants dans les widgets', 'Nouvelle catégorie'],
   },
   {
     name: 'Bilan du soir',

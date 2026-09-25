@@ -44,12 +44,13 @@ Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`)
 ```
 src/
   app/                 Écrans (Expo Router) : un fichier = un écran
-    (tabs)/            Les 5 onglets : Aujourd'hui, Calendrier, Notes, Tâches, Profil
-  modules/             Les 4 domaines de l'architecture
+    (tabs)/            Les 5 onglets : Aujourd'hui, Calendrier, Tâches, Notes, Argent
+  modules/             Les domaines de l'architecture
     identity/          compte, profil, préférences
     academic/          matières, emplois du temps, cours, examens, vacances
     productivity/      notes, tâches (étapes, durée), devoirs, révisions, habitudes, humeur
-    platform/          notifications, fichiers, import, synchronisation, recherche
+    finance/           argent : dépenses, entrées, charges fixes, tontines, épargne, prêts
+    platform/          notifications, fichiers, import, synchronisation, recherche, widgets
   projections/         Aujourd'hui, Calendrier (vue heures), plan de révision, bilan du soir :
                        calculés à partir des données, jamais stockés
   workflows/           Actions qui touchent plusieurs modules (ex. supprimer une matière)

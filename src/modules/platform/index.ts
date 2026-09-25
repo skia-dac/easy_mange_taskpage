@@ -20,7 +20,7 @@ export {
   pickImage,
 } from './files/attachments';
 export type { PickedFile } from './files/attachments';
-export { cancelAllReminders } from './notifications/scheduler';
+export { cancelAllReminders, readableParams } from './notifications/scheduler';
 export { deleteAllAttachments } from './files/attachments';
 export {
   autoBackupIfDue,

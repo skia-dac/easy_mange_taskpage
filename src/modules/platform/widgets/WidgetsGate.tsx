@@ -5,10 +5,16 @@ import { AppState } from 'react-native';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import { listStudySessions } from '@/modules/productivity';
-import { buildWidgetTimeline, useAgendaData } from '@/projections';
+import { buildWidgetMoney, buildWidgetTimeline, useAgendaData, useMoneyData } from '@/projections';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
-import { formatDuration, formatLongDate, formatMonthYear, weekdayName } from '@/shared/format';
+import {
+  formatDuration,
+  formatLongDate,
+  formatMonthYear,
+  formatShortDate,
+  weekdayName,
+} from '@/shared/format';
 import { darkColors, lightColors, useTheme } from '@/shared/theme';
 
 import { syncWidgets } from './sync';
@@ -33,6 +39,8 @@ export function WidgetsGate() {
   const data = agenda.data;
   const lang = i18n.language;
   const sessionList = sessions.data;
+  const money = useMoneyData(0);
+  const moneyData = money.data;
 
   useEffect(() => {
     if (!data || loading || !sessionList) return;
@@ -53,7 +61,23 @@ export function WidgetsGate() {
             locale: lang,
           },
           { light: lightColors, dark: darkColors },
-          { sessions: sessionList, weekStart, scheme },
+          {
+            sessions: sessionList,
+            weekStart,
+            scheme,
+            money: moneyData
+              ? buildWidgetMoney(
+                  moneyData.overview,
+                  moneyData.input.categories,
+                  moneyData.prefs.hideWidgetAmounts,
+                  {
+                    t: (key, params) => t(key, params),
+                    weekdayShort: (n) => weekdayName(n, lang, 'short'),
+                    shortDate: (iso) => formatShortDate(iso, lang),
+                  },
+                )
+              : undefined,
+          },
         );
         void syncWidgets(timeline);
       }, 1200);
@@ -64,7 +88,7 @@ export function WidgetsGate() {
       sub.remove();
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [data, byId, loading, t, lang, sessionList, weekStart, scheme]);
+  }, [data, byId, loading, t, lang, sessionList, weekStart, scheme, moneyData]);
 
   return null;
 }

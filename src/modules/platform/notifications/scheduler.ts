@@ -4,7 +4,9 @@ import { Platform } from 'react-native';
 import { listSubjects } from '@/modules/academic';
 import { getNotificationPreferences, type NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
+import { isIsoDate } from '@/shared/dates';
 import type { Db } from '@/shared/db';
+import { formatShortDate } from '@/shared/format';
 import { i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
@@ -143,13 +145,22 @@ export async function cancelAllReminders(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
+/** Les dates « AAAA-MM-JJ » des textes deviennent « mer. 1 oct. » dans la langue du téléphone. */
+export function readableParams(params: Record<string, string | number> | undefined) {
+  if (!params) return params;
+  const out: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(params))
+    out[k] = typeof v === 'string' && isIsoDate(v) ? formatShortDate(v, i18n.language) : v;
+  return out;
+}
+
 async function scheduleOne(r: PlannedReminder, prefs: NotificationPreferences): Promise<void> {
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: r.id,
       content: {
-        title: i18n.t(r.title.key, r.title.params),
-        body: i18n.t(r.body.key, r.body.params),
+        title: i18n.t(r.title.key, readableParams(r.title.params)),
+        body: i18n.t(r.body.key, readableParams(r.body.params)),
         data: r.action,
         categoryIdentifier: r.category === 'endOfCourse' ? END_OF_COURSE_CATEGORY : undefined,
         sound: prefs.sound,

@@ -13,6 +13,7 @@ import {
   listPersonalEvents,
   listWorkItems,
 } from '@/modules/productivity';
+import { listRecurring, listTransactions } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useLiveQuery, type Db } from '@/shared/db';
 
@@ -31,6 +32,8 @@ const TABLES = [
   'habit_logs',
   'revision_blocks',
   'mood_logs',
+  'money_recurring',
+  'money_transactions',
 ] as const;
 
 async function loadAgenda(db: Db): Promise<TodayData> {
@@ -48,6 +51,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     habitLogs,
     revisionBlocks,
     moodLogs,
+    recurring,
+    payments,
   ] = await Promise.all([
     listCourseSeries(db),
     listCourseExceptions(db),
@@ -61,6 +66,8 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     listHabitLogs(db, addDaysIso(today, -400), addDaysIso(today, 7)),
     listRevisionBlocks(db, { from: addDaysIso(today, -60) }),
     listMoodLogs(db, addDaysIso(today, -90), today),
+    listRecurring(db),
+    listTransactions(db, { from: addDaysIso(today, -7), to: addDaysIso(today, 62) }),
   ]);
   return {
     series,
@@ -74,6 +81,7 @@ async function loadAgenda(db: Db): Promise<TodayData> {
     habitLogs,
     revisionBlocks,
     moodLogs,
+    money: { recurring, payments: payments.filter((p) => p.recurringId !== null) },
   };
 }
 

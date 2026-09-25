@@ -19,7 +19,10 @@ function tabIcon(name: IconName) {
   return TabIcon;
 }
 
-/** Les 5 onglets validés : Aujourd'hui · Calendrier · Notes · Tâches · Profil. */
+/**
+ * Les 5 onglets : Aujourd'hui · Calendrier · Tâches · Notes · Argent.
+ * Le Profil s'ouvre avec la photo en haut à droite d'Aujourd'hui.
+ */
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -49,16 +52,16 @@ export default function TabsLayout() {
         options={{ title: t('tabs.calendar'), tabBarIcon: tabIcon('calendar') }}
       />
       <Tabs.Screen
-        name="notes"
-        options={{ title: t('tabs.notes'), tabBarIcon: tabIcon('file-text') }}
-      />
-      <Tabs.Screen
         name="tasks"
         options={{ title: t('tabs.tasks'), tabBarIcon: tabIcon('check-square') }}
       />
       <Tabs.Screen
-        name="profile"
-        options={{ title: t('tabs.profile'), tabBarIcon: tabIcon('user') }}
+        name="notes"
+        options={{ title: t('tabs.notes'), tabBarIcon: tabIcon('file-text') }}
+      />
+      <Tabs.Screen
+        name="money"
+        options={{ title: t('tabs.money'), tabBarIcon: tabIcon('credit-card') }}
       />
     </Tabs>
   );

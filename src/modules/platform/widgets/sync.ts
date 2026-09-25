@@ -8,6 +8,9 @@ import { ANDROID_WIDGETS, renderAndroidWidget } from './android/widgets';
 import ExamsWidget from './ios/ExamsWidget';
 import GradesWidget from './ios/GradesWidget';
 import HabitsWidget from './ios/HabitsWidget';
+import MoneyLeftWidget from './ios/MoneyLeftWidget';
+import MoneyQuickWidget from './ios/MoneyQuickWidget';
+import MoneyWeekWidget from './ios/MoneyWeekWidget';
 import MonthWidget from './ios/MonthWidget';
 import NextCourseWidget from './ios/NextCourseWidget';
 import QuickAddWidget from './ios/QuickAddWidget';
@@ -29,6 +32,9 @@ const IOS_WIDGETS = [
   GradesWidget,
   MonthWidget,
   HabitsWidget,
+  MoneyQuickWidget,
+  MoneyLeftWidget,
+  MoneyWeekWidget,
 ];
 
 /** Démarre, met à jour ou termine la Live Activity « Révision » selon la session en cours. */

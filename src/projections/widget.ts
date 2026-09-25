@@ -32,6 +32,7 @@ import { subjectColors, type ColorTokens } from '@/shared/theme';
 
 import { weekStats } from './stats';
 import type { TodayData } from './today';
+import { EMPTY_WIDGET_MONEY, type WidgetMoney } from './widgetMoney';
 
 /**
  * Données affichées par les widgets de l'écran d'accueil (iPhone et Android).
@@ -40,7 +41,16 @@ import type { TodayData } from './today';
  */
 export type WidgetTheme = Pick<
   ColorTokens,
-  'background' | 'surface' | 'text' | 'muted' | 'primary' | 'primarySoft' | 'danger' | 'success'
+  | 'background'
+  | 'surface'
+  | 'text'
+  | 'muted'
+  | 'primary'
+  | 'primarySoft'
+  | 'onPrimary'
+  | 'danger'
+  | 'success'
+  | 'warning'
 >;
 
 export type WidgetCourse = {
@@ -166,6 +176,8 @@ export type WidgetData = {
   };
   month: { title: string; weekdays: string[]; cells: WidgetMonthCell[] };
   habits: WidgetHabit[];
+  /** Widgets « Argent » (calculés à part, voir widgetMoney.ts). */
+  money: WidgetMoney;
   labels: WidgetLabels;
   links: WidgetLinks;
   light: WidgetTheme;
@@ -179,6 +191,7 @@ export type WidgetExtras = {
   sessions: readonly StudySession[];
   weekStart: number;
   scheme?: 'light' | 'dark';
+  money?: WidgetMoney;
 };
 
 export const WIDGET_LINKS: WidgetLinks = {
@@ -224,8 +237,10 @@ export function pickWidgetTheme(colors: ColorTokens): WidgetTheme {
     muted: colors.muted,
     primary: colors.primary,
     primarySoft: colors.primarySoft,
+    onPrimary: colors.onPrimary,
     danger: colors.danger,
     success: colors.success,
+    warning: colors.warning,
   };
 }
 
@@ -503,6 +518,7 @@ export function buildWidgetData(
     month: buildMonth(data, extras, now, texts),
     habits: buildHabits(data, today, scheme),
     links: WIDGET_LINKS,
+    money: extras.money ?? EMPTY_WIDGET_MONEY,
     labels: {
       nextCourse: texts.t('widget.nextCourse'),
       noCourse: texts.t('widget.noCourse'),

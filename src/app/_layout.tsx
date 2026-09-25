@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AccountGate } from '@/components/AccountGate';
+import { MoneyGate } from '@/components/MoneyGate';
 import { AppearanceProvider, AuthProvider, LanguageGate } from '@/modules/identity';
 import { BackupGate, LockGate, NotificationsGate, WidgetsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
@@ -55,6 +56,7 @@ export default function RootLayout() {
               <NotificationsGate />
               <AccountGate />
               <BackupGate />
+              <MoneyGate />
               <WidgetsGate />
               <AppearanceProvider>
                 <ThemedStack />

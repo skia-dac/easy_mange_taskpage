@@ -45,7 +45,7 @@ Docs: https://docs.expo.dev/eas/index.md
 Read `docs/PLANNING.md` (plan, architecture, phases) and `docs/SECURITY.md` before changing code. The functional spec and architecture reference are summarized there.
 
 - Scope: implement only MVP features. Anything in `docs/VERSION_2.md` is out of scope until explicitly scheduled.
-- Architecture: domain code lives in `src/modules/{identity,academic,productivity,platform}`. Import a module only through its `index.ts` (ESLint enforces it). Screens in `src/app/` stay thin: no business rules, no SQL.
+- Architecture: domain code lives in `src/modules/{identity,academic,productivity,finance,platform}`. Import a module only through its `index.ts` (ESLint enforces it). Screens in `src/app/` stay thin: no business rules, no SQL.
 - Colours: only in `src/shared/theme/colors.ts`. Never write a hex/rgb value elsewhere (ESLint enforces it). Use `useTheme().colors.<token>` or `AppText color="<token>"`.
 - Texts: every user-visible string goes through i18n (`src/shared/i18n/locales/fr.json` and `en.json`, same keys — a test checks parity). French first.
 - Local data first: every write goes to SQLite, then the sync outbox. Use parameterized SQL only. Tables use `SYNC_COLUMNS`. Never edit a published migration; append a new one.

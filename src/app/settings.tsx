@@ -326,6 +326,7 @@ export default function SettingsScreen() {
         {toggle(t('settings.events'), 'events')}
         {toggle(t('settings.habits'), 'habits', t('settings.habitsHint'))}
         {toggle(t('settings.revisions'), 'revisions', t('settings.revisionsHint'))}
+        {toggle(t('settings.money'), 'money', t('settings.moneyHint'))}
         {toggle(t('settings.eveningReview'), 'eveningReview', t('settings.eveningReviewHint'))}
         {prefs.eveningReview ? (
           <DateTimeField

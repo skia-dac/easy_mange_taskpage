@@ -24,6 +24,8 @@ export const notificationPreferencesSchema = z.object({
   focusDuringStudy: z.boolean().default(true),
   /** Rappel avant chaque séance de révision prévue. */
   revisions: z.boolean().default(true),
+  /** Argent : rappels des charges fixes et des tontines. */
+  money: z.boolean().default(true),
   /** Bilan du soir : un rappel chaque jour pour préparer demain. */
   eveningReview: z.boolean().default(true),
   eveningReviewTime: z
@@ -54,6 +56,7 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   focusDuringCourses: false,
   focusDuringStudy: true,
   revisions: true,
+  money: true,
   eveningReview: true,
   eveningReviewTime: '20:30',
   courseReminderMinutes: 15,
@@ -77,6 +80,7 @@ export const textScalePreferenceSchema = z.enum(['small', 'normal', 'large', 'xl
 /** Sections de l'écran Aujourd'hui que l'étudiant peut ordonner ou masquer. */
 export const todaySectionIds = [
   'next',
+  'money',
   'courses',
   'revision',
   'habits',

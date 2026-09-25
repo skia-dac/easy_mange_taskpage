@@ -90,7 +90,7 @@ Infrastructure                             → SQLite/Drizzle implementation, sy
 
 The domain and use cases are plain TypeScript, so they can be unit-tested without a phone.
 
-### 4.2 Folder structure (the four domains of arch. §4)
+### 4.2 Folder structure (the domains of arch. §4, plus `finance` since 25 Sep 2026)
 
 ```
 app/                          # Expo Router routes only (thin; they call modules/*/ui)
@@ -288,8 +288,24 @@ Requested by the product owner (« Je veux tout ça »). Local migration **v10**
 - **Mood and energy journal** (`mood_logs`, one entry per day, 1–5 each, optional note): in the evening review and `/mood` (7-day chart, averages, recent entries), and per habit « énergie les jours faits / les autres » over 30 days (shown only with at least 2 days on each side, presented as a trend). Summary card in weekly statistics.
 - **Personalisation**: main colour (6 presets, contrast-tested in both modes) and text size (4 steps, on top of the phone's setting) in Réglages › Apparence; order and visibility of the Aujourd'hui sections (`/today-layout`).
 
+## 5i. Module Argent (built 25 Sep 2026)
+
+Requested by the product owner, with the mock-ups validated on the canvas « MySky — module Argent ». New domain module `src/modules/finance` (fifth domain next to identity, academic, productivity, platform), local migration **v11**, server schema regenerated.
+
+- **Navigation**: tabs are now Aujourd'hui · Calendrier · Tâches · Notes · **Argent**. The Profil tab became the photo / initials button at the top right of Aujourd'hui (`/profile`), same page as before.
+- **Principle**: the app is connected to no bank and no Mobile Money account. The student enters everything; « Il te reste » = what was carried over + income − everything that went out.
+- **Entries** (`money_transactions`, integer amounts in the currency's smallest unit): expense, income, put aside / taken back (savings goal), lent / paid back to me, borrowed / repaid. Quick entry `/money/add`: expense or income → category (16 + 7 built-in, tailored for students in Cameroon, plus the student's own) → amount on a keypad → save; today's date by default, shown, changeable.
+- **Currency**: FCFA (XAF) by default, 9 others selectable (Réglages de l'argent). Totals only add entries of the chosen currency.
+- **Budget period**: a month starting on the day the student chooses (1st by default, e.g. the 25th; 31 = last day of shorter months) or a week starting on the chosen day. Every screen and report follows it; previous / next periods browsable.
+- **Fixed costs and tontines** (`money_recurring`): monthly (day of month) or weekly (weekday, time), 1–3 reminders chosen among 10 min / 1 h / 3 h / the day before / 2 or 3 days before; tick « payé » and the expense is created (linked to that due date, undo possible). From the start of the period the app shows « À payer » and « Après tes charges fixes : X · soit Y par jour ». Tontine: contribution + **my turn** (date, amount), counted **automatically as income** on the day by default (`recordDuePayouts`, once per turn, switchable per tontine, the entry stays editable); reminder on the day.
+- **Savings goals** (`money_goals`) and **loans** (`money_loans`, « on me doit » / « je dois », repayments, due date, settled).
+- **Report** `/money/report`: income, expenses, put aside, lent; where the money goes (by category), where it comes from, spending by weekday, biggest expenses, and simple insights (day you spend most, category up ≥ 20 %, an expense that repeats → « en faire une charge fixe »). All pure functions in `projections/money.ts`, tested.
+- **Elsewhere**: « Dépensé aujourd'hui » card on Aujourd'hui (movable section), money of the day in the evening review, reminders in `planReminders` (setting « Argent : charges fixes et tontines », focus mode respected).
+- **Widgets** (iPhone + Android): « Dépense rapide » (the 3 most used categories + Autre open the entry screen with the category chosen — a widget cannot receive typed text), « Il te reste » (also on the lock screen), « Mes dépenses » (7 days + what's due). Option « Masquer les montants dans les widgets ».
+- Out of scope for now: bank / Mobile Money import, per-category budgets, shared expenses.
+
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Notes · Tâches · Profil · import AI budget OK (a few cents per page).
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Tâches · Notes · Argent (Profil via the photo at the top right, 25 Sep 2026) · import AI budget OK (a few cents per page).
 
 1. Design: direction set in section 5b, mock-ups done. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.

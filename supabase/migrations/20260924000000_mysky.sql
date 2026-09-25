@@ -759,6 +759,224 @@ drop trigger if exists mood_logs_touch on public.mood_logs;
 create trigger mood_logs_touch before insert or update on public.mood_logs
   for each row execute function public.mysky_touch();
 
+create table if not exists public.money_categories (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  kind text not null,
+  name text not null,
+  icon text not null default 'tag',
+  color_id text not null default 'slate',
+  position bigint not null default 0,
+  archived bigint not null default 0,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.money_categories
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists kind text not null,
+  add column if not exists name text not null,
+  add column if not exists icon text not null default 'tag',
+  add column if not exists color_id text not null default 'slate',
+  add column if not exists position bigint not null default 0,
+  add column if not exists archived bigint not null default 0,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists money_categories_sync_idx on public.money_categories (user_id, server_updated_at);
+alter table public.money_categories enable row level security;
+drop policy if exists "own rows" on public.money_categories;
+create policy "own rows" on public.money_categories for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.money_categories to authenticated;
+drop trigger if exists money_categories_touch on public.money_categories;
+create trigger money_categories_touch before insert or update on public.money_categories
+  for each row execute function public.mysky_touch();
+
+create table if not exists public.money_goals (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  name text not null,
+  target_minor bigint not null,
+  currency text not null,
+  deadline text,
+  archived bigint not null default 0,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.money_goals
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists name text not null,
+  add column if not exists target_minor bigint not null,
+  add column if not exists currency text not null,
+  add column if not exists deadline text,
+  add column if not exists archived bigint not null default 0,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists money_goals_sync_idx on public.money_goals (user_id, server_updated_at);
+alter table public.money_goals enable row level security;
+drop policy if exists "own rows" on public.money_goals;
+create policy "own rows" on public.money_goals for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.money_goals to authenticated;
+drop trigger if exists money_goals_touch on public.money_goals;
+create trigger money_goals_touch before insert or update on public.money_goals
+  for each row execute function public.mysky_touch();
+
+create table if not exists public.money_loans (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  direction text not null,
+  person text not null,
+  due_date text,
+  note text,
+  closed bigint not null default 0,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.money_loans
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists direction text not null,
+  add column if not exists person text not null,
+  add column if not exists due_date text,
+  add column if not exists note text,
+  add column if not exists closed bigint not null default 0,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists money_loans_sync_idx on public.money_loans (user_id, server_updated_at);
+alter table public.money_loans enable row level security;
+drop policy if exists "own rows" on public.money_loans;
+create policy "own rows" on public.money_loans for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.money_loans to authenticated;
+drop trigger if exists money_loans_touch on public.money_loans;
+create trigger money_loans_touch before insert or update on public.money_loans
+  for each row execute function public.mysky_touch();
+
+create table if not exists public.money_recurring (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  kind text not null,
+  name text not null,
+  category_id text,
+  amount_minor bigint not null,
+  currency text not null,
+  frequency text not null,
+  day_of_month bigint not null default 1,
+  weekday bigint not null default 6,
+  time text,
+  reminders text not null default '[]',
+  start_date text not null,
+  end_date text,
+  active bigint not null default 1,
+  payout_date text,
+  payout_minor bigint,
+  payout_auto bigint not null default 1,
+  payout_recorded bigint not null default 0,
+  note text,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.money_recurring
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists kind text not null,
+  add column if not exists name text not null,
+  add column if not exists category_id text,
+  add column if not exists amount_minor bigint not null,
+  add column if not exists currency text not null,
+  add column if not exists frequency text not null,
+  add column if not exists day_of_month bigint not null default 1,
+  add column if not exists weekday bigint not null default 6,
+  add column if not exists time text,
+  add column if not exists reminders text not null default '[]',
+  add column if not exists start_date text not null,
+  add column if not exists end_date text,
+  add column if not exists active bigint not null default 1,
+  add column if not exists payout_date text,
+  add column if not exists payout_minor bigint,
+  add column if not exists payout_auto bigint not null default 1,
+  add column if not exists payout_recorded bigint not null default 0,
+  add column if not exists note text,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists money_recurring_sync_idx on public.money_recurring (user_id, server_updated_at);
+alter table public.money_recurring enable row level security;
+drop policy if exists "own rows" on public.money_recurring;
+create policy "own rows" on public.money_recurring for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.money_recurring to authenticated;
+drop trigger if exists money_recurring_touch on public.money_recurring;
+create trigger money_recurring_touch before insert or update on public.money_recurring
+  for each row execute function public.mysky_touch();
+
+create table if not exists public.money_transactions (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  kind text not null,
+  amount_minor bigint not null,
+  currency text not null,
+  category_id text,
+  date text not null,
+  note text,
+  recurring_id text,
+  occurrence_date text,
+  goal_id text,
+  loan_id text,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.money_transactions
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists kind text not null,
+  add column if not exists amount_minor bigint not null,
+  add column if not exists currency text not null,
+  add column if not exists category_id text,
+  add column if not exists date text not null,
+  add column if not exists note text,
+  add column if not exists recurring_id text,
+  add column if not exists occurrence_date text,
+  add column if not exists goal_id text,
+  add column if not exists loan_id text,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists money_transactions_sync_idx on public.money_transactions (user_id, server_updated_at);
+alter table public.money_transactions enable row level security;
+drop policy if exists "own rows" on public.money_transactions;
+create policy "own rows" on public.money_transactions for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.money_transactions to authenticated;
+drop trigger if exists money_transactions_touch on public.money_transactions;
+create trigger money_transactions_touch before insert or update on public.money_transactions
+  for each row execute function public.mysky_touch();
+
 -- Modifications déjà appliquées (une même modification renvoyée après une coupure ne compte qu’une fois).
 create table if not exists public.sync_mutations (
   mutation_id text primary key,
@@ -794,7 +1012,7 @@ declare
   v_sets text;
   v_new bigint;
   v_row jsonb;
-  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs'];
+  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions'];
 begin
   if auth.uid() is null then
     raise exception 'not authenticated' using errcode = '28000';

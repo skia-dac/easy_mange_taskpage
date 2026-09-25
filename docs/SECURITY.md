@@ -102,6 +102,14 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Glisser pour terminer ou reporter n'efface rien ; supprimer une révision demande confirmation. Déplacer un cours dans la vue heures demande confirmation et ne touche que cette séance.
 - Les nouvelles tables (`work_subtasks`, `revision_blocks`, `mood_logs`) ont les `SYNC_COLUMNS`, passent par l'outbox et sont protégées par RLS côté serveur comme les autres.
 
+## 4k. Argent
+
+- Aucune connexion à une banque ou à un compte Mobile Money, aucune lecture de SMS : tout est saisi par l'étudiant.
+- Montants en entiers (plus petite unité de la monnaie), jamais en nombres à virgule ; validation zod (montant > 0, 3 rappels au maximum).
+- Tables `money_*` avec `SYNC_COLUMNS`, outbox, sauvegarde locale, « Supprimer toutes mes données », et RLS côté serveur comme les autres.
+- Les widgets et l'écran verrouillé peuvent montrer des montants : option « Masquer les montants dans les widgets » (•••). Les notifications montrent le nom de la charge et son montant, jamais les notes.
+- Supprimer une opération, une charge, un objectif, un prêt ou une catégorie demande confirmation ; supprimer une catégorie range ses opérations dans « Autre » ; supprimer une charge garde les paiements déjà notés.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.

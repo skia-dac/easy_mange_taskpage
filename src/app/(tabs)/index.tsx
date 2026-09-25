@@ -9,6 +9,8 @@ import { usePostpone } from '@/components/PostponeSheet';
 import { HeaderButton, SearchButton } from '@/components/SearchButton';
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitRow } from '@/components/HabitRow';
+import { TodayMoneyCard } from '@/components/money/TodayMoneyCard';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useProfile } from '@/hooks/useProfile';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import {
@@ -88,6 +90,7 @@ export default function TodayScreen() {
             }
           />
         ),
+        money: <TodayMoneyCard />,
         courses:
           view.courses.length > 0 ? (
             <>
@@ -203,6 +206,7 @@ export default function TodayScreen() {
       }
     : {
         next: null,
+        money: null,
         courses: null,
         revision: null,
         habits: null,
@@ -219,8 +223,8 @@ export default function TodayScreen() {
         actions={
           <>
             <SearchButton />
-            <HeaderButton icon="clock" label={t('study.title')} href="/study" />
             <HeaderButton icon="bell" label={t('notifications.title')} href="/notifications" />
+            <ProfileButton />
           </>
         }
       >

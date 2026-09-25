@@ -222,3 +222,74 @@ describe('révisions et bilan du soir', () => {
     ).toEqual([]);
   });
 });
+
+describe('argent : charges fixes et tontines', () => {
+  const tontine = {
+    id: 't1',
+    kind: 'tontine' as const,
+    name: 'Tontine du quartier',
+    categoryId: 'tontine',
+    amountMinor: 5000,
+    currency: 'XAF',
+    frequency: 'weekly' as const,
+    dayOfMonth: 1,
+    weekday: 6,
+    time: '15:00',
+    reminders: [1440, 180],
+    startDate: '2026-09-01',
+    endDate: null,
+    active: true,
+    payoutDate: '2026-09-26',
+    payoutMinor: 60000,
+    payoutAuto: true,
+    payoutRecorded: false,
+    note: null,
+  };
+
+  it('rappels la veille et 3 h avant, sauf échéance déjà payée ; rappel du tour', () => {
+    const plan = planReminders(
+      {
+        ...empty,
+        money: {
+          recurring: [tontine],
+          payments: [
+            {
+              id: 'p',
+              kind: 'expense',
+              amountMinor: 5000,
+              currency: 'XAF',
+              categoryId: 'tontine',
+              date: '2026-10-02',
+              note: null,
+              recurringId: 't1',
+              occurrenceDate: '2026-10-03',
+              goalId: null,
+              loanId: null,
+            },
+          ],
+        },
+      },
+      prefs,
+      now,
+      names,
+    );
+    const money = plan.filter((p) => p.action.kind === 'money').map((p) => p.id);
+    expect(money.slice(0, 3)).toEqual([
+      'money:t1:2026-09-26:1440',
+      'money:t1:2026-09-26:180',
+      'payout:t1:2026-09-26',
+    ]);
+    expect(money.some((id) => id.includes('2026-10-03'))).toBe(false);
+    expect(plan.find((p) => p.id === 'money:t1:2026-09-26:180')?.fireAt).toEqual(
+      atTime('2026-09-26', '12:00'),
+    );
+    expect(
+      planReminders(
+        { ...empty, money: { recurring: [tontine], payments: [] } },
+        { ...prefs, money: false },
+        now,
+        names,
+      ),
+    ).toEqual([]);
+  });
+});

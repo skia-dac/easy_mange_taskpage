@@ -1,4 +1,5 @@
 import { occurrencesInRange, type Occurrence } from '@/modules/academic';
+import { formatMoney, occurrencesBetween } from '@/modules/finance';
 import { dayState, plannedEnd } from '@/modules/productivity';
 import type { NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
@@ -14,7 +15,8 @@ export type ReminderAction =
   | { kind: 'study'; id: string }
   | { kind: 'habit'; id: string }
   | { kind: 'revision'; id: string }
-  | { kind: 'review'; date: string };
+  | { kind: 'review'; date: string }
+  | { kind: 'money'; id: string };
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */
@@ -209,6 +211,59 @@ export function planReminders(
         },
         action: { kind: 'revision', id: b.id },
       });
+    }
+  }
+
+  if (prefs.money !== false && data.money) {
+    const paid = new Set(
+      data.money.payments
+        .filter((p) => p.recurringId && p.occurrenceDate && p.kind === 'expense')
+        .map((p) => `${p.recurringId}|${p.occurrenceDate}`),
+    );
+    for (const r of data.money.recurring) {
+      const amount = formatMoney(r.amountMinor, r.currency);
+      const time = r.time ?? '09:00';
+      for (const date of occurrencesBetween(r, today, until)) {
+        if (paid.has(`${r.id}|${date}`)) continue;
+        for (const minutes of r.reminders) {
+          const at = new Date(atTime(date, time).getTime() - minutes * 60_000);
+          if (!future(at)) continue;
+          out.push({
+            id: `money:${r.id}:${date}:${minutes}`,
+            fireAt: at,
+            title: {
+              key: r.kind === 'tontine' ? 'notif.tontineTitle' : 'notif.chargeTitle',
+              params: { name: r.name },
+            },
+            body: {
+              key: r.time ? 'notif.moneyBodyTime' : 'notif.moneyBody',
+              params: { amount, date, time: r.time ?? '' },
+            },
+            action: { kind: 'money', id: r.id },
+          });
+        }
+      }
+      if (
+        r.kind === 'tontine' &&
+        r.active &&
+        r.payoutDate &&
+        r.payoutMinor &&
+        r.payoutDate >= today
+      ) {
+        const at = atTime(r.payoutDate, r.time ?? '09:00');
+        if (future(at) && r.payoutDate <= until) {
+          out.push({
+            id: `payout:${r.id}:${r.payoutDate}`,
+            fireAt: at,
+            title: { key: 'notif.payoutTitle', params: { name: r.name } },
+            body: {
+              key: 'notif.payoutBody',
+              params: { amount: formatMoney(r.payoutMinor, r.currency) },
+            },
+            action: { kind: 'money', id: r.id },
+          });
+        }
+      }
     }
   }
 

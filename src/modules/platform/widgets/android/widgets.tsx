@@ -15,6 +15,9 @@ export const ANDROID_WIDGETS = [
   'Grades',
   'Month',
   'Habits',
+  'MoneyQuick',
+  'MoneyLeft',
+  'MoneyWeek',
 ] as const;
 export type AndroidWidgetName = (typeof ANDROID_WIDGETS)[number];
 
@@ -520,6 +523,103 @@ export function HabitsWidget({ data, theme }: Props) {
   );
 }
 
+/** « Dépense rapide » : chaque catégorie ouvre la saisie avec la catégorie déjà choisie. */
+export function MoneyQuickWidget({ data, theme }: Props) {
+  const m = data.money;
+  return (
+    <Card data={data} theme={theme} url={m.url}>
+      <Header title={m.labels.quick} right={m.ready ? `${m.labels.today} ${m.todaySpent}` : ''} theme={theme} />
+      <FlexWidget style={{ width: 'match_parent', flexDirection: 'row', flexGap: 6, flex: 1 }}>
+        {m.quick.map((b, i) => (
+          <FlexWidget
+            key={`q${i}`}
+            {...CLICK}
+            clickActionData={{ uri: b.url }}
+            style={{
+              flex: 1,
+              height: 'match_parent',
+              backgroundColor: theme.primarySoft,
+              borderRadius: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              flexGap: 4,
+            }}
+          >
+            <TextWidget text={b.glyph} style={{ fontSize: 18, color: theme.primary }} />
+            <TextWidget text={b.label} maxLines={1} truncate="END" style={{ fontSize: 11, fontWeight: '600', color: theme.text }} />
+          </FlexWidget>
+        ))}
+      </FlexWidget>
+      <FlexWidget {...CLICK} clickActionData={{ uri: m.incomeUrl }}>
+        <TextWidget text={`+ ${m.labels.income}`} style={{ fontSize: 12, fontWeight: 'bold', color: theme.success }} />
+      </FlexWidget>
+    </Card>
+  );
+}
+
+/** « Il te reste » : le solde et ce qu'on peut dépenser par jour, avec un bouton dépense. */
+export function MoneyLeftWidget({ data, theme }: Props) {
+  const m = data.money;
+  return (
+    <FlexWidget
+      {...CLICK}
+      clickActionData={{ uri: m.url }}
+      style={{
+        height: 'match_parent',
+        width: 'match_parent',
+        backgroundColor: theme.primary,
+        borderRadius: 20,
+        padding: 14,
+        flexDirection: 'column',
+        flexGap: 4,
+      }}
+    >
+      <TextWidget text={m.labels.left.toUpperCase()} style={{ fontSize: 11, fontWeight: 'bold', color: theme.onPrimary }} />
+      <TextWidget text={m.ready ? m.left : m.labels.start} maxLines={1} style={{ fontSize: 22, fontWeight: 'bold', color: theme.onPrimary }} />
+      <TextWidget text={m.ready ? m.perDay : ''} style={{ fontSize: 12, color: theme.onPrimary }} />
+      <FlexWidget style={{ flex: 1 }} />
+      <FlexWidget {...CLICK} clickActionData={{ uri: m.expenseUrl }}>
+        <TextWidget text={`− ${m.labels.expense}`} style={{ fontSize: 13, fontWeight: 'bold', color: theme.onPrimary }} />
+      </FlexWidget>
+    </FlexWidget>
+  );
+}
+
+/** « Ma semaine » : dépenses des 7 derniers jours et prochaines charges à payer. */
+export function MoneyWeekWidget({ data, theme }: Props) {
+  const m = data.money;
+  const barHeight = 44;
+  return (
+    <Card data={data} theme={theme} url={m.url}>
+      <Header title={m.labels.week} right={m.weekTotal} theme={theme} />
+      <FlexWidget style={{ width: 'match_parent', flexDirection: 'row', flexGap: 5, alignItems: 'flex-end', height: barHeight + 16 }}>
+        {m.week.map((d, i) => (
+          <FlexWidget key={`d${i}`} style={{ flex: 1, flexDirection: 'column', alignItems: 'center', flexGap: 2 }}>
+            <FlexWidget
+              style={{
+                width: 'match_parent',
+                height: Math.max(3, Math.round((d.value / m.weekMax) * barHeight)),
+                borderRadius: 4,
+                backgroundColor: d.today ? theme.primary : theme.primarySoft,
+              }}
+            />
+            <TextWidget text={d.label} style={{ fontSize: 10, color: theme.muted }} />
+          </FlexWidget>
+        ))}
+      </FlexWidget>
+      {m.due.slice(0, 2).map((d, i) => (
+        <FlexWidget key={`u${i}`} style={ROW}>
+          <FlexWidget style={{ flex: 1 }}>
+            <TextWidget text={`${d.name} · ${d.when}`} maxLines={1} truncate="END" style={{ fontSize: 12, color: theme.text }} />
+          </FlexWidget>
+          <TextWidget text={d.amount} style={{ fontSize: 12, fontWeight: 'bold', color: theme.warning }} />
+        </FlexWidget>
+      ))}
+    </Card>
+  );
+}
+
 const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null }) => React.JSX.Element> = {
   NextCourse: NextCourseWidget,
   Today: TodayWidget,
@@ -532,6 +632,9 @@ const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null
   Grades: GradesWidget,
   Month: MonthWidget,
   Habits: HabitsWidget,
+  MoneyQuick: MoneyQuickWidget,
+  MoneyLeft: MoneyLeftWidget,
+  MoneyWeek: MoneyWeekWidget,
 };
 
 export function renderAndroidWidget(

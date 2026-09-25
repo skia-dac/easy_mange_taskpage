@@ -4,7 +4,7 @@
 
 ## Français
 
-_Dernière mise à jour : 24 septembre 2026_
+_Dernière mise à jour : 25 septembre 2026_
 
 Cette politique explique quelles données MySky utilise, où elles sont gardées et ce que tu peux en faire. Elle s'applique à l'application MySky sur iPhone et Android.
 
@@ -31,6 +31,7 @@ Tu choisis ce que tu enregistres dans MySky :
 - tes notes de cours et leurs pièces jointes (photos, documents) ;
 - tes devoirs, tâches, examens, notes obtenues et événements ;
 - tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif), et ton journal d'humeur et d'énergie (facultatif) ;
+- ton argent, si tu utilises l'onglet Argent : les dépenses et entrées que tu notes (montant, catégorie, date, note), tes charges fixes, tontines, objectifs d'épargne et prêts (avec le nom de la personne que tu indiques). MySky n'est relié à aucune banque ni à aucun compte Mobile Money : tout est saisi par toi ;
 - tes réglages.
 
 Ces données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils.
@@ -56,7 +57,7 @@ Rien ne quitte ton téléphone sans une action de ta part :
 
 ### Widgets, notifications et écran verrouillé
 
-Si tu ajoutes un widget MySky, il affiche des informations (cours, tâches, examens, habitudes, moyenne) sur ton écran d'accueil ou ton écran verrouillé : toute personne qui voit ton téléphone peut les lire. Les widgets et les notifications n'affichent jamais le contenu de tes notes ni les raisons de tes habitudes manquées, seulement des titres, des heures et des salles.
+Si tu ajoutes un widget MySky, il affiche des informations (cours, tâches, examens, habitudes, moyenne, argent) sur ton écran d'accueil ou ton écran verrouillé : toute personne qui voit ton téléphone peut les lire. Les widgets et les notifications n'affichent jamais le contenu de tes notes ni les raisons de tes habitudes manquées, seulement des titres, des heures et des salles.
 
 ### Durée de conservation et suppression
 
@@ -100,7 +101,7 @@ La date de dernière mise à jour est indiquée en haut. Si cette politique chan
 
 ## English
 
-_Last updated: 24 September 2026_
+_Last updated: 25 September 2026_
 
 This policy explains which data MySky uses, where it is kept and what you can do with it. It applies to the MySky app on iPhone and Android.
 
@@ -127,6 +128,7 @@ You choose what you enter in MySky:
 - your class notes and their attachments (photos, documents);
 - your homework, tasks, exams, grades and events;
 - your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);
+- your money, if you use the Money tab: the expenses and income you note (amount, category, date, note), your fixed costs, tontines, savings goals and loans (with the person&#39;s name you give). MySky is not connected to any bank or Mobile Money account: you enter everything yourself;
 - your settings.
 
 This data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices.
@@ -152,7 +154,7 @@ Nothing leaves your phone unless you do it:
 
 ### Widgets, notifications and lock screen
 
-If you add a MySky widget, it shows information (classes, tasks, exams, habits, average) on your home screen or lock screen: anyone who sees your phone can read it. Widgets and notifications never show the content of your notes or the reasons for missed habits, only titles, times and rooms.
+If you add a MySky widget, it shows information (classes, tasks, exams, habits, average, money) on your home screen or lock screen: anyone who sees your phone can read it. Widgets and notifications never show the content of your notes or the reasons for missed habits, only titles, times and rooms.
 
 ### Retention and deletion
 

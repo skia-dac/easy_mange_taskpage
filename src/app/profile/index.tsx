@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { useProfile } from '@/hooks/useProfile';
@@ -7,10 +7,10 @@ import { useSubjects } from '@/hooks/useSubjects';
 import { fullName, initials, useAuth } from '@/modules/identity';
 import { attachmentUri } from '@/modules/platform';
 import { Image } from 'expo-image';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useTheme } from '@/shared/theme';
 import { colorOf } from '@/modules/academic';
-import { AppText, Card, IconBadge, ListRow, Screen, SectionHeader, SubjectDot } from '@/shared/ui';
+import { AppText, Card, IconBadge, ListRow, SectionHeader, SubjectDot } from '@/shared/ui';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -24,7 +24,8 @@ export default function ProfileScreen() {
     .join(' · ');
 
   return (
-    <Screen title={t('profile.title')}>
+    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
+      <Stack.Screen options={{ title: t('profile.title') }} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('profile.edit')}
@@ -181,6 +182,6 @@ export default function ProfileScreen() {
       <AppText variant="caption" color="muted" style={{ textAlign: 'center' }}>
         {t('profile.version', { version: Constants.expoConfig?.version ?? '' })}
       </AppText>
-    </Screen>
+    </ScrollView>
   );
 }

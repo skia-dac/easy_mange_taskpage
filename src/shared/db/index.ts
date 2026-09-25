@@ -9,3 +9,4 @@ export { migrations, SYNC_COLUMNS } from './migrations';
 export type { Db, SqlValue } from './types';
 export { useDb, useLiveQuery } from './useLiveQuery';
 export type { LiveQuery } from './useLiveQuery';
+export { readAppSetting, writeAppSetting } from './settings';

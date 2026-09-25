@@ -9,6 +9,7 @@ import {
   hasPermission,
   HORIZON_DAYS,
   planReminders,
+  readableParams,
   routeForResponse,
   type PlannedReminder,
 } from '@/modules/platform';
@@ -115,7 +116,7 @@ export default function NotificationsScreen() {
               <ListRow
                 key={r.id}
                 title={t(r.title.key, r.title.params)}
-                subtitle={t(r.body.key, r.body.params)}
+                subtitle={t(r.body.key, readableParams(r.body.params))}
                 leading={<IconBadge icon={iconFor(r)} />}
                 trailing={
                   <AppText variant="bodyStrong">{`${String(r.fireAt.getHours()).padStart(2, '0')}:${String(r.fireAt.getMinutes()).padStart(2, '0')}`}</AppText>

@@ -6,6 +6,7 @@ import { ScrollView, View } from 'react-native';
 import { CourseRow, EventRow, ExamRow, RevisionRow } from '@/components/AgendaRows';
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitRow } from '@/components/HabitRow';
+import { ReviewMoney } from '@/components/money/ReviewMoney';
 import { MoodPicker } from '@/components/MoodPicker';
 import { usePostpone } from '@/components/PostponeSheet';
 import { useLabels } from '@/hooks/useLabels';
@@ -159,6 +160,8 @@ export default function EveningReviewScreen() {
           </Card>
         </>
       ) : null}
+
+      <ReviewMoney />
 
       <SectionHeader
         title={t('review.mood')}

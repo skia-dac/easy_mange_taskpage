@@ -319,4 +319,66 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_mood_logs_date ON mood_logs (date);
     `,
   },
+  {
+    version: 11,
+    name: 'argent : opérations, catégories, charges fixes et tontines, épargne, prêts',
+    sql: `
+      CREATE TABLE money_categories (${SYNC_COLUMNS},
+        kind TEXT NOT NULL,
+        name TEXT NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'tag',
+        color_id TEXT NOT NULL DEFAULT 'slate',
+        position INTEGER NOT NULL DEFAULT 0,
+        archived INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE money_goals (${SYNC_COLUMNS},
+        name TEXT NOT NULL,
+        target_minor INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        deadline TEXT,
+        archived INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE money_loans (${SYNC_COLUMNS},
+        direction TEXT NOT NULL,
+        person TEXT NOT NULL,
+        due_date TEXT,
+        note TEXT,
+        closed INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE money_recurring (${SYNC_COLUMNS},
+        kind TEXT NOT NULL,
+        name TEXT NOT NULL,
+        category_id TEXT,
+        amount_minor INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        frequency TEXT NOT NULL,
+        day_of_month INTEGER NOT NULL DEFAULT 1,
+        weekday INTEGER NOT NULL DEFAULT 6,
+        time TEXT,
+        reminders TEXT NOT NULL DEFAULT '[]',
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        active INTEGER NOT NULL DEFAULT 1,
+        payout_date TEXT,
+        payout_minor INTEGER,
+        payout_auto INTEGER NOT NULL DEFAULT 1,
+        payout_recorded INTEGER NOT NULL DEFAULT 0,
+        note TEXT
+      );
+      CREATE TABLE money_transactions (${SYNC_COLUMNS},
+        kind TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        category_id TEXT,
+        date TEXT NOT NULL,
+        note TEXT,
+        recurring_id TEXT REFERENCES money_recurring (id),
+        occurrence_date TEXT,
+        goal_id TEXT REFERENCES money_goals (id),
+        loan_id TEXT REFERENCES money_loans (id)
+      );
+      CREATE INDEX idx_money_transactions_date ON money_transactions (date);
+      CREATE INDEX idx_money_transactions_recurring ON money_transactions (recurring_id, occurrence_date);
+    `,
+  },
 ];

@@ -19,6 +19,7 @@ import {
   type RevisionBlock,
   type MoodLog,
 } from '@/modules/productivity';
+import type { Recurring, Transaction } from '@/modules/finance';
 import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
 
 export type NextCourse =
@@ -61,6 +62,8 @@ export type TodayData = {
   revisionBlocks?: readonly RevisionBlock[];
   /** Humeur des derniers jours (bilan du soir, statistiques). */
   moodLogs?: readonly MoodLog[];
+  /** Charges fixes et tontines, et leurs paiements récents (rappels). */
+  money?: { recurring: readonly Recurring[]; payments: readonly Transaction[] };
 };
 
 export type TodayView = {

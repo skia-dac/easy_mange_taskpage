@@ -177,6 +177,30 @@
               "ios": {
                 "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
               }
+            },
+            {
+              "name": "MoneyQuickWidget",
+              "displayName": "Dépense rapide",
+              "description": "Touche une catégorie et tape le montant : ta dépense est notée.",
+              "ios": {
+                "supportedFamilies": ["systemMedium"]
+              }
+            },
+            {
+              "name": "MoneyLeftWidget",
+              "displayName": "Il te reste",
+              "description": "L’argent qu’il te reste et ce que tu peux dépenser par jour.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "accessoryRectangular", "accessoryInline"]
+              }
+            },
+            {
+              "name": "MoneyWeekWidget",
+              "displayName": "Mes dépenses",
+              "description": "Tes dépenses des 7 derniers jours et ce qui est à payer.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
             }
           ]
         }
@@ -300,6 +324,39 @@
               "name": "Habits",
               "label": "MySky · Habitudes",
               "description": "Tes habitudes du jour, faites ou non.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyQuick",
+              "label": "MySky · Dépense rapide",
+              "description": "Touche une catégorie et tape le montant : ta dépense est notée.",
+              "minWidth": "320dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyLeft",
+              "label": "MySky · Il te reste",
+              "description": "L’argent qu’il te reste et ce que tu peux dépenser par jour.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyWeek",
+              "label": "MySky · Mes dépenses",
+              "description": "Tes dépenses des 7 derniers jours et ce qui est à payer.",
               "minWidth": "160dp",
               "minHeight": "120dp",
               "targetCellWidth": 2,
