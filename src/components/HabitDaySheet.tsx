@@ -5,7 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   missReasons,
+  sessionDurationPresets,
   setHabitDone,
+  setHabitDuration,
   setHabitMissed,
   type Habit,
   type HabitLog,
@@ -14,7 +16,7 @@ import {
 import type { IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { formatShortDate } from '@/shared/format';
+import { formatDuration, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -55,13 +57,18 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   const [choice, setChoice] = useState<Choice | null>(initial);
   const [reasonCode, setReasonCode] = useState<MissReason | null>(log?.reasonCode ?? null);
   const [reason, setReason] = useState(log?.reason ?? '');
+  const [duration, setDuration] = useState<number | null>(log?.durationMinutes ?? null);
 
   if (!habit) return null;
 
   const save = async () => {
     try {
-      if (choice === 'done') await setHabitDone(db, habit.id, date, true);
-      else if (choice === 'missed' || choice === 'excused')
+      if (choice === 'done') {
+        await setHabitDone(db, habit.id, date, true);
+        // Durée facultative : on ne l'écrit que si elle a changé.
+        if (duration !== (log?.durationMinutes ?? null))
+          await setHabitDuration(db, habit.id, date, duration);
+      } else if (choice === 'missed' || choice === 'excused')
         await setHabitMissed(db, habit.id, date, choice, reasonCode, reason);
       onClose();
     } catch (e) {
@@ -134,6 +141,20 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
               {option('missed', t('habits.missed'), 'danger')}
               {option('excused', t('habits.excused'), 'muted')}
             </View>
+            {choice === 'done' ? (
+              <ChoiceChips
+                label={t('habits.durationOptional')}
+                options={[
+                  { value: null as number | null, label: t('habits.noDuration') },
+                  ...sessionDurationPresets.map((m) => ({
+                    value: m as number | null,
+                    label: formatDuration(m),
+                  })),
+                ]}
+                selected={[duration]}
+                onToggle={setDuration}
+              />
+            ) : null}
             {choice === 'missed' || choice === 'excused' ? (
               <>
                 <ChoiceChips

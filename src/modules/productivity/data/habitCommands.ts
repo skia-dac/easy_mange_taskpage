@@ -1,9 +1,13 @@
 import { notifyChange, write, type Db, type EntityWriter } from '@/shared/db';
 import { toIsoDate, type IsoDate } from '@/shared/dates';
+import { AppError } from '@/shared/errors';
 import { parseInput } from '@/shared/validation';
 
 import {
+  checkpointInputSchema,
   habitInputSchema,
+  type Checkpoint,
+  type CheckpointInput,
   type Habit,
   type HabitFrequency,
   type HabitInput,
@@ -26,6 +30,7 @@ type HabitRow = {
   unit: string | null;
   reminder_time: string | null;
   auto_study: number;
+  tracks_body?: number;
   position: number;
 };
 
@@ -37,6 +42,7 @@ type HabitLogRow = {
   status: string;
   reason_code: string | null;
   reason: string | null;
+  duration_minutes?: number | null;
 };
 
 function parseDays(json: string): number[] {
@@ -60,6 +66,7 @@ const toHabit = (r: HabitRow): Habit => ({
   unit: r.unit,
   reminderTime: r.reminder_time,
   autoStudy: r.auto_study === 1,
+  tracksBody: r.tracks_body === 1,
   position: r.position,
 });
 
@@ -71,6 +78,7 @@ const toLog = (r: HabitLogRow): HabitLog => ({
   status: r.status as HabitLogStatus,
   reasonCode: r.reason_code as MissReason | null,
   reason: r.reason,
+  durationMinutes: r.duration_minutes ?? null,
 });
 
 function habitValues(input: HabitInput) {
@@ -86,6 +94,7 @@ function habitValues(input: HabitInput) {
     unit: v.target > 1 ? v.unit : null,
     reminder_time: v.reminderTime,
     auto_study: v.autoStudy ? 1 : 0,
+    tracks_body: v.tracksBody ? 1 : 0,
   };
 }
 
@@ -147,6 +156,11 @@ export async function deleteHabit(db: Db, id: string): Promise<void> {
       [id],
     );
     for (const l of logs) await w.softDelete('habit_logs', l.id);
+    const points = await w.db.getAllAsync<{ id: string }>(
+      `SELECT id FROM habit_checkpoints WHERE ${ALIVE} AND habit_id = ?`,
+      [id],
+    );
+    for (const c of points) await w.softDelete('habit_checkpoints', c.id);
     await w.softDelete('habits', id);
   });
 }
@@ -262,4 +276,101 @@ export async function reorderHabits(db: Db, ids: readonly string[]): Promise<voi
     for (const [i, id] of ids.entries()) await w.update('habits', id, { position: i });
   });
   notifyChange(['habits']);
+}
+
+/**
+ * Durée d'une séance (facultative). Noter une durée coche aussi la journée si ce n'était pas
+ * fait ; `null` efface seulement la durée.
+ */
+export async function setHabitDuration(
+  db: Db,
+  habitId: string,
+  date: IsoDate,
+  minutes: number | null,
+): Promise<void> {
+  if (minutes !== null && (!Number.isInteger(minutes) || minutes < 1 || minutes > 24 * 60))
+    throw new AppError('validation');
+  await write(db, async (w) => {
+    const row = await currentLog(w, habitId, date);
+    if (row) {
+      await w.update('habit_logs', row.id, {
+        duration_minutes: minutes,
+        ...(minutes !== null && row.status !== 'done'
+          ? { status: 'done', count: await targetOf(w, habitId), reason_code: null, reason: null }
+          : {}),
+      });
+      return;
+    }
+    if (minutes === null) return;
+    await w.insert('habit_logs', {
+      habit_id: habitId,
+      date,
+      count: await targetOf(w, habitId),
+      status: 'done',
+      reason_code: null,
+      reason: null,
+      duration_minutes: minutes,
+    });
+  });
+}
+
+type CheckpointRow = {
+  id: string;
+  habit_id: string;
+  date: string;
+  weight_kg: number | null;
+  photo_path: string | null;
+  note: string | null;
+};
+
+const toCheckpoint = (r: CheckpointRow): Checkpoint => ({
+  id: r.id,
+  habitId: r.habit_id,
+  date: r.date,
+  weightKg: r.weight_kg,
+  photoPath: r.photo_path,
+  note: r.note,
+});
+
+/** Points de suivi physique d'une habitude, du plus ancien (départ) au plus récent. */
+export async function listCheckpoints(db: Db, habitId: string): Promise<Checkpoint[]> {
+  const rows = await db.getAllAsync<CheckpointRow>(
+    `SELECT * FROM habit_checkpoints WHERE ${ALIVE} AND habit_id = ? ORDER BY date, created_at`,
+    [habitId],
+  );
+  return rows.map(toCheckpoint);
+}
+
+export async function getCheckpoint(db: Db, id: string): Promise<Checkpoint | null> {
+  const row = await db.getFirstAsync<CheckpointRow>(
+    `SELECT * FROM habit_checkpoints WHERE ${ALIVE} AND id = ?`,
+    [id],
+  );
+  return row ? toCheckpoint(row) : null;
+}
+
+function checkpointValues(input: CheckpointInput) {
+  const v = parseInput(checkpointInputSchema, input);
+  return {
+    habit_id: v.habitId,
+    date: v.date,
+    weight_kg: v.weightKg,
+    photo_path: v.photoPath,
+    note: v.note,
+  };
+}
+
+export async function createCheckpoint(db: Db, input: CheckpointInput): Promise<string> {
+  const values = checkpointValues(input);
+  return write(db, (w) => w.insert('habit_checkpoints', values));
+}
+
+export async function updateCheckpoint(db: Db, id: string, input: CheckpointInput): Promise<void> {
+  const values = checkpointValues(input);
+  await write(db, (w) => w.update('habit_checkpoints', id, values));
+}
+
+/** Supprime un point (le fichier photo, lui, est effacé par l'écran). */
+export async function deleteCheckpoint(db: Db, id: string): Promise<void> {
+  await write(db, (w) => w.softDelete('habit_checkpoints', id));
 }

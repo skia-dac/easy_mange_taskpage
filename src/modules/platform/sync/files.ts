@@ -47,6 +47,8 @@ export function supabaseFileStore(client: SupabaseClient): FileStore {
  * Pièces jointes et photo de profil : les fichiers suivent les lignes.
  * Présent sur le téléphone et pas encore envoyé → envoi ; absent → téléchargement.
  * Chemin sur le serveur : <id utilisateur>/<chemin local> (la règle du bucket l'impose).
+ * Les photos de progression physique (habit_checkpoints) ne sont volontairement PAS envoyées :
+ * elles restent sur le téléphone.
  */
 export async function syncFiles(db: Db, userId: string, store: FileStore): Promise<number> {
   const rows = await db.getAllAsync<{ path: string }>(

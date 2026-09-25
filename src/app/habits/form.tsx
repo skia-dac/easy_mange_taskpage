@@ -8,7 +8,6 @@ import { Pressable, Switch, View } from 'react-native';
 import { useLabels } from '@/hooks/useLabels';
 import {
   createHabit,
-  deleteHabit,
   getHabit,
   habitFrequencies,
   habitIcons,
@@ -31,6 +30,7 @@ import {
   TextField,
   useSave,
 } from '@/shared/ui';
+import { deleteHabitEverywhere } from '@/workflows';
 
 type Form = Omit<HabitInput, 'target'> & { target: string };
 
@@ -52,6 +52,7 @@ export default function HabitFormScreen() {
     unit: '',
     reminderTime: null,
     autoStudy: false,
+    tracksBody: false,
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -81,8 +82,12 @@ export default function HabitFormScreen() {
         await updateHabit(db, params.id, toInput());
         router.back();
       } else {
-        const id = await createHabit(db, toInput());
+        const input = toInput();
+        const id = await createHabit(db, input);
         router.replace({ pathname: '/habits/[id]', params: { id } });
+        // Suivi physique : on propose tout de suite la photo et le poids de départ.
+        if (input.tracksBody)
+          router.push({ pathname: '/habits/checkpoint', params: { habitId: id } });
       }
     });
 
@@ -95,7 +100,7 @@ export default function HabitFormScreen() {
     );
     if (!ok) return;
     try {
-      await deleteHabit(db, params.id);
+      await deleteHabitEverywhere(db, params.id);
       router.dismissTo('/habits');
     } catch (e) {
       showError(userMessageKey(e));
@@ -247,6 +252,20 @@ export default function HabitFormScreen() {
           accessibilityLabel={t('habits.autoStudy')}
           value={form.autoStudy ?? false}
           onValueChange={(autoStudy) => set({ autoStudy })}
+          trackColor={{ true: colors.success, false: colors.border }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <AppText variant="bodyStrong">{t('bodyProgress.toggle')}</AppText>
+          <AppText variant="caption" color="muted">
+            {t('bodyProgress.toggleHint')}
+          </AppText>
+        </View>
+        <Switch
+          accessibilityLabel={t('bodyProgress.toggle')}
+          value={form.tracksBody ?? false}
+          onValueChange={(tracksBody) => set({ tracksBody })}
           trackColor={{ true: colors.success, false: colors.border }}
         />
       </View>

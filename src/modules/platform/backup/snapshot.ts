@@ -28,6 +28,7 @@ export const BACKUP_TABLES = [
   'study_sessions',
   'habits',
   'habit_logs',
+  'habit_checkpoints',
   'work_subtasks',
   'revision_blocks',
   'mood_logs',

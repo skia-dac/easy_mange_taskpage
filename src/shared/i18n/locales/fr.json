@@ -51,7 +51,9 @@
     "gradeTooHigh": "La note dépasse le barème.",
     "pickDays": "Choisis au moins un jour.",
     "invalidCount": "Entre un nombre entre 1 et 50.",
-    "pickDay": "Choisis au moins un jour."
+    "pickDay": "Choisis au moins un jour.",
+    "invalidWeight": "Poids non valide (entre 20 et 400 kg).",
+    "weightOrPhoto": "Ajoute au moins une photo ou ton poids."
   },
   "today": {
     "greeting": "Bonjour",
@@ -870,7 +872,10 @@
       "excused": "excusé",
       "pending": "à faire",
       "off": "pas prévu"
-    }
+    },
+    "durationOptional": "Durée (facultatif)",
+    "noDuration": "Pas noté",
+    "timeThisMonth": "Temps noté ce mois : {{duration}}"
   },
   "account": {
     "title": "Compte et synchronisation",
@@ -974,11 +979,11 @@
     },
     "data": {
       "title": "Les données que tu enregistres",
-      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif), et ton journal d'humeur et d'énergie (facultatif) ;\n• ton argent, si tu utilises l'onglet Argent : les dépenses et entrées que tu notes (montant, catégorie, date, note), tes charges fixes, tontines, objectifs d'épargne et prêts (avec le nom de la personne que tu indiques). MySky n'est relié à aucune banque ni à aucun compte Mobile Money : tout est saisi par toi ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
+      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n'est pas faite (facultatif), et ton journal d'humeur et d'énergie (facultatif) ;\n• ton suivi sportif, si tu l'actives sur une habitude : la durée de tes séances, ton poids et tes photos de progression (facultatif). Ces photos restent uniquement sur ton téléphone : elles ne sont jamais envoyées au serveur, même avec un compte ;\n• ton argent, si tu utilises l'onglet Argent : les dépenses et entrées que tu notes (montant, catégorie, date, note), tes charges fixes, tontines, objectifs d'épargne et prêts (avec le nom de la personne que tu indiques). MySky n'est relié à aucune banque ni à aucun compte Mobile Money : tout est saisi par toi ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l'espace privé de l'app, auquel les autres applications n'ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
     },
     "permissions": {
       "title": "Autorisations du téléphone",
-      "body": "MySky demande une autorisation seulement au moment où tu en as besoin. Chacune est facultative :\n\n• Notifications : pour tes rappels. Ils sont programmés par le téléphone lui-même, sans passer par Internet.\n• Photos et appareil photo : pour joindre une image à une note ou choisir ta photo de profil. Seules les images que tu choisis sont copiées dans l'app.\n• Fichiers : pour joindre un document ou restaurer une sauvegarde.\n• Face ID, Touch ID ou code : seulement si tu actives le verrouillage de l'app. La vérification est faite par le téléphone ; MySky reçoit uniquement « réussi » ou « échoué », jamais ton visage ni ton empreinte.\n\nTu peux retirer une autorisation à tout moment dans les réglages de ton téléphone."
+      "body": "MySky demande une autorisation seulement au moment où tu en as besoin. Chacune est facultative :\n\n• Notifications : pour tes rappels. Ils sont programmés par le téléphone lui-même, sans passer par Internet.\n• Photos et appareil photo : pour joindre une image à une note, choisir ta photo de profil ou prendre tes photos de progression sportive. Seules les images que tu choisis sont copiées dans l'app.\n• Fichiers : pour joindre un document ou restaurer une sauvegarde.\n• Face ID, Touch ID ou code : seulement si tu actives le verrouillage de l'app. La vérification est faite par le téléphone ; MySky reçoit uniquement « réussi » ou « échoué », jamais ton visage ni ton empreinte.\n\nTu peux retirer une autorisation à tout moment dans les réglages de ton téléphone."
     },
     "leaves": {
       "title": "Ce qui peut quitter ton téléphone",
@@ -1543,5 +1548,36 @@
     "copyNothing": "Rien à copier : la semaine dernière n’a pas de rendez-vous, ou ils sont déjà sur cette semaine.",
     "slotMoveTitle": "Créneau fixe",
     "slotMoveMessage": "Il revient chaque semaine : change ses heures dans « Mon planning »."
+  },
+  "bodyProgress": {
+    "title": "Ma progression physique",
+    "toggle": "Suivi physique : photo et poids",
+    "toggleHint": "Pour le sport : une photo et ton poids au départ, puis de temps en temps pour voir ta progression.",
+    "startTitle": "Point de départ",
+    "newTitle": "Nouveau point",
+    "editTitle": "Modifier le point",
+    "startIntro": "Prends une photo et note ton poids aujourd’hui : dans quelques semaines, tu pourras comparer. Tout est facultatif sauf l’un des deux.",
+    "newIntro": "Une nouvelle photo et ton poids du jour, à comparer avec ton point de départ.",
+    "photo": "Photo de progression",
+    "noPhoto": "Pas de photo",
+    "photoElsewhere": "Photo sur un autre téléphone",
+    "takePhoto": "Prendre une photo",
+    "choosePhoto": "Galerie",
+    "removePhoto": "Retirer la photo",
+    "privacy": "Ta photo reste sur ce téléphone : elle n’est jamais envoyée, même avec un compte. Ton poids, lui, est synchronisé si tu as un compte.",
+    "weight": "Poids (kg)",
+    "weightPlaceholder": "Ex. 72,5",
+    "date": "Date",
+    "note": "Note",
+    "delete": "Supprimer ce point",
+    "deleteTitle": "Supprimer ce point ?",
+    "deleteMessage": "La photo et le poids de ce jour seront effacés de ce téléphone.",
+    "emptyHint": "Commence par ta photo et ton poids de départ : tu verras ta progression au fil des semaines.",
+    "startButton": "Photo et poids de départ",
+    "addButton": "Ajouter un point (photo, poids)",
+    "start": "Départ",
+    "now": "Maintenant",
+    "change": "{{delta}} depuis le {{date}}",
+    "withPhoto": "avec photo"
   }
 }

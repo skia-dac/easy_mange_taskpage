@@ -18,6 +18,7 @@ export {
   MAX_ATTACHMENT_MB,
   pickDocument,
   pickImage,
+  takePhoto,
 } from './files/attachments';
 export type { PickedFile } from './files/attachments';
 export { cancelAllReminders, readableParams } from './notifications/scheduler';

@@ -22,6 +22,7 @@ export const SYNCED_TABLES = [
   'study_sessions',
   'habits',
   'habit_logs',
+  'habit_checkpoints',
   'work_subtasks',
   'revision_blocks',
   'mood_logs',
@@ -50,6 +51,7 @@ export type EntityTable =
   | 'study_sessions'
   | 'habits'
   | 'habit_logs'
+  | 'habit_checkpoints'
   | 'work_subtasks'
   | 'revision_blocks'
   | 'mood_logs'

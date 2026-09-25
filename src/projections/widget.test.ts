@@ -238,6 +238,7 @@ describe('données des widgets', () => {
       unit: null,
       reminderTime: null,
       autoStudy: false,
+      tracksBody: false,
       position: 0,
     };
     const w = buildWidgetData(
@@ -265,6 +266,7 @@ describe('données des widgets', () => {
             status: 'done',
             reasonCode: null,
             reason: null,
+            durationMinutes: null,
           },
           {
             id: 'l2',
@@ -274,6 +276,7 @@ describe('données des widgets', () => {
             status: 'done',
             reasonCode: null,
             reason: null,
+            durationMinutes: null,
           },
         ],
       },

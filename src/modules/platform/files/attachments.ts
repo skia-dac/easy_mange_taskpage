@@ -94,6 +94,23 @@ export async function pickImage(folder: string): Promise<PickedFile | null> {
   );
 }
 
+/** Prend une photo avec l'appareil photo et la copie dans le dossier `folder`. null si annulé ou refusé. */
+export async function takePhoto(folder: string): Promise<PickedFile | null> {
+  const perm = await ImagePicker.requestCameraPermissionsAsync();
+  if (!perm.granted) return null;
+  const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
+  const asset = result.canceled ? null : (result.assets[0] ?? null);
+  if (!asset) return null;
+  return importFile(
+    folder,
+    asset.uri,
+    asset.fileName ?? 'photo.jpg',
+    asset.mimeType ?? 'image/jpeg',
+    asset.fileSize ?? null,
+    'image',
+  );
+}
+
 /** Choisit un fichier (PDF, document…). null si l'utilisateur annule. */
 export async function pickDocument(noteId: string): Promise<PickedFile | null> {
   const result = await DocumentPicker.getDocumentAsync({

@@ -6,6 +6,7 @@ import { Pressable, ScrollView, Switch, View } from 'react-native';
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitIcon } from '@/components/HabitIcon';
 import { frequencyLabel, percent } from '@/components/habitLabels';
+import { BodyProgressCard } from '@/components/BodyProgressCard';
 import { ProgressHeatmap } from '@/components/ProgressHeatmap';
 import { useHabits } from '@/hooks/useHabits';
 import { useLabels } from '@/hooks/useLabels';
@@ -13,9 +14,9 @@ import { useWeekStart } from '@/hooks/useWeekStart';
 import {
   completionRate,
   dayState,
-  deleteHabit,
   logOn,
   streak,
+  totalDuration,
   type DayState,
 } from '@/modules/productivity';
 import {
@@ -29,7 +30,7 @@ import {
 import { getProgressWidgetHabit, setProgressWidgetHabit } from '@/modules/identity';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { formatMonthYear, formatShortDate } from '@/shared/format';
+import { formatDuration, formatMonthYear, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
 import {
   AppText,
@@ -41,6 +42,7 @@ import {
   showError,
   TextButton,
 } from '@/shared/ui';
+import { deleteHabitEverywhere } from '@/workflows';
 
 const STATE_COLORS: Record<DayState, [keyof ColorTokens, keyof ColorTokens]> = {
   done: ['success', 'onPrimary'],
@@ -97,11 +99,13 @@ export default function HabitDetailScreen() {
       t('common.delete'),
     );
     if (!ok) return;
-    deleteHabit(db, habit.id).then(
+    deleteHabitEverywhere(db, habit.id).then(
       () => router.back(),
       (e: unknown) => showError(userMessageKey(e)),
     );
   };
+
+  const monthMinutes = totalDuration(logs, habit.id, `${today.slice(0, 8)}01`, today);
 
   const tiles = [
     {
@@ -159,6 +163,14 @@ export default function HabitDetailScreen() {
       </View>
 
       <ProgressHeatmap habits={[habit]} logs={logs} today={today} />
+      {monthMinutes > 0 ? (
+        <Card>
+          <AppText variant="bodyStrong">
+            {t('habits.timeThisMonth', { duration: formatDuration(monthMinutes) })}
+          </AppText>
+        </Card>
+      ) : null}
+      {habit.tracksBody ? <BodyProgressCard habitId={habit.id} /> : null}
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <View style={{ flex: 1, gap: 2 }}>

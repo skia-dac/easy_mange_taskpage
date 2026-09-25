@@ -34,6 +34,7 @@ const habit = (over: Partial<Habit> = {}): Habit => ({
   unit: null,
   reminderTime: null,
   autoStudy: false,
+  tracksBody: false,
   position: 0,
   ...over,
 });
@@ -45,6 +46,7 @@ const log = (date: string, over: Partial<HabitLog> = {}): HabitLog => ({
   status: 'done',
   reasonCode: null,
   reason: null,
+  durationMinutes: null,
   ...over,
 });
 // 23 sept. 2026 = mercredi ; semaine du lundi 21.

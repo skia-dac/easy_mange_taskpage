@@ -424,4 +424,21 @@ export const migrations: readonly Migration[] = [
       );
     `,
   },
+  {
+    version: 15,
+    name: 'habitudes : durée d’une séance, suivi physique (photo et poids)',
+    sql: `
+      ALTER TABLE habits ADD COLUMN tracks_body INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE habit_logs ADD COLUMN duration_minutes INTEGER;
+      CREATE TABLE habit_checkpoints (${SYNC_COLUMNS},
+        habit_id TEXT NOT NULL REFERENCES habits (id),
+        date TEXT NOT NULL,
+        weight_kg REAL,
+        photo_path TEXT,
+        note TEXT
+      );
+      CREATE INDEX idx_habit_checkpoints_habit ON habit_checkpoints (habit_id, date);
+      UPDATE habits SET tracks_body = 1 WHERE icon = 'activity';
+    `,
+  },
 ];

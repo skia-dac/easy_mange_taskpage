@@ -132,6 +132,7 @@ beforeAll(async () => {
     name: 'Faire du sport',
     icon: 'activity',
     colorId: 'green',
+    tracksBody: true,
   });
   ids.water = await createHabit(mockDb, {
     name: 'Boire de l’eau',
@@ -597,7 +598,13 @@ const cases: Case[] = [
     name: 'Détail habitude',
     load: () => require('@/app/habits/[id]') as { default: ComponentType },
     params: { id: 'habit' },
-    expect: ['Faire du sport', 'Tous les jours', 'Jours manqués et excusés', 'Nuit courte'],
+    expect: [
+      'Faire du sport',
+      'Tous les jours',
+      'Jours manqués et excusés',
+      'Nuit courte',
+      'Ma progression physique',
+    ],
   },
   {
     name: 'Formulaire habitude',
@@ -670,6 +677,12 @@ const cases: Case[] = [
     name: 'Onboarding',
     load: () => require('@/app/onboarding') as { default: ComponentType },
     expect: ['Sache toujours ce qui t’attend'],
+  },
+  {
+    name: 'Point de départ (photo et poids)',
+    load: () => require('@/app/habits/checkpoint') as { default: ComponentType },
+    params: { habitId: 'habit' },
+    expect: ['Prendre une photo', 'Poids (kg)'],
   },
   {
     name: 'Mon planning',

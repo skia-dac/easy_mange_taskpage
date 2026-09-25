@@ -619,6 +619,7 @@ create table if not exists public.habits (
   reminder_time text,
   auto_study bigint not null default 0,
   position bigint not null default 0,
+  tracks_body bigint not null default 0,
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.habits
@@ -638,6 +639,7 @@ alter table public.habits
   add column if not exists reminder_time text,
   add column if not exists auto_study bigint not null default 0,
   add column if not exists position bigint not null default 0,
+  add column if not exists tracks_body bigint not null default 0,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists habits_sync_idx on public.habits (user_id, server_updated_at);
 alter table public.habits enable row level security;
@@ -662,6 +664,7 @@ create table if not exists public.habit_logs (
   status text not null default 'done',
   reason_code text,
   reason text,
+  duration_minutes bigint,
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.habit_logs
@@ -676,6 +679,7 @@ alter table public.habit_logs
   add column if not exists status text not null default 'done',
   add column if not exists reason_code text,
   add column if not exists reason text,
+  add column if not exists duration_minutes bigint,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists habit_logs_sync_idx on public.habit_logs (user_id, server_updated_at);
 alter table public.habit_logs enable row level security;
@@ -685,6 +689,42 @@ create policy "own rows" on public.habit_logs for all to authenticated
 grant select, insert, update, delete on public.habit_logs to authenticated;
 drop trigger if exists habit_logs_touch on public.habit_logs;
 create trigger habit_logs_touch before insert or update on public.habit_logs
+  for each row execute function public.mysky_touch();
+
+create table if not exists public.habit_checkpoints (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  habit_id text not null,
+  date text not null,
+  weight_kg double precision,
+  photo_path text,
+  note text,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.habit_checkpoints
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists habit_id text not null,
+  add column if not exists date text not null,
+  add column if not exists weight_kg double precision,
+  add column if not exists photo_path text,
+  add column if not exists note text,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists habit_checkpoints_sync_idx on public.habit_checkpoints (user_id, server_updated_at);
+alter table public.habit_checkpoints enable row level security;
+drop policy if exists "own rows" on public.habit_checkpoints;
+create policy "own rows" on public.habit_checkpoints for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.habit_checkpoints to authenticated;
+drop trigger if exists habit_checkpoints_touch on public.habit_checkpoints;
+create trigger habit_checkpoints_touch before insert or update on public.habit_checkpoints
   for each row execute function public.mysky_touch();
 
 create table if not exists public.work_subtasks (
@@ -1102,7 +1142,7 @@ declare
   v_sets text;
   v_new bigint;
   v_row jsonb;
-  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions', 'work_slots'];
+  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'habit_checkpoints', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions', 'work_slots'];
 begin
   if auth.uid() is null then
     raise exception 'not authenticated' using errcode = '28000';

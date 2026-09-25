@@ -36,6 +36,7 @@ const log = (
   status,
   reasonCode: null,
   reason: null,
+  durationMinutes: null,
 });
 // Mercredi 23 septembre 2026.
 const today = '2026-09-23';

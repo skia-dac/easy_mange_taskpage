@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 import { addDaysIso, isoWeekday, startOfWeekOn, type IsoDate } from '@/shared/dates';
-import { optionalText, optionalTime, requiredText } from '@/shared/validation';
+import {
+  isoDate as isoDateSchema,
+  optionalText,
+  optionalTime,
+  requiredText,
+} from '@/shared/validation';
 
 /** Fréquence d'une habitude : tous les jours, certains jours de la semaine, ou N fois par semaine. */
 export const habitFrequencies = ['daily', 'weekdays', 'weekly'] as const;
@@ -47,6 +52,8 @@ export const habitInputSchema = z
     reminderTime: optionalTime,
     /** Une session de révision terminée coche cette habitude. */
     autoStudy: z.boolean().default(false),
+    /** Suivi physique (sport) : photo et poids au départ, puis de temps en temps. */
+    tracksBody: z.boolean().default(false),
   })
   .superRefine((h, ctx) => {
     if (h.frequency === 'weekdays' && h.weekdays.length === 0)
@@ -64,7 +71,71 @@ export type HabitLog = {
   status: HabitLogStatus;
   reasonCode: MissReason | null;
   reason: string | null;
+  /** Durée de la séance (minutes), facultative. */
+  durationMinutes: number | null;
 };
+
+/** Durées proposées pour une séance (minutes). */
+export const sessionDurationPresets = [15, 30, 45, 60, 90, 120] as const;
+
+/** Total des durées notées entre deux dates (incluses), en minutes. */
+export function totalDuration(
+  logs: readonly HabitLog[],
+  habitId: string,
+  from: IsoDate,
+  to: IsoDate,
+): number {
+  return logs
+    .filter((l) => l.habitId === habitId && l.date >= from && l.date <= to)
+    .reduce((sum, l) => sum + (l.durationMinutes ?? 0), 0);
+}
+
+/**
+ * Point de suivi physique : poids et/ou photo à une date (le premier est le point de départ).
+ * La photo reste sur le téléphone : elle n'est jamais envoyée au serveur.
+ */
+export const checkpointInputSchema = z
+  .object({
+    habitId: z.string().min(1),
+    date: isoDateSchema,
+    weightKg: z
+      .number({ error: 'validation.invalidWeight' })
+      .min(20, { error: 'validation.invalidWeight' })
+      .max(400, { error: 'validation.invalidWeight' })
+      .nullish()
+      .transform((v) => (v === undefined || v === null ? null : Math.round(v * 10) / 10)),
+    photoPath: z
+      .string()
+      .min(1)
+      .nullish()
+      .transform((v) => v ?? null),
+    note: optionalText(300),
+  })
+  .superRefine((c, ctx) => {
+    if (c.weightKg === null && c.photoPath === null)
+      ctx.addIssue({ code: 'custom', path: ['weightKg'], message: 'validation.weightOrPhoto' });
+  });
+export type CheckpointInput = z.input<typeof checkpointInputSchema>;
+export type Checkpoint = z.output<typeof checkpointInputSchema> & { id: string };
+
+/** Écart de poids entre le point de départ et le dernier point (kg, arrondi à 0,1). */
+export function weightChange(checkpoints: readonly Checkpoint[]): {
+  start: Checkpoint;
+  latest: Checkpoint;
+  deltaKg: number;
+} | null {
+  const withWeight = [...checkpoints]
+    .filter((c) => c.weightKg !== null)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const start = withWeight[0];
+  const latest = withWeight[withWeight.length - 1];
+  if (!start || !latest || start === latest) return null;
+  return {
+    start,
+    latest,
+    deltaKg: Math.round(((latest.weightKg ?? 0) - (start.weightKg ?? 0)) * 10) / 10,
+  };
+}
 
 /** Habitudes proposées au premier affichage (l'étudiant garde celles qu'il veut). */
 export const habitSuggestions: readonly (HabitInput & { key: string })[] = [
@@ -91,6 +162,7 @@ export const habitSuggestions: readonly (HabitInput & { key: string })[] = [
     colorId: 'green',
     frequency: 'weekly',
     timesPerWeek: 3,
+    tracksBody: true,
   },
   { key: 'water', name: '', icon: 'droplet', colorId: 'teal', frequency: 'daily', target: 8 },
   { key: 'sleep', name: '', icon: 'moon', colorId: 'slate', frequency: 'daily' },

@@ -14,6 +14,7 @@ import {
   type Habit,
   type HabitLog,
 } from '@/modules/productivity';
+import { formatDuration } from '@/shared/format';
 import { startOfWeekOn, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -59,6 +60,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
             : null;
   const subtitle = [
     progress,
+    log?.durationMinutes ? formatDuration(log.durationMinutes) : null,
     s > 0
       ? t(habit.frequency === 'weekly' ? 'habits.streakWeeks' : 'habits.streakDays', { count: s })
       : null,

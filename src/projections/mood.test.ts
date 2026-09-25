@@ -15,6 +15,7 @@ const sport: Habit = {
   unit: null,
   reminderTime: null,
   autoStudy: false,
+  tracksBody: false,
 };
 const mood = (date: string, m: number, e: number): MoodLog => ({
   id: date,
@@ -31,6 +32,7 @@ const done = (date: string): HabitLog => ({
   status: 'done',
   reasonCode: null,
   reason: null,
+  durationMinutes: null,
 });
 
 describe('humeur et habitudes', () => {

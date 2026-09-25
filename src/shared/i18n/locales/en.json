@@ -51,7 +51,9 @@
     "gradeTooHigh": "The grade is higher than the maximum.",
     "pickDays": "Pick at least one day.",
     "invalidCount": "Enter a number between 1 and 50.",
-    "pickDay": "Pick at least one day."
+    "pickDay": "Pick at least one day.",
+    "invalidWeight": "Invalid weight (between 20 and 400 kg).",
+    "weightOrPhoto": "Add at least a photo or your weight."
   },
   "today": {
     "greeting": "Hello",
@@ -870,7 +872,10 @@
       "excused": "excused",
       "pending": "to do",
       "off": "not planned"
-    }
+    },
+    "durationOptional": "Duration (optional)",
+    "noDuration": "Not noted",
+    "timeThisMonth": "Time noted this month: {{duration}}"
   },
   "account": {
     "title": "Account and sync",
@@ -974,11 +979,11 @@
     },
     "data": {
       "title": "The data you enter",
-      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);\n• your money, if you use the Money tab: the expenses and income you note (amount, category, date, note), your fixed costs, tontines, savings goals and loans (with the person's name you give). MySky is not connected to any bank or Mobile Money account: you enter everything yourself;\n• your settings.\n\nThis data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
+      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);\n• your sport tracking, if you turn it on for a habit: the duration of your sessions, your weight and your progress photos (optional). These photos stay only on your phone: they are never sent to the server, even with an account;\n• your money, if you use the Money tab: the expenses and income you note (amount, category, date, note), your fixed costs, tontines, savings goals and loans (with the person's name you give). MySky is not connected to any bank or Mobile Money account: you enter everything yourself;\n• your settings.\n\nThis data is stored on your phone, in the app's private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
     },
     "permissions": {
       "title": "Phone permissions",
-      "body": "MySky asks for a permission only when you need it. Each one is optional:\n\n• Notifications: for your reminders. They are scheduled by the phone itself, without going through the internet.\n• Photos and camera: to attach a picture to a note or pick your profile photo. Only the pictures you choose are copied into the app.\n• Files: to attach a document or restore a backup.\n• Face ID, Touch ID or passcode: only if you turn on the app lock. The check is done by the phone; MySky only receives “succeeded” or “failed”, never your face or fingerprint.\n\nYou can withdraw a permission at any time in your phone settings."
+      "body": "MySky asks for a permission only when you need it. Each one is optional:\n\n• Notifications: for your reminders. They are scheduled by the phone itself, without going through the internet.\n• Photos and camera: to attach a picture to a note, pick your profile photo or take your sport progress photos. Only the pictures you choose are copied into the app.\n• Files: to attach a document or restore a backup.\n• Face ID, Touch ID or passcode: only if you turn on the app lock. The check is done by the phone; MySky only receives “succeeded” or “failed”, never your face or fingerprint.\n\nYou can withdraw a permission at any time in your phone settings."
     },
     "leaves": {
       "title": "What can leave your phone",
@@ -1543,5 +1548,36 @@
     "copyNothing": "Nothing to copy: last week has no appointments, or they are already on this week.",
     "slotMoveTitle": "Fixed slot",
     "slotMoveMessage": "It comes back every week: change its times in “My planner”."
+  },
+  "bodyProgress": {
+    "title": "My physical progress",
+    "toggle": "Physical tracking: photo and weight",
+    "toggleHint": "For sport: a photo and your weight at the start, then now and then to see your progress.",
+    "startTitle": "Starting point",
+    "newTitle": "New check-in",
+    "editTitle": "Edit check-in",
+    "startIntro": "Take a photo and note your weight today: in a few weeks you can compare. Everything is optional except one of the two.",
+    "newIntro": "A new photo and today’s weight, to compare with your starting point.",
+    "photo": "Progress photo",
+    "noPhoto": "No photo",
+    "photoElsewhere": "Photo on another phone",
+    "takePhoto": "Take a photo",
+    "choosePhoto": "Gallery",
+    "removePhoto": "Remove photo",
+    "privacy": "Your photo stays on this phone: it is never uploaded, even with an account. Your weight is synced if you have an account.",
+    "weight": "Weight (kg)",
+    "weightPlaceholder": "E.g. 72.5",
+    "date": "Date",
+    "note": "Note",
+    "delete": "Delete this check-in",
+    "deleteTitle": "Delete this check-in?",
+    "deleteMessage": "The photo and weight of this day will be erased from this phone.",
+    "emptyHint": "Start with your starting photo and weight: you’ll see your progress over the weeks.",
+    "startButton": "Starting photo and weight",
+    "addButton": "Add a check-in (photo, weight)",
+    "start": "Start",
+    "now": "Now",
+    "change": "{{delta}} since {{date}}",
+    "withPhoto": "with photo"
   }
 }
