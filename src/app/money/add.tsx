@@ -3,6 +3,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
@@ -40,6 +41,7 @@ import {
   showError,
   TextButton,
   TextField,
+  KeyboardAvoiding,
 } from '@/shared/ui';
 
 type Params = {
@@ -63,6 +65,7 @@ export default function MoneyAddScreen() {
   const labels = useLabels();
   const db = useDb();
   const { colors, spacing, radius } = useTheme();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Params>();
   const today = toIsoDate(new Date());
   const [kind, setKind] = useState<TransactionKind>(
@@ -195,140 +198,156 @@ export default function MoneyAddScreen() {
   ];
 
   return (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
-    >
-      <Stack.Screen options={{ title }} />
-      {plain ? (
-        <Segmented
-          accessibilityLabel={t('money.kindLabel')}
-          value={kind}
-          onChange={(k) => {
-            setKind(k);
-            setCategoryId(null);
-          }}
-          options={[
-            { value: 'expense', label: t('money.expense') },
-            { value: 'income', label: t('money.income') },
-          ]}
-        />
-      ) : subject ? (
-        <AppText variant="heading">{subject}</AppText>
-      ) : null}
+    <KeyboardAvoiding>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
+      >
+        <Stack.Screen options={{ title }} />
+        {plain ? (
+          <Segmented
+            accessibilityLabel={t('money.kindLabel')}
+            value={kind}
+            onChange={(k) => {
+              setKind(k);
+              setCategoryId(null);
+            }}
+            options={[
+              { value: 'expense', label: t('money.expense') },
+              { value: 'income', label: t('money.income') },
+            ]}
+          />
+        ) : subject ? (
+          <AppText variant="heading">{subject}</AppText>
+        ) : null}
 
-      <View style={{ alignItems: 'center', gap: spacing.xs }}>
-        <AppText
-          variant="title"
-          color={kind === 'income' ? 'success' : 'text'}
-          style={{ fontSize: 40, lineHeight: 48 }}
-          accessibilityLiveRegion="polite"
-        >
-          {amount
-            ? formatMoney(amount, currency)
-            : `0 ${isCurrency(currency) ? currencies[currency].symbol : currency}`}
-        </AppText>
-        {error ? <AppText color="danger">{error}</AppText> : null}
-      </View>
-
-      {plain ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {cats.map((c) => {
-            const on = c.id === selected;
-            return (
-              <Pressable
-                key={c.id}
-                accessibilityRole="button"
-                accessibilityState={{ selected: on }}
-                accessibilityLabel={money.categoryName(c)}
-                onPress={() => setCategoryId(c.id)}
-                style={{
-                  width: '23%',
-                  flexGrow: 1,
-                  minHeight: 76,
-                  borderRadius: radius.md,
-                  borderWidth: on ? 2 : 1.5,
-                  borderColor: on ? colors.primary : colors.border,
-                  backgroundColor: on ? colors.primarySoft : colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: spacing.xs,
-                  padding: spacing.xs,
-                }}
-              >
-                <CategoryBadge category={c} size={30} />
-                <AppText variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
-                  {money.categoryName(c)}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : null}
-
-      <View style={{ gap: spacing.xs }}>
-        <DateTimeField
-          label={t('money.date')}
-          mode="date"
-          required
-          value={date}
-          onChange={(v) => setDate(v ?? today)}
-        />
-        <AppText variant="caption" color={date === today ? 'muted' : 'warning'}>
-          {date === today
-            ? t('money.dateIsToday')
-            : t('money.dateOther', { date: formatLongDate(fromIsoDate(date), labels.lang) })}
-        </AppText>
-      </View>
-
-      <TextField
-        label={t('money.note')}
-        value={note}
-        onChangeText={setNote}
-        placeholder={t('common.optional')}
-        maxLength={120}
-      />
-
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-        {keys.map((k) => (
-          <Pressable
-            key={k}
-            accessibilityRole="button"
-            accessibilityLabel={k === 'back' ? t('money.erase') : k}
-            onPress={() => press(k)}
-            style={({ pressed }) => ({
-              width: '31%',
-              flexGrow: 1,
-              minHeight: minTouchSize + 8,
-              borderRadius: radius.md,
-              backgroundColor: pressed ? colors.primarySoft : colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
+        {plain ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+            {cats.map((c) => {
+              const on = c.id === selected;
+              return (
+                <Pressable
+                  key={c.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
+                  accessibilityLabel={money.categoryName(c)}
+                  onPress={() => setCategoryId(c.id)}
+                  style={{
+                    width: '23%',
+                    flexGrow: 1,
+                    minHeight: 76,
+                    borderRadius: radius.md,
+                    borderWidth: on ? 2 : 1.5,
+                    borderColor: on ? colors.primary : colors.border,
+                    backgroundColor: on ? colors.primarySoft : colors.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: spacing.xs,
+                    padding: spacing.xs,
+                  }}
+                >
+                  <CategoryBadge category={c} size={30} />
+                  <AppText variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
+                    {money.categoryName(c)}
+                  </AppText>
+                </Pressable>
+              );
             })}
-          >
-            {k === 'back' ? (
-              <Feather name="delete" size={22} color={colors.text} />
-            ) : (
-              <AppText variant="heading">{k}</AppText>
-            )}
-          </Pressable>
-        ))}
-      </View>
+          </View>
+        ) : null}
 
-      <Button
-        label={
-          plain && selected
-            ? t(kind === 'income' ? 'money.saveIncome' : 'money.saveExpense', {
-                category: money.categoryName(cats.find((c) => c.id === selected)),
-              })
-            : t('money.save')
-        }
-        onPress={() => void save()}
-        disabled={saving}
-      />
-      {existing ? (
-        <TextButton label={t('money.delete')} color="danger" onPress={() => void remove()} />
-      ) : null}
-    </ScrollView>
+        <View style={{ gap: spacing.xs }}>
+          <DateTimeField
+            label={t('money.date')}
+            mode="date"
+            required
+            value={date}
+            onChange={(v) => setDate(v ?? today)}
+          />
+          <AppText variant="caption" color={date === today ? 'muted' : 'warning'}>
+            {date === today
+              ? t('money.dateIsToday')
+              : t('money.dateOther', { date: formatLongDate(fromIsoDate(date), labels.lang) })}
+          </AppText>
+        </View>
+
+        <TextField
+          label={t('money.note')}
+          value={note}
+          onChangeText={setNote}
+          placeholder={t('common.optional')}
+          maxLength={120}
+        />
+      </ScrollView>
+      {/* Pied fixe : montant, pavé et bouton restent visibles, quelle que soit la taille d'écran. */}
+      <View
+        style={{
+          paddingHorizontal: spacing.xl,
+          paddingTop: spacing.md,
+          paddingBottom: spacing.md + insets.bottom,
+          gap: spacing.md,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          backgroundColor: colors.background,
+        }}
+      >
+        <View style={{ alignItems: 'center', gap: spacing.xs }}>
+          <AppText
+            variant="title"
+            color={kind === 'income' ? 'success' : 'text'}
+            style={{ fontSize: 36, lineHeight: 44 }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            accessibilityLiveRegion="polite"
+          >
+            {amount
+              ? formatMoney(amount, currency)
+              : `0 ${isCurrency(currency) ? currencies[currency].symbol : currency}`}
+          </AppText>
+          {error ? <AppText color="danger">{error}</AppText> : null}
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+          {keys.map((k) => (
+            <Pressable
+              key={k}
+              accessibilityRole="button"
+              accessibilityLabel={k === 'back' ? t('money.erase') : k}
+              onPress={() => press(k)}
+              style={({ pressed }) => ({
+                width: '31%',
+                flexGrow: 1,
+                minHeight: minTouchSize + 4,
+                borderRadius: radius.md,
+                backgroundColor: pressed ? colors.primarySoft : colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
+            >
+              {k === 'back' ? (
+                <Feather name="delete" size={22} color={colors.text} />
+              ) : (
+                <AppText variant="heading">{k}</AppText>
+              )}
+            </Pressable>
+          ))}
+        </View>
+
+        <Button
+          label={
+            plain && selected
+              ? t(kind === 'income' ? 'money.saveIncome' : 'money.saveExpense', {
+                  category: money.categoryName(cats.find((c) => c.id === selected)),
+                })
+              : t('money.save')
+          }
+          onPress={() => void save()}
+          disabled={saving}
+        />
+        {existing ? (
+          <TextButton label={t('money.delete')} color="danger" onPress={() => void remove()} />
+        ) : null}
+      </View>
+    </KeyboardAvoiding>
   );
 }

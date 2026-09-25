@@ -27,6 +27,7 @@ import {
   showError,
   TextButton,
   LoadingScreen,
+  KeyboardAvoiding,
 } from '@/shared/ui';
 
 export default function WorkDetailScreen() {
@@ -55,99 +56,111 @@ export default function WorkDetailScreen() {
   const toggle = () => actions.setDone(w, !done);
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
-      <Stack.Screen
-        options={{
-          title: t(`calendarItem.${kind}`),
-          headerRight: () => (
-            <TextButton
-              label={t('common.edit')}
-              onPress={() => router.push({ pathname: '/work/form', params: { kind, id: w.id } })}
+    <KeyboardAvoiding>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
+      >
+        <Stack.Screen
+          options={{
+            title: t(`calendarItem.${kind}`),
+            headerRight: () => (
+              <TextButton
+                label={t('common.edit')}
+                onPress={() => router.push({ pathname: '/work/form', params: { kind, id: w.id } })}
+              />
+            ),
+          }}
+        />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+          {subject ? <Chip label={subject.name} subject={colorOf(subject)} /> : null}
+          {isOverdue(w, now) ? <Chip label={t('status.overdue')} tone="danger" /> : null}
+          {w.priority !== 'normal' ? (
+            <Chip
+              label={labels.priority(w.priority)}
+              tone={w.priority === 'low' ? 'muted' : 'warning'}
             />
-          ),
-        }}
-      />
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-        {subject ? <Chip label={subject.name} subject={colorOf(subject)} /> : null}
-        {isOverdue(w, now) ? <Chip label={t('status.overdue')} tone="danger" /> : null}
-        {w.priority !== 'normal' ? (
-          <Chip
-            label={labels.priority(w.priority)}
-            tone={w.priority === 'low' ? 'muted' : 'warning'}
-          />
-        ) : null}
-      </View>
-      <AppText variant="title" style={done ? { textDecorationLine: 'line-through' } : undefined}>
-        {w.title}
-      </AppText>
-      <Card>
-        <ListRow
-          title={[formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')}
-          subtitle={t('work.due')}
-          leading={<IconBadge icon="clock" />}
-        />
-        {w.estimatedMinutes ? (
-          <ListRow
-            title={labels.duration(w.estimatedMinutes)}
-            subtitle={t('work.estimate')}
-            leading={<IconBadge icon="watch" />}
-          />
-        ) : null}
-        {w.repeat !== 'none' ? (
-          <ListRow
-            title={t(`repeat.${w.repeat}`)}
-            subtitle={t('work.repeat')}
-            leading={<IconBadge icon="repeat" />}
-          />
-        ) : null}
-        <ListRow
-          title={
-            done && w.completedAt
-              ? t('work.completedOn', {
-                  date: formatDate(toIsoDate(new Date(w.completedAt)), labels.lang),
-                })
-              : labels.status(w.status)
-          }
-          subtitle={t('work.status')}
-          leading={<IconBadge icon="check-circle" color="success" background="successSoft" />}
-        />
-      </Card>
-      {w.description ? (
+          ) : null}
+        </View>
+        <AppText variant="title" style={done ? { textDecorationLine: 'line-through' } : undefined}>
+          {w.title}
+        </AppText>
         <Card>
-          <AppText>{w.description}</AppText>
+          <ListRow
+            title={[formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')}
+            subtitle={t('work.due')}
+            leading={<IconBadge icon="clock" />}
+          />
+          {w.estimatedMinutes ? (
+            <ListRow
+              title={labels.duration(w.estimatedMinutes)}
+              subtitle={t('work.estimate')}
+              leading={<IconBadge icon="watch" />}
+            />
+          ) : null}
+          {w.repeat !== 'none' ? (
+            <ListRow
+              title={t(`repeat.${w.repeat}`)}
+              subtitle={t('work.repeat')}
+              leading={<IconBadge icon="repeat" />}
+            />
+          ) : null}
+          <ListRow
+            title={
+              done && w.completedAt
+                ? t('work.completedOn', {
+                    date: formatDate(toIsoDate(new Date(w.completedAt)), labels.lang),
+                  })
+                : labels.status(w.status)
+            }
+            subtitle={t('work.status')}
+            leading={<IconBadge icon="check-circle" color="success" background="successSoft" />}
+          />
         </Card>
-      ) : null}
-      <SubtaskList kind={kind} workId={w.id} />
-      <Button label={done ? t('work.reopen') : t('work.markDone')} onPress={() => void toggle()} />
-      {!done ? (
-        <Button variant="secondary" label={t('postpone.action')} onPress={() => postpone.open(w)} />
-      ) : null}
-      {!done && w.subjectId ? (
-        <TextButton
-          label={t('work.startStudy')}
-          onPress={() =>
-            router.push({ pathname: '/study', params: { subjectId: w.subjectId ?? '' } })
-          }
+        {w.description ? (
+          <Card>
+            <AppText>{w.description}</AppText>
+          </Card>
+        ) : null}
+        <SubtaskList kind={kind} workId={w.id} />
+        <Button
+          label={done ? t('work.reopen') : t('work.markDone')}
+          onPress={() => void toggle()}
         />
-      ) : null}
-      <TextButton
-        label={kind === 'task' ? t('work.deleteTask') : t('work.deleteAssignment')}
-        color="danger"
-        onPress={() => {
-          void confirmDestructive(
-            t('work.deleteTitle', { title: w.title }),
-            t('work.deleteMessage'),
-            t('common.delete'),
-          ).then((ok) => {
-            if (ok)
-              deleteWorkItem(db, kind, w.id).then(
-                () => router.back(),
-                (e: unknown) => showError(userMessageKey(e)),
-              );
-          });
-        }}
-      />
-      {postpone.sheet}
-    </ScrollView>
+        {!done ? (
+          <Button
+            variant="secondary"
+            label={t('postpone.action')}
+            onPress={() => postpone.open(w)}
+          />
+        ) : null}
+        {!done && w.subjectId ? (
+          <TextButton
+            label={t('work.startStudy')}
+            onPress={() =>
+              router.push({ pathname: '/study', params: { subjectId: w.subjectId ?? '' } })
+            }
+          />
+        ) : null}
+        <TextButton
+          label={kind === 'task' ? t('work.deleteTask') : t('work.deleteAssignment')}
+          color="danger"
+          onPress={() => {
+            void confirmDestructive(
+              t('work.deleteTitle', { title: w.title }),
+              t('work.deleteMessage'),
+              t('common.delete'),
+            ).then((ok) => {
+              if (ok)
+                deleteWorkItem(db, kind, w.id).then(
+                  () => router.back(),
+                  (e: unknown) => showError(userMessageKey(e)),
+                );
+            });
+          }}
+        />
+        {postpone.sheet}
+      </ScrollView>
+    </KeyboardAvoiding>
   );
 }

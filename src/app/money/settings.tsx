@@ -36,6 +36,7 @@ import {
   SelectField,
   showError,
   TextField,
+  KeyboardAvoiding,
 } from '@/shared/ui';
 
 /** Réglages de l'argent : monnaie, début du mois ou de la semaine, widgets, catégories personnelles. */
@@ -84,176 +85,178 @@ export default function MoneySettingsScreen() {
   };
 
   return (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
-    >
-      <Stack.Screen options={{ title: t('money.settings') }} />
+    <KeyboardAvoiding>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
+      >
+        <Stack.Screen options={{ title: t('money.settings') }} />
 
-      <SectionHeader title={t('money.currency')} />
-      <SelectField
-        label={t('money.currency')}
-        value={prefs.currency}
-        options={currencyCodes.map((c) => ({
-          value: c,
-          label: `${t(`money.currencies.${c}`)} (${currencies[c].symbol})`,
-        }))}
-        onChange={(v) => v && void save({ currency: v as MoneyPrefs['currency'] })}
-      />
-      <AppText variant="caption" color="muted">
-        {t('money.currencyHint')}
-      </AppText>
-
-      <SectionHeader title={t('money.periodTitle')} />
-      <Segmented
-        value={period.kind}
-        onChange={(k) =>
-          void save({
-            period:
-              k === 'month' ? { kind: 'month', startDay: 1 } : { kind: 'week', startWeekday: 1 },
-          })
-        }
-        options={[
-          { value: 'month', label: t('money.periodMonth') },
-          { value: 'week', label: t('money.periodWeek') },
-        ]}
-      />
-      {period.kind === 'month' ? (
+        <SectionHeader title={t('money.currency')} />
         <SelectField
-          label={t('money.periodStartDay')}
-          value={String(period.startDay)}
-          options={Array.from({ length: 31 }, (_, i) => ({
-            value: String(i + 1),
-            label: t('money.dayN', { day: i + 1 }),
+          label={t('money.currency')}
+          value={prefs.currency}
+          options={currencyCodes.map((c) => ({
+            value: c,
+            label: `${t(`money.currencies.${c}`)} (${currencies[c].symbol})`,
           }))}
-          onChange={(v) => void save({ period: { kind: 'month', startDay: Number(v ?? 1) } })}
+          onChange={(v) => v && void save({ currency: v as MoneyPrefs['currency'] })}
         />
-      ) : (
-        <ChoiceChips
-          label={t('money.periodStartWeekday')}
-          options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({
-            value: n,
-            label: labels.weekday(n, 'short'),
-          }))}
-          selected={[period.startWeekday]}
-          onToggle={(n) => void save({ period: { kind: 'week', startWeekday: n } })}
-        />
-      )}
-      <AppText variant="caption" color="muted">
-        {t('money.periodHint')}
-      </AppText>
+        <AppText variant="caption" color="muted">
+          {t('money.currencyHint')}
+        </AppText>
 
-      <SectionHeader title={t('money.widgets')} />
-      <Card>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-          <View style={{ flex: 1, gap: 2 }}>
-            <AppText variant="bodyStrong">{t('money.hideAmounts')}</AppText>
-            <AppText variant="caption" color="muted">
-              {t('money.hideAmountsHint')}
-            </AppText>
-          </View>
-          <Switch
-            accessibilityLabel={t('money.hideAmounts')}
-            value={prefs.hideWidgetAmounts}
-            onValueChange={(v) => void save({ hideWidgetAmounts: v })}
-            trackColor={{ true: colors.success, false: colors.border }}
+        <SectionHeader title={t('money.periodTitle')} />
+        <Segmented
+          value={period.kind}
+          onChange={(k) =>
+            void save({
+              period:
+                k === 'month' ? { kind: 'month', startDay: 1 } : { kind: 'week', startWeekday: 1 },
+            })
+          }
+          options={[
+            { value: 'month', label: t('money.periodMonth') },
+            { value: 'week', label: t('money.periodWeek') },
+          ]}
+        />
+        {period.kind === 'month' ? (
+          <SelectField
+            label={t('money.periodStartDay')}
+            value={String(period.startDay)}
+            options={Array.from({ length: 31 }, (_, i) => ({
+              value: String(i + 1),
+              label: t('money.dayN', { day: i + 1 }),
+            }))}
+            onChange={(v) => void save({ period: { kind: 'month', startDay: Number(v ?? 1) } })}
           />
-        </View>
-      </Card>
+        ) : (
+          <ChoiceChips
+            label={t('money.periodStartWeekday')}
+            options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({
+              value: n,
+              label: labels.weekday(n, 'short'),
+            }))}
+            selected={[period.startWeekday]}
+            onToggle={(n) => void save({ period: { kind: 'week', startWeekday: n } })}
+          />
+        )}
+        <AppText variant="caption" color="muted">
+          {t('money.periodHint')}
+        </AppText>
 
-      <SectionHeader title={t('money.myCategories')} />
-      {(cats.data ?? []).length > 0 ? (
+        <SectionHeader title={t('money.widgets')} />
         <Card>
-          {(cats.data ?? []).map((c) => (
-            <ListRow
-              key={c.id}
-              title={money.categoryName(c)}
-              subtitle={c.kind === 'income' ? t('money.income') : t('money.expense')}
-              leading={<CategoryBadge category={c} />}
-              trailing={
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('common.delete')}
-                  hitSlop={10}
-                  onPress={() => void remove(c.id, money.categoryName(c))}
-                >
-                  <Feather name="trash-2" size={20} color={colors.danger} />
-                </Pressable>
-              }
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <AppText variant="bodyStrong">{t('money.hideAmounts')}</AppText>
+              <AppText variant="caption" color="muted">
+                {t('money.hideAmountsHint')}
+              </AppText>
+            </View>
+            <Switch
+              accessibilityLabel={t('money.hideAmounts')}
+              value={prefs.hideWidgetAmounts}
+              onValueChange={(v) => void save({ hideWidgetAmounts: v })}
+              trackColor={{ true: colors.success, false: colors.border }}
             />
-          ))}
-        </Card>
-      ) : (
-        <AppText color="muted">{t('money.noCustomCategories')}</AppText>
-      )}
-      <Card>
-        <View style={{ gap: spacing.md }}>
-          <AppText variant="bodyStrong">{t('money.newCategory')}</AppText>
-          <Segmented
-            value={kind}
-            onChange={setKind}
-            options={[
-              { value: 'expense', label: t('money.expense') },
-              { value: 'income', label: t('money.income') },
-            ]}
-          />
-          <TextField
-            label={t('money.categoryName')}
-            required
-            value={name}
-            onChangeText={setName}
-            error={nameError}
-            placeholder={t('money.categoryPlaceholder')}
-            maxLength={30}
-          />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {categoryIcons.map((i) => (
-              <Pressable
-                key={i}
-                accessibilityRole="button"
-                accessibilityState={{ selected: i === icon }}
-                accessibilityLabel={i}
-                onPress={() => setIcon(i)}
-                style={{
-                  width: minTouchSize,
-                  height: minTouchSize,
-                  borderRadius: radius.md,
-                  borderWidth: i === icon ? 2 : 1,
-                  borderColor: i === icon ? colors.primary : colors.border,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Feather
-                  name={i as ComponentProps<typeof Feather>['name']}
-                  size={20}
-                  color={colors.text}
-                />
-              </Pressable>
-            ))}
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {subjectColors.map((c) => (
-              <Pressable
+        </Card>
+
+        <SectionHeader title={t('money.myCategories')} />
+        {(cats.data ?? []).length > 0 ? (
+          <Card>
+            {(cats.data ?? []).map((c) => (
+              <ListRow
                 key={c.id}
-                accessibilityRole="button"
-                accessibilityState={{ selected: c.id === colorId }}
-                accessibilityLabel={c.id}
-                onPress={() => setColorId(c.id)}
-                style={{
-                  width: minTouchSize,
-                  height: minTouchSize,
-                  borderRadius: minTouchSize / 2,
-                  backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
-                  borderWidth: c.id === colorId ? 3 : 0,
-                  borderColor: colors.text,
-                }}
+                title={money.categoryName(c)}
+                subtitle={c.kind === 'income' ? t('money.income') : t('money.expense')}
+                leading={<CategoryBadge category={c} />}
+                trailing={
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('common.delete')}
+                    hitSlop={10}
+                    onPress={() => void remove(c.id, money.categoryName(c))}
+                  >
+                    <Feather name="trash-2" size={20} color={colors.danger} />
+                  </Pressable>
+                }
               />
             ))}
+          </Card>
+        ) : (
+          <AppText color="muted">{t('money.noCustomCategories')}</AppText>
+        )}
+        <Card>
+          <View style={{ gap: spacing.md }}>
+            <AppText variant="bodyStrong">{t('money.newCategory')}</AppText>
+            <Segmented
+              value={kind}
+              onChange={setKind}
+              options={[
+                { value: 'expense', label: t('money.expense') },
+                { value: 'income', label: t('money.income') },
+              ]}
+            />
+            <TextField
+              label={t('money.categoryName')}
+              required
+              value={name}
+              onChangeText={setName}
+              error={nameError}
+              placeholder={t('money.categoryPlaceholder')}
+              maxLength={30}
+            />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+              {categoryIcons.map((i) => (
+                <Pressable
+                  key={i}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: i === icon }}
+                  accessibilityLabel={i}
+                  onPress={() => setIcon(i)}
+                  style={{
+                    width: minTouchSize,
+                    height: minTouchSize,
+                    borderRadius: radius.md,
+                    borderWidth: i === icon ? 2 : 1,
+                    borderColor: i === icon ? colors.primary : colors.border,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Feather
+                    name={i as ComponentProps<typeof Feather>['name']}
+                    size={20}
+                    color={colors.text}
+                  />
+                </Pressable>
+              ))}
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+              {subjectColors.map((c) => (
+                <Pressable
+                  key={c.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: c.id === colorId }}
+                  accessibilityLabel={c.id}
+                  onPress={() => setColorId(c.id)}
+                  style={{
+                    width: minTouchSize,
+                    height: minTouchSize,
+                    borderRadius: minTouchSize / 2,
+                    backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
+                    borderWidth: c.id === colorId ? 3 : 0,
+                    borderColor: colors.text,
+                  }}
+                />
+              ))}
+            </View>
+            <Button label={t('money.addCategory')} onPress={add} />
           </View>
-          <Button label={t('money.addCategory')} onPress={add} />
-        </View>
-      </Card>
-    </ScrollView>
+        </Card>
+      </ScrollView>
+    </KeyboardAvoiding>
   );
 }
