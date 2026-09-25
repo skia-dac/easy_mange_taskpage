@@ -8,7 +8,10 @@ import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
 import { showError, showToast, showUndoToast } from '@/shared/ui';
 
-export type WorkTarget = Pick<WorkItem, 'id' | 'kind' | 'title' | 'dueDate' | 'dueTime' | 'repeat'>;
+export type WorkTarget = Pick<
+  WorkItem,
+  'id' | 'kind' | 'title' | 'dueDate' | 'dueTime' | 'repeat' | 'status'
+>;
 
 /**
  * Terminer / rouvrir / reporter une tâche ou un devoir, avec un message discret et « Annuler ».
@@ -25,7 +28,11 @@ export function useWorkActions() {
       if (!done) return;
       const message = t('work.doneToast', { title: item.title });
       if (item.repeat !== 'none') showToast(message);
-      else showUndoToast(message, () => setWorkStatus(db, item.kind, item.id, 'todo'));
+      else {
+        // On restaure l'état d'avant (« à faire » ou « en cours »), pas forcément « à faire ».
+        const previous = item.status === 'done' ? 'todo' : item.status;
+        showUndoToast(message, () => setWorkStatus(db, item.kind, item.id, previous));
+      }
     }, fail);
 
   const postpone = (item: WorkTarget, date: IsoDate) =>

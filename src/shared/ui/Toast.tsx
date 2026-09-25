@@ -1,5 +1,6 @@
+import { useSegments } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { AccessibilityInfo, Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { userMessageKey } from '../errors';
@@ -15,8 +16,8 @@ type Entry = { id: number; message: string; action?: ToastAction };
 /** Durée d'affichage : plus longue quand il y a un bouton (le temps de le lire et d'appuyer). */
 const SHOW_MS = 3500;
 const SHOW_WITH_ACTION_MS = 6000;
-/** Hauteur de la barre d'onglets, pour afficher le message au-dessus. */
-const TAB_BAR_HEIGHT = 64;
+/** Hauteur de la barre d'onglets (sans l'inset), pour afficher le message au-dessus sur les onglets. */
+const TAB_BAR_HEIGHT = 56;
 
 let listener: ((entry: Entry) => void) | null = null;
 let seq = 0;
@@ -48,6 +49,8 @@ export function showUndoToast(message: string, undo: () => Promise<unknown> | vo
 export function ToastHost() {
   const { colors, radius, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  // Sur un écran de pile (réglages, formulaire…), pas de barre d'onglets : le message descend.
+  const onTabs = useSegments()[0] === '(tabs)';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [opacity] = useState(() => new Animated.Value(0));
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,6 +66,10 @@ export function ToastHost() {
     if (!entry) return;
     if (timer.current) clearTimeout(timer.current);
     opacity.setValue(0);
+    // iOS ne lit pas un « alert » qui apparaît : on l'annonce explicitement (Android aussi, sans double).
+    AccessibilityInfo.announceForAccessibility(
+      entry.action ? `${entry.message} ${entry.action.label}` : entry.message,
+    );
     Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: false }).start();
     timer.current = setTimeout(
       () =>
@@ -88,14 +95,13 @@ export function ToastHost() {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: insets.bottom + TAB_BAR_HEIGHT,
+        bottom: insets.bottom + (onTabs ? TAB_BAR_HEIGHT : spacing.lg),
         alignItems: 'center',
         paddingHorizontal: spacing.xl,
       }}
     >
       <Animated.View
         accessibilityRole="alert"
-        accessibilityLiveRegion="polite"
         style={{
           opacity,
           flexDirection: 'row',

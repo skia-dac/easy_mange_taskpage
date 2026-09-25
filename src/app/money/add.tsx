@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
@@ -77,6 +77,16 @@ export default function MoneyAddScreen() {
   );
   const [categoryId, setCategoryId] = useState<string | null>(params.category ?? null);
   const [digits, setDigits] = useState('');
+  // Clavier ouvert (champ note) : le pavé se retire pour laisser la place au texte.
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardOpen(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
   const [date, setDate] = useState(params.date ?? today);
   const [note, setNote] = useState('');
   const [currency, setCurrency] = useState('XAF');
@@ -309,31 +319,33 @@ export default function MoneyAddScreen() {
           </AppText>
           {error ? <AppText color="danger">{error}</AppText> : null}
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {keys.map((k) => (
-            <Pressable
-              key={k}
-              accessibilityRole="button"
-              accessibilityLabel={k === 'back' ? t('money.erase') : k}
-              onPress={() => press(k)}
-              style={({ pressed }) => ({
-                width: '31%',
-                flexGrow: 1,
-                minHeight: minTouchSize + 4,
-                borderRadius: radius.md,
-                backgroundColor: pressed ? colors.primarySoft : colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
-              })}
-            >
-              {k === 'back' ? (
-                <Feather name="delete" size={22} color={colors.text} />
-              ) : (
-                <AppText variant="heading">{k}</AppText>
-              )}
-            </Pressable>
-          ))}
-        </View>
+        {keyboardOpen ? null : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+            {keys.map((k) => (
+              <Pressable
+                key={k}
+                accessibilityRole="button"
+                accessibilityLabel={k === 'back' ? t('money.erase') : k}
+                onPress={() => press(k)}
+                style={({ pressed }) => ({
+                  width: '31%',
+                  flexGrow: 1,
+                  minHeight: minTouchSize + 4,
+                  borderRadius: radius.md,
+                  backgroundColor: pressed ? colors.primarySoft : colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                })}
+              >
+                {k === 'back' ? (
+                  <Feather name="delete" size={22} color={colors.text} />
+                ) : (
+                  <AppText variant="heading">{k}</AppText>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <Button
           label={

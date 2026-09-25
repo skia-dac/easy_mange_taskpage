@@ -4,6 +4,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { i18n } from '../i18n';
 import { showToast, showUndoToast, ToastHost } from './Toast';
 
+jest.mock('expo-router', () => ({ useSegments: () => ['(tabs)'] }));
+
 const Host = () => (
   <SafeAreaProvider
     initialMetrics={{

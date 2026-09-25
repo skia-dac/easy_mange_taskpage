@@ -301,7 +301,9 @@ async function pull(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
               `SELECT ${fileColumn} AS path FROM ${table} WHERE id = ?`,
               [id],
             );
-            if (typeof local?.path === 'string' && local.path) filesToDelete.push(local.path);
+            // Même garde que la synchro des fichiers : jamais un chemin qui remonte.
+            if (typeof local?.path === 'string' && local.path && !local.path.includes('..'))
+              filesToDelete.push(local.path);
           }
           await applyServerRow(txn, table, row);
           report.pulled++;
