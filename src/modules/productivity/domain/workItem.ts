@@ -1,0 +1,190 @@
+import { z } from 'zod';
+
+import {
+  addDaysIso,
+  atTime,
+  fromIsoDate,
+  isoWeekday,
+  toIsoDate,
+  type IsoDate,
+} from '@/shared/dates';
+import { spaceSchema, type SpaceId } from '@/shared/spaces';
+import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
+
+/** Une tâche (académique ou perso) et un devoir ont la même forme mais restent des entités séparées. */
+export const workKinds = ['task', 'assignment'] as const;
+export type WorkKind = (typeof workKinds)[number];
+
+export const priorities = ['low', 'normal', 'important', 'urgent'] as const;
+export type Priority = (typeof priorities)[number];
+
+export const workStatuses = ['todo', 'in_progress', 'done'] as const;
+export type WorkStatus = (typeof workStatuses)[number];
+
+/** Répétition d'une tâche : quand elle est terminée, la suivante est créée automatiquement. */
+export const repeatRules = ['none', 'daily', 'weekly', 'monthly'] as const;
+export type RepeatRule = (typeof repeatRules)[number];
+
+export const workItemInputSchema = z.object({
+  title: requiredText(120),
+  description: optionalText(2000),
+  subjectId: optionalId,
+  dueDate: isoDate,
+  dueTime: optionalTime,
+  priority: z.enum(priorities),
+  status: z.enum(workStatuses),
+  /** Date et heure du rappel (ISO), null = aucun (§73, §75). */
+  reminderAt: z.iso
+    .datetime({ offset: true })
+    .nullish()
+    .transform((v) => v ?? null),
+  repeat: z.enum(repeatRules).default('none'),
+  /** Durée estimée en minutes (facultative). */
+  estimatedMinutes: z
+    .number({ error: 'validation.invalidDuration' })
+    .int({ error: 'validation.invalidDuration' })
+    .min(5, { error: 'validation.invalidDuration' })
+    .max(24 * 60, { error: 'validation.invalidDuration' })
+    .nullish()
+    .transform((v) => v ?? null),
+  /**
+   * Espace (Études / Pro / Perso). Absent à la modification = on garde celui enregistré
+   * (jamais écrasé par défaut). Un devoir ou une tâche liée à une matière est toujours Études.
+   */
+  space: spaceSchema.optional(),
+});
+
+export type WorkItemInput = z.input<typeof workItemInputSchema>;
+export type WorkItem = z.output<typeof workItemInputSchema> & {
+  id: string;
+  kind: WorkKind;
+  completedAt: string | null;
+  space: SpaceId;
+};
+
+/** Espace réel d'un élément : un devoir ou un élément lié à une matière est toujours Études. */
+export function workSpace(item: Pick<WorkItem, 'kind' | 'subjectId' | 'space'>): SpaceId {
+  if (item.kind === 'assignment' || item.subjectId) return 'study';
+  return item.space;
+}
+
+/** Moment où l'élément devient « en retard » : l'heure limite, sinon la fin de la journée. */
+export function dueMoment(item: Pick<WorkItem, 'dueDate' | 'dueTime'>): Date {
+  return item.dueTime ? atTime(item.dueDate, item.dueTime) : atTime(item.dueDate, '23:59');
+}
+
+/**
+ * « En retard » est calculé, jamais enregistré : le statut reste celui choisi par l'étudiant
+ * (spécification §57).
+ */
+export function isOverdue(
+  item: Pick<WorkItem, 'dueDate' | 'dueTime' | 'status'>,
+  now: Date,
+): boolean {
+  return item.status !== 'done' && dueMoment(item).getTime() < now.getTime();
+}
+
+export function isDueOn(item: Pick<WorkItem, 'dueDate'>, day: IsoDate): boolean {
+  return item.dueDate === day;
+}
+
+const priorityRank: Record<Priority, number> = { urgent: 0, important: 1, normal: 2, low: 3 };
+
+/** Tri : date limite, puis priorité (urgent d'abord), puis titre. */
+export function compareWorkItems(a: WorkItem, b: WorkItem): number {
+  return (
+    dueMoment(a).getTime() - dueMoment(b).getTime() ||
+    priorityRank[a.priority] - priorityRank[b.priority] ||
+    a.title.localeCompare(b.title)
+  );
+}
+
+/** Prochaine échéance d'une tâche répétée (le 31 → le dernier jour du mois suivant). */
+export function nextDueDate(date: IsoDate, rule: RepeatRule): IsoDate | null {
+  switch (rule) {
+    case 'none':
+      return null;
+    case 'daily':
+      return addDaysIso(date, 1);
+    case 'weekly':
+      return addDaysIso(date, 7);
+    case 'monthly': {
+      const d = fromIsoDate(date);
+      const day = d.getDate();
+      d.setDate(1);
+      d.setMonth(d.getMonth() + 1);
+      const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      d.setDate(Math.min(day, last));
+      return toIsoDate(d);
+    }
+  }
+}
+
+/** La tâche suivante d'une tâche répétée : même contenu, échéance et rappel décalés, à faire. */
+export function nextOccurrenceInput(item: WorkItem): WorkItemInput | null {
+  const dueDate = nextDueDate(item.dueDate, item.repeat);
+  if (!dueDate) return null;
+  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(item.dueDate).getTime();
+  return {
+    title: item.title,
+    description: item.description,
+    subjectId: item.subjectId,
+    dueDate,
+    dueTime: item.dueTime,
+    priority: item.priority,
+    status: 'todo',
+    reminderAt: item.reminderAt
+      ? new Date(new Date(item.reminderAt).getTime() + shift).toISOString()
+      : null,
+    repeat: item.repeat,
+    estimatedMinutes: item.estimatedMinutes,
+    space: item.space,
+  };
+}
+
+/** Durées proposées dans le formulaire (minutes). */
+export const estimatePresets = [15, 30, 45, 60, 90, 120] as const;
+
+/** Choix « reporter » proposés en glissant une tâche : demain, dans 2 jours, lundi prochain. */
+export function postponeTargets(today: IsoDate): {
+  tomorrow: IsoDate;
+  inTwoDays: IsoDate;
+  nextMonday: IsoDate;
+} {
+  const wd = isoWeekday(today);
+  return {
+    tomorrow: addDaysIso(today, 1),
+    inTwoDays: addDaysIso(today, 2),
+    nextMonday: addDaysIso(today, 8 - wd),
+  };
+}
+
+/**
+ * Nouvelle échéance d'une tâche reportée : on garde l'écart entre le rappel et l'échéance.
+ * Un rappel déjà passé est décalé du même nombre de jours.
+ */
+export function postponedReminder(
+  item: Pick<WorkItem, 'dueDate' | 'reminderAt'>,
+  dueDate: IsoDate,
+) {
+  if (!item.reminderAt) return null;
+  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(item.dueDate).getTime();
+  return new Date(new Date(item.reminderAt).getTime() + shift).toISOString();
+}
+
+// ---- Sous-tâches ----
+export type Subtask = {
+  id: string;
+  workKind: WorkKind;
+  workId: string;
+  title: string;
+  done: boolean;
+  position: number;
+};
+
+export const subtaskTitleSchema = requiredText(120);
+
+/** Avancement d'une checklist : « 2/5 ». */
+export function subtaskProgress(subtasks: readonly Pick<Subtask, 'done'>[]) {
+  return { done: subtasks.filter((s) => s.done).length, total: subtasks.length };
+}

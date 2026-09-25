@@ -1,0 +1,397 @@
+{
+  "expo": {
+    "name": "MySky",
+    "slug": "mysky",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.skiadac.mysky"
+    },
+    "android": {
+      "package": "com.skiadac.mysky",
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "backgroundColor": "#E6EEFC",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-sqlite",
+      "expo-localization",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#1F5FD6",
+          "dark": {
+            "backgroundColor": "#0F1628"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4"
+          },
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "expo-asset",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "color": "#1F5FD6",
+          "defaultChannel": "reminders"
+        }
+      ],
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MySky accède à tes photos pour les joindre à tes notes ou à ton suivi sportif.",
+          "cameraPermission": "MySky utilise l’appareil photo pour tes notes et tes photos de progression (elles restent sur ton téléphone)."
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "MySky utilise Face ID pour déverrouiller l’application."
+        }
+      ],
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.com.skiadac.mysky",
+          "widgets": [
+            {
+              "name": "NextCourseWidget",
+              "displayName": "Prochain cours",
+              "description": "Ton prochain cours, son heure et sa salle.",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium",
+                  "accessoryRectangular",
+                  "accessoryInline"
+                ]
+              }
+            },
+            {
+              "name": "TodayWidget",
+              "displayName": "Aujourd’hui",
+              "description": "Tes cours du jour, puis tes tâches et examens proches.",
+              "ios": {
+                "supportedFamilies": ["systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "TasksWidget",
+              "displayName": "Tâches",
+              "description": "Ce qu’il te reste à faire aujourd’hui et en retard.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "WeekWidget",
+              "displayName": "Semaine",
+              "description": "Tes minutes de révision par jour et ta série de jours actifs.",
+              "ios": {
+                "supportedFamilies": ["systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "SubjectWidget",
+              "displayName": "Matière",
+              "description": "Une matière au choix : prochain cours, prochaine échéance, moyenne.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"],
+                "configuration": {
+                  "title": "Matière",
+                  "description": "Tape le nom de la matière à afficher (vide = la première).",
+                  "parameters": {
+                    "subject": {
+                      "title": "Nom de la matière",
+                      "type": "string",
+                      "default": ""
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "ExamsWidget",
+              "displayName": "Examens",
+              "description": "Compte à rebours de tes prochains examens.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "QuickAddWidget",
+              "displayName": "Notes rapides",
+              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "ios": {
+                "supportedFamilies": ["systemMedium"]
+              }
+            },
+            {
+              "name": "GradesWidget",
+              "displayName": "Moyenne",
+              "description": "Ta moyenne générale, ta dernière note et tes moyennes par matière.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "MonthWidget",
+              "displayName": "Mois",
+              "description": "Le mois en cours avec tes cours, échéances et examens.",
+              "ios": {
+                "supportedFamilies": ["systemLarge"]
+              }
+            },
+            {
+              "name": "HabitsWidget",
+              "displayName": "Habitudes",
+              "description": "Tes habitudes du jour, faites ou non.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "MoneyQuickWidget",
+              "displayName": "Dépense rapide",
+              "description": "Touche une catégorie et tape le montant : ta dépense est notée.",
+              "ios": {
+                "supportedFamilies": ["systemMedium"]
+              }
+            },
+            {
+              "name": "MoneyLeftWidget",
+              "displayName": "Il te reste",
+              "description": "L’argent qu’il te reste et ce que tu peux dépenser par jour.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "accessoryRectangular", "accessoryInline"]
+              }
+            },
+            {
+              "name": "MoneyWeekWidget",
+              "displayName": "Mes dépenses",
+              "description": "Tes dépenses des 7 derniers jours et ce qui est à payer.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            },
+            {
+              "name": "ProgressWidget",
+              "displayName": "Progression",
+              "description": "Ta progression façon GitHub : une case par jour, sur le mois ou les 26 dernières semaines.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            }
+          ]
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "NextCourse",
+              "label": "MySky · Prochain cours",
+              "description": "Ton prochain cours, son heure et sa salle.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Today",
+              "label": "MySky · Aujourd’hui",
+              "description": "Tes cours du jour, puis tes tâches et examens proches.",
+              "minWidth": "320dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Tasks",
+              "label": "MySky · Tâches",
+              "description": "Ce qu’il te reste à faire aujourd’hui et en retard.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Study",
+              "label": "MySky · Révision",
+              "description": "Ta session de révision en cours, ou un bouton pour en lancer une.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Week",
+              "label": "MySky · Semaine",
+              "description": "Tes minutes de révision par jour et ta série de jours actifs.",
+              "minWidth": "320dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Subject",
+              "label": "MySky · Matière",
+              "description": "Une matière au choix : prochain cours, prochaine échéance, moyenne.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000,
+              "widgetFeatures": "reconfigurable"
+            },
+            {
+              "name": "Exams",
+              "label": "MySky · Examens",
+              "description": "Compte à rebours de tes prochains examens.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "QuickAdd",
+              "label": "MySky · Notes rapides",
+              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "minWidth": "320dp",
+              "minHeight": "60dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Grades",
+              "label": "MySky · Moyenne",
+              "description": "Ta moyenne générale, ta dernière note et tes moyennes par matière.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Month",
+              "label": "MySky · Mois",
+              "description": "Le mois en cours avec tes cours, échéances et examens.",
+              "minWidth": "320dp",
+              "minHeight": "240dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Habits",
+              "label": "MySky · Habitudes",
+              "description": "Tes habitudes du jour, faites ou non.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyQuick",
+              "label": "MySky · Dépense rapide",
+              "description": "Touche une catégorie et tape le montant : ta dépense est notée.",
+              "minWidth": "320dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyLeft",
+              "label": "MySky · Il te reste",
+              "description": "L’argent qu’il te reste et ce que tu peux dépenser par jour.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoneyWeek",
+              "label": "MySky · Mes dépenses",
+              "description": "Tes dépenses des 7 derniers jours et ce qui est à payer.",
+              "minWidth": "160dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Progress",
+              "label": "MySky · Progression",
+              "description": "Ta progression façon GitHub : une case par jour sur 20 semaines.",
+              "minWidth": "250dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "scheme": "mysky",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

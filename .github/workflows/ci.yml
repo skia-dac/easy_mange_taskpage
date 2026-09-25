@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Vérifications (types, lint, format, tests, sécurité)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Types TypeScript
+        run: npm run typecheck
+      - name: Lint (règles MySky, 0 avertissement)
+        run: npm run lint
+      - name: Formatage
+        run: npm run format:check
+      - name: Tests
+        run: npm test -- --ci
+      - name: Server schema on Postgres
+        run: npm run test:server
+      - name: Audit sécurité des dépendances (niveau élevé et critique)
+        run: npm run audit:prod
+      - name: Diagnostic Expo
+        run: npx expo-doctor

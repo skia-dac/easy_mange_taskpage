@@ -1,16 +1,74 @@
-# easyptt
+# MySky
 
-A new Flutter project.
+Application mobile d'organisation pour étudiants (Android et iOS), construite avec **Expo** et **TypeScript**.
+Statut : **phases 1, 2, 3, 4, 5, 7a et lot 2 terminés** : comptes facultatifs et synchronisation (e-mail, Apple, Google ; mise en service : `supabase/README.md`), suivi d'habitudes (« Mes habitudes » : quotidien ou hebdomadaire, séries, bilan de la semaine, raisons facultatives), notes d'examen et moyennes, minuteur de révision, tâches récurrentes, partage d'une note en PDF, export du calendrier (.ics), statistiques de la semaine, verrouillage Face ID, mode focus, widgets d'écran d'accueil (11 widgets + Live Activity de révision, iPhone et Android, dev build requis), recherche globale, introduction au premier lancement, notes (mise en forme légère, checklists, pièces jointes, favoris, recherche), rappels (cours, devoirs, tâches, examens), notification « Cours terminé : quelque chose à ajouter ? », réglages (son, vibration, premier jour de la semaine), sauvegarde locale automatique (export / restauration), suppression de toutes les données, matières, emplois du temps, cours (uniques ou hebdomadaires), modification d'une seule séance / des suivantes / de toute la série, cours annulés, vacances et jours sans cours, calendrier jour / semaine / mois, écran Aujourd'hui, tâches, devoirs, examens et événements. Tout fonctionne hors connexion, sur un seul téléphone (comptes et synchronisation : phase 2).
 
-## Getting Started
+- Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
+- Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
+- Idées pour la version 2 : [`docs/VERSION_2.md`](docs/VERSION_2.md)
+- Politique de confidentialité (texte de l’app et de la page publique pour les stores) : [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md). Nom de l’éditeur et e-mail de contact à remplir dans `src/shared/legal.ts`.
+- Maquettes : https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
 
-This project is a starting point for a Flutter application.
+## Lancer l'app
 
-A few resources to get you started if this is your first Flutter project:
+Prérequis : [Node.js](https://nodejs.org) 20 ou plus.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+```bash
+npm install        # une seule fois
+npm start          # lance le serveur de développement
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et scanne le QR code affiché.
+
+## Avant chaque commit
+
+```bash
+npm run check      # types + lint + formatage + tests
+```
+
+| Commande | Rôle |
+|---|---|
+| `npm run typecheck` | Vérifie les types TypeScript |
+| `npm run lint` | Règles de code (0 avertissement autorisé) |
+| `npm run format` | Formate le code automatiquement |
+| `npm test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |
+| `npm run audit:prod` | Cherche les failles connues dans les dépendances |
+| `npm run doctor` | Diagnostic Expo |
+
+Comptes et synchronisation : sans `.env.local`, l’app fonctionne sans compte. Pour les activer, suivre [`supabase/README.md`](supabase/README.md).
+
+Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`), pour qu'elle soit compatible avec le SDK Expo.
+
+## Organisation du code
+
+```
+src/
+  app/                 Écrans (Expo Router) : un fichier = un écran
+    (tabs)/            Les 5 onglets : Aujourd'hui, Calendrier, Tâches, Notes, Argent
+  modules/             Les domaines de l'architecture
+    identity/          compte, profil, préférences
+    academic/          matières, emplois du temps, cours, examens, vacances
+    productivity/      notes, tâches (étapes, durée), devoirs, révisions, habitudes, humeur
+    finance/           argent : dépenses, entrées, charges fixes, tontines, épargne, prêts
+    platform/          notifications, fichiers, import, synchronisation, recherche, widgets
+  projections/         Aujourd'hui, Calendrier (vue heures), plan de révision, bilan du soir :
+                       calculés à partir des données, jamais stockés
+  workflows/           Actions qui touchent plusieurs modules (ex. supprimer une matière)
+  components/          Lignes réutilisables (cours, devoir, examen, événement)
+  shared/
+    theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières + couleurs principales)
+    theme/tokens.ts    espacements, arrondis, typographie
+    i18n/locales/      textes en français (fr.json) et en anglais (en.json)
+    db/                base de données locale (SQLite) et migrations
+    errors/            erreurs et messages compréhensibles
+    ui/                composants de base (texte, écran, bouton, état vide)
+```
+
+## Changer une couleur
+
+Ouvre `src/shared/theme/colors.ts`, change la valeur (ex. `primary: '#1F5FD6'`), enregistre : tous les écrans suivent.
+Les tests vérifient que le texte reste lisible ; s'ils échouent, la couleur choisie est trop claire ou trop foncée.
+
+## Changer un texte
+
+Ouvre `src/shared/i18n/locales/fr.json` (et `en.json` pour l'anglais). Les deux fichiers doivent avoir les mêmes clés : un test le vérifie.
