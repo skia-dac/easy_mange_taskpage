@@ -13,6 +13,7 @@ import MoneyQuickWidget from './ios/MoneyQuickWidget';
 import MoneyWeekWidget from './ios/MoneyWeekWidget';
 import MonthWidget from './ios/MonthWidget';
 import NextCourseWidget from './ios/NextCourseWidget';
+import ProgressWidget from './ios/ProgressWidget';
 import QuickAddWidget from './ios/QuickAddWidget';
 import StudyActivity from './ios/StudyActivity';
 import SubjectWidget from './ios/SubjectWidget';
@@ -35,6 +36,7 @@ const IOS_WIDGETS = [
   MoneyQuickWidget,
   MoneyLeftWidget,
   MoneyWeekWidget,
+  ProgressWidget,
 ];
 
 /** Démarre, met à jour ou termine la Live Activity « Révision » selon la session en cours. */

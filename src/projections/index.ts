@@ -60,3 +60,12 @@ export {
   workWeek,
 } from './glance';
 export type { GlanceTileId, WorkWeek } from './glance';
+export {
+  habitLevel,
+  heatWeeks,
+  overallLevel,
+  progressScopes,
+  progressStats,
+  YEAR_WEEKS,
+} from './progress';
+export type { HeatCell, HeatLevel, ProgressScope, ProgressStats } from './progress';

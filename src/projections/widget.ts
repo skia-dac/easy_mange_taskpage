@@ -31,6 +31,7 @@ import {
 import { subjectColors, type ColorTokens } from '@/shared/theme';
 
 import { weekStats } from './stats';
+import { habitLevel, heatWeeks, overallLevel, progressStats, type HeatCell } from './progress';
 import type { TodayData } from './today';
 import { EMPTY_WIDGET_MONEY, type WidgetMoney } from './widgetMoney';
 
@@ -39,7 +40,11 @@ import { EMPTY_WIDGET_MONEY, type WidgetMoney } from './widgetMoney';
  * Un widget tourne hors de l'app, sans accès à la base, aux traductions ni au thème :
  * tout ce qu'il affiche (textes déjà traduits, couleurs) est calculé ici et lui est transmis.
  */
-export type WidgetTheme = Pick<
+export type WidgetTheme = WidgetBaseTheme & {
+  /** Grille de progression : case vide, puis du plus clair au plus foncé (5 teintes). */
+  heat: string[];
+};
+type WidgetBaseTheme = Pick<
   ColorTokens,
   | 'background'
   | 'surface'
@@ -136,6 +141,7 @@ export type WidgetLabels = {
   month: string;
   habits: string;
   noHabit: string;
+  progress: string;
 };
 
 export type WidgetLinks = {
@@ -176,6 +182,8 @@ export type WidgetData = {
   };
   month: { title: string; weekdays: string[]; cells: WidgetMonthCell[] };
   habits: WidgetHabit[];
+  /** Widget « Progression » (façon GitHub) : une habitude choisie, ou toutes. */
+  progress: WidgetProgress;
   /** Widgets « Argent » (calculés à part, voir widgetMoney.ts). */
   money: WidgetMoney;
   labels: WidgetLabels;
@@ -188,6 +196,8 @@ export type WidgetData = {
 
 /** Ce que les widgets ont besoin de savoir en plus de l'agenda. */
 export type WidgetExtras = {
+  /** Habitude suivie par le widget « Progression » (null = toutes). */
+  progressHabitId?: string | null;
   sessions: readonly StudySession[];
   weekStart: number;
   scheme?: 'light' | 'dark';
@@ -241,6 +251,7 @@ export function pickWidgetTheme(colors: ColorTokens): WidgetTheme {
     danger: colors.danger,
     success: colors.success,
     warning: colors.warning,
+    heat: [colors.heat0, colors.heat1, colors.heat2, colors.heat3, colors.heat4],
   };
 }
 
@@ -449,6 +460,54 @@ function buildHabits(data: TodayData, today: IsoDate, scheme: 'light' | 'dark'):
     });
 }
 
+/** Nombre de semaines montrées par le widget « Progression » (moyen et grand). */
+export const WIDGET_PROGRESS_WEEKS = 26;
+
+export type WidgetProgress = {
+  /** Nom de l'habitude suivie, ou « Mes habitudes ». */
+  title: string;
+  /** 26 dernières semaines, 7 niveaux chacune : -1 = rien à faire ou à venir, 0 à 4 sinon. */
+  weeks: number[][];
+  /** Semaines du mois en cours : -2 = hors du mois, -1 = rien à faire ou à venir. */
+  month: number[][];
+  monthTitle: string;
+  weekdays: string[];
+  /** « 12 jours réussis ce mois » */
+  summary: string;
+  hasHabit: boolean;
+};
+
+function buildProgress(
+  data: TodayData,
+  extras: WidgetExtras,
+  today: IsoDate,
+  texts: WidgetTexts,
+): WidgetProgress {
+  const logs = data.habitLogs ?? [];
+  const all = data.habits ?? [];
+  const chosen = extras.progressHabitId ? all.find((h) => h.id === extras.progressHabitId) : null;
+  const habits = chosen ? [chosen] : all;
+  const levelOf = (d: IsoDate) =>
+    habits.length === 1
+      ? habitLevel(habits[0]!, logs, d, today)
+      : overallLevel(habits, logs, d, today);
+  const code = (c: HeatCell) => (c.outside ? -2 : c.future || c.level === null ? -1 : c.level);
+  const year = heatWeeks('year', today, extras.weekStart, levelOf);
+  const month = heatWeeks('month', today, extras.weekStart, levelOf);
+  const stats = progressStats(month);
+  return {
+    title: chosen ? chosen.name : texts.t('widget.progressAll'),
+    weeks: year.slice(-WIDGET_PROGRESS_WEEKS).map((w) => w.map(code)),
+    month: month.map((w) => w.map(code)),
+    monthTitle: texts.monthTitle(today),
+    weekdays: (month[0] ?? []).map((c) =>
+      texts.weekdayShort(isoWeekday(c.date)).slice(0, 1).toUpperCase(),
+    ),
+    summary: texts.t('widget.progressSummary', { count: stats.doneDays }),
+    hasHabit: habits.length > 0,
+  };
+}
+
 export function buildWidgetData(
   data: TodayData,
   subjects: ReadonlyMap<string, Subject>,
@@ -517,6 +576,7 @@ export function buildWidgetData(
     grades: buildGrades(data, subjects, texts, scheme),
     month: buildMonth(data, extras, now, texts),
     habits: buildHabits(data, today, scheme),
+    progress: buildProgress(data, extras, today, texts),
     links: WIDGET_LINKS,
     money: extras.money ?? EMPTY_WIDGET_MONEY,
     labels: {
@@ -554,6 +614,7 @@ export function buildWidgetData(
       month: texts.t('widget.month'),
       habits: texts.t('widget.habits'),
       noHabit: texts.t('widget.noHabit'),
+      progress: texts.t('widget.progress'),
     },
     light: pickWidgetTheme(themes.light),
     dark: pickWidgetTheme(themes.dark),

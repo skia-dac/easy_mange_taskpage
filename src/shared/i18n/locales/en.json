@@ -776,7 +776,10 @@
     "moneyWeek": "My spending · 7 days",
     "moneyDue": "To pay",
     "moneyNoDue": "Nothing to pay soon.",
-    "moneyStart": "Open MySky to start"
+    "moneyStart": "Open MySky to start",
+    "progress": "Progress",
+    "progressAll": "My habits",
+    "progressSummary": "{{count}} d done this month"
   },
   "habits": {
     "title": "My habits",
@@ -1474,5 +1477,23 @@
     "delete": "Delete category",
     "deleteTitle": "Delete “{{name}}”?",
     "deleteMessage": "Your notes are kept: they just become “no category”."
+  },
+  "progress": {
+    "title": "My progress",
+    "scope": "Period",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "summary": "{{done}} days done out of {{total}} · best run {{best}}",
+    "less": "Less",
+    "more": "More",
+    "noGoal": "nothing planned",
+    "level0": "not done",
+    "level1": "a little",
+    "level2": "half",
+    "level3": "almost",
+    "level4": "done",
+    "widgetTitle": "Track in the Progress widget",
+    "widgetHint": "The home-screen widget shows this habit (otherwise: all of them)."
   }
 }

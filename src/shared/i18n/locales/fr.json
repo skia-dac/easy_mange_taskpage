@@ -776,7 +776,10 @@
     "moneyWeek": "Mes dépenses · 7 jours",
     "moneyDue": "À payer",
     "moneyNoDue": "Rien à payer bientôt.",
-    "moneyStart": "Ouvre MySky pour commencer"
+    "moneyStart": "Ouvre MySky pour commencer",
+    "progress": "Progression",
+    "progressAll": "Mes habitudes",
+    "progressSummary": "{{count}} j réussis ce mois"
   },
   "habits": {
     "title": "Mes habitudes",
@@ -1474,5 +1477,23 @@
     "delete": "Supprimer la catégorie",
     "deleteTitle": "Supprimer « {{name}} » ?",
     "deleteMessage": "Tes notes sont gardées : elles passent simplement « sans catégorie »."
+  },
+  "progress": {
+    "title": "Ma progression",
+    "scope": "Période",
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année",
+    "summary": "{{done}} jours réussis sur {{total}} · meilleure série {{best}}",
+    "less": "Moins",
+    "more": "Plus",
+    "noGoal": "rien de prévu",
+    "level0": "pas fait",
+    "level1": "un peu",
+    "level2": "à moitié",
+    "level3": "presque",
+    "level4": "fait",
+    "widgetTitle": "Suivre dans le widget Progression",
+    "widgetHint": "Le widget de l’écran d’accueil montre cette habitude (sinon : toutes)."
   }
 }

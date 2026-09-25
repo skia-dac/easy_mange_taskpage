@@ -1,11 +1,12 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, Switch, View } from 'react-native';
 
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitIcon } from '@/components/HabitIcon';
 import { frequencyLabel, percent } from '@/components/habitLabels';
+import { ProgressHeatmap } from '@/components/ProgressHeatmap';
 import { useHabits } from '@/hooks/useHabits';
 import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
@@ -25,7 +26,8 @@ import {
   weekdayOrder,
   type IsoDate,
 } from '@/shared/dates';
-import { useDb } from '@/shared/db';
+import { getProgressWidgetHabit, setProgressWidgetHabit } from '@/modules/identity';
+import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatMonthYear, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
@@ -60,6 +62,7 @@ export default function HabitDetailScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
+  const widgetHabit = useLiveQuery(getProgressWidgetHabit, ['app_settings'], []);
   const { colors, radius, spacing } = useTheme();
   const weekStart = useWeekStart();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -154,6 +157,28 @@ export default function HabitDetailScreen() {
           </View>
         ))}
       </View>
+
+      <ProgressHeatmap habits={[habit]} logs={logs} today={today} />
+      <Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="bodyStrong">{t('progress.widgetTitle')}</AppText>
+            <AppText variant="caption" color="muted">
+              {t('progress.widgetHint')}
+            </AppText>
+          </View>
+          <Switch
+            accessibilityLabel={t('progress.widgetTitle')}
+            value={widgetHabit.data === habit.id}
+            onValueChange={(on) =>
+              void setProgressWidgetHabit(db, on ? habit.id : null).catch((e: unknown) =>
+                showError(userMessageKey(e)),
+              )
+            }
+            trackColor={{ true: colors.success, false: colors.border }}
+          />
+        </View>
+      </Card>
 
       <Card>
         <View

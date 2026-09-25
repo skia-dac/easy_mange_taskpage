@@ -7,6 +7,7 @@ import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitIcon } from '@/components/HabitIcon';
 import { frequencyLabel, percent } from '@/components/habitLabels';
 import { HabitRow } from '@/components/HabitRow';
+import { ProgressHeatmap } from '@/components/ProgressHeatmap';
 import { useHabits } from '@/hooks/useHabits';
 import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
@@ -103,6 +104,8 @@ export default function HabitsScreen() {
 
         {habits.length > 0 ? (
           <>
+            <SectionHeader title={t('progress.title')} />
+            <ProgressHeatmap habits={habits} logs={logs} today={today} />
             <SectionHeader title={t('habits.review')} />
             <Segmented
               value={week}

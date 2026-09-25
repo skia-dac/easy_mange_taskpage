@@ -201,6 +201,14 @@
               "ios": {
                 "supportedFamilies": ["systemSmall", "systemMedium"]
               }
+            },
+            {
+              "name": "ProgressWidget",
+              "displayName": "Progression",
+              "description": "Ta progression façon GitHub : une case par jour, sur le mois ou les 26 dernières semaines.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
             }
           ]
         }
@@ -360,6 +368,17 @@
               "minWidth": "160dp",
               "minHeight": "120dp",
               "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Progress",
+              "label": "MySky · Progression",
+              "description": "Ta progression façon GitHub : une case par jour sur 20 semaines.",
+              "minWidth": "250dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000

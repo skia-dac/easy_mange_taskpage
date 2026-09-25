@@ -18,18 +18,22 @@ export const ANDROID_WIDGETS = [
   'MoneyQuick',
   'MoneyLeft',
   'MoneyWeek',
+  'Progress',
 ] as const;
 export type AndroidWidgetName = (typeof ANDROID_WIDGETS)[number];
 
 /** react-native-android-widget exige des couleurs hexadécimales (c'est le cas de tout colors.ts). */
-type AndroidTheme = Record<keyof WidgetTheme, `#${string}`>;
+type AndroidTheme = Record<Exclude<keyof WidgetTheme, 'heat'>, `#${string}`> & {
+  heat: `#${string}`[];
+};
 type Props = { data: WidgetData; theme: AndroidTheme };
 
 function asAndroidTheme(theme: WidgetTheme): AndroidTheme {
-  const out = {} as AndroidTheme;
+  const hex = (v: string) => (v.startsWith('#') ? v : `#${v}`) as `#${string}`;
+  const out = { heat: theme.heat.map(hex) } as AndroidTheme;
   for (const key of Object.keys(theme) as (keyof WidgetTheme)[]) {
-    const value = theme[key];
-    out[key] = (value.startsWith('#') ? value : `#${value}`) as `#${string}`;
+    if (key === 'heat') continue;
+    out[key] = hex(theme[key]);
   }
   return out;
 }
@@ -620,6 +624,45 @@ export function MoneyWeekWidget({ data, theme }: Props) {
   );
 }
 
+/** Couleur d'une case de la grille de progression (-1 = rien à faire, -2 = hors période). */
+const heatColor = (theme: AndroidTheme, level: number) =>
+  level < 0 ? theme.surface : (theme.heat[level] ?? theme.heat[0]!);
+
+/** « Progression » : les 20 dernières semaines d'une habitude (ou de toutes), façon GitHub. */
+export function ProgressWidget({ data, theme }: Props) {
+  const p = data.progress;
+  const weeks = p.weeks.slice(-20);
+  return (
+    <Card data={data} theme={theme} url={data.links.habits}>
+      <Header title={p.title} right={p.summary} theme={theme} />
+      {!p.hasHabit ? (
+        <TextWidget text={data.labels.noHabit} style={{ fontSize: 13, color: theme.muted }} />
+      ) : (
+        <FlexWidget style={{ flexDirection: 'row', flexGap: 3 }}>
+          {weeks.map((week, w) => (
+            <FlexWidget key={`w${w}`} style={{ flexDirection: 'column', flexGap: 3 }}>
+              {week.map((level, d) => (
+                <FlexWidget
+                  key={`d${d}`}
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 2,
+                    backgroundColor: heatColor(theme, level),
+                    ...(level === -1
+                      ? { borderWidth: 1, borderColor: theme.heat[0]! }
+                      : {}),
+                  }}
+                />
+              ))}
+            </FlexWidget>
+          ))}
+        </FlexWidget>
+      )}
+    </Card>
+  );
+}
+
 const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null }) => React.JSX.Element> = {
   NextCourse: NextCourseWidget,
   Today: TodayWidget,
@@ -635,6 +678,7 @@ const WIDGETS: Record<AndroidWidgetName, (p: Props & { subjectId?: string | null
   MoneyQuick: MoneyQuickWidget,
   MoneyLeft: MoneyLeftWidget,
   MoneyWeek: MoneyWeekWidget,
+  Progress: ProgressWidget,
 };
 
 export function renderAndroidWidget(

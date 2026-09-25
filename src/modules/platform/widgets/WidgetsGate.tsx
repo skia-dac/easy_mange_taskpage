@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 
 import { useSubjects } from '@/hooks/useSubjects';
 import { useWeekStart } from '@/hooks/useWeekStart';
+import { getProgressWidgetHabit } from '@/modules/identity';
 import { listStudySessions } from '@/modules/productivity';
 import { buildWidgetMoney, buildWidgetTimeline, useAgendaData, useMoneyData } from '@/projections';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
@@ -41,6 +42,8 @@ export function WidgetsGate() {
   const sessionList = sessions.data;
   const money = useMoneyData(0);
   const moneyData = money.data;
+  const progressQ = useLiveQuery(getProgressWidgetHabit, ['app_settings'], []);
+  const progressHabitId = progressQ.data ?? null;
 
   useEffect(() => {
     if (!data || loading || !sessionList) return;
@@ -62,6 +65,7 @@ export function WidgetsGate() {
           },
           { light: lightColors, dark: darkColors },
           {
+            progressHabitId,
             sessions: sessionList,
             weekStart,
             scheme,
@@ -88,7 +92,7 @@ export function WidgetsGate() {
       sub.remove();
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [data, byId, loading, t, lang, sessionList, weekStart, scheme, moneyData]);
+  }, [data, byId, loading, t, lang, sessionList, weekStart, scheme, moneyData, progressHabitId]);
 
   return null;
 }

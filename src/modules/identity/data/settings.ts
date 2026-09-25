@@ -197,3 +197,13 @@ export async function setWorkWeekHours(db: Db, hours: number): Promise<void> {
   if (!Number.isFinite(hours) || hours < 1 || hours > 100) throw new AppError('validation');
   await writeSetting(db, 'work_week_hours', Math.round(hours));
 }
+
+/** Habitude suivie par le widget « Progression » (null = toutes les habitudes). */
+export async function getProgressWidgetHabit(db: Db): Promise<string | null> {
+  const v = await readSetting(db, 'progress_widget_habit');
+  return typeof v === 'string' && v.length > 0 ? v : null;
+}
+
+export async function setProgressWidgetHabit(db: Db, habitId: string | null): Promise<void> {
+  await writeSetting(db, 'progress_widget_habit', habitId ?? '');
+}

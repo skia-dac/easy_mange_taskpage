@@ -35,6 +35,12 @@ export type ColorTokens = {
   successSoft: string;
   /** Voile derrière les fenêtres (bottom sheets, dialogues) */
   scrim: string;
+  /** Grille de progression (façon GitHub) : case vide, puis du plus clair au plus foncé. */
+  heat0: string;
+  heat1: string;
+  heat2: string;
+  heat3: string;
+  heat4: string;
 };
 
 export const lightColors: ColorTokens = {
@@ -53,6 +59,11 @@ export const lightColors: ColorTokens = {
   success: '#0E7555',
   successSoft: '#E2F3EC',
   scrim: 'rgba(20, 33, 61, 0.45)',
+  heat0: '#E4E9F1',
+  heat1: '#B7E3CB',
+  heat2: '#6FC79A',
+  heat3: '#27A066',
+  heat4: '#0E7555',
 };
 
 export const darkColors: ColorTokens = {
@@ -71,6 +82,11 @@ export const darkColors: ColorTokens = {
   success: '#4CC79A',
   successSoft: '#17362C',
   scrim: 'rgba(0, 0, 0, 0.6)',
+  heat0: '#222D45',
+  heat1: '#17463A',
+  heat2: '#1F6B4E',
+  heat3: '#2E9B69',
+  heat4: '#4CC79A',
 };
 
 /** Couleurs proposées pour les matières : couleur forte + version claire. */

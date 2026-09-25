@@ -68,3 +68,8 @@ export function formatDateTime(date: Date, locale: string): string {
     minute: '2-digit',
   }).format(date);
 }
+
+/** « sept. » (mois court, grille de progression). */
+export function formatMonthShort(day: IsoDate, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { month: 'short' }).format(fromIsoDate(day));
+}
