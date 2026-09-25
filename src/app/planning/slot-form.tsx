@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -70,7 +72,7 @@ export default function SlotFormScreen() {
     run(async () => {
       if (id) await updateSlot(db, id, form);
       else await createSlot(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -83,7 +85,7 @@ export default function SlotFormScreen() {
     if (!ok) return;
     try {
       await deleteSlot(db, id);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

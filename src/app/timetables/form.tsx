@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -53,7 +55,7 @@ export default function TimetableFormScreen() {
     run(async () => {
       if (id) await updateTimetable(db, id, form);
       else await createTimetable(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -69,7 +71,7 @@ export default function TimetableFormScreen() {
     if (!ok) return;
     try {
       await deleteTimetable(db, id);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

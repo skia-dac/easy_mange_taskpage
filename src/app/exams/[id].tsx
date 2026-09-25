@@ -1,4 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -188,7 +190,7 @@ export default function ExamDetailScreen() {
           ).then((ok) => {
             if (ok)
               deleteExam(db, e.id).then(
-                () => router.back(),
+                () => goBack(),
                 (err: unknown) => showError(userMessageKey(err)),
               );
           });

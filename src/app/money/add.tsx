@@ -1,5 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -53,7 +55,7 @@ type Params = {
   date?: string;
 };
 
-const close = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/money'));
+const close = () => goBack('/(tabs)/money');
 
 /**
  * Saisie rapide d'une opération : dépense ou entrée → catégorie → montant → Enregistrer.

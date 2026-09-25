@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -58,7 +60,7 @@ export default function RevisionFormScreen() {
     run(async () => {
       if (params.id) await updateRevisionBlock(db, params.id, form);
       else await createRevisionBlock(db, form);
-      router.back();
+      goBack();
     });
 
   return (

@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack, backToList } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -84,7 +86,7 @@ export default function WorkFormScreen() {
     run(async () => {
       if (params.id) await updateWorkItem(db, kind, params.id, form);
       else await createWorkItem(db, kind, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -98,7 +100,7 @@ export default function WorkFormScreen() {
     try {
       await deleteWorkItem(db, kind, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
-      router.dismissAll();
+      backToList();
     } catch (e) {
       showError(userMessageKey(e));
     }

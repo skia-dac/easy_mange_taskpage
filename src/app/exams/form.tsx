@@ -1,5 +1,8 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+
+import { takePickedSubject } from '@/components/pickerResult';
+import { goBack, backToList } from '@/components/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -105,11 +108,19 @@ export default function ExamFormScreen() {
     };
   };
 
+  // Matière créée depuis le sélecteur : elle est sélectionnée au retour.
+  useFocusEffect(
+    useCallback(() => {
+      const id = takePickedSubject();
+      if (id) set({ subjectId: id });
+    }, []),
+  );
+
   const submit = () =>
     run(async () => {
       if (params.id) {
         await updateExam(db, params.id, toInput());
-        router.back();
+        goBack();
       } else {
         const id = await createExam(db, toInput());
         router.replace({ pathname: '/exams/[id]', params: { id } });
@@ -127,7 +138,7 @@ export default function ExamFormScreen() {
     try {
       await deleteExam(db, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
-      router.dismissAll();
+      backToList();
     } catch (e) {
       showError(userMessageKey(e));
     }

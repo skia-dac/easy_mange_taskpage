@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -44,7 +46,7 @@ export default function NoteCategoryFormScreen() {
     run(async () => {
       if (id) await updateNoteCategory(db, id, form);
       else await createNoteCategory(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -57,7 +59,7 @@ export default function NoteCategoryFormScreen() {
     if (!ok) return;
     try {
       await deleteNoteCategory(db, id);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

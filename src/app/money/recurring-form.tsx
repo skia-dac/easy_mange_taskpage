@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, View } from 'react-native';
@@ -147,7 +149,7 @@ export default function RecurringFormScreen() {
       };
       if (params.id) await updateRecurring(db, params.id, input);
       else await createRecurring(db, input);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -159,7 +161,7 @@ export default function RecurringFormScreen() {
     );
     if (ok)
       deleteRecurring(db, params.id).then(
-        () => router.back(),
+        () => goBack(),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };

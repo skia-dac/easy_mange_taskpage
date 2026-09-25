@@ -1,4 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -153,7 +155,7 @@ export default function WorkDetailScreen() {
             ).then((ok) => {
               if (ok)
                 deleteWorkItem(db, kind, w.id).then(
-                  () => router.back(),
+                  () => goBack(),
                   (e: unknown) => showError(userMessageKey(e)),
                 );
             });

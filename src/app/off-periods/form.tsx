@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, View } from 'react-native';
@@ -63,7 +65,7 @@ export default function OffPeriodFormScreen() {
     run(async () => {
       if (id) await updateOffPeriod(db, id, form);
       else await createOffPeriod(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -76,7 +78,7 @@ export default function OffPeriodFormScreen() {
     if (!ok) return;
     try {
       await deleteOffPeriod(db, id);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

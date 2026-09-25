@@ -1,4 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
@@ -59,7 +61,7 @@ export default function RevisionDetailScreen() {
       t('revision.deleteMessage'),
       t('common.delete'),
     );
-    if (ok) deleteRevisionBlock(db, b.id).then(() => router.back(), fail);
+    if (ok) deleteRevisionBlock(db, b.id).then(() => goBack(), fail);
   };
 
   return (

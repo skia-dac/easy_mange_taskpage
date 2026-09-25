@@ -1,6 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
@@ -279,7 +281,7 @@ export default function NoteScreen() {
 
   const remove = async () => {
     if (!noteId) {
-      router.back();
+      goBack();
       return;
     }
     const ok = await confirmDestructive(
@@ -294,7 +296,7 @@ export default function NoteScreen() {
       await deleteNote(db, noteId);
       files.forEach((a) => deleteLocalFile(a.localPath));
       setNoteId(null);
-      router.back();
+      goBack();
     } catch (e) {
       fail(e);
     }

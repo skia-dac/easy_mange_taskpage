@@ -1,5 +1,7 @@
 import { Image } from 'expo-image';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -122,7 +124,7 @@ export default function CheckpointScreen() {
       else await createCheckpoint(db, input);
       pending.current.saved = true;
       if (initialPhoto && initialPhoto !== photoPath) deleteLocalFile(initialPhoto);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -138,7 +140,7 @@ export default function CheckpointScreen() {
       pending.current.saved = true;
       if (initialPhoto) deleteLocalFile(initialPhoto);
       if (photoPath && photoPath !== initialPhoto) deleteLocalFile(photoPath);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

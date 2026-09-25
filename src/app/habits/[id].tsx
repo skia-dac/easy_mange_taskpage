@@ -1,4 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Switch, View } from 'react-native';
@@ -100,7 +102,7 @@ export default function HabitDetailScreen() {
     );
     if (!ok) return;
     deleteHabitEverywhere(db, habit.id).then(
-      () => router.back(),
+      () => goBack(),
       (e: unknown) => showError(userMessageKey(e)),
     );
   };

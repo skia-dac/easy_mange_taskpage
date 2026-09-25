@@ -1,5 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -100,7 +102,7 @@ export default function CourseDetailScreen() {
         : t('courses.deleteOnce'),
       t('common.delete'),
     );
-    if (ok) deleteCourse(db, c.id).then(() => router.dismissAll(), fail);
+    if (ok) deleteCourse(db, c.id).then(() => goBack(), fail);
   };
 
   const edit = () => {
@@ -140,7 +142,7 @@ export default function CourseDetailScreen() {
       label: t('occurrence.scopeFollowing'),
       destructive: true,
       onPress: () => {
-        if (date) endSeriesBefore(db, c.id, date).then(() => router.back(), fail);
+        if (date) endSeriesBefore(db, c.id, date).then(() => goBack(), fail);
       },
     },
     { label: t('occurrence.scopeAll'), destructive: true, onPress: () => void deleteAll() },

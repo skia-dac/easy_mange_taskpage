@@ -50,8 +50,11 @@ jest.mock('expo-router', () => {
       back: jest.fn(),
       navigate: jest.fn(),
       dismissAll: jest.fn(),
+      canGoBack: () => true,
+      canDismiss: () => true,
     },
     useLocalSearchParams: () => mockParams,
+    useFocusEffect: (effect: () => void | (() => void)) => React.useEffect(effect, [effect]),
     Stack: { Screen: () => null },
     Tabs: Object.assign(
       ({ children }: { children: React.ReactNode }) =>

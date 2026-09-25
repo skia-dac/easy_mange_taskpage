@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -57,7 +59,7 @@ export default function GoalFormScreen() {
       };
       if (id) await updateGoal(db, id, input);
       else await createGoal(db, input);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -69,7 +71,7 @@ export default function GoalFormScreen() {
     );
     if (ok)
       deleteGoal(db, id).then(
-        () => router.back(),
+        () => goBack(),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };

@@ -1,5 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { backToList, goBack } from '@/components/navigation';
 import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -83,7 +85,7 @@ export default function HabitFormScreen() {
     run(async () => {
       if (params.id) {
         await updateHabit(db, params.id, toInput());
-        router.back();
+        goBack();
       } else {
         const input = toInput();
         const id = await createHabit(db, input);
@@ -104,7 +106,7 @@ export default function HabitFormScreen() {
     if (!ok) return;
     try {
       await deleteHabitEverywhere(db, params.id);
-      router.dismissTo('/habits');
+      backToList('/(tabs)');
     } catch (e) {
       showError(userMessageKey(e));
     }

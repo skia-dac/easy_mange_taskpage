@@ -1,6 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -66,7 +68,7 @@ export default function ProfileEditScreen() {
   const submit = () =>
     run(async () => {
       await saveProfile(db, form);
-      router.back();
+      goBack();
     });
 
   const changePhoto = async () => {

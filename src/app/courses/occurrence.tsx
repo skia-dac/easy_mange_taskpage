@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -51,7 +53,7 @@ export default function OccurrenceFormScreen() {
   const submit = () =>
     run(async () => {
       await overrideOccurrence(db, form);
-      router.back();
+      goBack();
     });
 
   return (

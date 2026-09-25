@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -66,7 +68,7 @@ export default function LoanFormScreen() {
         if (!minor) throw new ValidationError({ amount: 'money.invalidAmount' });
         await createLoan(db, input, { amountMinor: minor, currency, date });
       }
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -78,7 +80,7 @@ export default function LoanFormScreen() {
     );
     if (ok)
       deleteLoan(db, params.id).then(
-        () => router.back(),
+        () => goBack(),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };

@@ -1,4 +1,6 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -60,7 +62,7 @@ export default function EventFormScreen() {
     run(async () => {
       if (params.id) await updatePersonalEvent(db, params.id, form);
       else await createPersonalEvent(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -73,7 +75,7 @@ export default function EventFormScreen() {
     if (!ok) return;
     try {
       await deletePersonalEvent(db, params.id);
-      router.back();
+      goBack();
     } catch (e) {
       showError(userMessageKey(e));
     }

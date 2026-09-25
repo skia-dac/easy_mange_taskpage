@@ -1,4 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
+import { setPickedSubject } from '@/components/pickerResult';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -39,12 +42,14 @@ export default function SubjectFormScreen() {
     run(async () => {
       if (id) {
         await updateSubject(db, id, form);
-        router.back();
+        goBack();
       } else {
         const newId = await createSubject(db, form);
         // Créée depuis un autre formulaire (ex. un cours) : on y revient directement.
-        if (from === 'picker') router.back();
-        else router.replace({ pathname: '/subjects/[id]', params: { id: newId } });
+        if (from === 'picker') {
+          setPickedSubject(newId);
+          goBack();
+        } else router.replace({ pathname: '/subjects/[id]', params: { id: newId } });
       }
     });
 

@@ -28,6 +28,9 @@ import { AppText, Button, LoadingScreen, ToastHost } from '@/shared/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
+/** Ouverture à froid sur un écran profond (notification, lien) : les onglets restent dessous. */
+export const unstable_settings = { anchor: '(tabs)' };
+
 export default function RootLayout() {
   const { t } = useTranslation();
   const [fontsLoaded, fontError] = useFonts({

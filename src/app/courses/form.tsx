@@ -1,5 +1,8 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+
+import { takePickedSubject } from '@/components/pickerResult';
+import { goBack, backToList } from '@/components/navigation';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -140,12 +143,24 @@ export default function CourseFormScreen() {
     });
   }, [form, labels, t]);
 
+  // Matière créée depuis le sélecteur : elle est sélectionnée au retour.
+  const choose = useRef(chooseSubject);
+  useEffect(() => {
+    choose.current = chooseSubject;
+  });
+  useFocusEffect(
+    useCallback(() => {
+      const id = takePickedSubject();
+      if (id) choose.current(id);
+    }, []),
+  );
+
   const submit = () =>
     run(async () => {
       if (params.id && following) await splitSeries(db, params.id, params.date as string, form);
       else if (params.id) await updateCourse(db, params.id, form);
       else await createCourse(db, form);
-      router.back();
+      goBack();
     });
 
   const remove = async () => {
@@ -161,7 +176,7 @@ export default function CourseFormScreen() {
     try {
       await deleteCourse(db, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
-      router.dismissAll();
+      backToList();
     } catch (e) {
       showError(userMessageKey(e));
     }

@@ -1,5 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -83,7 +85,7 @@ export default function SubjectDetailScreen() {
   /** Suppression (§16) : on annonce ce qui est lié, puis on laisse choisir. */
   const doDelete = (mode: 'keepWork' | 'deleteAll') =>
     deleteSubject(db, s.id, mode).then(
-      () => router.back(),
+      () => goBack(),
       (e: unknown) => showError(userMessageKey(e)),
     );
   const askDelete = async () => {

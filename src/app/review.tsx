@@ -1,4 +1,6 @@
 import { router, Stack } from 'expo-router';
+
+import { goBack } from '@/components/navigation';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
@@ -223,7 +225,7 @@ export default function EveningReviewScreen() {
           {t('review.plannedTime', { time: labels.duration(next.plannedMinutes) })}
         </AppText>
       ) : null}
-      <Button label={t('review.done')} onPress={() => router.back()} />
+      <Button label={t('review.done')} onPress={() => goBack()} />
       {postpone.sheet}
       {habitSheet ? (
         <HabitDaySheet
