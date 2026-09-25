@@ -1,15 +1,17 @@
 import { notifyChange, write, type Db, type EntityWriter } from '@/shared/db';
 import { toIsoDate, type IsoDate } from '@/shared/dates';
 import { AppError } from '@/shared/errors';
-import { parseInput } from '@/shared/validation';
+import { enumOr, parseInput } from '@/shared/validation';
 
 import {
   checkpointInputSchema,
+  habitFrequencies,
   habitInputSchema,
+  habitLogStatuses,
+  missReasons,
   type Checkpoint,
   type CheckpointInput,
   type Habit,
-  type HabitFrequency,
   type HabitInput,
   type HabitLog,
   type HabitLogStatus,
@@ -59,7 +61,7 @@ const toHabit = (r: HabitRow): Habit => ({
   name: r.name,
   icon: r.icon,
   colorId: r.color_id,
-  frequency: r.frequency as HabitFrequency,
+  frequency: enumOr(habitFrequencies, r.frequency, 'daily'),
   weekdays: parseDays(r.weekdays),
   timesPerWeek: r.times_per_week,
   target: r.target,
@@ -75,8 +77,8 @@ const toLog = (r: HabitLogRow): HabitLog => ({
   habitId: r.habit_id,
   date: r.date,
   count: r.count,
-  status: r.status as HabitLogStatus,
-  reasonCode: r.reason_code as MissReason | null,
+  status: enumOr(habitLogStatuses, r.status, 'done'),
+  reasonCode: r.reason_code === null ? null : enumOr(missReasons, r.reason_code, 'other'),
   reason: r.reason,
   durationMinutes: r.duration_minutes ?? null,
 });

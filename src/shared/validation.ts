@@ -80,3 +80,15 @@ export function parseInput<S extends z.ZodType>(schema: S, input: unknown): z.ou
   }
   throw new ValidationError(fields);
 }
+
+/**
+ * Valeur d'une énumération lue en base (ou reçue du serveur) : une valeur inconnue, venue d'une
+ * version plus récente de l'app, retombe sur `fallback` au lieu de traverser jusqu'aux `switch`.
+ */
+export function enumOr<T extends string>(
+  values: readonly T[],
+  value: string | null | undefined,
+  fallback: T,
+): T {
+  return (values as readonly string[]).includes(value ?? '') ? (value as T) : fallback;
+}

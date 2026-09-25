@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { occurrencesInRange, type Occurrence } from '@/modules/academic';
 import { formatMoney, occurrencesBetween } from '@/modules/finance';
 import { dayState, plannedEnd } from '@/modules/productivity';
@@ -5,18 +7,24 @@ import type { NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
 import { addDaysIso, atTime, toIsoDate } from '@/shared/dates';
 
-/** Ce que l'app fait quand l'utilisateur touche la notification. */
-export type ReminderAction =
-  | { kind: 'course'; seriesId: string; date: string }
-  | { kind: 'endOfCourse'; seriesId: string; date: string; subjectId: string }
-  | { kind: 'work'; workKind: 'task' | 'assignment'; id: string }
-  | { kind: 'exam'; id: string }
-  | { kind: 'event'; id: string }
-  | { kind: 'study'; id: string }
-  | { kind: 'habit'; id: string }
-  | { kind: 'revision'; id: string }
-  | { kind: 'review'; date: string }
-  | { kind: 'money'; id: string };
+const id = z.string().min(1);
+/**
+ * Ce que l'app fait quand l'utilisateur touche la notification. Schéma zod : les données d'une
+ * notification viennent du système (ancienne version de l'app, contenu altéré), on les vérifie.
+ */
+export const reminderActionSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('course'), seriesId: id, date: z.string() }),
+  z.object({ kind: z.literal('endOfCourse'), seriesId: id, date: z.string(), subjectId: id }),
+  z.object({ kind: z.literal('work'), workKind: z.enum(['task', 'assignment']), id }),
+  z.object({ kind: z.literal('exam'), id }),
+  z.object({ kind: z.literal('event'), id }),
+  z.object({ kind: z.literal('study'), id }),
+  z.object({ kind: z.literal('habit'), id }),
+  z.object({ kind: z.literal('revision'), id }),
+  z.object({ kind: z.literal('review'), date: z.string() }),
+  z.object({ kind: z.literal('money'), id }),
+]);
+export type ReminderAction = z.infer<typeof reminderActionSchema>;
 
 export type PlannedReminder = {
   /** Identifiant stable (même donnée → même id), utile pour le débogage. */

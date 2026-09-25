@@ -1,7 +1,14 @@
+import { enumOr } from '@/shared/validation';
 import { normalizeSpaceValue } from '@/shared/spaces';
 
 import type { PersonalEvent } from '../domain/personalEvent';
-import type { Priority, RepeatRule, WorkItem, WorkKind, WorkStatus } from '../domain/workItem';
+import {
+  priorities,
+  repeatRules,
+  workStatuses,
+  type WorkItem,
+  type WorkKind,
+} from '../domain/workItem';
 
 export type WorkItemRow = {
   id: string;
@@ -29,11 +36,11 @@ export const toWorkItem =
     subjectId: r.subject_id,
     dueDate: r.due_date,
     dueTime: r.due_time,
-    priority: r.priority as Priority,
-    status: r.status as WorkStatus,
+    priority: enumOr(priorities, r.priority, 'normal'),
+    status: enumOr(workStatuses, r.status, 'todo'),
     completedAt: r.completed_at,
     reminderAt: r.reminder_at,
-    repeat: r.repeat_rule as RepeatRule,
+    repeat: enumOr(repeatRules, r.repeat_rule, 'none'),
     estimatedMinutes: r.estimated_minutes ?? null,
     space: kind === 'assignment' ? 'study' : normalizeSpaceValue(r.space),
   });

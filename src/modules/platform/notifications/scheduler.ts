@@ -10,7 +10,12 @@ import { formatShortDate } from '@/shared/format';
 import { i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
-import { planReminders, type PlannedReminder, type ReminderAction } from './plan';
+import {
+  planReminders,
+  reminderActionSchema,
+  type PlannedReminder,
+  type ReminderAction,
+} from './plan';
 
 export const END_OF_COURSE_CATEGORY = 'endofcourse';
 export const ACTIONS = {
@@ -183,9 +188,12 @@ export function readResponse(
   response: Notifications.NotificationResponse | null | undefined,
 ): NotificationResponse | null {
   if (!response) return null;
-  const data = response.notification.request.content.data as Partial<ReminderAction> | undefined;
-  if (!data || typeof data.kind !== 'string') return null;
-  return { actionIdentifier: response.actionIdentifier, action: data as ReminderAction };
+  const parsed = reminderActionSchema.safeParse(response.notification.request.content.data);
+  if (!parsed.success) {
+    logger.warn('Notification ignorée : données inconnues');
+    return null;
+  }
+  return { actionIdentifier: response.actionIdentifier, action: parsed.data };
 }
 
 export const addResponseListener = Notifications.addNotificationResponseReceivedListener;

@@ -1,10 +1,11 @@
 import type { IsoDate } from '@/shared/dates';
 import { write, type Db, type EntityWriter } from '@/shared/db';
 import { AppError } from '@/shared/errors';
-import { parseInput } from '@/shared/validation';
+import { enumOr, parseInput } from '@/shared/validation';
 
 import {
   revisionBlockInputSchema,
+  revisionStatuses,
   type RevisionBlock,
   type RevisionBlockInput,
   type RevisionStatus,
@@ -34,7 +35,7 @@ const toRevisionBlock = (r: RevisionBlockRow): RevisionBlock => ({
   startTime: r.start_time,
   endTime: r.end_time,
   title: r.title,
-  status: r.status as RevisionStatus,
+  status: enumOr(revisionStatuses, r.status, 'planned'),
   studySessionId: r.study_session_id,
 });
 

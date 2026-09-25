@@ -1,8 +1,28 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 
 import { AppError } from '@/shared/errors';
 
 import type { Mutation, PushResult, RemoteApi, SyncedTable } from './engine';
+
+/** Réponses du serveur vérifiées avant usage : une forme inattendue devient une erreur claire. */
+const pushResultSchema = z.discriminatedUnion('status', [
+  z.object({ mutation_id: z.string(), status: z.literal('applied'), version: z.number() }),
+  z.object({ mutation_id: z.string(), status: z.literal('missing') }),
+  z.object({
+    mutation_id: z.string(),
+    status: z.literal('conflict'),
+    server: z.record(z.string(), z.unknown()),
+  }),
+]);
+const pushResponseSchema = z.array(pushResultSchema);
+const pullResponseSchema = z.array(z.record(z.string(), z.unknown()));
+
+function parseResponse<T>(schema: z.ZodType<T>, data: unknown, where: string): T {
+  const parsed = schema.safeParse(data ?? []);
+  if (!parsed.success) throw new AppError('unknown', `${where}: réponse inattendue`);
+  return parsed.data;
+}
 
 function isNetwork(error: { message?: string; code?: string } | null): boolean {
   const m = (error?.message ?? '').toLowerCase();
@@ -21,7 +41,7 @@ export function supabaseRemote(client: SupabaseClient): RemoteApi {
     async push(mutations: Mutation[]): Promise<PushResult[]> {
       const { data, error } = await client.rpc('mysky_push', { p_mutations: mutations });
       if (error) throw toError(error, 'push');
-      return (data ?? []) as PushResult[];
+      return parseResponse<PushResult[]>(pushResponseSchema, data, 'push');
     },
     async pull(table: SyncedTable, since: string | null, limit: number) {
       let q = client
@@ -32,7 +52,7 @@ export function supabaseRemote(client: SupabaseClient): RemoteApi {
       if (since) q = q.gt('server_updated_at', since);
       const { data, error } = await q;
       if (error) throw toError(error, `pull:${table}`);
-      return (data ?? []) as Record<string, unknown>[];
+      return parseResponse(pullResponseSchema, data, `pull:${table}`);
     },
   };
 }

@@ -1,9 +1,10 @@
-import type { CourseSeries, CourseType, Recurrence } from '../domain/course';
+import { enumOr } from '@/shared/validation';
+import { courseTypes, recurrences, type CourseSeries } from '../domain/course';
 import type { Exam } from '../domain/exam';
-import type { CourseException, ExceptionKind } from '../domain/exception';
-import type { OffPeriod, OffPeriodKind } from '../domain/offPeriod';
+import { exceptionKinds, type CourseException } from '../domain/exception';
+import { offPeriodKinds, type OffPeriod } from '../domain/offPeriod';
 import type { Subject } from '../domain/subject';
-import type { Timetable, TimetableKind } from '../domain/timetable';
+import { timetableKinds, type Timetable } from '../domain/timetable';
 
 export type SubjectRow = {
   id: string;
@@ -44,7 +45,7 @@ export const toTimetable = (r: TimetableRow): Timetable => ({
   name: r.name,
   validFrom: r.valid_from,
   validUntil: r.valid_until,
-  kind: r.kind as TimetableKind,
+  kind: enumOr(timetableKinds, r.kind, 'courses'),
 });
 
 export type CourseSeriesRow = {
@@ -72,13 +73,13 @@ export const toCourseSeries = (r: CourseSeriesRow): CourseSeries => ({
   title: r.title,
   teacher: r.teacher,
   room: r.room,
-  courseType: r.course_type as CourseType,
+  courseType: enumOr(courseTypes, r.course_type, 'lecture'),
   weekday: r.weekday,
   startTime: r.start_time,
   endTime: r.end_time,
   validFrom: r.valid_from,
   validUntil: r.valid_until,
-  recurrence: r.recurrence as Recurrence,
+  recurrence: enumOr(recurrences, r.recurrence, 'weekly'),
   description: r.description,
   reminderMinutes: r.reminder_minutes,
 });
@@ -144,7 +145,7 @@ export const toCourseException = (r: CourseExceptionRow): CourseException => ({
   id: r.id,
   seriesId: r.series_id,
   date: r.date,
-  kind: r.kind as ExceptionKind,
+  kind: enumOr(exceptionKinds, r.kind, 'modified'),
   newDate: r.new_date ?? null,
   newStartTime: r.new_start_time,
   newEndTime: r.new_end_time,
@@ -166,7 +167,7 @@ export type OffPeriodRow = {
 export const toOffPeriod = (r: OffPeriodRow): OffPeriod => ({
   id: r.id,
   name: r.name,
-  kind: r.kind as OffPeriodKind,
+  kind: enumOr(offPeriodKinds, r.kind, 'holiday'),
   startDate: r.start_date,
   endDate: r.end_date,
   suspendCourses: r.suspend_courses === 1,

@@ -1,8 +1,9 @@
-import type { MoneyCategory, CategoryKind } from '../domain/category';
+import { enumOr } from '@/shared/validation';
+import { categoryKinds, type MoneyCategory } from '../domain/category';
 import type { Goal } from '../domain/goal';
-import type { Loan, LoanDirection } from '../domain/loan';
-import type { Frequency, Recurring, RecurringKind } from '../domain/recurring';
-import type { Transaction, TransactionKind } from '../domain/transaction';
+import { loanDirections, type Loan } from '../domain/loan';
+import { frequencies, recurringKinds, type Recurring } from '../domain/recurring';
+import { transactionKinds, type Transaction } from '../domain/transaction';
 
 export type TransactionRow = {
   id: string;
@@ -20,7 +21,7 @@ export type TransactionRow = {
 
 export const toTransaction = (r: TransactionRow): Transaction => ({
   id: r.id,
-  kind: r.kind as TransactionKind,
+  kind: enumOr(transactionKinds, r.kind, 'expense'),
   amountMinor: r.amount_minor,
   currency: r.currency,
   categoryId: r.category_id,
@@ -43,7 +44,7 @@ export type CategoryRow = {
 
 export const toCategory = (r: CategoryRow): MoneyCategory => ({
   id: r.id,
-  kind: r.kind as CategoryKind,
+  kind: enumOr(categoryKinds, r.kind, 'expense'),
   builtIn: false,
   name: r.name,
   icon: r.icon,
@@ -84,12 +85,12 @@ function parseReminders(json: string): number[] {
 
 export const toRecurring = (r: RecurringRow): Recurring => ({
   id: r.id,
-  kind: r.kind as RecurringKind,
+  kind: enumOr(recurringKinds, r.kind, 'charge'),
   name: r.name,
   categoryId: r.category_id,
   amountMinor: r.amount_minor,
   currency: r.currency,
-  frequency: r.frequency as Frequency,
+  frequency: enumOr(frequencies, r.frequency, 'monthly'),
   dayOfMonth: r.day_of_month,
   weekday: r.weekday,
   time: r.time,
@@ -133,7 +134,7 @@ export type LoanRow = {
 
 export const toLoan = (r: LoanRow): Loan => ({
   id: r.id,
-  direction: r.direction as LoanDirection,
+  direction: enumOr(loanDirections, r.direction, 'lent'),
   person: r.person,
   dueDate: r.due_date,
   note: r.note,
