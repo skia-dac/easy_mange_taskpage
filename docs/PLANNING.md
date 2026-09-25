@@ -304,6 +304,15 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **Widgets** (iPhone + Android): « Dépense rapide » (the 3 most used categories + Autre open the entry screen with the category chosen — a widget cannot receive typed text), « Il te reste » (also on the lock screen), « Mes dépenses » (7 days + what's due). Option « Masquer les montants dans les widgets ».
 - Out of scope for now: bank / Mobile Money import, per-category budgets, shared expenses.
 
+### Home screen (model « P », validated 25 Sep 2026)
+
+- Chosen among 18 mock-ups (A–R). Header: date, « Bonjour <prénom> », search, notifications, profile photo.
+- **Coup d'œil** (`TodayGlance`): 4 tiles — Argent (« Il te reste » + per day), Habitudes du jour (progress ring), À faire (count + overdue), next Examen (days left). Each tile opens its module.
+- **Ta journée** (`DayLineCard`, pure `buildDayLine` in `projections/today.ts`): classes (cancelled ones left out), planned revisions, timed events and tasks due today at a set time, on one timeline with the red « maintenant » line; past items dimmed; the next / ongoing class is the blue card (tap = course, pencil = take notes). All-day events above.
+- Then « Mes habitudes du jour » and « À faire » lists (tick, swipe).
+- **+ menu** (`QuickAddMenu`): Dépense, Entrée d'argent, Tâche, Devoir, Note de cours (pre-filled with the next class), Révision (study timer), Autre (→ `/add`).
+- Sections stay movable / hideable (`/today-layout`); the older sections (prochain cours, argent du jour, cours, révisions, événements, examens) are hidden by default. The layout has a version: older saved layouts switch once to model P.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Tâches · Notes · Argent (Profil via the photo at the top right, 25 Sep 2026) · import AI budget OK (a few cents per page).

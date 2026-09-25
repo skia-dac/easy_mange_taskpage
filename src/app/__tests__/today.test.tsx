@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -119,12 +119,14 @@ describe('écran Aujourd’hui', () => {
 
   it('montre le cours en cours, le devoir en retard et l’examen proche', async () => {
     await render(<TodayScreen />);
-    expect(screen.getByText('COURS EN COURS')).toBeTruthy();
-    expect(screen.getByText('Se termine dans 42 min')).toBeTruthy();
+    expect(screen.getByText('Ta journée')).toBeTruthy();
+    expect(screen.getByText('SE TERMINE DANS 42 MIN')).toBeTruthy();
+    expect(screen.getByText('maintenant')).toBeTruthy();
     expect(screen.getAllByText('Marketing stratégique').length).toBeGreaterThan(0);
     expect(screen.getByText('Étude de cas Marketing')).toBeTruthy();
     expect(screen.getByText('En retard')).toBeTruthy();
-    expect(screen.getByText('Dans 19 jours')).toBeTruthy();
+    expect(screen.getByText('1 en retard')).toBeTruthy();
+    expect(screen.getByText('19 j')).toBeTruthy();
   });
 
   it('état vide : aucune matière, aucun cours', async () => {
@@ -132,14 +134,24 @@ describe('écran Aujourd’hui', () => {
     mockSubjects = [];
     await render(<TodayScreen />);
     expect(screen.getByText('Ajoute ta première matière pour commencer.')).toBeTruthy();
-    expect(screen.getByText('Aucun cours prévu aujourd’hui.')).toBeTruthy();
+    expect(screen.getByText('Rien d’autre de prévu à une heure précise aujourd’hui.')).toBeTruthy();
     expect(screen.getByText('Rien à faire pour le moment.')).toBeTruthy();
-    expect(screen.getByText('Aucun examen programmé.')).toBeTruthy();
+    expect(screen.getByText('Aucun examen prévu')).toBeTruthy();
   });
 
   it('en anglais', async () => {
     await i18n.changeLanguage('en');
     await render(<TodayScreen />);
-    expect(screen.getByText('No classes today.')).toBeTruthy();
+    expect(screen.getByText('Nothing else planned at a set time today.')).toBeTruthy();
+  });
+
+  it('le + ouvre les ajouts rapides', async () => {
+    await render(<TodayScreen />);
+    await fireEvent.press(screen.getByLabelText('Ajouter'));
+    expect(screen.getByText('Dépense')).toBeTruthy();
+    expect(screen.getByText('Entrée d’argent')).toBeTruthy();
+    expect(screen.getByText('Note de cours')).toBeTruthy();
+    await fireEvent.press(screen.getAllByLabelText('Fermer')[0]!);
+    expect(screen.queryByText('Dépense')).toBeNull();
   });
 });

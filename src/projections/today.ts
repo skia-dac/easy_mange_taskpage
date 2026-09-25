@@ -20,7 +20,14 @@ import {
   type MoodLog,
 } from '@/modules/productivity';
 import type { Recurring, Transaction } from '@/modules/finance';
-import { addDaysIso, atTime, toIsoDate, type IsoDate } from '@/shared/dates';
+import {
+  addDaysIso,
+  atTime,
+  timeToMinutes,
+  toIsoDate,
+  type IsoDate,
+  type Time,
+} from '@/shared/dates';
 
 export type NextCourse =
   | { state: 'upcoming'; occurrence: Occurrence; minutes: number }
@@ -110,4 +117,84 @@ export function buildToday(data: TodayData, now: Date): TodayView {
     upcomingExams,
     events,
   };
+}
+
+/** Un moment de « Ta journée » : tout ce qui a une heure aujourd'hui, dans l'ordre. */
+export type DayEntry =
+  | { kind: 'course'; key: string; start: Time; end: Time; occurrence: Occurrence }
+  | { kind: 'revision'; key: string; start: Time; end: Time; block: RevisionBlock }
+  | { kind: 'event'; key: string; start: Time | null; end: Time | null; event: PersonalEvent }
+  | { kind: 'work'; key: string; start: Time; end: null; item: WorkItem };
+
+export type DayLine = {
+  /** Événements sans heure (toute la journée), affichés avant le fil. */
+  allDay: DayEntry[];
+  entries: DayEntry[];
+  /** Position du trait « maintenant » : nombre de moments déjà commencés. */
+  nowIndex: number;
+  /** Moments terminés (affichés en plus discret). */
+  pastKeys: ReadonlySet<string>;
+};
+
+/**
+ * Le fil de la journée (§7) : cours (non annulés), séances de révision prévues, événements et
+ * tâches avec une heure limite, triés par heure. Les tâches sans heure restent dans « À faire ».
+ */
+export function buildDayLine(
+  view: Pick<TodayView, 'today' | 'courses' | 'events' | 'overdue' | 'dueToday'>,
+  revisionBlocks: readonly RevisionBlock[],
+  now: Date,
+): DayLine {
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const timed: DayEntry[] = [];
+  const allDay: DayEntry[] = [];
+  for (const o of view.courses) {
+    if (o.status === 'cancelled') continue;
+    timed.push({
+      kind: 'course',
+      key: `course-${o.seriesId}-${o.originalDate}`,
+      start: o.startTime,
+      end: o.endTime,
+      occurrence: o,
+    });
+  }
+  for (const b of revisionBlocks) {
+    if (b.date !== view.today || b.status === 'skipped') continue;
+    timed.push({
+      kind: 'revision',
+      key: `revision-${b.id}`,
+      start: b.startTime,
+      end: b.endTime,
+      block: b,
+    });
+  }
+  for (const e of view.events) {
+    const entry: DayEntry = {
+      kind: 'event',
+      key: `event-${e.id}`,
+      start: e.startTime ?? null,
+      end: e.endTime ?? null,
+      event: e,
+    };
+    (e.startTime ? timed : allDay).push(entry);
+  }
+  for (const w of [...view.overdue, ...view.dueToday]) {
+    if (w.dueDate !== view.today || !w.dueTime) continue;
+    timed.push({
+      kind: 'work',
+      key: `work-${w.kind}-${w.id}`,
+      start: w.dueTime,
+      end: null,
+      item: w,
+    });
+  }
+  const startOf = (e: DayEntry) => timeToMinutes(e.start ?? '00:00');
+  timed.sort((a, b) => startOf(a) - startOf(b) || a.key.localeCompare(b.key));
+  const nowIndex = timed.filter((e) => startOf(e) <= nowMin).length;
+  const pastKeys = new Set(
+    timed
+      .filter((e) => (e.end ? timeToMinutes(e.end) : startOf(e)) <= nowMin && e.kind !== 'work')
+      .map((e) => e.key),
+  );
+  return { allDay, entries: timed, nowIndex, pastKeys };
 }

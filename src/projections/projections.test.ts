@@ -2,7 +2,7 @@ import type { CourseSeries, Exam, Occurrence } from '@/modules/academic';
 import type { WorkItem } from '@/modules/productivity';
 
 import { calendarDays } from './calendar';
-import { buildToday, nextCourse } from './today';
+import { buildDayLine, buildToday, nextCourse } from './today';
 
 const occ = (start: string, end: string, id = start): Occurrence => ({
   seriesId: id,
@@ -181,4 +181,82 @@ it('le calendrier affiche les vacances et masque les cours suspendus (§37, §42
     '2026-10-28',
   );
   expect(kept.get('2026-10-28')?.map((i) => i.kind)).toEqual(['dayOff', 'course']);
+});
+
+describe('« Ta journée » : le fil du temps', () => {
+  const base = {
+    today: '2026-09-23',
+    courses: [occ('11:00', '13:00', 'mkt'), occ('08:00', '09:00', 'eco')],
+    events: [
+      {
+        id: 'e1',
+        title: 'Réunion asso',
+        date: '2026-09-23',
+        startTime: '18:30',
+        endTime: null,
+        description: null,
+        reminderAt: null,
+      },
+      {
+        id: 'e2',
+        title: 'Anniversaire',
+        date: '2026-09-23',
+        startTime: null,
+        endTime: null,
+        description: null,
+        reminderAt: null,
+      },
+    ],
+    overdue: [],
+    dueToday: [work({ id: 'w1', dueTime: '14:00' }), work({ id: 'w2', dueTime: null })],
+  };
+  const blocks = [
+    {
+      id: 'r1',
+      subjectId: null,
+      examId: null,
+      timetableId: null,
+      date: '2026-09-23',
+      startTime: '17:00',
+      endTime: '18:00',
+      title: null,
+      status: 'planned' as const,
+      studySessionId: null,
+    },
+    {
+      id: 'r2',
+      subjectId: null,
+      examId: null,
+      timetableId: null,
+      date: '2026-09-23',
+      startTime: '19:00',
+      endTime: '20:00',
+      title: null,
+      status: 'skipped' as const,
+      studySessionId: null,
+    },
+  ];
+
+  it('trie par heure, garde les tâches avec heure et met les événements sans heure à part', () => {
+    const line = buildDayLine(base, blocks, new Date(2026, 8, 23, 10, 18));
+    expect(line.entries.map((e) => e.start)).toEqual(['08:00', '11:00', '14:00', '17:00', '18:30']);
+    expect(line.allDay.map((e) => e.key)).toEqual(['event-e2']);
+  });
+
+  it('place « maintenant » entre ce qui a commencé et la suite, et marque le passé', () => {
+    const line = buildDayLine(base, blocks, new Date(2026, 8, 23, 10, 18));
+    expect(line.nowIndex).toBe(1);
+    expect([...line.pastKeys]).toEqual(['course-eco-2026-09-23']);
+  });
+
+  it('ignore les cours annulés et les révisions sautées', () => {
+    const line = buildDayLine(
+      { ...base, courses: [{ ...occ('11:00', '13:00'), status: 'cancelled' }] },
+      blocks,
+      new Date(2026, 8, 23, 7, 0),
+    );
+    expect(line.entries.some((e) => e.kind === 'course')).toBe(false);
+    expect(line.entries.filter((e) => e.kind === 'revision')).toHaveLength(1);
+    expect(line.nowIndex).toBe(0);
+  });
 });

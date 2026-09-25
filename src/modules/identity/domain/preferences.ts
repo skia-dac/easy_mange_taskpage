@@ -79,28 +79,51 @@ export const textScalePreferenceSchema = z.enum(['small', 'normal', 'large', 'xl
 
 /** Sections de l'écran Aujourd'hui que l'étudiant peut ordonner ou masquer. */
 export const todaySectionIds = [
+  'glance',
+  'day',
+  'habits',
+  'todo',
   'next',
   'money',
   'courses',
   'revision',
-  'habits',
-  'todo',
   'events',
   'exams',
 ] as const;
 export type TodaySectionId = (typeof todaySectionIds)[number];
 
+/**
+ * Version de la mise en page : quand l'accueil change de modèle, les anciens réglages sont
+ * remplacés une fois par le nouveau modèle (l'étudiant peut ensuite le personnaliser).
+ */
+export const TODAY_LAYOUT_VERSION = 2;
+
 export const todayLayoutSchema = z.object({
+  v: z.number().int().optional(),
   order: z.array(z.enum(todaySectionIds)),
   hidden: z.array(z.enum(todaySectionIds)).default([]),
 });
 export type TodayLayout = z.infer<typeof todayLayoutSchema>;
 
+/** Accueil par défaut : tuiles, fil de la journée, habitudes, à faire. Le reste est masqué. */
+export const defaultTodayHidden: readonly TodaySectionId[] = [
+  'next',
+  'money',
+  'courses',
+  'revision',
+  'events',
+  'exams',
+];
+
 /** Ordre complet : l'ordre enregistré, puis les sections ajoutées depuis (nouvelles versions). */
 export function normalizeTodayLayout(layout: Partial<TodayLayout> | null | undefined): TodayLayout {
-  const order = (layout?.order ?? []).filter(
+  const current = layout?.v === TODAY_LAYOUT_VERSION ? layout : null;
+  const order = (current?.order ?? []).filter(
     (id, i, all) => todaySectionIds.includes(id) && all.indexOf(id) === i,
   );
   for (const id of todaySectionIds) if (!order.includes(id)) order.push(id);
-  return { order, hidden: (layout?.hidden ?? []).filter((id) => todaySectionIds.includes(id)) };
+  const hidden = current
+    ? (current.hidden ?? []).filter((id) => todaySectionIds.includes(id))
+    : [...defaultTodayHidden];
+  return { v: TODAY_LAYOUT_VERSION, order, hidden };
 }

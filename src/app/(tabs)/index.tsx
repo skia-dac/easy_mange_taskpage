@@ -11,6 +11,9 @@ import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitRow } from '@/components/HabitRow';
 import { TodayMoneyCard } from '@/components/money/TodayMoneyCard';
 import { ProfileButton } from '@/components/ProfileButton';
+import { QuickAddMenu } from '@/components/QuickAddMenu';
+import { DayLineCard } from '@/components/today/DayLineCard';
+import { TodayGlance } from '@/components/today/TodayGlance';
 import { useProfile } from '@/hooks/useProfile';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import {
@@ -21,7 +24,7 @@ import {
 } from '@/modules/identity';
 import { isScheduledOn, logOn, subtaskCounts, type Habit } from '@/modules/productivity';
 import { useSubjects } from '@/hooks/useSubjects';
-import { buildToday, useAgendaData, type NextCourse } from '@/projections';
+import { buildDayLine, buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { timeToMinutes } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { formatDuration, formatLongDate } from '@/shared/format';
@@ -32,7 +35,6 @@ import {
   Button,
   Card,
   EmptyState,
-  Fab,
   IconBadge,
   Screen,
   SectionHeader,
@@ -74,8 +76,15 @@ export default function TodayScreen() {
     ? (agenda.data?.revisionBlocks ?? []).filter((b) => b.date === view.today)
     : [];
 
+  const line = useMemo(
+    () => (view ? buildDayLine(view, agenda.data?.revisionBlocks ?? [], now) : null),
+    [view, agenda.data?.revisionBlocks, now],
+  );
+
   const sections: Record<TodaySectionId, ReactNode> = view
     ? {
+        glance: <TodayGlance view={view} habits={habits} habitLogs={habitLogs} subjects={byId} />,
+        day: line ? <DayLineCard line={line} next={view.next} now={now} subjects={byId} /> : null,
         next: view.next ? (
           <NextCourseCard
             next={view.next}
@@ -205,6 +214,8 @@ export default function TodayScreen() {
         ),
       }
     : {
+        glance: null,
+        day: null,
         next: null,
         money: null,
         courses: null,
@@ -315,7 +326,17 @@ export default function TodayScreen() {
           onClose={() => setHabitSheet(null)}
         />
       ) : null}
-      <Fab accessibilityLabel={t('add.title')} onPress={() => router.push('/add')} />
+      <QuickAddMenu
+        note={
+          view?.next
+            ? {
+                subjectId: view.next.occurrence.subjectId,
+                courseSeriesId: view.next.occurrence.seriesId,
+                courseDate: view.next.occurrence.originalDate,
+              }
+            : undefined
+        }
+      />
       {postpone.sheet}
     </View>
   );

@@ -1132,7 +1132,9 @@
       "todo": "À faire",
       "events": "Événements",
       "exams": "Examens à venir",
-      "money": "Argent du jour"
+      "money": "Argent du jour",
+      "glance": "Coup d’œil (tuiles)",
+      "day": "Ta journée (fil du temps)"
     }
   },
   "money": {
@@ -1364,5 +1366,40 @@
     "addCategory": "Ajouter la catégorie",
     "deleteCategoryTitle": "Supprimer « {{name}} » ?",
     "deleteCategoryMessage": "Ses opérations restent, rangées dans « Autre »."
+  },
+  "glance": {
+    "money": "Argent",
+    "moneyA11y": "Argent : il te reste {{amount}}",
+    "perDay": "{{amount}} / jour",
+    "moneyStart": "Note ce que tu as pour commencer",
+    "habits": "Habitudes du jour",
+    "habitsStart": "Créer une habitude",
+    "habitsA11y": "Habitudes du jour : {{done}} sur {{total}}",
+    "todo": "À faire",
+    "todoA11y": "À faire : {{count}}, dont {{overdue}} en retard",
+    "overdue": "{{count}} en retard",
+    "onTime": "Rien en retard",
+    "nothingTodo": "Tout est fait",
+    "exam": "Examen",
+    "noExam": "Aucun examen prévu",
+    "days": "{{count}} j"
+  },
+  "dayline": {
+    "title": "Ta journée",
+    "calendar": "Calendrier",
+    "empty": "Rien d’autre de prévu à une heure précise aujourd’hui.",
+    "now": "maintenant",
+    "nowA11y": "Maintenant, {{time}}",
+    "revision": "Révision {{name}}",
+    "done": "Faite",
+    "event": "Événement",
+    "allDay": "Toute la journée"
+  },
+  "quickAdd": {
+    "expense": "Dépense",
+    "income": "Entrée d’argent",
+    "note": "Note de cours",
+    "revision": "Révision",
+    "other": "Autre (examen, événement…)"
   }
 }

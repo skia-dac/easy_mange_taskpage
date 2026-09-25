@@ -1132,7 +1132,9 @@
       "todo": "To do",
       "events": "Events",
       "exams": "Upcoming exams",
-      "money": "Today’s money"
+      "money": "Today’s money",
+      "glance": "At a glance (tiles)",
+      "day": "Your day (timeline)"
     }
   },
   "money": {
@@ -1364,5 +1366,40 @@
     "addCategory": "Add category",
     "deleteCategoryTitle": "Delete “{{name}}”?",
     "deleteCategoryMessage": "Its entries stay, filed under “Other”."
+  },
+  "glance": {
+    "money": "Money",
+    "moneyA11y": "Money: you have {{amount}} left",
+    "perDay": "{{amount}} / day",
+    "moneyStart": "Note what you have to start",
+    "habits": "Today’s habits",
+    "habitsStart": "Create a habit",
+    "habitsA11y": "Today’s habits: {{done}} of {{total}}",
+    "todo": "To do",
+    "todoA11y": "To do: {{count}}, {{overdue}} overdue",
+    "overdue": "{{count}} overdue",
+    "onTime": "Nothing overdue",
+    "nothingTodo": "All done",
+    "exam": "Exam",
+    "noExam": "No exam planned",
+    "days": "{{count}} d"
+  },
+  "dayline": {
+    "title": "Your day",
+    "calendar": "Calendar",
+    "empty": "Nothing else planned at a set time today.",
+    "now": "now",
+    "nowA11y": "Now, {{time}}",
+    "revision": "Revision {{name}}",
+    "done": "Done",
+    "event": "Event",
+    "allDay": "All day"
+  },
+  "quickAdd": {
+    "expense": "Expense",
+    "income": "Money in",
+    "note": "Class note",
+    "revision": "Revision",
+    "other": "Other (exam, event…)"
   }
 }
