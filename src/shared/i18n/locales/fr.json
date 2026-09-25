@@ -626,8 +626,7 @@
     "manualHint": "Ajoute tes matières et tes cours un par un.",
     "later": "Plus tard",
     "laterHint": "Découvre d’abord l’application.",
-    "import": "Importer mon emploi du temps",
-    "importHint": "Photo ou PDF. Bientôt disponible.",
+    "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
     "startNow": "Commencer"

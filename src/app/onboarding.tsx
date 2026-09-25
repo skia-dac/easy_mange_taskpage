@@ -55,6 +55,14 @@ export default function OnboardingScreen() {
     if (then === 'account') router.push('/auth/sign-in');
   };
 
+  // « Au moins un espace » : seulement quand on essaie de décocher le dernier, pas avant.
+  const [blocked, setBlocked] = useState(false);
+  const pick = (id: SpaceId, on: boolean) => {
+    const next = toggleSpace(picked, id, on);
+    setBlocked(next === picked && !on);
+    setPicked(next);
+  };
+
   const saveSpaces = async () => {
     setSavingSpaces(true);
     try {
@@ -66,10 +74,32 @@ export default function OnboardingScreen() {
     setIndex(last + 1);
   };
 
+  // Points de progression : les 3 pages d'intro, puis Espaces, puis « Comment commencer ».
+  const total = steps.length + 2;
+  const dots = (
+    <View
+      accessibilityLabel={t('onboarding.progress', { step: Math.min(index, total - 1) + 1, total })}
+      style={{ flexDirection: 'row', gap: spacing.xs }}
+    >
+      {Array.from({ length: total }, (_, i) => (
+        <View
+          key={i}
+          style={{
+            height: 8,
+            width: i === Math.min(index, total - 1) ? 26 : 8,
+            borderRadius: 4,
+            backgroundColor: i === Math.min(index, total - 1) ? colors.primary : colors.border,
+          }}
+        />
+      ))}
+    </View>
+  );
+
   if (index === last) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, padding: spacing.xl, gap: spacing.lg }}>
+          {dots}
           <AppText variant="title">{t('spaces.onboardingTitle')}</AppText>
           <AppText color="muted">{t('spaces.onboardingHint')}</AppText>
           {spaceIds.map((id) => {
@@ -78,7 +108,7 @@ export default function OnboardingScreen() {
             return (
               <Card
                 key={id}
-                onPress={() => setPicked(toggleSpace(picked, id, !on))}
+                onPress={() => pick(id, !on)}
                 accessibilityLabel={t(`spaces.name.${id}`)}
                 style={{ borderWidth: 2, borderColor: on ? colors.primary : colors.border }}
               >
@@ -119,7 +149,7 @@ export default function OnboardingScreen() {
             );
           })}
           <AppText variant="caption" color="muted">
-            {picked.length === 1 ? t('spaces.lastOne') : t('spaces.changeLater')}
+            {blocked ? t('spaces.lastOne') : t('spaces.changeLater')}
           </AppText>
           <View style={{ flex: 1 }} />
           <Button
@@ -138,13 +168,8 @@ export default function OnboardingScreen() {
       title: string,
       hint: string,
       onPress: () => void,
-      disabled = false,
     ) => (
-      <Card
-        onPress={disabled ? undefined : onPress}
-        accessibilityLabel={title}
-        style={{ opacity: disabled ? 0.55 : 1 }}
-      >
+      <Card onPress={onPress} accessibilityLabel={title}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <IconBadge icon={icon} size={48} />
           <View style={{ flex: 1, gap: 2 }}>
@@ -153,13 +178,14 @@ export default function OnboardingScreen() {
               {hint}
             </AppText>
           </View>
-          {!disabled ? <Feather name="chevron-right" size={20} color={colors.muted} /> : null}
+          <Feather name="chevron-right" size={20} color={colors.muted} />
         </View>
       </Card>
     );
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, padding: spacing.xl, gap: spacing.lg, justifyContent: 'center' }}>
+          {dots}
           <AppText variant="title">{t('onboarding.howTitle')}</AppText>
           <AppText color="muted">{t('onboarding.howHint')}</AppText>
           {picked.includes('study')
@@ -168,15 +194,6 @@ export default function OnboardingScreen() {
                 t('onboarding.manual'),
                 t('onboarding.manualHint'),
                 () => void finish('subject'),
-              )
-            : null}
-          {picked.includes('study')
-            ? choice(
-                'camera',
-                t('onboarding.import'),
-                t('onboarding.importHint'),
-                () => undefined,
-                true,
               )
             : null}
           {accounts
@@ -227,19 +244,7 @@ export default function OnboardingScreen() {
             <Feather name={step.icon} size={56} color={colors.onPrimary} />
           </View>
         </View>
-        <View style={{ flexDirection: 'row', gap: spacing.xs }}>
-          {steps.map((_, i) => (
-            <View
-              key={i}
-              style={{
-                height: 8,
-                width: i === index ? 26 : 8,
-                borderRadius: 4,
-                backgroundColor: i === index ? colors.primary : colors.border,
-              }}
-            />
-          ))}
-        </View>
+        {dots}
         <AppText variant="title">{step.title}</AppText>
         <AppText color="muted" style={{ fontSize: 16, lineHeight: 24 }}>
           {step.body}
