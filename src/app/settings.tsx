@@ -46,6 +46,7 @@ import {
   type BackupFile,
   type BackupSnapshot,
 } from '@/modules/platform';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useDb } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
 import { formatDateTime } from '@/shared/format';
@@ -79,6 +80,9 @@ function backupErrorKey(e: unknown): string {
 }
 
 export default function SettingsScreen() {
+  const spaces = useSpaces();
+  const study = spaces.has('study');
+  const personal = spaces.has('personal');
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
@@ -307,26 +311,31 @@ export default function SettingsScreen() {
         </Card>
       ) : null}
       <Card>
-        {toggle(t('settings.courses'), 'courses')}
-        {prefs.courses ? (
-          <ChoiceChips
-            label={t('settings.courseMinutes')}
-            options={courseReminderOptions.map((m) => ({
-              value: m,
-              label: labels.reminderMinutes(m),
-            }))}
-            selected={[prefs.courseReminderMinutes]}
-            onToggle={(courseReminderMinutes) => update({ courseReminderMinutes })}
-          />
+        {/* Rappels des espaces coupés : cachés ici et mis en pause (les réglages sont gardés). */}
+        {study ? (
+          <>
+            {toggle(t('settings.courses'), 'courses')}
+            {prefs.courses ? (
+              <ChoiceChips
+                label={t('settings.courseMinutes')}
+                options={courseReminderOptions.map((m) => ({
+                  value: m,
+                  label: labels.reminderMinutes(m),
+                }))}
+                selected={[prefs.courseReminderMinutes]}
+                onToggle={(courseReminderMinutes) => update({ courseReminderMinutes })}
+              />
+            ) : null}
+            {toggle(t('settings.endOfCourse'), 'endOfCourse', t('settings.endOfCourseHint'))}
+            {toggle(t('settings.assignments'), 'assignments')}
+          </>
         ) : null}
-        {toggle(t('settings.endOfCourse'), 'endOfCourse', t('settings.endOfCourseHint'))}
-        {toggle(t('settings.assignments'), 'assignments')}
         {toggle(t('settings.tasks'), 'tasks')}
-        {toggle(t('settings.exams'), 'exams')}
+        {study ? toggle(t('settings.exams'), 'exams') : null}
         {toggle(t('settings.events'), 'events')}
-        {toggle(t('settings.habits'), 'habits', t('settings.habitsHint'))}
-        {toggle(t('settings.revisions'), 'revisions', t('settings.revisionsHint'))}
-        {toggle(t('settings.money'), 'money', t('settings.moneyHint'))}
+        {personal ? toggle(t('settings.habits'), 'habits', t('settings.habitsHint')) : null}
+        {study ? toggle(t('settings.revisions'), 'revisions', t('settings.revisionsHint')) : null}
+        {personal ? toggle(t('settings.money'), 'money', t('settings.moneyHint')) : null}
         {toggle(t('settings.eveningReview'), 'eveningReview', t('settings.eveningReviewHint'))}
         {prefs.eveningReview ? (
           <DateTimeField
@@ -345,7 +354,9 @@ export default function SettingsScreen() {
 
       <SectionHeader title={t('focus.title')} />
       <Card>
-        {toggle(t('focus.duringCourses'), 'focusDuringCourses', t('focus.duringCoursesHint'))}
+        {study
+          ? toggle(t('focus.duringCourses'), 'focusDuringCourses', t('focus.duringCoursesHint'))
+          : null}
         {toggle(t('focus.duringStudy'), 'focusDuringStudy', t('focus.duringStudyHint'))}
       </Card>
 

@@ -2,12 +2,14 @@ import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { SpacesCard } from '@/components/SpacesCard';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
 import { fullName, initials, useAuth } from '@/modules/identity';
 import { attachmentUri } from '@/modules/platform';
 import { Image } from 'expo-image';
 import { Pressable, ScrollView, View } from 'react-native';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme } from '@/shared/theme';
 import { colorOf } from '@/modules/academic';
 import { AppText, Card, IconBadge, ListRow, SectionHeader, SubjectDot } from '@/shared/ui';
@@ -19,6 +21,7 @@ export default function ProfileScreen() {
   const { colors, spacing, radius } = useTheme();
   const name = fullName(profile);
   const auth = useAuth();
+  const spaces = useSpaces();
   const details = [profile?.field, profile?.level, profile?.university, profile?.academicYear]
     .filter(Boolean)
     .join(' · ');
@@ -91,48 +94,76 @@ export default function ProfileScreen() {
           />
         </Card>
       ) : null}
-      <SectionHeader
-        title={t('profile.subjects')}
-        action={
-          subjects.length > 0
-            ? { label: t('common.seeAll'), onPress: () => router.push('/subjects') }
-            : undefined
-        }
-      />
-      <Card>
-        {subjects.length === 0 ? (
-          <AppText color="muted">{t('profile.emptySubjects')}</AppText>
-        ) : null}
-        {subjects.slice(0, 6).map((s) => (
-          <ListRow
-            key={s.id}
-            title={s.name}
-            subtitle={[s.teacher, s.room].filter(Boolean).join(' · ')}
-            leading={<SubjectDot color={colorOf(s)} size={14} />}
-            onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: s.id } })}
+      <SectionHeader title={t('spaces.title')} />
+      <AppText variant="caption" color="muted">
+        {t('spaces.intro')}
+      </AppText>
+      <SpacesCard />
+
+      {spaces.has('study') ? (
+        <>
+          <SectionHeader
+            title={t('profile.subjects')}
+            action={
+              subjects.length > 0
+                ? { label: t('common.seeAll'), onPress: () => router.push('/subjects') }
+                : undefined
+            }
           />
-        ))}
-        <ListRow
-          title={t('profile.addSubject')}
-          leading={<IconBadge icon="plus" />}
-          onPress={() => router.push('/subjects/form')}
-        />
-      </Card>
+          <Card>
+            {subjects.length === 0 ? (
+              <AppText color="muted">{t('profile.emptySubjects')}</AppText>
+            ) : null}
+            {subjects.slice(0, 6).map((s) => (
+              <ListRow
+                key={s.id}
+                title={s.name}
+                subtitle={[s.teacher, s.room].filter(Boolean).join(' · ')}
+                leading={<SubjectDot color={colorOf(s)} size={14} />}
+                onPress={() => router.push({ pathname: '/subjects/[id]', params: { id: s.id } })}
+              />
+            ))}
+            <ListRow
+              title={t('profile.addSubject')}
+              leading={<IconBadge icon="plus" />}
+              onPress={() => router.push('/subjects/form')}
+            />
+          </Card>
+          <Card>
+            <ListRow
+              title={t('calendar.timetables')}
+              subtitle={t('profile.timetableHint')}
+              leading={<IconBadge icon="calendar" />}
+              onPress={() => router.push('/timetables')}
+            />
+            <ListRow
+              title={t('grades.title')}
+              subtitle={t('profile.gradesHint')}
+              leading={<IconBadge icon="award" color="success" background="successSoft" />}
+              onPress={() => router.push('/grades')}
+            />
+          </Card>
+        </>
+      ) : null}
 
       <SectionHeader title={t('profile.progress')} />
       <Card>
-        <ListRow
-          title={t('habits.title')}
-          subtitle={t('profile.habitsHint')}
-          leading={<IconBadge icon="target" />}
-          onPress={() => router.push('/habits')}
-        />
-        <ListRow
-          title={t('mood.title')}
-          subtitle={t('profile.moodHint')}
-          leading={<IconBadge icon="smile" color="warning" background="warningSoft" />}
-          onPress={() => router.push('/mood')}
-        />
+        {spaces.has('personal') ? (
+          <>
+            <ListRow
+              title={t('habits.title')}
+              subtitle={t('profile.habitsHint')}
+              leading={<IconBadge icon="target" />}
+              onPress={() => router.push('/habits')}
+            />
+            <ListRow
+              title={t('mood.title')}
+              subtitle={t('profile.moodHint')}
+              leading={<IconBadge icon="smile" color="warning" background="warningSoft" />}
+              onPress={() => router.push('/mood')}
+            />
+          </>
+        ) : null}
         <ListRow
           title={t('review.title')}
           subtitle={t('profile.reviewHint')}
@@ -140,14 +171,8 @@ export default function ProfileScreen() {
           onPress={() => router.push('/review')}
         />
         <ListRow
-          title={t('grades.title')}
-          subtitle={t('profile.gradesHint')}
-          leading={<IconBadge icon="award" color="success" background="successSoft" />}
-          onPress={() => router.push('/grades')}
-        />
-        <ListRow
-          title={t('study.title')}
-          subtitle={t('profile.studyHint')}
+          title={spaces.has('study') ? t('study.title') : t('spaces.focusTitle')}
+          subtitle={spaces.has('study') ? t('profile.studyHint') : t('spaces.focusHint')}
           leading={<IconBadge icon="clock" />}
           onPress={() => router.push('/study')}
         />
@@ -156,16 +181,6 @@ export default function ProfileScreen() {
           subtitle={t('profile.statsHint')}
           leading={<IconBadge icon="bar-chart-2" color="warning" background="warningSoft" />}
           onPress={() => router.push('/stats')}
-        />
-      </Card>
-
-      <SectionHeader title={t('profile.timetable')} />
-      <Card>
-        <ListRow
-          title={t('calendar.timetables')}
-          subtitle={t('profile.timetableHint')}
-          leading={<IconBadge icon="calendar" />}
-          onPress={() => router.push('/timetables')}
         />
       </Card>
 

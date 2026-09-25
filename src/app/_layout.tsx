@@ -18,7 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AccountGate } from '@/components/AccountGate';
 import { MoneyGate } from '@/components/MoneyGate';
-import { AppearanceProvider, AuthProvider, LanguageGate } from '@/modules/identity';
+import { AppearanceProvider, AuthProvider, LanguageGate, SpacesProvider } from '@/modules/identity';
 import { BackupGate, LockGate, NotificationsGate, WidgetsGate } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -59,7 +59,9 @@ export default function RootLayout() {
               <MoneyGate />
               <WidgetsGate />
               <AppearanceProvider>
-                <ThemedStack />
+                <SpacesProvider>
+                  <ThemedStack />
+                </SpacesProvider>
                 <LockGate />
               </AppearanceProvider>
             </AuthProvider>

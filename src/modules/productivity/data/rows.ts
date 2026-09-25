@@ -1,3 +1,5 @@
+import { normalizeSpaceValue } from '@/shared/spaces';
+
 import type { PersonalEvent } from '../domain/personalEvent';
 import type { Priority, RepeatRule, WorkItem, WorkKind, WorkStatus } from '../domain/workItem';
 
@@ -14,6 +16,7 @@ export type WorkItemRow = {
   reminder_at: string | null;
   repeat_rule: string;
   estimated_minutes: number | null;
+  space?: string | null;
 };
 
 export const toWorkItem =
@@ -32,6 +35,7 @@ export const toWorkItem =
     reminderAt: r.reminder_at,
     repeat: r.repeat_rule as RepeatRule,
     estimatedMinutes: r.estimated_minutes ?? null,
+    space: kind === 'assignment' ? 'study' : normalizeSpaceValue(r.space),
   });
 
 export type PersonalEventRow = {
@@ -42,6 +46,7 @@ export type PersonalEventRow = {
   end_time: string | null;
   description: string | null;
   reminder_at: string | null;
+  space?: string | null;
 };
 
 export const toPersonalEvent = (r: PersonalEventRow): PersonalEvent => ({
@@ -52,6 +57,7 @@ export const toPersonalEvent = (r: PersonalEventRow): PersonalEvent => ({
   endTime: r.end_time,
   description: r.description,
   reminderAt: r.reminder_at,
+  space: normalizeSpaceValue(r.space),
 });
 
 export const tableOf = (kind: WorkKind) => (kind === 'task' ? 'tasks' : 'assignments');

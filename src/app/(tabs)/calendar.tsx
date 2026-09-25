@@ -28,6 +28,7 @@ import {
   weekdayOrder,
   type IsoDate,
 } from '@/shared/dates';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatLongDate, formatMonthYear, formatShortDate } from '@/shared/format';
@@ -70,6 +71,9 @@ export default function CalendarScreen() {
   const [shown, setShown] = useState<ReadonlySet<CalendarFilter>>(new Set(calendarFilters));
   const [selected, setSelected] = useState<IsoDate>(today);
   const agenda = useAgendaData();
+  const study = useSpaces().has('study');
+  // Sans Études : ni cours, ni examens, ni révisions à filtrer.
+  const filterChoices = calendarFilters.filter((f) => study || f === 'work' || f === 'event');
   const { byId } = useSubjects();
   const weekStartDay = useWeekStart();
 
@@ -195,19 +199,21 @@ export default function CalendarScreen() {
               options={viewModes.map((m) => ({ value: m, label: t(`calendar.${m}`) }))}
             />
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('calendar.timetables')}
-            onPress={() => router.push('/timetables')}
-            style={{
-              width: minTouchSize,
-              height: minTouchSize,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Feather name="grid" size={22} color={colors.primary} />
-          </Pressable>
+          {study ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('calendar.timetables')}
+              onPress={() => router.push('/timetables')}
+              style={{
+                width: minTouchSize,
+                height: minTouchSize,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Feather name="grid" size={22} color={colors.primary} />
+            </Pressable>
+          ) : null}
         </View>
 
         <View
@@ -226,7 +232,7 @@ export default function CalendarScreen() {
 
         <ChoiceChips
           scroll
-          options={calendarFilters.map((f) => ({ value: f, label: t(`calendar.filter.${f}`) }))}
+          options={filterChoices.map((f) => ({ value: f, label: t(`calendar.filter.${f}`) }))}
           selected={[...shown]}
           onToggle={toggleFilter}
         />

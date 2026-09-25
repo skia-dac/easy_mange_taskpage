@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
 import { SearchButton } from '@/components/SearchButton';
+import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf, listExams } from '@/modules/academic';
 import {
@@ -13,11 +14,14 @@ import {
   isOverdue,
   listWorkItems,
   subtaskCounts,
+  workSpace,
   type WorkItem,
   type WorkKind,
 } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
+import { useSpaces } from '@/shared/SpacesContext';
+import type { SpaceId } from '@/shared/spaces';
 import { useNow } from '@/shared/useNow';
 import {
   AppText,
@@ -38,7 +42,12 @@ export default function TasksScreen() {
   const { t } = useTranslation();
   const now = useNow();
   const today = toIsoDate(now);
-  const [tab, setTab] = useState<Tab>('assignment');
+  const spaces = useSpaces();
+  const study = spaces.has('study');
+  // Sans l'espace Études, il n'y a que des tâches (pas de devoirs ni d'examens).
+  const [chosenTab, setTab] = useState<Tab>(study ? 'assignment' : 'task');
+  const tab: Tab = study ? chosenTab : 'task';
+  const [space, setSpace] = useState<SpaceId | null>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
   const { subjects, byId } = useSubjects();
@@ -48,13 +57,24 @@ export default function TasksScreen() {
     ['tasks', 'assignments'],
     [tab],
   );
-  const exams = useLiveQuery(listExams, ['exams'], []);
+  const exams = useLiveQuery(
+    (db) => (study ? listExams(db) : Promise.resolve([])),
+    ['exams'],
+    [study],
+  );
   const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
   const postpone = usePostpone();
 
   const filtered = useMemo(
-    () => (work.data ?? []).filter((w) => !subjectId || w.subjectId === subjectId),
-    [work.data, subjectId],
+    () =>
+      (work.data ?? []).filter((w) => {
+        const s = workSpace(w);
+        // Éléments des espaces désactivés : cachés, jamais effacés.
+        if (!spaces.has(s)) return false;
+        if (tab === 'task' && space && s !== space) return false;
+        return !subjectId || w.subjectId === subjectId;
+      }),
+    [work.data, subjectId, space, spaces, tab],
   );
   const groups = useMemo(() => {
     const open = filtered.filter((w) => w.status !== 'done').sort(compareWorkItems);
@@ -97,7 +117,11 @@ export default function TasksScreen() {
       ? router.push({ pathname: '/exams/form', params: subjectId ? { subjectId } : {} })
       : router.push({
           pathname: '/work/form',
-          params: { kind: tab, ...(subjectId ? { subjectId } : {}) },
+          params: {
+            kind: tab,
+            ...(subjectId ? { subjectId } : {}),
+            ...(tab === 'task' && space ? { space } : {}),
+          },
         });
 
   const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
@@ -105,16 +129,27 @@ export default function TasksScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Screen title={t('tasks.title')} actions={<SearchButton />}>
-        <Segmented
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'task', label: t('tasks.segTasks') },
-            { value: 'assignment', label: t('tasks.segAssignments') },
-            { value: 'exam', label: t('tasks.segExams') },
-          ]}
-        />
-        {subjects.length > 0 ? (
+        {study ? (
+          <Segmented
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'task', label: t('tasks.segTasks') },
+              { value: 'assignment', label: t('tasks.segAssignments') },
+              { value: 'exam', label: t('tasks.segExams') },
+            ]}
+          />
+        ) : null}
+        {tab === 'task' ? (
+          <SpaceFilter
+            value={space}
+            onChange={(v) => {
+              setSpace(v);
+              if (v !== 'study') setSubjectId(null);
+            }}
+          />
+        ) : null}
+        {subjects.length > 0 && study && (tab !== 'task' || space === null || space === 'study') ? (
           <ChoiceChips
             scroll
             options={[

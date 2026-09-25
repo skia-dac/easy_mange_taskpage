@@ -5,10 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
+import { useSpaces } from '@/shared/SpacesContext';
 import { AppText } from '@/shared/ui';
 
 type Tile = {
   label: string;
+  /** Réservé à l'espace Études (masqué sinon). */
+  study?: boolean;
   icon: ComponentProps<typeof Feather>['name'];
   color: keyof ColorTokens;
   background: keyof ColorTokens;
@@ -21,6 +24,7 @@ export default function AddScreen() {
   const { colors, radius, spacing } = useTheme();
   const { date } = useLocalSearchParams<{ date?: string }>();
   const withDate = date ? { date } : {};
+  const study = useSpaces().has('study');
 
   const tiles: Tile[] = [
     {
@@ -32,6 +36,7 @@ export default function AddScreen() {
     },
     {
       label: t('add.assignment'),
+      study: true,
       icon: 'book',
       color: 'primary',
       background: 'primarySoft',
@@ -46,6 +51,7 @@ export default function AddScreen() {
     },
     {
       label: t('add.exam'),
+      study: true,
       icon: 'award',
       color: 'danger',
       background: 'dangerSoft',
@@ -60,6 +66,7 @@ export default function AddScreen() {
     },
     {
       label: t('add.course'),
+      study: true,
       icon: 'clock',
       color: 'primary',
       background: 'primarySoft',
@@ -67,6 +74,7 @@ export default function AddScreen() {
     },
     {
       label: t('add.subject'),
+      study: true,
       icon: 'book-open',
       color: 'primary',
       background: 'primarySoft',
@@ -80,39 +88,41 @@ export default function AddScreen() {
       contentContainerStyle={{ padding: spacing.xl }}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-        {tiles.map((tile) => (
-          <Pressable
-            key={tile.label}
-            accessibilityRole="button"
-            onPress={() => router.replace(tile.href)}
-            style={({ pressed }) => ({
-              width: '30.5%',
-              minHeight: minTouchSize * 2.4,
-              borderRadius: radius.lg,
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: colors.border,
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: spacing.sm,
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <View
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: radius.md,
-                backgroundColor: colors[tile.background],
+        {tiles
+          .filter((tile) => study || !tile.study)
+          .map((tile) => (
+            <Pressable
+              key={tile.label}
+              accessibilityRole="button"
+              onPress={() => router.replace(tile.href)}
+              style={({ pressed }) => ({
+                width: '30.5%',
+                minHeight: minTouchSize * 2.4,
+                borderRadius: radius.lg,
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
                 alignItems: 'center',
                 justifyContent: 'center',
-              }}
+                gap: spacing.sm,
+                opacity: pressed ? 0.8 : 1,
+              })}
             >
-              <Feather name={tile.icon} size={24} color={colors[tile.color]} />
-            </View>
-            <AppText variant="bodyStrong">{tile.label}</AppText>
-          </Pressable>
-        ))}
+              <View
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: radius.md,
+                  backgroundColor: colors[tile.background],
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Feather name={tile.icon} size={24} color={colors[tile.color]} />
+              </View>
+              <AppText variant="bodyStrong">{tile.label}</AppText>
+            </Pressable>
+          ))}
       </View>
     </ScrollView>
   );

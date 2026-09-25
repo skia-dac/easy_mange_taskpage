@@ -75,6 +75,7 @@ const data: TodayData = {
       reminderAt: null,
       repeat: 'none',
       estimatedMinutes: null,
+      space: 'personal',
     },
     {
       id: 'w2',
@@ -90,6 +91,7 @@ const data: TodayData = {
       reminderAt: null,
       repeat: 'none',
       estimatedMinutes: null,
+      space: 'personal',
     },
   ],
 };

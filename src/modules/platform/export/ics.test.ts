@@ -65,6 +65,7 @@ const data: TodayData = {
       endTime: null,
       description: null,
       reminderAt: null,
+      space: 'personal',
     },
   ],
   work: [
@@ -82,6 +83,7 @@ const data: TodayData = {
       reminderAt: null,
       repeat: 'none',
       estimatedMinutes: null,
+      space: 'personal',
     },
     {
       id: 'w2',
@@ -97,6 +99,7 @@ const data: TodayData = {
       reminderAt: null,
       repeat: 'none',
       estimatedMinutes: null,
+      space: 'personal',
     },
   ],
 };

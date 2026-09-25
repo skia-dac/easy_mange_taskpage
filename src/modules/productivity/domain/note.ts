@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalId, optionalText } from '@/shared/validation';
 
 /**
@@ -13,6 +14,8 @@ export const noteInputSchema = z.object({
   subjectId: optionalId,
   courseSeriesId: optionalId,
   courseDate: isoDate.nullish().transform((v) => v ?? null),
+  /** Espace ; absent à la modification = on garde celui enregistré. */
+  space: spaceSchema.optional(),
 });
 
 export type NoteInput = z.input<typeof noteInputSchema>;
@@ -26,7 +29,13 @@ export type Note = {
   isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
+  space: SpaceId;
 };
+
+/** Espace réel d'une note : liée à une matière ou à un cours = Études. */
+export function noteSpace(note: Pick<Note, 'subjectId' | 'courseSeriesId' | 'space'>): SpaceId {
+  return note.subjectId || note.courseSeriesId ? 'study' : note.space;
+}
 
 export type AttachmentKind = 'image' | 'file';
 export type Attachment = {

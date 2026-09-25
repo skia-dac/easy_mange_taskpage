@@ -6,20 +6,34 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { setOnboardingDone, useAuth } from '@/modules/identity';
+import { spaceColor } from '@/components/SpaceUi';
+import { setActiveSpaces, setOnboardingDone, useAuth } from '@/modules/identity';
 import { useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
+import { spaceIds, toggleSpace, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
 import { AppText, Button, Card, IconBadge, TextButton } from '@/shared/ui';
 
 type Step = { icon: ComponentProps<typeof Feather>['name']; title: string; body: string };
 
-/** Première utilisation (§93) : courte introduction, puis « Comment veux-tu commencer ? ». */
+const SPACE_ICONS: Record<SpaceId, ComponentProps<typeof Feather>['name']> = {
+  study: 'book-open',
+  work: 'briefcase',
+  personal: 'home',
+};
+
+/**
+ * Première utilisation (§93) : courte introduction, « Tu utilises MySky pour… » (les espaces,
+ * au moins un), puis « Comment veux-tu commencer ? ».
+ */
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const db = useDb();
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, scheme } = useTheme();
   const [index, setIndex] = useState(0);
+  // Un espace est toujours choisi : Études au départ (l'étudiant peut en ajouter ou changer).
+  const [picked, setPicked] = useState<ActiveSpaces>(['study']);
+  const [savingSpaces, setSavingSpaces] = useState(false);
 
   const steps: Step[] = [
     { icon: 'sun', title: t('onboarding.title1'), body: t('onboarding.body1') },
@@ -41,7 +55,84 @@ export default function OnboardingScreen() {
     if (then === 'account') router.push('/auth/sign-in');
   };
 
-  if (index === last || !step) {
+  const saveSpaces = async () => {
+    setSavingSpaces(true);
+    try {
+      await setActiveSpaces(db, picked);
+    } catch (e) {
+      logger.error(e, { where: 'onboarding' });
+    }
+    setSavingSpaces(false);
+    setIndex(last + 1);
+  };
+
+  if (index === last) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, padding: spacing.xl, gap: spacing.lg }}>
+          <AppText variant="title">{t('spaces.onboardingTitle')}</AppText>
+          <AppText color="muted">{t('spaces.onboardingHint')}</AppText>
+          {spaceIds.map((id) => {
+            const on = picked.includes(id);
+            const c = spaceColor(id);
+            return (
+              <Card
+                key={id}
+                onPress={() => setPicked(toggleSpace(picked, id, !on))}
+                accessibilityLabel={t(`spaces.name.${id}`)}
+                style={{ borderWidth: 2, borderColor: on ? colors.primary : colors.border }}
+              >
+                <View
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: on }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}
+                >
+                  <View
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: radius.md,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: scheme === 'dark' ? c.softDark : c.soft,
+                    }}
+                  >
+                    <Feather
+                      name={SPACE_ICONS[id]}
+                      size={22}
+                      color={scheme === 'dark' ? c.strongDark : c.strong}
+                    />
+                  </View>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <AppText variant="bodyStrong">{t(`spaces.name.${id}`)}</AppText>
+                    <AppText variant="caption" color="muted">
+                      {t(`spaces.hint.${id}`)}
+                    </AppText>
+                  </View>
+                  <Feather
+                    name={on ? 'check-circle' : 'circle'}
+                    size={24}
+                    color={on ? colors.primary : colors.border}
+                  />
+                </View>
+              </Card>
+            );
+          })}
+          <AppText variant="caption" color="muted">
+            {picked.length === 1 ? t('spaces.lastOne') : t('spaces.changeLater')}
+          </AppText>
+          <View style={{ flex: 1 }} />
+          <Button
+            label={t('onboarding.next')}
+            disabled={savingSpaces}
+            onPress={() => void saveSpaces()}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (index > last || !step) {
     const choice = (
       icon: ComponentProps<typeof Feather>['name'],
       title: string,
@@ -71,19 +162,23 @@ export default function OnboardingScreen() {
         <View style={{ flex: 1, padding: spacing.xl, gap: spacing.lg, justifyContent: 'center' }}>
           <AppText variant="title">{t('onboarding.howTitle')}</AppText>
           <AppText color="muted">{t('onboarding.howHint')}</AppText>
-          {choice(
-            'edit-3',
-            t('onboarding.manual'),
-            t('onboarding.manualHint'),
-            () => void finish('subject'),
-          )}
-          {choice(
-            'camera',
-            t('onboarding.import'),
-            t('onboarding.importHint'),
-            () => undefined,
-            true,
-          )}
+          {picked.includes('study')
+            ? choice(
+                'edit-3',
+                t('onboarding.manual'),
+                t('onboarding.manualHint'),
+                () => void finish('subject'),
+              )
+            : null}
+          {picked.includes('study')
+            ? choice(
+                'camera',
+                t('onboarding.import'),
+                t('onboarding.importHint'),
+                () => undefined,
+                true,
+              )
+            : null}
           {accounts
             ? choice(
                 'log-in',
@@ -94,7 +189,7 @@ export default function OnboardingScreen() {
             : null}
           {choice(
             'compass',
-            t('onboarding.later'),
+            picked.includes('study') ? t('onboarding.later') : t('onboarding.startNow'),
             t('onboarding.laterHint'),
             () => void finish('today'),
           )}

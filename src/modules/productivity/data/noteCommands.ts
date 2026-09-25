@@ -11,6 +11,8 @@ function noteValues(input: NoteInput) {
     subject_id: v.subjectId,
     course_series_id: v.courseSeriesId,
     course_date: v.courseDate,
+    // Espace écrit seulement s'il est donné ; une note de matière ou de cours va dans Études.
+    ...(v.subjectId || v.courseSeriesId ? { space: 'study' } : v.space ? { space: v.space } : {}),
   };
 }
 

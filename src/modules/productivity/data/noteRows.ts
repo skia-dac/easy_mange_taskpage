@@ -1,3 +1,5 @@
+import { normalizeSpaceValue } from '@/shared/spaces';
+
 import type { Attachment, AttachmentKind, Note } from '../domain/note';
 
 export type NoteRow = {
@@ -10,6 +12,7 @@ export type NoteRow = {
   is_favorite: number;
   created_at: string;
   updated_at: string;
+  space?: string | null;
 };
 
 export const toNote = (r: NoteRow): Note => ({
@@ -22,6 +25,7 @@ export const toNote = (r: NoteRow): Note => ({
   isFavorite: r.is_favorite === 1,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
+  space: normalizeSpaceValue(r.space),
 });
 
 export type AttachmentRow = {

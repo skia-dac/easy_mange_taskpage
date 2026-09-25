@@ -17,6 +17,7 @@ const item = (over: Partial<WorkItem> = {}): WorkItem => ({
   reminderAt: null,
   repeat: 'none',
   estimatedMinutes: null,
+  space: 'personal',
   ...over,
 });
 

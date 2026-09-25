@@ -13,6 +13,7 @@ import {
   type ProfileInput,
 } from '@/modules/identity';
 import { attachmentUri, deleteLocalFile, pickImage } from '@/modules/platform';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
@@ -20,6 +21,7 @@ import { AppText, FormScreen, showError, TextButton, TextField, useSave } from '
 
 /** Modification du profil (§6). */
 export default function ProfileEditScreen() {
+  const study = useSpaces().has('study');
   const { t } = useTranslation();
   const db = useDb();
   const { colors, spacing } = useTheme();
@@ -145,40 +147,45 @@ export default function ProfileEditScreen() {
           />
         </View>
       </View>
-      <TextField
-        label={t('profile.university')}
-        value={form.university ?? ''}
-        onChangeText={(university) => set({ university })}
-        error={errors.university}
-        placeholder={t('common.optional')}
-      />
-      <TextField
-        label={t('profile.field')}
-        value={form.field ?? ''}
-        onChangeText={(field) => set({ field })}
-        error={errors.field}
-        placeholder={t('common.optional')}
-      />
-      <View style={{ flexDirection: 'row', gap: spacing.md }}>
-        <View style={{ flex: 1 }}>
+      {/* Champs d'école : cachés sans l'espace Études, leurs valeurs restent enregistrées. */}
+      {study ? (
+        <>
           <TextField
-            label={t('profile.level')}
-            value={form.level ?? ''}
-            onChangeText={(level) => set({ level })}
-            error={errors.level}
+            label={t('profile.university')}
+            value={form.university ?? ''}
+            onChangeText={(university) => set({ university })}
+            error={errors.university}
             placeholder={t('common.optional')}
           />
-        </View>
-        <View style={{ flex: 1 }}>
           <TextField
-            label={t('profile.academicYear')}
-            value={form.academicYear ?? ''}
-            onChangeText={(academicYear) => set({ academicYear })}
-            error={errors.academicYear}
-            placeholder={t('profile.academicYearPlaceholder')}
+            label={t('profile.field')}
+            value={form.field ?? ''}
+            onChangeText={(field) => set({ field })}
+            error={errors.field}
+            placeholder={t('common.optional')}
           />
-        </View>
-      </View>
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            <View style={{ flex: 1 }}>
+              <TextField
+                label={t('profile.level')}
+                value={form.level ?? ''}
+                onChangeText={(level) => set({ level })}
+                error={errors.level}
+                placeholder={t('common.optional')}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <TextField
+                label={t('profile.academicYear')}
+                value={form.academicYear ?? ''}
+                onChangeText={(academicYear) => set({ academicYear })}
+                error={errors.academicYear}
+                placeholder={t('profile.academicYearPlaceholder')}
+              />
+            </View>
+          </View>
+        </>
+      ) : null}
     </FormScreen>
   );
 }

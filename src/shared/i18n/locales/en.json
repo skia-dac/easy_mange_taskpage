@@ -24,7 +24,8 @@
     "notes": "Notes",
     "tasks": "Tasks",
     "profile": "Profile",
-    "money": "Money"
+    "money": "Money",
+    "planning": "Planner"
   },
   "errors": {
     "title": "Oops",
@@ -592,11 +593,11 @@
     "next": "Next",
     "start": "Get started",
     "title1": "Always know what’s next",
-    "body1": "Your next class, homework and exams show up as soon as you open the app.",
-    "title2": "Your timetable, your subjects",
-    "body2": "Add your subjects and weekly classes: they show up in your calendar, day by day.",
+    "body1": "Your day shows up as soon as you open the app: classes, appointments, tasks, money, habits.",
+    "title2": "Studies, work, personal life",
+    "body2": "Choose what applies to you: MySky adapts. You can change everything later in your profile.",
     "title3": "Nothing slips through",
-    "body3": "A reminder before each class, and a quick prompt at the end to jot down homework in 2 seconds.",
+    "body3": "A reminder at the right time so you forget nothing: classes, meetings, tasks, tontines.",
     "howTitle": "How do you want to start?",
     "howHint": "You can change your mind later.",
     "manual": "Create my timetable",
@@ -606,7 +607,8 @@
     "import": "Import my timetable",
     "importHint": "Photo or PDF. Coming soon.",
     "account": "I already have an account",
-    "accountHint": "Get your data back from another phone"
+    "accountHint": "Get your data back from another phone",
+    "startNow": "Get started"
   },
   "notifications": {
     "title": "Notifications",
@@ -1382,7 +1384,22 @@
     "nothingTodo": "All done",
     "exam": "Exam",
     "noExam": "No exam planned",
-    "days": "{{count}} d"
+    "days": "{{count}} d",
+    "plan": "To plan",
+    "planOf": "{{planned}} planned of {{target}} this week",
+    "planFull": "Week full",
+    "courses": "Classes today",
+    "coursesHint": "{{duration}} · ends at {{end}}",
+    "noCourses": "No classes",
+    "revision": "Revision",
+    "thisWeek": "this week",
+    "meetings": "Meetings",
+    "meetingsHint": "today · {{duration}}",
+    "noMeetings": "None today",
+    "doneWeek": "Done",
+    "doneWeekHint": "tasks this week",
+    "due": "To pay",
+    "noDue": "Nothing to pay soon"
   },
   "dayline": {
     "title": "Your day",
@@ -1400,6 +1417,46 @@
     "income": "Money in",
     "note": "Class note",
     "revision": "Revision",
-    "other": "Other (exam, event…)"
+    "other": "Other (exam, event…)",
+    "event": "Appointment"
+  },
+  "spaces": {
+    "title": "My spaces",
+    "intro": "Turn on what applies to you. A space you turn off is hidden, never erased: everything comes back when you turn it on again.",
+    "name": {
+      "study": "My studies",
+      "work": "My work",
+      "personal": "My personal life"
+    },
+    "short": {
+      "study": "Studies",
+      "work": "Work",
+      "personal": "Personal"
+    },
+    "hint": {
+      "study": "Classes, timetable, homework, exams, grades, revision",
+      "work": "Appointments, meetings, work tasks, hours to plan",
+      "personal": "Money, tontines, habits, mood, sport, family"
+    },
+    "all": "All",
+    "field": "Space",
+    "lockedStudy": "Linked to a subject: filed under Studies.",
+    "lastOne": "At least one space must stay on.",
+    "changeLater": "You can change this at any time in your profile.",
+    "offTitle": "Turn off “{{name}}”?",
+    "offMessage": {
+      "study": "Your subjects, classes, homework, exams and revision are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
+      "work": "Your work tasks, appointments and notes are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
+      "personal": "Your money, habits, mood and personal items are kept, just hidden. Tontines keep being counted; reminders are paused. Turn the space back on whenever you like: everything comes back."
+    },
+    "offConfirm": "Turn off",
+    "onboardingTitle": "You use MySky for…",
+    "onboardingHint": "Pick everything that applies. MySky adapts the home screen, the + button and the reminders.",
+    "focusTitle": "Focus timer",
+    "focusHint": "Work in sessions, time this week",
+    "workHours": "Goal: {{hours}} h of work a week",
+    "workHoursTitle": "Work hours per week",
+    "workHoursHint": "Used to work out the hours you still have to plan.",
+    "hoursValue": "{{hours}} h"
   }
 }

@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
+import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import { listNotes, searchNotes } from '@/modules/productivity';
+import { listNotes, noteSpace, searchNotes } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
+import { useSpaces } from '@/shared/SpacesContext';
+import type { SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
 import {
   ChoiceChips,
@@ -24,6 +27,8 @@ export default function NotesScreen() {
   const { spacing } = useTheme();
   const [query, setQuery] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(null);
+  const [space, setSpace] = useState<SpaceId | null>(null);
+  const spaces = useSpaces();
   const { subjects, byId } = useSubjects();
   const trimmed = query.trim();
   const notes = useLiveQuery(
@@ -33,8 +38,15 @@ export default function NotesScreen() {
   );
 
   const list = useMemo(
-    () => (notes.data ?? []).filter((n) => !subjectId || n.subjectId === subjectId),
-    [notes.data, subjectId],
+    () =>
+      (notes.data ?? []).filter((n) => {
+        const s = noteSpace(n);
+        // Notes des espaces désactivés : cachées, jamais effacées.
+        if (!spaces.has(s)) return false;
+        if (space && s !== space) return false;
+        return !subjectId || n.subjectId === subjectId;
+      }),
+    [notes.data, subjectId, space, spaces],
   );
   const favorites = list.filter((n) => n.isFavorite);
   const recent = trimmed ? list : list.filter((n) => !n.isFavorite);
@@ -53,7 +65,14 @@ export default function NotesScreen() {
     <View style={{ flex: 1 }}>
       <Screen title={t('notes.title')}>
         <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
-        {subjects.length > 0 ? (
+        <SpaceFilter
+          value={space}
+          onChange={(v) => {
+            setSpace(v);
+            if (v !== 'study') setSubjectId(null);
+          }}
+        />
+        {subjects.length > 0 && spaces.has('study') && (space === null || space === 'study') ? (
           <ChoiceChips
             scroll
             options={[
@@ -95,7 +114,11 @@ export default function NotesScreen() {
         onPress={() =>
           router.push({
             pathname: '/notes/[id]',
-            params: { id: 'new', ...(subjectId ? { subjectId } : {}) },
+            params: {
+              id: 'new',
+              ...(subjectId ? { subjectId } : {}),
+              ...(space ? { space } : {}),
+            },
           })
         }
       />

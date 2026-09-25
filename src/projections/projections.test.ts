@@ -85,6 +85,7 @@ const work = (over: Partial<WorkItem>): WorkItem => ({
   reminderAt: null,
   repeat: 'none',
   estimatedMinutes: null,
+  space: 'personal',
   ...over,
 });
 const exam = (id: string, date: string): Exam => ({
@@ -196,6 +197,7 @@ describe('« Ta journée » : le fil du temps', () => {
         endTime: null,
         description: null,
         reminderAt: null,
+        space: 'personal' as const,
       },
       {
         id: 'e2',
@@ -205,6 +207,7 @@ describe('« Ta journée » : le fil du temps', () => {
         endTime: null,
         description: null,
         reminderAt: null,
+        space: 'personal' as const,
       },
     ],
     overdue: [],

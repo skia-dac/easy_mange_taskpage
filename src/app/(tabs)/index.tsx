@@ -12,6 +12,7 @@ import { HabitRow } from '@/components/HabitRow';
 import { TodayMoneyCard } from '@/components/money/TodayMoneyCard';
 import { ProfileButton } from '@/components/ProfileButton';
 import { QuickAddMenu } from '@/components/QuickAddMenu';
+import { SpaceFilter } from '@/components/SpaceUi';
 import { DayLineCard } from '@/components/today/DayLineCard';
 import { TodayGlance } from '@/components/today/TodayGlance';
 import { useProfile } from '@/hooks/useProfile';
@@ -24,9 +25,17 @@ import {
 } from '@/modules/identity';
 import { isScheduledOn, logOn, subtaskCounts, type Habit } from '@/modules/productivity';
 import { useSubjects } from '@/hooks/useSubjects';
-import { buildDayLine, buildToday, useAgendaData, type NextCourse } from '@/projections';
+import {
+  buildDayLine,
+  buildToday,
+  filterBySpaces,
+  useAgendaData,
+  type NextCourse,
+} from '@/projections';
 import { timeToMinutes } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
+import { useSpaces } from '@/shared/SpacesContext';
+import type { SpaceId } from '@/shared/spaces';
 import { formatDuration, formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
@@ -51,16 +60,32 @@ export default function TodayScreen() {
   const greeting = profile?.firstName
     ? t('today.greetingName', { name: profile.firstName })
     : t('today.greeting');
-  const view = useMemo(
+  const spaces = useSpaces();
+  // Filtre « Tout / Études / Pro / Perso » (quand plusieurs espaces sont actifs) : il limite le
+  // fil de la journée et les listes ; les tuiles gardent la vue d'ensemble.
+  const [spaceFilter, setSpaceFilter] = useState<SpaceId | null>(null);
+  const filter = spaceFilter && spaces.has(spaceFilter) ? spaceFilter : null;
+  const data = useMemo(
+    () => (agenda.data && filter ? filterBySpaces(agenda.data, [filter]) : agenda.data),
+    [agenda.data, filter],
+  );
+  const fullView = useMemo(
     () => (agenda.data ? buildToday(agenda.data, now) : null),
     [agenda.data, now],
+  );
+  const view = useMemo(
+    () => (data ? (data === agenda.data ? fullView : buildToday(data, now)) : null),
+    [data, agenda.data, fullView, now],
   );
 
   const todo = view ? [...view.overdue, ...view.dueToday] : [];
   const weekStart = useWeekStart();
   const [habitSheet, setHabitSheet] = useState<Habit | null>(null);
-  const habits = (agenda.data?.habits ?? []).filter((h) => view && isScheduledOn(h, view.today));
-  const habitLogs = agenda.data?.habitLogs ?? [];
+  const habits = (data?.habits ?? []).filter((h) => view && isScheduledOn(h, view.today));
+  const habitLogs = data?.habitLogs ?? [];
+  const allHabits = (agenda.data?.habits ?? []).filter(
+    (h) => fullView && isScheduledOn(h, fullView.today),
+  );
   const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
   const layoutQuery = useLiveQuery(getTodayLayout, ['app_settings'], []);
   const layout = layoutQuery.data ?? normalizeTodayLayout(null);
@@ -72,20 +97,29 @@ export default function TodayScreen() {
     now.getHours() * 60 + now.getMinutes() >= timeToMinutes(reviewTime) - 120 &&
     now.getHours() >= 16;
 
-  const revisions = view
-    ? (agenda.data?.revisionBlocks ?? []).filter((b) => b.date === view.today)
-    : [];
+  const revisions = view ? (data?.revisionBlocks ?? []).filter((b) => b.date === view.today) : [];
 
   const line = useMemo(
-    () => (view ? buildDayLine(view, agenda.data?.revisionBlocks ?? [], now) : null),
-    [view, agenda.data?.revisionBlocks, now],
+    () => (view ? buildDayLine(view, data?.revisionBlocks ?? [], now) : null),
+    [view, data?.revisionBlocks, now],
   );
+  const study = spaces.has('study');
+  const personal = spaces.has('personal');
 
   const sections: Record<TodaySectionId, ReactNode> = view
     ? {
-        glance: <TodayGlance view={view} habits={habits} habitLogs={habitLogs} subjects={byId} />,
+        glance:
+          agenda.data && fullView ? (
+            <TodayGlance
+              view={fullView}
+              data={agenda.data}
+              habits={allHabits}
+              habitLogs={agenda.data.habitLogs ?? []}
+              subjects={byId}
+            />
+          ) : null,
         day: line ? <DayLineCard line={line} next={view.next} now={now} subjects={byId} /> : null,
-        next: view.next ? (
+        next: !study ? null : view.next ? (
           <NextCourseCard
             next={view.next}
             subjectName={byId.get(view.next.occurrence.subjectId)?.name ?? ''}
@@ -99,9 +133,9 @@ export default function TodayScreen() {
             }
           />
         ),
-        money: <TodayMoneyCard />,
+        money: personal ? <TodayMoneyCard /> : null,
         courses:
-          view.courses.length > 0 ? (
+          study && view.courses.length > 0 ? (
             <>
               <SectionHeader title={t('today.coursesTitle')} />
               <Card>
@@ -112,7 +146,7 @@ export default function TodayScreen() {
             </>
           ) : null,
         revision:
-          revisions.length > 0 ? (
+          study && revisions.length > 0 ? (
             <>
               <SectionHeader title={t('today.revisionTitle')} />
               <Card>
@@ -122,43 +156,44 @@ export default function TodayScreen() {
               </Card>
             </>
           ) : null,
-        habits: (
-          <>
-            <SectionHeader
-              title={t('habits.todayTitle')}
-              action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
-            />
-            {habits.length > 0 ? (
-              <Card>
-                {habits.map((h) => (
-                  <HabitRow
-                    key={h.id}
-                    habit={h}
-                    logs={habitLogs}
-                    day={view.today}
-                    today={view.today}
-                    weekStart={weekStart}
-                    onMore={setHabitSheet}
-                  />
-                ))}
-              </Card>
-            ) : (
-              <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+        habits:
+          !personal || (filter && filter !== 'personal') ? null : (
+            <>
+              <SectionHeader
+                title={t('habits.todayTitle')}
+                action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
+              />
+              {habits.length > 0 ? (
                 <Card>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                    <IconBadge icon="target" />
-                    <View style={{ flex: 1 }}>
-                      <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
-                      <AppText variant="caption" color="muted">
-                        {t('habits.startHint')}
-                      </AppText>
-                    </View>
-                  </View>
+                  {habits.map((h) => (
+                    <HabitRow
+                      key={h.id}
+                      habit={h}
+                      logs={habitLogs}
+                      day={view.today}
+                      today={view.today}
+                      weekStart={weekStart}
+                      onMore={setHabitSheet}
+                    />
+                  ))}
                 </Card>
-              </Pressable>
-            )}
-          </>
-        ),
+              ) : (
+                <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+                  <Card>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                      <IconBadge icon="target" />
+                      <View style={{ flex: 1 }}>
+                        <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
+                        <AppText variant="caption" color="muted">
+                          {t('habits.startHint')}
+                        </AppText>
+                      </View>
+                    </View>
+                  </Card>
+                </Pressable>
+              )}
+            </>
+          ),
         todo: (
           <>
             <SectionHeader
@@ -198,7 +233,7 @@ export default function TodayScreen() {
               </Card>
             </>
           ) : null,
-        exams: (
+        exams: !study ? null : (
           <>
             <SectionHeader title={t('today.examsTitle')} />
             {view.upcomingExams.length > 0 ? (
@@ -239,7 +274,9 @@ export default function TodayScreen() {
           </>
         }
       >
-        {!loading && subjects.length === 0 ? (
+        <SpaceFilter value={filter} onChange={setSpaceFilter} />
+
+        {study && !loading && subjects.length === 0 ? (
           <Card>
             <View style={{ gap: spacing.md }}>
               <AppText variant="heading">{t('today.firstSubject')}</AppText>

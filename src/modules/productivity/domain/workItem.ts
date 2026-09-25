@@ -8,6 +8,7 @@ import {
   toIsoDate,
   type IsoDate,
 } from '@/shared/dates';
+import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
 /** Une tâche (académique ou perso) et un devoir ont la même forme mais restent des entités séparées. */
@@ -46,6 +47,11 @@ export const workItemInputSchema = z.object({
     .max(24 * 60, { error: 'validation.invalidDuration' })
     .nullish()
     .transform((v) => v ?? null),
+  /**
+   * Espace (Études / Pro / Perso). Absent à la modification = on garde celui enregistré
+   * (jamais écrasé par défaut). Un devoir ou une tâche liée à une matière est toujours Études.
+   */
+  space: spaceSchema.optional(),
 });
 
 export type WorkItemInput = z.input<typeof workItemInputSchema>;
@@ -53,7 +59,14 @@ export type WorkItem = z.output<typeof workItemInputSchema> & {
   id: string;
   kind: WorkKind;
   completedAt: string | null;
+  space: SpaceId;
 };
+
+/** Espace réel d'un élément : un devoir ou un élément lié à une matière est toujours Études. */
+export function workSpace(item: Pick<WorkItem, 'kind' | 'subjectId' | 'space'>): SpaceId {
+  if (item.kind === 'assignment' || item.subjectId) return 'study';
+  return item.space;
+}
 
 /** Moment où l'élément devient « en retard » : l'heure limite, sinon la fin de la journée. */
 export function dueMoment(item: Pick<WorkItem, 'dueDate' | 'dueTime'>): Date {
@@ -125,6 +138,7 @@ export function nextOccurrenceInput(item: WorkItem): WorkItemInput | null {
       : null,
     repeat: item.repeat,
     estimatedMinutes: item.estimatedMinutes,
+    space: item.space,
   };
 }
 

@@ -120,6 +120,7 @@ describe('devoirs, tâches, examens', () => {
     reminderAt: new Date(2026, 8, 28, 18, 0).toISOString(),
     repeat: 'none',
     estimatedMinutes: null,
+    space: 'personal' as const,
   };
   const exam: Exam = {
     id: 'x1',
@@ -179,6 +180,7 @@ it('un événement avec rappel est programmé, et le réglage « événements »
     reminderAt: new Date(2026, 8, 25, 17, 30).toISOString(),
     repeat: 'none',
     estimatedMinutes: null,
+    space: 'personal' as const,
   };
   expect(planReminders({ ...empty, events: [event] }, prefs, now, names).map((p) => p.id)).toEqual([
     'event:ev1',

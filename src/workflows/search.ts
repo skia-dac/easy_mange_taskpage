@@ -6,10 +6,13 @@ import {
   type Exam,
   type Subject,
 } from '@/modules/academic';
+import { getActiveSpaces } from '@/modules/identity';
 import {
+  noteSpace,
   searchNotes,
   searchPersonalEvents,
   searchWorkItems,
+  workSpace,
   type Note,
   type PersonalEvent,
   type WorkItem,
@@ -38,10 +41,12 @@ export const emptyResults: SearchResults = {
   events: [],
 };
 
-/** Recherche globale (§81–83) : tous les types, résultats regroupés. */
+/** Recherche globale (§81–83) : tous les types, résultats regroupés, dans les espaces actifs. */
 export async function searchAll(db: Db, query: string): Promise<SearchResults> {
   const q = query.trim();
   if (q.replace(/[%_\\]/g, '').trim().length < MIN_QUERY_LENGTH) return emptyResults;
+  const spaces = await getActiveSpaces(db);
+  const study = spaces.includes('study');
   const [subjects, courses, notes, assignments, tasks, exams, events] = await Promise.all([
     searchSubjects(db, q),
     searchCourseSeries(db, q),
@@ -51,7 +56,15 @@ export async function searchAll(db: Db, query: string): Promise<SearchResults> {
     searchExams(db, q),
     searchPersonalEvents(db, q),
   ]);
-  return { subjects, courses, notes, assignments, tasks, exams, events };
+  return {
+    subjects: study ? subjects : [],
+    courses: study ? courses : [],
+    notes: notes.filter((n) => spaces.includes(noteSpace(n))),
+    assignments: study ? assignments : [],
+    tasks: tasks.filter((w) => spaces.includes(workSpace(w))),
+    exams: study ? exams : [],
+    events: events.filter((e) => spaces.includes(e.space)),
+  };
 }
 
 export function countResults(r: SearchResults): number {

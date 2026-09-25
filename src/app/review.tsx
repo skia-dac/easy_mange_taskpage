@@ -22,6 +22,7 @@ import {
   type WorkItem,
 } from '@/modules/productivity';
 import { buildEveningReview, useAgendaData } from '@/projections';
+import { useSpaces } from '@/shared/SpacesContext';
 import { fromIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -42,6 +43,7 @@ import {
 
 /** Bilan du soir : en une minute, on clôt la journée et on prépare demain. */
 export default function EveningReviewScreen() {
+  const personal = useSpaces().has('personal');
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
@@ -161,13 +163,17 @@ export default function EveningReviewScreen() {
         </>
       ) : null}
 
-      <ReviewMoney />
+      {personal ? (
+        <>
+          <ReviewMoney />
 
-      <SectionHeader
-        title={t('review.mood')}
-        action={{ label: t('mood.history'), onPress: () => router.push('/mood') }}
-      />
-      <MoodPicker date={review.today} />
+          <SectionHeader
+            title={t('review.mood')}
+            action={{ label: t('mood.history'), onPress: () => router.push('/mood') }}
+          />
+          <MoodPicker date={review.today} />
+        </>
+      ) : null}
 
       <SectionHeader
         title={t('review.tomorrow', {

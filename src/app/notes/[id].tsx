@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
 
+import { SpacePicker } from '@/components/SpaceUi';
 import { NoteContent } from '@/components/NoteContent';
 import { NoteEditor } from '@/components/NoteEditor';
 import { subjectOptions } from '@/components/SubjectOptions';
@@ -38,6 +39,8 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
+import { useSpaces } from '@/shared/SpacesContext';
+import { defaultSpace, spaceIds, type SpaceId } from '@/shared/spaces';
 import { formatDate, formatShortDate } from '@/shared/format';
 import { fonts, minTouchSize, useTheme } from '@/shared/theme';
 import {
@@ -52,7 +55,13 @@ import {
   TextButton,
 } from '@/shared/ui';
 
-type Params = { id: string; subjectId?: string; courseSeriesId?: string; courseDate?: string };
+type Params = {
+  id: string;
+  subjectId?: string;
+  courseSeriesId?: string;
+  courseDate?: string;
+  space?: string;
+};
 
 /**
  * Une note : lecture (cases cochables) ou édition (barre d'outils), avec enregistrement automatique.
@@ -73,6 +82,12 @@ export default function NoteScreen() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(params.subjectId ?? null);
+  const spaces = useSpaces();
+  const [space, setSpace] = useState<SpaceId>(
+    spaceIds.includes(params.space as SpaceId)
+      ? (params.space as SpaceId)
+      : defaultSpace(spaces.active),
+  );
   const [favorite, setFavorite] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -88,6 +103,7 @@ export default function NoteScreen() {
     setTitle(n.title);
     setContent(n.content);
     setSubjectId(n.subjectId);
+    setSpace(n.space);
     setFavorite(n.isFavorite);
     setUpdatedAt(n.updatedAt);
     latest.current = { title: n.title, content: n.content };
@@ -137,6 +153,7 @@ export default function NoteScreen() {
         subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
+        space,
       });
       setNoteId(id);
       setStatus('saved');
@@ -148,7 +165,7 @@ export default function NoteScreen() {
     setStatus('saved');
     setUpdatedAt(new Date().toISOString());
     return noteId;
-  }, [db, noteId, subjectId, params.courseSeriesId, params.courseDate]);
+  }, [db, noteId, subjectId, space, params.courseSeriesId, params.courseDate]);
 
   const scheduleSave = (next: { title?: string; content?: string }) => {
     if (next.title !== undefined) {
@@ -175,20 +192,30 @@ export default function NoteScreen() {
     };
   }, []);
 
-  const changeSubject = async (value: string | null) => {
-    setSubjectId(value);
+  const saveMeta = async (next: { subjectId: string | null; space: SpaceId }) => {
     if (!noteId) return;
     try {
       await updateNote(db, noteId, {
         title: latest.current.title,
         content: latest.current.content,
-        subjectId: value,
+        subjectId: next.subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
+        space: next.space,
       });
     } catch (e) {
       fail(e);
     }
+  };
+
+  const changeSubject = async (value: string | null) => {
+    setSubjectId(value);
+    await saveMeta({ subjectId: value, space });
+  };
+
+  const changeSpace = async (value: SpaceId) => {
+    setSpace(value);
+    await saveMeta({ subjectId, space: value });
   };
 
   const toggleFavorite = async () => {
@@ -209,6 +236,7 @@ export default function NoteScreen() {
           title: latest.current.title,
           content: latest.current.content,
           subjectId,
+          space,
         }));
       if (!noteId) setNoteId(target);
       const picked = kind === 'image' ? await pickImage(target) : await pickDocument(target);
@@ -332,13 +360,22 @@ export default function NoteScreen() {
   const meta = (
     <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
       {editing ? (
-        <SelectField
-          label={t('notes.subject')}
-          value={subjectId}
-          noneLabel={t('notes.noSubject')}
-          options={subjectOptions(subjects)}
-          onChange={(v) => void changeSubject(v)}
-        />
+        <>
+          <SpacePicker
+            value={space}
+            onChange={(v) => void changeSpace(v)}
+            lockedToStudy={!!subjectId || !!params.courseSeriesId}
+          />
+          {spaces.has('study') || subjectId ? (
+            <SelectField
+              label={t('notes.subject')}
+              value={subjectId}
+              noneLabel={t('notes.noSubject')}
+              options={subjectOptions(subjects)}
+              onChange={(v) => void changeSubject(v)}
+            />
+          ) : null}
+        </>
       ) : (
         <View
           style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}

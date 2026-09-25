@@ -381,4 +381,16 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_money_transactions_recurring ON money_transactions (recurring_id, occurrence_date);
     `,
   },
+  {
+    version: 12,
+    name: 'espaces Études / Pro / Perso sur les tâches, devoirs, événements et notes',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN space TEXT NOT NULL DEFAULT 'personal';
+      ALTER TABLE assignments ADD COLUMN space TEXT NOT NULL DEFAULT 'study';
+      ALTER TABLE personal_events ADD COLUMN space TEXT NOT NULL DEFAULT 'personal';
+      ALTER TABLE notes ADD COLUMN space TEXT NOT NULL DEFAULT 'personal';
+      UPDATE tasks SET space = 'study' WHERE subject_id IS NOT NULL;
+      UPDATE notes SET space = 'study' WHERE subject_id IS NOT NULL OR course_series_id IS NOT NULL;
+    `,
+  },
 ];

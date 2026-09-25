@@ -15,9 +15,13 @@ import {
 import { tableOf, toWorkItem, type WorkItemRow } from './rows';
 import { copySubtasks, deleteSubtasksOf } from './subtaskCommands';
 
-function workValues(input: WorkItemInput) {
+function workValues(input: WorkItemInput, kind: WorkKind) {
   const v = parseInput(workItemInputSchema, input);
+  // L'espace n'est écrit que s'il est donné (jamais remis à une valeur par défaut) ;
+  // un devoir ou un élément lié à une matière est rangé dans Études.
+  const space = kind === 'assignment' || v.subjectId ? 'study' : v.space;
   return {
+    ...(space ? { space } : {}),
     title: v.title,
     description: v.description,
     subject_id: v.subjectId,
@@ -43,18 +47,18 @@ async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<s
   if (!row) return null;
   const next = nextOccurrenceInput(toWorkItem(kind)(row));
   if (!next) return null;
-  const newId = await w.insert(tableOf(kind), workValues(next));
+  const newId = await w.insert(tableOf(kind), workValues(next, kind));
   await copySubtasks(w, kind, id, newId);
   return newId;
 }
 
 export async function createWorkItem(db: Db, kind: WorkKind, input: WorkItemInput) {
-  const values = workValues(input);
+  const values = workValues(input, kind);
   return write(db, (w) => w.insert(tableOf(kind), values));
 }
 
 export async function updateWorkItem(db: Db, kind: WorkKind, id: string, input: WorkItemInput) {
-  const values = workValues(input);
+  const values = workValues(input, kind);
   return write(db, async (w) => {
     // On garde la date de complétion d'origine si l'élément était déjà terminé.
     const current = await w.db.getFirstAsync<{ status: string; completed_at: string | null }>(
@@ -162,6 +166,7 @@ function eventValues(input: PersonalEventInput) {
     end_time: v.endTime,
     description: v.description,
     reminder_at: v.reminderAt,
+    ...(v.space ? { space: v.space } : {}),
   };
 }
 

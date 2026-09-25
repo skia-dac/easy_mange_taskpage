@@ -23,6 +23,7 @@ const work = (
   reminderAt: null,
   repeat: 'none' as const,
   estimatedMinutes: null,
+  space: 'personal' as const,
 });
 const session = (day: string, minutes: number): StudySession => ({
   id: day,

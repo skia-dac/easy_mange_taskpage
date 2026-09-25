@@ -10,13 +10,24 @@ import {
   type TodayLayout,
   type TodaySectionId,
 } from '@/modules/identity';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { AppText, Card, showError, TextButton } from '@/shared/ui';
 
 /** L'étudiant choisit l'ordre des sections d'Aujourd'hui et celles qu'il veut voir. */
+const STUDY_SECTIONS: readonly TodaySectionId[] = ['next', 'courses', 'revision', 'exams'];
+const PERSONAL_SECTIONS: readonly TodaySectionId[] = ['money', 'habits'];
+
 export default function TodayLayoutScreen() {
+  const spaces = useSpaces();
+  const sectionAvailable = (id: TodaySectionId) =>
+    STUDY_SECTIONS.includes(id)
+      ? spaces.has('study')
+      : PERSONAL_SECTIONS.includes(id)
+        ? spaces.has('personal')
+        : true;
   const { t } = useTranslation();
   const db = useDb();
   const { colors, spacing } = useTheme();
@@ -64,6 +75,8 @@ export default function TodayLayoutScreen() {
       <AppText color="muted">{t('todayLayout.intro')}</AppText>
       <Card>
         {layout.order.map((id, i) => {
+          // Sections d'un espace coupé : pas proposées (leur place dans l'ordre est gardée).
+          if (!sectionAvailable(id)) return null;
           const visible = !layout.hidden.includes(id);
           return (
             <View key={id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>

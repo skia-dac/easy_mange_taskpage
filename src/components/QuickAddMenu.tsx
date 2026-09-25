@@ -5,11 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, Pressable, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 
+import { useSpaces } from '@/shared/SpacesContext';
+import type { SpaceId } from '@/shared/spaces';
 import { useTheme, type ColorTokens } from '@/shared/theme';
 import { AppText, Fab } from '@/shared/ui';
 
 type Item = {
   key: string;
+  /** Visible seulement si cet espace est actif. */
+  needs?: SpaceId;
   label: string;
   icon: ComponentProps<typeof Feather>['name'];
   color: keyof ColorTokens;
@@ -25,6 +29,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
   const [open, setOpen] = useState(false);
+  const spaces = useSpaces();
 
   useEffect(() => {
     if (!open) return;
@@ -38,6 +43,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
   const items: Item[] = [
     {
       key: 'expense',
+      needs: 'personal',
       label: t('quickAdd.expense'),
       icon: 'minus',
       color: 'danger',
@@ -46,6 +52,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
     },
     {
       key: 'income',
+      needs: 'personal',
       label: t('quickAdd.income'),
       icon: 'plus',
       color: 'success',
@@ -62,6 +69,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
     },
     {
       key: 'assignment',
+      needs: 'study',
       label: t('add.assignment'),
       icon: 'book',
       color: 'primary',
@@ -70,15 +78,26 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
     },
     {
       key: 'note',
-      label: t('quickAdd.note'),
+      label: spaces.has('study') ? t('quickAdd.note') : t('add.note'),
       icon: 'file-text',
       color: 'warning',
       background: 'warningSoft',
-      href: { pathname: '/notes/[id]', params: { id: 'new', ...note } },
+      href: {
+        pathname: '/notes/[id]',
+        params: { id: 'new', ...(spaces.has('study') ? note : {}) },
+      },
+    },
+    {
+      key: 'event',
+      label: t('quickAdd.event'),
+      icon: 'calendar',
+      color: 'warning',
+      background: 'warningSoft',
+      href: { pathname: '/events/form', params: {} },
     },
     {
       key: 'revision',
-      label: t('quickAdd.revision'),
+      label: spaces.has('study') ? t('quickAdd.revision') : t('spaces.focusTitle'),
       icon: 'clock',
       color: 'success',
       background: 'successSoft',
@@ -93,6 +112,8 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
       href: '/add',
     },
   ];
+
+  const shown = items.filter((i) => !i.needs || spaces.has(i.needs));
 
   const go = (href: Href) => {
     setOpen(false);
@@ -125,10 +146,10 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
           gap: spacing.sm,
         }}
       >
-        {items.map((item, i) => (
+        {shown.map((item, i) => (
           <Animated.View
             key={item.key}
-            entering={FadeInDown.duration(160).delay((items.length - 1 - i) * 25)}
+            entering={FadeInDown.duration(160).delay((shown.length - 1 - i) * 25)}
           >
             <Pressable
               accessibilityRole="menuitem"

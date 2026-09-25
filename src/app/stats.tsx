@@ -10,6 +10,8 @@ import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import { listStudySessions } from '@/modules/productivity';
 import { moodInsights, useAgendaData, weekStats } from '@/projections';
+import { useSpaces } from '@/shared/SpacesContext';
+import type { SpaceId } from '@/shared/spaces';
 import { addDaysIso, startOfWeekOn, toIsoDate, weekdayOrder } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { formatDuration, formatShortDate } from '@/shared/format';
@@ -18,6 +20,8 @@ import { useNow } from '@/shared/useNow';
 import { AppText, Card, IconBadge, ListRow, LoadingScreen } from '@/shared/ui';
 
 type Stat = {
+  /** Affichée seulement si cet espace est actif. */
+  only?: SpaceId;
   icon: ComponentProps<typeof Feather>['name'];
   color: keyof ColorTokens;
   background: keyof ColorTokens;
@@ -27,6 +31,7 @@ type Stat = {
 
 /** Statistiques de la semaine : calculées à la volée à partir des données. */
 export default function StatsScreen() {
+  const spaces = useSpaces();
   const { t } = useTranslation();
   const labels = useLabels();
   const { spacing } = useTheme();
@@ -61,6 +66,7 @@ export default function StatsScreen() {
 
   const cards: Stat[] = [
     {
+      only: 'study',
       icon: 'book-open',
       color: 'primary',
       background: 'primarySoft',
@@ -79,9 +85,10 @@ export default function StatsScreen() {
       color: 'primary',
       background: 'primarySoft',
       value: formatDuration(stats.studyMinutes),
-      label: t('stats.study'),
+      label: spaces.has('study') ? t('stats.study') : t('spaces.focusTitle'),
     },
     {
+      only: 'personal',
       icon: 'target',
       color: 'primary',
       background: 'primarySoft',
@@ -106,19 +113,21 @@ export default function StatsScreen() {
         })}
       </AppText>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-        {cards.map((c) => (
-          <View key={c.label} style={{ width: '48%', flexGrow: 1 }}>
-            <Card>
-              <View style={{ gap: spacing.sm }}>
-                <IconBadge icon={c.icon} color={c.color} background={c.background} />
-                <AppText variant="title">{c.value}</AppText>
-                <AppText variant="caption" color="muted">
-                  {c.label}
-                </AppText>
-              </View>
-            </Card>
-          </View>
-        ))}
+        {cards
+          .filter((c) => !c.only || spaces.has(c.only))
+          .map((c) => (
+            <View key={c.label} style={{ width: '48%', flexGrow: 1 }}>
+              <Card>
+                <View style={{ gap: spacing.sm }}>
+                  <IconBadge icon={c.icon} color={c.color} background={c.background} />
+                  <AppText variant="title">{c.value}</AppText>
+                  <AppText variant="caption" color="muted">
+                    {c.label}
+                  </AppText>
+                </View>
+              </Card>
+            </View>
+          ))}
       </View>
       <Card>
         <AppText variant="bodyStrong">{t('stats.studyByDay')}</AppText>

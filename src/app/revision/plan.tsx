@@ -55,7 +55,7 @@ export default function RevisionPlanScreen() {
   const { examId } = useLocalSearchParams<{ examId: string }>();
   const { byId } = useSubjects();
   const exam = useLiveQuery((d) => getExam(d, examId), ['exams'], [examId]);
-  const agenda = useAgendaData();
+  const agenda = useAgendaData({ allSpaces: true });
   const today = toIsoDate(new Date());
 
   // Réglages choisis par l'étudiant ; sinon valeurs proposées selon le temps avant l'examen.

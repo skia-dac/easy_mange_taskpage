@@ -327,6 +327,7 @@ create table if not exists public.tasks (
   reminder_at text,
   repeat_rule text not null default 'none',
   estimated_minutes bigint,
+  space text not null default 'personal',
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.tasks
@@ -346,6 +347,7 @@ alter table public.tasks
   add column if not exists reminder_at text,
   add column if not exists repeat_rule text not null default 'none',
   add column if not exists estimated_minutes bigint,
+  add column if not exists space text not null default 'personal',
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists tasks_sync_idx on public.tasks (user_id, server_updated_at);
 alter table public.tasks enable row level security;
@@ -375,6 +377,7 @@ create table if not exists public.assignments (
   reminder_at text,
   repeat_rule text not null default 'none',
   estimated_minutes bigint,
+  space text not null default 'study',
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.assignments
@@ -394,6 +397,7 @@ alter table public.assignments
   add column if not exists reminder_at text,
   add column if not exists repeat_rule text not null default 'none',
   add column if not exists estimated_minutes bigint,
+  add column if not exists space text not null default 'study',
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists assignments_sync_idx on public.assignments (user_id, server_updated_at);
 alter table public.assignments enable row level security;
@@ -418,6 +422,7 @@ create table if not exists public.personal_events (
   end_time text,
   description text,
   reminder_at text,
+  space text not null default 'personal',
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.personal_events
@@ -432,6 +437,7 @@ alter table public.personal_events
   add column if not exists end_time text,
   add column if not exists description text,
   add column if not exists reminder_at text,
+  add column if not exists space text not null default 'personal',
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists personal_events_sync_idx on public.personal_events (user_id, server_updated_at);
 alter table public.personal_events enable row level security;
@@ -456,6 +462,7 @@ create table if not exists public.notes (
   course_series_id text,
   course_date text,
   is_favorite bigint not null default 0,
+  space text not null default 'personal',
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.notes
@@ -470,6 +477,7 @@ alter table public.notes
   add column if not exists course_series_id text,
   add column if not exists course_date text,
   add column if not exists is_favorite bigint not null default 0,
+  add column if not exists space text not null default 'personal',
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists notes_sync_idx on public.notes (user_id, server_updated_at);
 alter table public.notes enable row level security;

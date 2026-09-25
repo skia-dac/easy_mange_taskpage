@@ -304,6 +304,19 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **Widgets** (iPhone + Android): « Dépense rapide » (the 3 most used categories + Autre open the entry screen with the category chosen — a widget cannot receive typed text), « Il te reste » (also on the lock screen), « Mes dépenses » (7 days + what's due). Option « Masquer les montants dans les widgets ».
 - Out of scope for now: bank / Mobile Money import, per-category budgets, shared expenses.
 
+### Spaces: Études · Pro · Perso (validated 25 Sep 2026)
+
+- MySky is no longer student-only. Three **spaces**, each switched on or off in **Profil › Mes espaces** (and chosen at first launch, « Tu utilises MySky pour… », several allowed): **Mes études**, **Mon travail** (short « Pro »), **Ma vie perso**. At least one stays on: the last active switch is locked. Installs from before keep Études + Perso.
+- **Nothing is ever deleted or overwritten** by switching. A space turned off is hidden (screens, search, widgets) and its reminders are paused; its data stays in SQLite, keeps syncing and keeps being counted (tontine payouts still recorded). Turning it back on shows everything again.
+- **Always there**: Aujourd'hui, Tâches, Notes, Calendrier / Planning, rappels, recherche, bilan du soir, concentration timer, stats.
+- **Études**: subjects, courses and timetables, homework, exams and grades, revision plan, school holidays, school profile fields, course / exam / revision reminders.
+- **Perso**: Argent tab (hidden otherwise), habits, mood.
+- **Every task, event and note has a space** (`space` column, migration 12; homework and anything linked to a subject is always Études — `workSpace()`, `noteSpace()`). Forms show a space picker among the active spaces (hidden if only one). The space is written only when given: an edit without it keeps the saved one.
+- **Filtering** is done in one place: `filterBySpaces()` in `projections/spaces.ts`, applied by `loadAgenda()` (Today, calendar, review, notifications, widgets) and by search, tasks and notes lists.
+- **Home**: the 4 tiles depend on the spaces (`glanceTiles()`): Études seul — cours du jour, examen, à faire, révision · Pro seul — à faire, à planifier, réunions, terminées · Perso seul — argent, habitudes, à faire, à payer · Études + Perso — argent, habitudes, à faire, examen · Pro + Perso — argent, habitudes, à faire, à planifier · Études + Pro — à faire, examen, à planifier, cours · all three — argent, habitudes, à faire, examen. « À planifier » = weekly work-hours goal (Profil, default 40 h) − Pro appointments and Pro task estimates of the week. With 2+ spaces: « Tout / Études / Pro / Perso » filter and a space tag on each moment of « Ta journée ». The + menu and the Ajouter screen only offer what the active spaces use.
+- Tab 2 is « Calendrier » in Études alone, « Planning » otherwise.
+- Next (not in this lot): fixed work slots, rotations (week A/B, day/night shifts), copy last week.
+
 ### Home screen (model « P », validated 25 Sep 2026)
 
 - Chosen among 18 mock-ups (A–R). Header: date, « Bonjour <prénom> », search, notifications, profile photo.

@@ -1,4 +1,6 @@
 import { readAppSetting, writeAppSetting, type Db } from '@/shared/db';
+import { AppError } from '@/shared/errors';
+import { normalizeSpaces, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 
 import {
   appearancePreferenceSchema,
@@ -165,4 +167,33 @@ export async function getTodayLayout(db: Db): Promise<TodayLayout> {
 
 export async function setTodayLayout(db: Db, layout: TodayLayout): Promise<void> {
   await writeSetting(db, 'today_layout', normalizeTodayLayout(todayLayoutSchema.parse(layout)));
+}
+
+/**
+ * Espaces actifs (Études / Pro / Perso). Jamais vide : une installation d'avant les espaces
+ * garde Études + Perso (tout ce qu'elle voyait).
+ */
+export async function getActiveSpaces(db: Db): Promise<ActiveSpaces> {
+  return normalizeSpaces(await readSetting(db, 'spaces'));
+}
+
+/** Enregistre les espaces ; une liste vide est refusée (au moins un espace reste actif). */
+export async function setActiveSpaces(db: Db, spaces: readonly SpaceId[]): Promise<void> {
+  const clean = normalizeSpaces(spaces, []);
+  if (clean.length === 0) throw new AppError('validation');
+  await writeSetting(db, 'spaces', clean);
+}
+
+/** Heures de travail visées par semaine (espace Pro, tuile « À planifier »). */
+export const DEFAULT_WORK_WEEK_HOURS = 40;
+export const workWeekHourChoices = [10, 15, 20, 25, 30, 35, 38, 40, 45, 50, 60] as const;
+
+export async function getWorkWeekHours(db: Db): Promise<number> {
+  const v = await readSetting(db, 'work_week_hours');
+  return typeof v === 'number' && v >= 1 && v <= 100 ? v : DEFAULT_WORK_WEEK_HOURS;
+}
+
+export async function setWorkWeekHours(db: Db, hours: number): Promise<void> {
+  if (!Number.isFinite(hours) || hours < 1 || hours > 100) throw new AppError('validation');
+  await writeSetting(db, 'work_week_hours', Math.round(hours));
 }

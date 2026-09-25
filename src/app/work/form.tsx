@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ReminderField } from '@/components/ReminderField';
+import { SpacePicker } from '@/components/SpaceUi';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -21,6 +22,8 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { useSpaces } from '@/shared/SpacesContext';
+import { defaultSpace, spaceIds, type SpaceId } from '@/shared/spaces';
 import {
   AppText,
   ChoiceChips,
@@ -45,7 +48,9 @@ export default function WorkFormScreen() {
     subjectId?: string;
     date?: string;
     fromCourse?: string;
+    space?: string;
   }>();
+  const spaces = useSpaces();
   const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const isTask = kind === 'task';
   const { subjects } = useSubjects();
@@ -60,6 +65,9 @@ export default function WorkFormScreen() {
     reminderAt: null,
     repeat: 'none',
     estimatedMinutes: null,
+    space: spaceIds.includes(params.space as SpaceId)
+      ? (params.space as SpaceId)
+      : defaultSpace(spaces.active),
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -127,13 +135,22 @@ export default function WorkFormScreen() {
         placeholder={isTask ? t('work.titlePlaceholderTask') : t('work.titlePlaceholderAssignment')}
         autoFocus={!params.id}
       />
-      <SelectField
-        label={t('work.subjectOptional')}
-        value={form.subjectId ?? null}
-        noneLabel={t('work.noSubject')}
-        options={subjectOptions(subjects)}
-        onChange={(subjectId) => set({ subjectId })}
-      />
+      {isTask ? (
+        <SpacePicker
+          value={form.space ?? defaultSpace(spaces.active)}
+          onChange={(space) => set({ space })}
+          lockedToStudy={!!form.subjectId}
+        />
+      ) : null}
+      {!isTask || spaces.has('study') || form.subjectId ? (
+        <SelectField
+          label={t('work.subjectOptional')}
+          value={form.subjectId ?? null}
+          noneLabel={t('work.noSubject')}
+          options={subjectOptions(subjects)}
+          onChange={(subjectId) => set({ subjectId })}
+        />
+      ) : null}
       <DateTimeField
         label={isTask ? t('work.dueDate') : t('work.dueDateAssignment')}
         mode="date"

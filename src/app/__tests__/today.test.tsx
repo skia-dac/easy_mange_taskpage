@@ -4,7 +4,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { CourseSeries, Exam, Subject } from '@/modules/academic';
 import type { WorkItem } from '@/modules/productivity';
-import type { TodayData } from '@/projections';
+import { filterBySpaces, type TodayData } from '@/projections';
+import { SpacesContext, spacesValue } from '@/shared/SpacesContext';
 import { i18n } from '@/shared/i18n';
 
 import TodayRoute from '../(tabs)/index';
@@ -69,6 +70,7 @@ const late: WorkItem = {
   reminderAt: null,
   repeat: 'none',
   estimatedMinutes: null,
+  space: 'personal',
 };
 const exam: Exam = {
   id: 'e1',
@@ -153,5 +155,34 @@ describe('écran Aujourd’hui', () => {
     expect(screen.getByText('Note de cours')).toBeTruthy();
     await fireEvent.press(screen.getAllByLabelText('Fermer')[0]!);
     expect(screen.queryByText('Dépense')).toBeNull();
+  });
+
+  it('Pro seul : tuiles du travail, ni argent, ni cours, ni devoirs', async () => {
+    const pro: WorkItem = {
+      ...late,
+      id: 'w2',
+      kind: 'task',
+      subjectId: null,
+      title: 'Préparer la démo',
+      space: 'work',
+    };
+    mockAgenda = filterBySpaces(
+      { series: [series], exams: [exam], work: [late, pro], events: [] },
+      ['work'],
+    );
+    await render(
+      <SpacesContext.Provider value={spacesValue(['work'])}>
+        <TodayScreen />
+      </SpacesContext.Provider>,
+    );
+    expect(screen.getByText('À PLANIFIER')).toBeTruthy();
+    expect(screen.getByText('RÉUNIONS')).toBeTruthy();
+    expect(screen.getByText('Préparer la démo')).toBeTruthy();
+    expect(screen.queryByText('ARGENT')).toBeNull();
+    expect(screen.queryByText('Marketing stratégique')).toBeNull();
+    expect(screen.queryByText('Étude de cas Marketing')).toBeNull();
+    await fireEvent.press(screen.getByLabelText('Ajouter'));
+    expect(screen.queryByText('Dépense')).toBeNull();
+    expect(screen.getByText('Rendez-vous')).toBeTruthy();
   });
 });

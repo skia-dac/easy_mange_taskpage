@@ -13,10 +13,12 @@ import {
   listPersonalEvents,
   listWorkItems,
 } from '@/modules/productivity';
+import { getActiveSpaces } from '@/modules/identity';
 import { listRecurring, listTransactions } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useLiveQuery, type Db } from '@/shared/db';
 
+import { filterBySpaces } from './spaces';
 import type { TodayData } from './today';
 
 const TABLES = [
@@ -34,9 +36,11 @@ const TABLES = [
   'mood_logs',
   'money_recurring',
   'money_transactions',
+  'app_settings',
 ] as const;
 
-async function loadAgenda(db: Db): Promise<TodayData> {
+/** Toutes les données (tous espaces confondus). */
+async function loadAllAgenda(db: Db): Promise<TodayData> {
   const today = toIsoDate(new Date());
   const [
     series,
@@ -85,7 +89,17 @@ async function loadAgenda(db: Db): Promise<TodayData> {
   };
 }
 
-/** Toutes les données du calendrier et d'« Aujourd'hui », rechargées à chaque modification. */
-export function useAgendaData() {
-  return useLiveQuery(loadAgenda, TABLES, []);
+/** Données des espaces actifs seulement (ce que l'étudiant ou le salarié voit). */
+export async function loadAgenda(db: Db): Promise<TodayData> {
+  const [data, spaces] = await Promise.all([loadAllAgenda(db), getActiveSpaces(db)]);
+  return filterBySpaces(data, spaces);
+}
+
+/**
+ * Toutes les données du calendrier et d'« Aujourd'hui », rechargées à chaque modification,
+ * limitées aux espaces actifs. `allSpaces` : tout (ex. créneaux déjà occupés du plan de révision).
+ */
+export function useAgendaData(options: { allSpaces?: boolean } = {}) {
+  const all = options.allSpaces === true;
+  return useLiveQuery(all ? loadAllAgenda : loadAgenda, TABLES, [all]);
 }

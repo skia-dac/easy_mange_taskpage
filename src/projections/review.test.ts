@@ -16,6 +16,7 @@ const work = (id: string, dueDate: string, over: Partial<WorkItem> = {}): WorkIt
   reminderAt: null,
   repeat: 'none',
   estimatedMinutes: null,
+  space: 'personal',
   ...over,
 });
 

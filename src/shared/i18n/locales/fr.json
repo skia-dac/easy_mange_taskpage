@@ -24,7 +24,8 @@
     "notes": "Notes",
     "tasks": "Tâches",
     "profile": "Profil",
-    "money": "Argent"
+    "money": "Argent",
+    "planning": "Planning"
   },
   "errors": {
     "title": "Oups",
@@ -592,11 +593,11 @@
     "next": "Suivant",
     "start": "Commencer",
     "title1": "Sache toujours ce qui t’attend",
-    "body1": "Ton prochain cours, tes devoirs et tes examens s’affichent dès que tu ouvres l’app.",
-    "title2": "Ton emploi du temps, tes matières",
-    "body2": "Ajoute tes matières et tes cours de la semaine : ils apparaissent dans ton calendrier, jour par jour.",
+    "body1": "Ta journée s’affiche dès que tu ouvres l’app : cours, rendez-vous, tâches, argent, habitudes.",
+    "title2": "Études, travail, vie perso",
+    "body2": "Choisis ce qui te concerne : MySky s’adapte. Tu pourras tout changer plus tard dans ton profil.",
     "title3": "Rien ne t’échappe",
-    "body3": "Un rappel avant chaque cours, et à la fin un petit message pour noter un devoir en 2 secondes.",
+    "body3": "Un rappel au bon moment pour ne rien oublier : cours, réunions, tâches, tontines.",
     "howTitle": "Comment veux-tu commencer ?",
     "howHint": "Tu pourras changer d’avis plus tard.",
     "manual": "Créer mon emploi du temps",
@@ -606,7 +607,8 @@
     "import": "Importer mon emploi du temps",
     "importHint": "Photo ou PDF. Bientôt disponible.",
     "account": "J’ai déjà un compte",
-    "accountHint": "Retrouve tes données d’un autre téléphone"
+    "accountHint": "Retrouve tes données d’un autre téléphone",
+    "startNow": "Commencer"
   },
   "notifications": {
     "title": "Notifications",
@@ -1382,7 +1384,22 @@
     "nothingTodo": "Tout est fait",
     "exam": "Examen",
     "noExam": "Aucun examen prévu",
-    "days": "{{count}} j"
+    "days": "{{count}} j",
+    "plan": "À planifier",
+    "planOf": "{{planned}} planifiées sur {{target}} cette semaine",
+    "planFull": "Semaine pleine",
+    "courses": "Cours aujourd’hui",
+    "coursesHint": "{{duration}} · fin à {{end}}",
+    "noCourses": "Aucun cours",
+    "revision": "Révision",
+    "thisWeek": "cette semaine",
+    "meetings": "Réunions",
+    "meetingsHint": "aujourd’hui · {{duration}}",
+    "noMeetings": "Aucune aujourd’hui",
+    "doneWeek": "Terminées",
+    "doneWeekHint": "tâches cette semaine",
+    "due": "À payer",
+    "noDue": "Rien à payer bientôt"
   },
   "dayline": {
     "title": "Ta journée",
@@ -1400,6 +1417,46 @@
     "income": "Entrée d’argent",
     "note": "Note de cours",
     "revision": "Révision",
-    "other": "Autre (examen, événement…)"
+    "other": "Autre (examen, événement…)",
+    "event": "Rendez-vous"
+  },
+  "spaces": {
+    "title": "Mes espaces",
+    "intro": "Active ce qui te concerne. Un espace désactivé est caché, jamais effacé : tout revient quand tu le réactives.",
+    "name": {
+      "study": "Mes études",
+      "work": "Mon travail",
+      "personal": "Ma vie perso"
+    },
+    "short": {
+      "study": "Études",
+      "work": "Pro",
+      "personal": "Perso"
+    },
+    "hint": {
+      "study": "Cours, emploi du temps, devoirs, examens, moyennes, révisions",
+      "work": "Rendez-vous, réunions, tâches pro, heures à planifier",
+      "personal": "Argent, tontines, habitudes, humeur, sport, famille"
+    },
+    "all": "Tout",
+    "field": "Espace",
+    "lockedStudy": "Lié à une matière : rangé dans Études.",
+    "lastOne": "Au moins un espace doit rester actif.",
+    "changeLater": "Tu pourras changer à tout moment dans ton profil.",
+    "offTitle": "Désactiver « {{name}} » ?",
+    "offMessage": {
+      "study": "Tes matières, cours, devoirs, examens et révisions sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
+      "work": "Tes tâches, rendez-vous et notes pro sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
+      "personal": "Ton argent, tes habitudes, ton humeur et tes éléments perso sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient."
+    },
+    "offConfirm": "Désactiver",
+    "onboardingTitle": "Tu utilises MySky pour…",
+    "onboardingHint": "Choisis tout ce qui te correspond. MySky adapte l’accueil, le + et les rappels.",
+    "focusTitle": "Minuteur de concentration",
+    "focusHint": "Travaille par sessions, temps de la semaine",
+    "workHours": "Objectif : {{hours}} h de travail par semaine",
+    "workHoursTitle": "Heures de travail par semaine",
+    "workHoursHint": "Sert à calculer les heures qu’il te reste à planifier.",
+    "hoursValue": "{{hours}} h"
   }
 }

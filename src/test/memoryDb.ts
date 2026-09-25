@@ -3,7 +3,8 @@ import Database from 'better-sqlite3';
 import { migrate, migrations, type Db, type SqlValue } from '@/shared/db';
 
 /** Vraie base SQLite en mémoire, avec la même interface que sur le téléphone. Tests uniquement. */
-export async function createTestDb(): Promise<Db & { close(): void }> {
+/** `upTo` : s'arrête à cette version (pour tester une migration sur d'anciennes données). */
+export async function createTestDb(upTo?: number): Promise<Db & { close(): void }> {
   const sqlite = new Database(':memory:');
   sqlite.pragma('foreign_keys = ON');
   const db: Db & { close(): void } = {
@@ -33,6 +34,6 @@ export async function createTestDb(): Promise<Db & { close(): void }> {
       sqlite.close();
     },
   };
-  await migrate(db, migrations);
+  await migrate(db, upTo === undefined ? migrations : migrations.slice(0, upTo));
   return db;
 }

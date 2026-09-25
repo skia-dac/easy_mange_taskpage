@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { isOnboardingDone } from '@/modules/identity';
 import { useDb } from '@/shared/db';
+import { useSpaces } from '@/shared/SpacesContext';
 import { fonts, useTheme } from '@/shared/theme';
 import { LoadingScreen } from '@/shared/ui';
 
@@ -28,6 +29,10 @@ export default function TabsLayout() {
   const { colors } = useTheme();
   const db = useDb();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const spaces = useSpaces();
+  // Études seul : « Calendrier » ; dès qu'il y a Pro ou Perso : « Planning ».
+  const calendarTitle =
+    spaces.active.length === 1 && spaces.has('study') ? t('tabs.calendar') : t('tabs.planning');
 
   useEffect(() => {
     void isOnboardingDone(db).then(setOnboarded, () => setOnboarded(true));
@@ -49,7 +54,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: t('tabs.today'), tabBarIcon: tabIcon('sun') }} />
       <Tabs.Screen
         name="calendar"
-        options={{ title: t('tabs.calendar'), tabBarIcon: tabIcon('calendar') }}
+        options={{ title: calendarTitle, tabBarIcon: tabIcon('calendar') }}
       />
       <Tabs.Screen
         name="tasks"
@@ -61,7 +66,12 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="money"
-        options={{ title: t('tabs.money'), tabBarIcon: tabIcon('credit-card') }}
+        options={{
+          title: t('tabs.money'),
+          tabBarIcon: tabIcon('credit-card'),
+          // L'argent fait partie de l'espace Perso : l'onglet est caché (les données restent).
+          href: spaces.has('personal') ? undefined : null,
+        }}
       />
     </Tabs>
   );

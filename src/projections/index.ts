@@ -2,7 +2,8 @@ export { calendarDays } from './calendar';
 export type { CalendarItem } from './calendar';
 export { buildDayLine, buildToday, EXAM_HORIZON_DAYS, nextCourse } from './today';
 export type { DayEntry, DayLine, NextCourse, TodayData, TodayView } from './today';
-export { useAgendaData } from './useAgendaData';
+export { loadAgenda, useAgendaData } from './useAgendaData';
+export { filterBySpaces } from './spaces';
 export { weekStats } from './stats';
 export type { WeekStats } from './stats';
 export {
@@ -49,3 +50,13 @@ export { loadMoney, useMoneyData } from './useMoneyData';
 export type { MoneyData } from './useMoneyData';
 export { buildWidgetMoney, EMPTY_WIDGET_MONEY } from './widgetMoney';
 export type { WidgetMoney, WidgetMoneyButton } from './widgetMoney';
+export {
+  coursesToday,
+  DEFAULT_EVENT_MINUTES,
+  doneThisWeek,
+  glanceTiles,
+  meetingsToday,
+  revisionWeek,
+  workWeek,
+} from './glance';
+export type { GlanceTileId, WorkWeek } from './glance';
