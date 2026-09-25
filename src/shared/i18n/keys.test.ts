@@ -9,13 +9,17 @@ it('toutes les clés de traduction utilisées dans le code existent', () => {
     .split('\n')
     .filter(Boolean);
   const missing = new Set<string>();
-  const exists = (key: string) =>
+  const lookup = (key: string) =>
     key
       .split('.')
       .reduce<unknown>(
         (o, p) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[p] : undefined),
         fr,
-      ) !== undefined;
+      );
+  // Une clé au pluriel i18next existe sous `_one` / `_other`.
+  const exists = (key: string) =>
+    lookup(key) !== undefined ||
+    (lookup(`${key}_one`) !== undefined && lookup(`${key}_other`) !== undefined);
   for (const f of files) {
     if (f.endsWith('.test.ts') || f.endsWith('.test.tsx')) continue;
     const src = readFileSync(f, 'utf8');

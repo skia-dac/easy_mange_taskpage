@@ -15,8 +15,8 @@ import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
 import { AppText, Card, ListRow, LoadingScreen, SectionHeader } from '@/shared/ui';
 
-const fmt = (v: number | null) =>
-  v === null ? '—' : v.toLocaleString(undefined, { maximumFractionDigits: 1 });
+const fmt = (v: number | null, lang: string) =>
+  v === null ? '—' : v.toLocaleString(lang, { maximumFractionDigits: 1 });
 
 /** Journal d'humeur et d'énergie : aujourd'hui, les 7 derniers jours, et le lien avec les habitudes. */
 export default function MoodScreen() {
@@ -49,8 +49,8 @@ export default function MoodScreen() {
           {insights.week.days === 0
             ? t('mood.noData')
             : t('mood.averages', {
-                mood: fmt(insights.week.mood),
-                energy: fmt(insights.week.energy),
+                mood: fmt(insights.week.mood, labels.lang),
+                energy: fmt(insights.week.energy, labels.lang),
               })}
         </AppText>
         <BarChart
@@ -77,8 +77,8 @@ export default function MoodScreen() {
                 key={h.habit.id}
                 title={h.habit.name}
                 subtitle={t('mood.habitLine', {
-                  done: fmt(h.energyDone),
-                  missed: fmt(h.energyMissed),
+                  done: fmt(h.energyDone, labels.lang),
+                  missed: fmt(h.energyMissed, labels.lang),
                 })}
                 leading={<HabitIcon icon={h.habit.icon} colorId={h.habit.colorId} />}
               />

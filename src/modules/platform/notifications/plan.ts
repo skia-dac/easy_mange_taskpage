@@ -141,7 +141,7 @@ export function planReminders(
           title: { key: 'notif.examTitle', params: { subject: names.subjectName(e.subjectId) } },
           body: {
             key: days === 0 ? 'notif.examToday' : 'notif.examBody',
-            params: { days, time: e.time ?? '' },
+            params: { count: days, time: e.time ?? '' },
           },
           action: { kind: 'exam', id: e.id },
         });

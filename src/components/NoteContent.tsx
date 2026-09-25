@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, View } from 'react-native';
 
 import { parseBlocks, type Inline } from '@/modules/productivity';
-import { minTouchSize, useTheme } from '@/shared/theme';
+import { fonts, minTouchSize, useTheme } from '@/shared/theme';
 import { AppText } from '@/shared/ui';
 
 type Props = {
@@ -24,10 +24,16 @@ function Inlines({
         <AppText
           key={k}
           variant={variant}
-          style={{
-            fontWeight: i.bold ? '700' : undefined,
-            fontStyle: i.italic ? 'italic' : undefined,
-          }}
+          // Polices chargées graisse par graisse : on choisit la famille, pas `fontWeight`.
+          style={
+            i.bold && i.italic
+              ? { fontFamily: fonts.bodyBoldItalic }
+              : i.bold
+                ? { fontFamily: fonts.bodyBold }
+                : i.italic
+                  ? { fontFamily: fonts.bodyItalic }
+                  : undefined
+          }
         >
           {i.text}
         </AppText>

@@ -13,7 +13,7 @@ type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
 };
 
 export function TextField({ label, required, error, hint, multiline, style, ...rest }: Props) {
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, text } = useTheme();
   return (
     <FieldShell label={label} required={required} error={error} hint={hint}>
       <TextInput
@@ -31,7 +31,7 @@ export function TextField({ label, required, error, hint, multiline, style, ...r
             paddingTop: multiline ? spacing.md : 0,
             color: colors.text,
             fontFamily: fonts.body,
-            fontSize: 16,
+            fontSize: text.body.fontSize + 1,
             textAlignVertical: multiline ? 'top' : 'center',
           },
           style,

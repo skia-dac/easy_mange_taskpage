@@ -9,7 +9,7 @@ import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney } from '@/modules/finance';
 import { useMoneyData, type MoneyInsight } from '@/projections';
-import { formatShortDate } from '@/shared/format';
+import { formatShortDate, formatPercent } from '@/shared/format';
 import { subjectColors, useTheme } from '@/shared/theme';
 import { AppText, Card, LoadingScreen, SectionHeader, TextButton } from '@/shared/ui';
 
@@ -107,7 +107,7 @@ export default function MoneyReportScreen() {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <AppText variant="bodyStrong">{money.categoryName(c.category)}</AppText>
                   <AppText color="muted">
-                    {formatMoney(c.total, cur, { symbol: false })} · {Math.round(c.share * 100)} %
+                    {formatMoney(c.total, cur, { symbol: false })} · {formatPercent(c.share)}
                   </AppText>
                 </View>
                 <View

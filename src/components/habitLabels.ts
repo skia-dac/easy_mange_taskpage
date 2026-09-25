@@ -1,3 +1,4 @@
+import { formatPercent } from '@/shared/format';
 import type { TFunction } from 'i18next';
 
 import type { Habit } from '@/modules/productivity';
@@ -16,5 +17,5 @@ export function frequencyLabel(
 
 /** Taux 0–1 → « 75 % » ; null → « — ». */
 export function percent(rate: number | null): string {
-  return rate === null ? '—' : `${Math.round(rate * 100)} %`;
+  return rate === null ? '—' : formatPercent(rate);
 }

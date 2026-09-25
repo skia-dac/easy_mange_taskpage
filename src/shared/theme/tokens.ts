@@ -9,6 +9,8 @@ export const fonts = {
   bodyMedium: 'PlusJakartaSans_500Medium',
   bodySemiBold: 'PlusJakartaSans_600SemiBold',
   bodyBold: 'PlusJakartaSans_700Bold',
+  bodyItalic: 'PlusJakartaSans_400Regular_Italic',
+  bodyBoldItalic: 'PlusJakartaSans_700Bold_Italic',
 } as const;
 
 export const textVariants = {

@@ -13,7 +13,7 @@ import type { DayEntry, DayLine, NextCourse } from '@/projections';
 import { toTime } from '@/shared/dates';
 import { formatDuration } from '@/shared/format';
 import type { SpaceId } from '@/shared/spaces';
-import { minTouchSize, useTheme } from '@/shared/theme';
+import { minTouchSize, useTheme, fonts } from '@/shared/theme';
 import { AppText, SectionHeader } from '@/shared/ui';
 
 const TIME_WIDTH = 46;
@@ -93,11 +93,15 @@ function NowLine({ now }: { now: Date }) {
         marginVertical: spacing.xs,
       }}
     >
-      <AppText variant="caption" color="danger" style={{ width: TIME_WIDTH, fontWeight: '700' }}>
+      <AppText
+        variant="caption"
+        color="danger"
+        style={{ width: TIME_WIDTH, fontFamily: fonts.bodyBold }}
+      >
         {toTime(now)}
       </AppText>
       <View style={{ flex: 1, height: 2, backgroundColor: colors.danger, borderRadius: 1 }} />
-      <AppText variant="caption" color="danger" style={{ fontWeight: '700' }}>
+      <AppText variant="caption" color="danger" style={{ fontFamily: fonts.bodyBold }}>
         {t('dayline.now')}
       </AppText>
     </View>

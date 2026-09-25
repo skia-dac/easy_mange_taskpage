@@ -76,7 +76,7 @@ export default function NoteScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, text } = useTheme();
   const params = useLocalSearchParams<Params>();
   const isNew = params.id === 'new';
   const { subjects, byId } = useSubjects();
@@ -423,8 +423,8 @@ export default function NoteScreen() {
           style={{
             flex: 1,
             fontFamily: fonts.display,
-            fontSize: 24,
-            lineHeight: 30,
+            fontSize: text.heading.fontSize + 5,
+            lineHeight: text.heading.lineHeight + 6,
             color: colors.text,
             paddingVertical: spacing.xs,
           }}

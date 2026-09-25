@@ -7,12 +7,11 @@ import { useLabels } from '@/hooks/useLabels';
 import { attachmentExists, attachmentUri } from '@/modules/platform';
 import { listCheckpoints, weightChange, type Checkpoint } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
-import { formatShortDate } from '@/shared/format';
+import { formatShortDate, formatKg } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { AppText, Button, Card, ListRow, SectionHeader } from '@/shared/ui';
 
-const kg = (n: number, lang: string) =>
-  `${new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(n)} kg`;
+const kg = formatKg;
 
 /**
  * « Ma progression physique » : photo et poids du départ, puis du dernier point, et l'écart.

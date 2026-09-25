@@ -54,7 +54,7 @@ type Props = {
 /** Éditeur de note : zone de texte + barre d'outils de mise en forme légère (§46). */
 export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActions = [] }: Props) {
   const { t } = useTranslation();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, text } = useTheme();
   const input = useRef<TextInput>(null);
   const [selection, setSelection] = useState<Selection>({ start: value.length, end: value.length });
   const pending = useRef<Selection | null>(null);
@@ -112,8 +112,8 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
           padding: spacing.lg,
           color: colors.text,
           fontFamily: fonts.body,
-          fontSize: 16,
-          lineHeight: 24,
+          fontSize: text.body.fontSize + 1,
+          lineHeight: text.body.lineHeight + 2,
         }}
       />
       <View

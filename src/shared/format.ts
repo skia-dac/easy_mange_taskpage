@@ -1,4 +1,5 @@
 import { fromIsoDate, type IsoDate } from './dates';
+import { i18n } from './i18n';
 
 const cap = (text: string, locale: string) =>
   text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
@@ -52,10 +53,24 @@ export function weekdayName(
 
 /** Durée : « 35 min », « 1 h », « 1 h 20 ». */
 export function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 60) return i18n.t('units.min', { value: minutes });
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`;
+  return m === 0
+    ? i18n.t('units.h', { value: h })
+    : i18n.t('units.hm', { h, m: String(m).padStart(2, '0') });
+}
+
+/** « 62,5 kg » */
+export function formatKg(value: number, locale: string): string {
+  return i18n.t('units.kg', {
+    value: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value),
+  });
+}
+
+/** Taux 0–1 → « 75 % » (espace fine selon la langue). */
+export function formatPercent(rate: number): string {
+  return i18n.t('units.percent', { value: Math.round(rate * 100) });
 }
 
 /** « 24 sept. 2026, 10:30 » */

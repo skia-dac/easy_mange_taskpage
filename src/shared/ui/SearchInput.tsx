@@ -15,7 +15,7 @@ type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
 /** Champ de recherche avec sa croix d'effacement, identique sur iPhone et Android. */
 export function SearchInput({ value, onChangeText, placeholder, emphasized, ...rest }: Props) {
   const { t } = useTranslation();
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, text } = useTheme();
   return (
     <View
       style={{
@@ -43,7 +43,7 @@ export function SearchInput({ value, onChangeText, placeholder, emphasized, ...r
           flex: 1,
           color: colors.text,
           fontFamily: fonts.body,
-          fontSize: 16,
+          fontSize: text.body.fontSize + 1,
           minHeight: minTouchSize,
         }}
         {...rest}

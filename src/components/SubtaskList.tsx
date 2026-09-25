@@ -110,7 +110,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
             borderColor: colors.border,
             color: colors.text,
             fontFamily: text.body.fontFamily,
-            fontSize: 16,
+            fontSize: text.body.fontSize + 1,
           }}
         />
         <Pressable

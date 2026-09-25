@@ -25,7 +25,7 @@ import { startOfWeekOn } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { formatDuration } from '@/shared/format';
 import { useSpaces } from '@/shared/SpacesContext';
-import { useTheme, type ColorTokens } from '@/shared/theme';
+import { useTheme, type ColorTokens, fonts } from '@/shared/theme';
 import { AppText } from '@/shared/ui';
 
 /**
@@ -123,7 +123,7 @@ export function TodayGlance({
       >
         <AppText variant="heading">{String(todoCount)}</AppText>
         {view.overdue.length > 0 ? (
-          <AppText variant="caption" color="danger" style={{ fontWeight: '700' }}>
+          <AppText variant="caption" color="danger" style={{ fontFamily: fonts.bodyBold }}>
             {t('glance.overdue', { count: view.overdue.length })}
           </AppText>
         ) : (
@@ -396,7 +396,7 @@ function Ring({ done, total }: { done: number; total: number }) {
           />
         ) : null}
       </Svg>
-      <AppText variant="caption" style={{ fontWeight: '700' }}>
+      <AppText variant="caption" style={{ fontFamily: fonts.bodyBold }}>
         {total > 0 ? `${done}/${total}` : '+'}
       </AppText>
     </View>

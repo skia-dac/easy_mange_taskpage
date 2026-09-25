@@ -486,7 +486,7 @@ const cases: Case[] = [
     name: 'Formulaire vacances',
     load: () => require('@/app/off-periods/form') as { default: ComponentType },
     params: { id: 'off' },
-    expect: ['Toussaint', 'séance(s) ne s’afficheront pas'],
+    expect: ['Toussaint', 'séance ne s’affichera pas'],
   },
   {
     name: 'Détail devoir',
@@ -516,7 +516,7 @@ const cases: Case[] = [
     name: 'Formulaire examen',
     load: () => require('@/app/exams/form') as { default: ComponentType },
     params: { id: 'exam' },
-    expect: ['Enregistrer l’examen', '7 jour(s) avant'],
+    expect: ['Enregistrer l’examen', '7 jours avant'],
   },
   {
     name: 'Formulaire événement',
@@ -554,7 +554,7 @@ const cases: Case[] = [
   {
     name: 'Notifications',
     load: () => require('@/app/notifications') as { default: ComponentType },
-    expect: ['rappel(s) dans les'],
+    expect: ['rappels dans les'],
   },
   {
     name: 'Réglages',
