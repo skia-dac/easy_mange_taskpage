@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { spaceSchema, type SpaceId } from '@/shared/spaces';
-import { isoDate, optionalId, optionalText } from '@/shared/validation';
+import { isoDate, optionalId, optionalText, requiredText } from '@/shared/validation';
 
 /**
  * Note de cours (§44–53). Le contenu est un texte avec une mise en forme légère :
@@ -14,8 +14,10 @@ export const noteInputSchema = z.object({
   subjectId: optionalId,
   courseSeriesId: optionalId,
   courseDate: isoDate.nullish().transform((v) => v ?? null),
-  /** Espace ; absent à la modification = on garde celui enregistré. */
+  /** Ancien champ (les notes sont communes à tous les espaces) : gardé, plus utilisé. */
   space: spaceSchema.optional(),
+  /** Catégorie créée par l'utilisateur ; absent à la modification = on garde celle enregistrée. */
+  categoryId: z.string().min(1).nullable().optional(),
 });
 
 export type NoteInput = z.input<typeof noteInputSchema>;
@@ -30,12 +32,19 @@ export type Note = {
   createdAt: string;
   updatedAt: string;
   space: SpaceId;
+  categoryId: string | null;
 };
 
-/** Espace réel d'une note : liée à une matière ou à un cours = Études. */
-export function noteSpace(note: Pick<Note, 'subjectId' | 'courseSeriesId' | 'space'>): SpaceId {
-  return note.subjectId || note.courseSeriesId ? 'study' : note.space;
-}
+/**
+ * Catégorie de notes créée par l'utilisateur (Idées, Réunions, Recettes…). Les notes sont
+ * communes aux trois espaces : les catégories servent à les ranger.
+ */
+export const noteCategoryInputSchema = z.object({
+  name: requiredText(40),
+  colorId: z.string().min(1).default('slate'),
+});
+export type NoteCategoryInput = z.input<typeof noteCategoryInputSchema>;
+export type NoteCategory = { id: string; name: string; colorId: string; position: number };
 
 export type AttachmentKind = 'image' | 'file';
 export type Attachment = {

@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
 
-import { SpacePicker } from '@/components/SpaceUi';
 import { NoteContent } from '@/components/NoteContent';
 import { NoteEditor } from '@/components/NoteEditor';
 import { subjectOptions } from '@/components/SubjectOptions';
@@ -27,6 +26,7 @@ import {
   deleteNote,
   getNote,
   listAttachments,
+  listNoteCategories,
   noteToHtml,
   removeAttachment,
   saveNoteContent,
@@ -40,18 +40,19 @@ import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
 import { useSpaces } from '@/shared/SpacesContext';
-import { defaultSpace, spaceIds, type SpaceId } from '@/shared/spaces';
 import { formatDate, formatShortDate } from '@/shared/format';
 import { fonts, minTouchSize, useTheme } from '@/shared/theme';
 import {
   AppText,
   Card,
   Chip,
+  ChoiceChips,
   confirmDestructive,
   EmptyState,
   KeyboardAvoiding,
   SelectField,
   showError,
+  SubjectDot,
   TextButton,
 } from '@/shared/ui';
 
@@ -60,7 +61,7 @@ type Params = {
   subjectId?: string;
   courseSeriesId?: string;
   courseDate?: string;
-  space?: string;
+  categoryId?: string;
 };
 
 /**
@@ -83,11 +84,9 @@ export default function NoteScreen() {
   const [content, setContent] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(params.subjectId ?? null);
   const spaces = useSpaces();
-  const [space, setSpace] = useState<SpaceId>(
-    spaceIds.includes(params.space as SpaceId)
-      ? (params.space as SpaceId)
-      : defaultSpace(spaces.active),
-  );
+  // Notes communes aux trois espaces ; rangées par catégorie (créée par l'utilisateur).
+  const [categoryId, setCategoryId] = useState<string | null>(params.categoryId ?? null);
+  const categories = useLiveQuery(listNoteCategories, ['note_categories'], []);
   const [favorite, setFavorite] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -103,7 +102,7 @@ export default function NoteScreen() {
     setTitle(n.title);
     setContent(n.content);
     setSubjectId(n.subjectId);
-    setSpace(n.space);
+    setCategoryId(n.categoryId);
     setFavorite(n.isFavorite);
     setUpdatedAt(n.updatedAt);
     latest.current = { title: n.title, content: n.content };
@@ -153,7 +152,7 @@ export default function NoteScreen() {
         subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
-        space,
+        categoryId,
       });
       setNoteId(id);
       setStatus('saved');
@@ -165,7 +164,7 @@ export default function NoteScreen() {
     setStatus('saved');
     setUpdatedAt(new Date().toISOString());
     return noteId;
-  }, [db, noteId, subjectId, space, params.courseSeriesId, params.courseDate]);
+  }, [db, noteId, subjectId, categoryId, params.courseSeriesId, params.courseDate]);
 
   const scheduleSave = (next: { title?: string; content?: string }) => {
     if (next.title !== undefined) {
@@ -192,7 +191,7 @@ export default function NoteScreen() {
     };
   }, []);
 
-  const saveMeta = async (next: { subjectId: string | null; space: SpaceId }) => {
+  const saveMeta = async (next: { subjectId: string | null; categoryId: string | null }) => {
     if (!noteId) return;
     try {
       await updateNote(db, noteId, {
@@ -201,7 +200,7 @@ export default function NoteScreen() {
         subjectId: next.subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
-        space: next.space,
+        categoryId: next.categoryId,
       });
     } catch (e) {
       fail(e);
@@ -210,12 +209,12 @@ export default function NoteScreen() {
 
   const changeSubject = async (value: string | null) => {
     setSubjectId(value);
-    await saveMeta({ subjectId: value, space });
+    await saveMeta({ subjectId: value, categoryId });
   };
 
-  const changeSpace = async (value: SpaceId) => {
-    setSpace(value);
-    await saveMeta({ subjectId, space: value });
+  const changeCategory = async (value: string | null) => {
+    setCategoryId(value);
+    await saveMeta({ subjectId, categoryId: value });
   };
 
   const toggleFavorite = async () => {
@@ -236,7 +235,7 @@ export default function NoteScreen() {
           title: latest.current.title,
           content: latest.current.content,
           subjectId,
-          space,
+          categoryId,
         }));
       if (!noteId) setNoteId(target);
       const picked = kind === 'image' ? await pickImage(target) : await pickDocument(target);
@@ -301,6 +300,7 @@ export default function NoteScreen() {
   if (!isNew && !noteId) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 
   const subject = subjectId ? byId.get(subjectId) : undefined;
+  const category = (categories.data ?? []).find((c) => c.id === categoryId);
   const headerRight = () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
       <Pressable
@@ -361,10 +361,22 @@ export default function NoteScreen() {
     <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
       {editing ? (
         <>
-          <SpacePicker
-            value={space}
-            onChange={(v) => void changeSpace(v)}
-            lockedToStudy={!!subjectId || !!params.courseSeriesId}
+          <ChoiceChips
+            label={t('noteCategories.field')}
+            scroll
+            options={[
+              { value: null as string | null, label: t('noteCategories.none') },
+              ...(categories.data ?? []).map((c) => ({
+                value: c.id as string | null,
+                label: c.name,
+                leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
+              })),
+              { value: '__new', label: t('noteCategories.new') },
+            ]}
+            selected={[categoryId]}
+            onToggle={(v) =>
+              v === '__new' ? router.push('/notes/category-form') : void changeCategory(v)
+            }
           />
           {spaces.has('study') || subjectId ? (
             <SelectField
@@ -381,6 +393,9 @@ export default function NoteScreen() {
           style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}
         >
           {subject ? <Chip label={subject.name} subject={colorOf(subject)} /> : null}
+          {category ? (
+            <Chip label={category.name} subject={colorOf({ colorId: category.colorId })} />
+          ) : null}
           {updatedAt ? (
             <AppText variant="caption" color="muted">
               {t('notes.updated', {

@@ -1,6 +1,13 @@
 import type { Db } from '@/shared/db';
 
-import { toAttachment, toNote, type AttachmentRow, type NoteRow } from './noteRows';
+import {
+  toAttachment,
+  toNote,
+  toNoteCategory,
+  type AttachmentRow,
+  type NoteCategoryRow,
+  type NoteRow,
+} from './noteRows';
 
 const ALIVE = 'deleted_at IS NULL';
 
@@ -53,4 +60,20 @@ export async function countNotesForSubject(db: Db, subjectId: string) {
       )
     )?.n ?? 0
   );
+}
+
+export async function listNoteCategories(db: Db) {
+  const rows = await db.getAllAsync<NoteCategoryRow>(
+    `SELECT * FROM note_categories WHERE ${ALIVE} ORDER BY position, name`,
+    [],
+  );
+  return rows.map(toNoteCategory);
+}
+
+export async function getNoteCategory(db: Db, id: string) {
+  const row = await db.getFirstAsync<NoteCategoryRow>(
+    `SELECT * FROM note_categories WHERE id = ? AND ${ALIVE}`,
+    [id],
+  );
+  return row ? toNoteCategory(row) : null;
 }

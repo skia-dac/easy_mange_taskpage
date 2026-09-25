@@ -16,6 +16,7 @@ export const SYNCED_TABLES = [
   'tasks',
   'assignments',
   'personal_events',
+  'note_categories',
   'notes',
   'attachments',
   'study_sessions',
@@ -42,6 +43,7 @@ export type EntityTable =
   | 'course_exceptions'
   | 'off_periods'
   | 'notes'
+  | 'note_categories'
   | 'attachments'
   | 'profiles'
   | 'study_sessions'

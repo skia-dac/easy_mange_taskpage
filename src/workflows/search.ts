@@ -8,7 +8,6 @@ import {
 } from '@/modules/academic';
 import { getActiveSpaces } from '@/modules/identity';
 import {
-  noteSpace,
   searchNotes,
   searchPersonalEvents,
   searchWorkItems,
@@ -59,7 +58,8 @@ export async function searchAll(db: Db, query: string): Promise<SearchResults> {
   return {
     subjects: study ? subjects : [],
     courses: study ? courses : [],
-    notes: notes.filter((n) => spaces.includes(noteSpace(n))),
+    // Les notes sont communes aux trois espaces.
+    notes,
     assignments: study ? assignments : [],
     tasks: tasks.filter((w) => spaces.includes(workSpace(w))),
     exams: study ? exams : [],

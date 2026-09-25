@@ -393,4 +393,16 @@ export const migrations: readonly Migration[] = [
       UPDATE notes SET space = 'study' WHERE subject_id IS NOT NULL OR course_series_id IS NOT NULL;
     `,
   },
+  {
+    version: 13,
+    name: 'notes : catégories créées par l’utilisateur',
+    sql: `
+      CREATE TABLE note_categories (${SYNC_COLUMNS},
+        name TEXT NOT NULL,
+        color_id TEXT NOT NULL DEFAULT 'slate',
+        position INTEGER NOT NULL DEFAULT 0
+      );
+      ALTER TABLE notes ADD COLUMN category_id TEXT REFERENCES note_categories (id);
+    `,
+  },
 ];

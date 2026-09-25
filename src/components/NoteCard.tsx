@@ -5,14 +5,27 @@ import { View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { colorOf, type Subject } from '@/modules/academic';
-import { noteDisplayTitle, notePreview, type Note } from '@/modules/productivity';
+import {
+  noteDisplayTitle,
+  notePreview,
+  type Note,
+  type NoteCategory,
+} from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { AppText, Card, Chip } from '@/shared/ui';
 
 /** Vignette d'une note dans la grille (§48, §52). */
-export function NoteCard({ note, subject }: { note: Note; subject?: Subject }) {
+export function NoteCard({
+  note,
+  subject,
+  category,
+}: {
+  note: Note;
+  subject?: Subject;
+  category?: NoteCategory;
+}) {
   const { t } = useTranslation();
   const labels = useLabels();
   const { colors, spacing } = useTheme();
@@ -40,7 +53,13 @@ export function NoteCard({ note, subject }: { note: Note; subject?: Subject }) {
           gap: spacing.xs,
         }}
       >
-        {subject ? <Chip label={subject.name} subject={colorOf(subject)} /> : <View />}
+        {subject ? (
+          <Chip label={subject.name} subject={colorOf(subject)} />
+        ) : category ? (
+          <Chip label={category.name} subject={colorOf({ colorId: category.colorId })} />
+        ) : (
+          <View />
+        )}
         <AppText variant="caption" color="muted">
           {formatShortDate(toIsoDate(new Date(note.updatedAt)), labels.lang)}
         </AppText>

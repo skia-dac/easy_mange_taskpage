@@ -1446,7 +1446,7 @@
     "offTitle": "Désactiver « {{name}} » ?",
     "offMessage": {
       "study": "Tes matières, cours, devoirs, examens et révisions sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
-      "work": "Tes tâches, rendez-vous et notes pro sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
+      "work": "Tes tâches et rendez-vous pro sont gardés, juste cachés. Leurs rappels sont mis en pause. Tes notes restent visibles. Réactive l’espace quand tu veux : tout revient.",
       "personal": "Ton argent, tes habitudes, ton humeur et tes éléments perso sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient."
     },
     "offConfirm": "Désactiver",
@@ -1458,5 +1458,21 @@
     "workHoursTitle": "Heures de travail par semaine",
     "workHoursHint": "Sert à calculer les heures qu’il te reste à planifier.",
     "hoursValue": "{{hours}} h"
+  },
+  "noteCategories": {
+    "title": "Catégories de notes",
+    "intro": "Tes notes sont les mêmes dans tous tes espaces. Crée des catégories pour les ranger : idées, réunions, recettes, cours…",
+    "all": "Toutes",
+    "none": "Sans catégorie",
+    "manage": "Gérer…",
+    "field": "Catégorie",
+    "new": "Nouvelle catégorie",
+    "edit": "Modifier la catégorie",
+    "name": "Nom",
+    "namePlaceholder": "Ex. Idées, Réunions, Recettes",
+    "count": "{{count}} note(s)",
+    "delete": "Supprimer la catégorie",
+    "deleteTitle": "Supprimer « {{name}} » ?",
+    "deleteMessage": "Tes notes sont gardées : elles passent simplement « sans catégorie »."
   }
 }

@@ -1446,7 +1446,7 @@
     "offTitle": "Turn off “{{name}}”?",
     "offMessage": {
       "study": "Your subjects, classes, homework, exams and revision are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
-      "work": "Your work tasks, appointments and notes are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
+      "work": "Your work tasks and appointments are kept, just hidden. Their reminders are paused. Your notes stay visible. Turn the space back on whenever you like: everything comes back.",
       "personal": "Your money, habits, mood and personal items are kept, just hidden. Tontines keep being counted; reminders are paused. Turn the space back on whenever you like: everything comes back."
     },
     "offConfirm": "Turn off",
@@ -1458,5 +1458,21 @@
     "workHoursTitle": "Work hours per week",
     "workHoursHint": "Used to work out the hours you still have to plan.",
     "hoursValue": "{{hours}} h"
+  },
+  "noteCategories": {
+    "title": "Note categories",
+    "intro": "Your notes are the same in all your spaces. Create categories to sort them: ideas, meetings, recipes, classes…",
+    "all": "All",
+    "none": "No category",
+    "manage": "Manage…",
+    "field": "Category",
+    "new": "New category",
+    "edit": "Edit category",
+    "name": "Name",
+    "namePlaceholder": "E.g. Ideas, Meetings, Recipes",
+    "count": "{{count}} note(s)",
+    "delete": "Delete category",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteMessage": "Your notes are kept: they just become “no category”."
   }
 }

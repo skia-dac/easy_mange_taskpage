@@ -22,6 +22,7 @@ export const BACKUP_TABLES = [
   'tasks',
   'assignments',
   'personal_events',
+  'note_categories',
   'notes',
   'attachments',
   'study_sessions',

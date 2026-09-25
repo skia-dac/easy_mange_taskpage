@@ -1,7 +1,15 @@
 import { write, type Db, type EntityWriter } from '@/shared/db';
 import { parseInput } from '@/shared/validation';
 
-import { noteInputSchema, type AttachmentKind, type NoteInput } from '../domain/note';
+import { AppError } from '@/shared/errors';
+
+import {
+  noteCategoryInputSchema,
+  noteInputSchema,
+  type AttachmentKind,
+  type NoteCategoryInput,
+  type NoteInput,
+} from '../domain/note';
 
 function noteValues(input: NoteInput) {
   const v = parseInput(noteInputSchema, input);
@@ -11,8 +19,8 @@ function noteValues(input: NoteInput) {
     subject_id: v.subjectId,
     course_series_id: v.courseSeriesId,
     course_date: v.courseDate,
-    // Espace écrit seulement s'il est donné ; une note de matière ou de cours va dans Études.
-    ...(v.subjectId || v.courseSeriesId ? { space: 'study' } : v.space ? { space: v.space } : {}),
+    // Catégorie écrite seulement si elle est donnée : une modification sans elle la garde.
+    ...(v.categoryId !== undefined ? { category_id: v.categoryId } : {}),
   };
 }
 
@@ -93,4 +101,46 @@ export async function deleteNotesOfSubject(w: EntityWriter, subjectId: string) {
     await deleteAttachmentsOfNote(w, r.id);
     await w.softDelete('notes', r.id);
   }
+}
+
+export async function createNoteCategory(db: Db, input: NoteCategoryInput) {
+  const v = parseInput(noteCategoryInputSchema, input);
+  const last = await db.getFirstAsync<{ p: number | null }>(
+    'SELECT MAX(position) AS p FROM note_categories WHERE deleted_at IS NULL',
+    [],
+  );
+  return write(db, (w) =>
+    w.insert('note_categories', {
+      name: v.name,
+      color_id: v.colorId,
+      position: (last?.p ?? -1) + 1,
+    }),
+  );
+}
+
+export async function updateNoteCategory(db: Db, id: string, input: NoteCategoryInput) {
+  const v = parseInput(noteCategoryInputSchema, input);
+  return write(db, (w) => w.update('note_categories', id, { name: v.name, color_id: v.colorId }));
+}
+
+/** Supprime une catégorie : ses notes restent, simplement sans catégorie. */
+export async function deleteNoteCategory(db: Db, id: string) {
+  return write(db, async (w) => {
+    const exists = await w.db.getFirstAsync<{ id: string }>(
+      'SELECT id FROM note_categories WHERE id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    if (!exists) throw new AppError('notFound');
+    const notes = await w.db.getAllAsync<{ id: string }>(
+      'SELECT id FROM notes WHERE category_id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    for (const n of notes) await w.update('notes', n.id, { category_id: null });
+    await w.softDelete('note_categories', id);
+  });
+}
+
+/** Change la catégorie d'une note sans toucher au reste. */
+export async function setNoteCategory(db: Db, noteId: string, categoryId: string | null) {
+  return write(db, (w) => w.update('notes', noteId, { category_id: categoryId }));
 }

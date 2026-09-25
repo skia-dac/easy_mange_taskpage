@@ -1,14 +1,11 @@
 import { migrate, migrations } from '@/shared/db';
 import { getActiveSpaces, setActiveSpaces } from '@/modules/identity';
 import {
-  createNote,
   createPersonalEvent,
   createWorkItem,
-  getNote,
   getPersonalEvent,
   getWorkItem,
   listWorkItems,
-  updateNote,
   updatePersonalEvent,
   updateWorkItem,
   workSpace,
@@ -74,9 +71,6 @@ describe('espaces : aucune donnée perdue ni écrasée', () => {
     await updatePersonalEvent(db, ev, { title: 'Réunion client', date: '2026-09-25' });
     expect((await getPersonalEvent(db, ev))?.space).toBe('work');
 
-    const note = await createNote(db, { title: 'Idées', content: 'x', space: 'work' });
-    await updateNote(db, note, { title: 'Idées', content: 'y' });
-    expect((await getNote(db, note))?.space).toBe('work');
     db.close();
   });
 

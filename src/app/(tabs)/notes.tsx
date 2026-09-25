@@ -4,13 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
-import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import { listNotes, noteSpace, searchNotes } from '@/modules/productivity';
+import { listNoteCategories, listNotes, searchNotes } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
-import type { SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
 import {
   ChoiceChips,
@@ -27,8 +25,14 @@ export default function NotesScreen() {
   const { spacing } = useTheme();
   const [query, setQuery] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(null);
-  const [space, setSpace] = useState<SpaceId | null>(null);
+  // Les notes sont communes aux trois espaces ; on les range par catégories créées par l'utilisateur.
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const spaces = useSpaces();
+  const categories = useLiveQuery(listNoteCategories, ['note_categories'], []);
+  const catById = useMemo(
+    () => new Map((categories.data ?? []).map((c) => [c.id, c])),
+    [categories.data],
+  );
   const { subjects, byId } = useSubjects();
   const trimmed = query.trim();
   const notes = useLiveQuery(
@@ -40,13 +44,10 @@ export default function NotesScreen() {
   const list = useMemo(
     () =>
       (notes.data ?? []).filter((n) => {
-        const s = noteSpace(n);
-        // Notes des espaces désactivés : cachées, jamais effacées.
-        if (!spaces.has(s)) return false;
-        if (space && s !== space) return false;
+        if (categoryId && n.categoryId !== categoryId) return false;
         return !subjectId || n.subjectId === subjectId;
       }),
-    [notes.data, subjectId, space, spaces],
+    [notes.data, subjectId, categoryId],
   );
   const favorites = list.filter((n) => n.isFavorite);
   const recent = trimmed ? list : list.filter((n) => !n.isFavorite);
@@ -55,7 +56,11 @@ export default function NotesScreen() {
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
       {items.map((n) => (
         <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
-          <NoteCard note={n} subject={n.subjectId ? byId.get(n.subjectId) : undefined} />
+          <NoteCard
+            note={n}
+            subject={n.subjectId ? byId.get(n.subjectId) : undefined}
+            category={n.categoryId ? catById.get(n.categoryId) : undefined}
+          />
         </View>
       ))}
     </View>
@@ -65,14 +70,21 @@ export default function NotesScreen() {
     <View style={{ flex: 1 }}>
       <Screen title={t('notes.title')}>
         <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
-        <SpaceFilter
-          value={space}
-          onChange={(v) => {
-            setSpace(v);
-            if (v !== 'study') setSubjectId(null);
-          }}
+        <ChoiceChips
+          scroll
+          options={[
+            { value: null as string | null, label: t('noteCategories.all') },
+            ...(categories.data ?? []).map((c) => ({
+              value: c.id as string | null,
+              label: c.name,
+              leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
+            })),
+            { value: '__manage', label: t('noteCategories.manage') },
+          ]}
+          selected={[categoryId]}
+          onToggle={(v) => (v === '__manage' ? router.push('/notes/categories') : setCategoryId(v))}
         />
-        {subjects.length > 0 && spaces.has('study') && (space === null || space === 'study') ? (
+        {subjects.length > 0 && spaces.has('study') ? (
           <ChoiceChips
             scroll
             options={[
@@ -117,7 +129,7 @@ export default function NotesScreen() {
             params: {
               id: 'new',
               ...(subjectId ? { subjectId } : {}),
-              ...(space ? { space } : {}),
+              ...(categoryId ? { categoryId } : {}),
             },
           })
         }

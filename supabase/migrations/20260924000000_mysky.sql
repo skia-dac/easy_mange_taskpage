@@ -449,6 +449,38 @@ drop trigger if exists personal_events_touch on public.personal_events;
 create trigger personal_events_touch before insert or update on public.personal_events
   for each row execute function public.mysky_touch();
 
+create table if not exists public.note_categories (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  name text not null,
+  color_id text not null default 'slate',
+  position bigint not null default 0,
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.note_categories
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists name text not null,
+  add column if not exists color_id text not null default 'slate',
+  add column if not exists position bigint not null default 0,
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists note_categories_sync_idx on public.note_categories (user_id, server_updated_at);
+alter table public.note_categories enable row level security;
+drop policy if exists "own rows" on public.note_categories;
+create policy "own rows" on public.note_categories for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.note_categories to authenticated;
+drop trigger if exists note_categories_touch on public.note_categories;
+create trigger note_categories_touch before insert or update on public.note_categories
+  for each row execute function public.mysky_touch();
+
 create table if not exists public.notes (
   id text primary key,
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -463,6 +495,7 @@ create table if not exists public.notes (
   course_date text,
   is_favorite bigint not null default 0,
   space text not null default 'personal',
+  category_id text,
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.notes
@@ -478,6 +511,7 @@ alter table public.notes
   add column if not exists course_date text,
   add column if not exists is_favorite bigint not null default 0,
   add column if not exists space text not null default 'personal',
+  add column if not exists category_id text,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists notes_sync_idx on public.notes (user_id, server_updated_at);
 alter table public.notes enable row level security;
@@ -1020,7 +1054,7 @@ declare
   v_sets text;
   v_new bigint;
   v_row jsonb;
-  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions'];
+  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions'];
 begin
   if auth.uid() is null then
     raise exception 'not authenticated' using errcode = '28000';

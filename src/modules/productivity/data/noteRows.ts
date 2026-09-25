@@ -1,6 +1,6 @@
 import { normalizeSpaceValue } from '@/shared/spaces';
 
-import type { Attachment, AttachmentKind, Note } from '../domain/note';
+import type { Attachment, AttachmentKind, Note, NoteCategory } from '../domain/note';
 
 export type NoteRow = {
   id: string;
@@ -13,6 +13,7 @@ export type NoteRow = {
   created_at: string;
   updated_at: string;
   space?: string | null;
+  category_id?: string | null;
 };
 
 export const toNote = (r: NoteRow): Note => ({
@@ -26,6 +27,16 @@ export const toNote = (r: NoteRow): Note => ({
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   space: normalizeSpaceValue(r.space),
+  categoryId: r.category_id ?? null,
+});
+
+export type NoteCategoryRow = { id: string; name: string; color_id: string; position: number };
+
+export const toNoteCategory = (r: NoteCategoryRow): NoteCategory => ({
+  id: r.id,
+  name: r.name,
+  colorId: r.color_id,
+  position: r.position,
 });
 
 export type AttachmentRow = {
