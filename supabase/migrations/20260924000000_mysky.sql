@@ -1178,7 +1178,11 @@ begin
 
     if v_op = 'create' then
       if v_current is not null then
-        v_new := v_current;
+        -- La ligne existe déjà (ex. sauvegarde restaurée avant la première synchro) :
+        -- on ne l'écrase pas en silence, le téléphone arbitre avec la version du serveur.
+        execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+        results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
+        continue;
       else
         execute format(
           'insert into public.%I (id, version%s) select $1, 1%s from jsonb_populate_record(null::public.%I, $2) as r',

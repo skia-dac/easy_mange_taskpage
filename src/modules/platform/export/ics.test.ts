@@ -120,7 +120,7 @@ describe('export .ics', () => {
     expect(ics).toContain('UID:course-c1-2026-09-23@mysky');
     expect(ics).toContain('DTSTART:20260923T090000');
     expect(ics).toContain('LOCATION:B12');
-    expect(ics).toContain('SUMMARY:Examen : Partiel\\, chap. 1\;2');
+    expect(ics).toContain('SUMMARY:Examen : Partiel\\, chap. 1\\;2');
     expect(ics).toContain('DTEND:20261012T103000');
     expect(ics).toContain('DTSTART;VALUE=DATE:20260925');
     expect(ics).toContain('SUMMARY:Devoir : Étude de cas');
@@ -132,7 +132,7 @@ describe('export .ics', () => {
   });
 
   it('échappe le texte et plie les longues lignes', () => {
-    expect(icsEscape('a,b;c\nd')).toBe('a\\,b\;c\\nd');
+    expect(icsEscape('a,b;c\nd')).toBe('a\\,b\\;c\\nd');
     for (const line of ics.split('\r\n')) expect(line.length).toBeLessThanOrEqual(75);
   });
 });

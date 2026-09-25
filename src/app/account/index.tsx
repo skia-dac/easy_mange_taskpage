@@ -60,7 +60,8 @@ export default function AccountScreen() {
       'habits',
       'habit_logs',
     ],
-    [],
+    // La date de dernière synchro est écrite sans notification : on relit à chaque fin de synchro.
+    [sync.state],
   );
 
   if (!enabled) return <AccountsUnavailable />;

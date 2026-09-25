@@ -17,7 +17,11 @@ export const ICS_FUTURE_DAYS = 180;
 
 /** Échappement du texte selon la RFC 5545 (virgules, points-virgules, retours à la ligne). */
 export function icsEscape(text: string): string {
-  return text.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
 }
 
 /** Coupe les lignes à 75 octets (RFC 5545 §3.1) : suite de ligne = espace en tête. */

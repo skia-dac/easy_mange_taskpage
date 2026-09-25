@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
 import { useSubjects } from '@/hooks/useSubjects';
+import { useSpaces } from '@/shared/SpacesContext';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import { getProgressWidgetHabit } from '@/modules/identity';
 import { listStudySessions } from '@/modules/productivity';
@@ -44,6 +45,10 @@ export function WidgetsGate() {
   const moneyData = money.data;
   const progressQ = useLiveQuery(getProgressWidgetHabit, ['app_settings'], []);
   const progressHabitId = progressQ.data ?? null;
+  // Un espace coupé n'apparaît pas non plus sur l'écran d'accueil : ni argent, ni révision, ni matières.
+  const spaces = useSpaces();
+  const study = spaces.has('study');
+  const personal = spaces.has('personal');
 
   useEffect(() => {
     if (!data || loading || !sessionList) return;
@@ -52,7 +57,7 @@ export function WidgetsGate() {
       timer.current = setTimeout(() => {
         const timeline = buildWidgetTimeline(
           data,
-          byId,
+          study ? byId : new Map(),
           new Date(),
           {
             t: (key, params) => t(key, params),
@@ -66,21 +71,22 @@ export function WidgetsGate() {
           { light: lightColors, dark: darkColors },
           {
             progressHabitId,
-            sessions: sessionList,
+            sessions: study ? sessionList : [],
             weekStart,
             scheme,
-            money: moneyData
-              ? buildWidgetMoney(
-                  moneyData.overview,
-                  moneyData.input.categories,
-                  moneyData.prefs.hideWidgetAmounts,
-                  {
-                    t: (key, params) => t(key, params),
-                    weekdayShort: (n) => weekdayName(n, lang, 'short'),
-                    shortDate: (iso) => formatShortDate(iso, lang),
-                  },
-                )
-              : undefined,
+            money:
+              personal && moneyData
+                ? buildWidgetMoney(
+                    moneyData.overview,
+                    moneyData.input.categories,
+                    moneyData.prefs.hideWidgetAmounts,
+                    {
+                      t: (key, params) => t(key, params),
+                      weekdayShort: (n) => weekdayName(n, lang, 'short'),
+                      shortDate: (iso) => formatShortDate(iso, lang),
+                    },
+                  )
+                : undefined,
           },
         );
         void syncWidgets(timeline);
@@ -92,7 +98,20 @@ export function WidgetsGate() {
       sub.remove();
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [data, byId, loading, t, lang, sessionList, weekStart, scheme, moneyData, progressHabitId]);
+  }, [
+    data,
+    byId,
+    loading,
+    t,
+    lang,
+    sessionList,
+    weekStart,
+    scheme,
+    moneyData,
+    progressHabitId,
+    study,
+    personal,
+  ]);
 
   return null;
 }

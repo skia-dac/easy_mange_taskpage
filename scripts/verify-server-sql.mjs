@@ -86,6 +86,15 @@ check(
 );
 
 r = await push(A, [
+  { ...create, mutation_id: 'm1bis', payload: { ...create.payload, name: 'Copie' } },
+]);
+check(
+  'create d’une ligne déjà présente → conflit avec la ligne du serveur',
+  r[0].status === 'conflict' && r[0].server?.name === 'Maths' && r[0].server?.version === 1,
+  r,
+);
+
+r = await push(A, [
   {
     mutation_id: 'm2',
     entity: 'subjects',

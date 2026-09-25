@@ -59,7 +59,8 @@ export class FakeServer {
     delete payload.version;
     let version: number;
     if (m.operation === 'create') {
-      if (current) version = Number(current.version);
+      if (current)
+        return { mutation_id: m.mutation_id, status: 'conflict', server: { ...current } };
       else {
         t.set(m.entity_id, {
           ...payload,

@@ -112,6 +112,54 @@ describe('synchronisation', () => {
     b.close();
   });
 
+  it('création d’un élément déjà sur le serveur (ex. sauvegarde restaurée) : la plus récente gagne', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const id = await createSubject(a, subject);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+
+    // B « recrée » la même matière (même id) à 9 h, comme après une restauration de sauvegarde.
+    const later = '2026-09-24T09:00:00.000Z';
+    await b.runAsync(
+      `UPDATE subjects SET name = ?, updated_at = ?, version = 0, sync_status = 'pending_create' WHERE id = ?`,
+      ['Depuis sauvegarde', later, id],
+    );
+    await b.runAsync(
+      `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+       VALUES ('m-b', 'subjects', ?, 'create', '{}', NULL, ?)`,
+      [id, later],
+    );
+
+    const rb = await syncOnce(b, server.remote());
+    expect(rb.conflicts).toBe(0);
+    expect(server.rows('subjects')).toHaveLength(1);
+    expect(server.rows('subjects')[0]).toMatchObject({ name: 'Depuis sauvegarde', version: 2 });
+    await syncOnce(a, server.remote());
+    expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Depuis sauvegarde']);
+
+    // Et si la copie du serveur est la plus récente, elle gagne et B garde la sienne de côté.
+    jest.setSystemTime(new Date('2026-09-24T10:00:00.000Z'));
+    await updateSubject(a, id, { ...subject, name: 'Version serveur' });
+    await syncOnce(a, server.remote());
+    await b.runAsync(
+      `UPDATE subjects SET name = ?, updated_at = ?, version = 0, sync_status = 'pending_create' WHERE id = ?`,
+      ['Ancienne copie', later, id],
+    );
+    await b.runAsync(
+      `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+       VALUES ('m-b2', 'subjects', ?, 'create', '{}', NULL, ?)`,
+      [id, later],
+    );
+    const rb2 = await syncOnce(b, server.remote());
+    expect(rb2.conflicts).toBe(1);
+    expect((await listSubjects(b)).map((s) => s.name)).toEqual(['Version serveur']);
+    expect(await pendingCount(b)).toBe(0);
+    a.close();
+    b.close();
+  });
+
   it('une réponse perdue ne crée ni doublon ni faux conflit', async () => {
     const server = new FakeServer();
     const a = await createTestDb();

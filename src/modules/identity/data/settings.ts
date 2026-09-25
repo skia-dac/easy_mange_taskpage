@@ -136,7 +136,8 @@ export async function getLastSyncAt(db: Db): Promise<string | null> {
 }
 
 export async function setLastSyncAt(db: Db, iso: string): Promise<void> {
-  await writeSetting(db, 'last_sync_at', iso);
+  // Silencieux : écrit à chaque synchro, ne doit pas faire recharger toute l'app.
+  await writeSetting(db, 'last_sync_at', iso, true);
 }
 
 export type AccentPreference = 'blue' | 'violet' | 'teal' | 'green' | 'rose' | 'orange';
