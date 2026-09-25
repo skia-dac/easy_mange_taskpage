@@ -15,6 +15,7 @@ import {
 import {
   copyWeekInputs,
   createPersonalEvent,
+  deletePersonalEvent,
   isOvernight,
   listPersonalEvents,
   listSlots,
@@ -40,8 +41,9 @@ import {
   SectionHeader,
   Segmented,
   showError,
-  showInfo,
   SubjectDot,
+  showToast,
+  showUndoToast,
 } from '@/shared/ui';
 
 /**
@@ -79,7 +81,7 @@ export default function PlanningScreen() {
     const events = await listPersonalEvents(db);
     const inputs = copyWeekInputs(events, addDaysIso(thisWeek, -7), copySpace);
     if (inputs.length === 0) {
-      showInfo(t('planning.copyTitle'), t('planning.copyNothing'));
+      showToast(t('planning.copyNothing'));
       return;
     }
     const ok = await confirmAction(
@@ -90,8 +92,11 @@ export default function PlanningScreen() {
     if (!ok) return;
     setCopying(true);
     try {
-      for (const input of inputs) await createPersonalEvent(db, input);
-      showInfo(t('planning.copyTitle'), t('planning.copyDone', { count: inputs.length }));
+      const ids: string[] = [];
+      for (const input of inputs) ids.push(await createPersonalEvent(db, input));
+      showUndoToast(t('planning.copyDone', { count: inputs.length }), async () => {
+        for (const id of ids) await deletePersonalEvent(db, id);
+      });
     } catch (e) {
       showError(userMessageKey(e));
     } finally {

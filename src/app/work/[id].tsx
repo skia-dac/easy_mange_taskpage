@@ -3,17 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { usePostpone } from '@/components/PostponeSheet';
+import { useWorkActions } from '@/hooks/useWorkActions';
 import { SubtaskList } from '@/components/SubtaskList';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import {
-  deleteWorkItem,
-  getWorkItem,
-  isOverdue,
-  setWorkStatus,
-  type WorkKind,
-} from '@/modules/productivity';
+import { deleteWorkItem, getWorkItem, isOverdue, type WorkKind } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -44,6 +39,7 @@ export default function WorkDetailScreen() {
   const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { byId } = useSubjects();
   const postpone = usePostpone();
+  const actions = useWorkActions();
   const item = useLiveQuery(
     (d) => getWorkItem(d, kind, params.id),
     [kind === 'task' ? 'tasks' : 'assignments'],
@@ -56,10 +52,7 @@ export default function WorkDetailScreen() {
 
   const subject = w.subjectId ? byId.get(w.subjectId) : undefined;
   const done = w.status === 'done';
-  const toggle = () =>
-    setWorkStatus(db, kind, w.id, done ? 'todo' : 'done').catch((e: unknown) =>
-      showError(userMessageKey(e)),
-    );
+  const toggle = () => actions.setDone(w, !done);
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>

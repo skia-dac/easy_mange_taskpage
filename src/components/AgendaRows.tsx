@@ -4,30 +4,19 @@ import { View } from 'react-native';
 
 import { eventHref } from './eventHref';
 import { useLabels } from '@/hooks/useLabels';
+import { useWorkActions } from '@/hooks/useWorkActions';
 import { colorOf, countdown, type Exam, type Occurrence, type Subject } from '@/modules/academic';
 import {
   isOverdue,
   isSlotEvent,
-  setWorkStatus,
   type PersonalEvent,
   type RevisionBlock,
   type WorkItem,
 } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
-import { useDb } from '@/shared/db';
-import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
-import {
-  AppText,
-  Checkbox,
-  Chip,
-  IconBadge,
-  ListRow,
-  showError,
-  SubjectBar,
-  SwipeRow,
-} from '@/shared/ui';
+import { AppText, Checkbox, Chip, IconBadge, ListRow, SubjectBar, SwipeRow } from '@/shared/ui';
 
 type SubjectMap = ReadonlyMap<string, Subject>;
 
@@ -101,17 +90,14 @@ export function WorkRow({
 }) {
   const { t } = useTranslation();
   const labels = useLabels();
-  const db = useDb();
+  const actions = useWorkActions();
   const subject = item.subjectId ? subjects.get(item.subjectId) : undefined;
   const done = item.status === 'done';
   const late = isOverdue(item, now);
   const when = [showDate ? formatShortDate(item.dueDate, labels.lang) : null, item.dueTime]
     .filter(Boolean)
     .join(' · ');
-  const toggle = () =>
-    setWorkStatus(db, item.kind, item.id, done ? 'todo' : 'done').catch((e: unknown) =>
-      showError(userMessageKey(e)),
-    );
+  const toggle = () => void actions.setDone(item, !done);
 
   const row = (
     <ListRow

@@ -2,13 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { postponeTargets, rescheduleWorkItem, type WorkItem } from '@/modules/productivity';
+import { useWorkActions, type WorkTarget } from '@/hooks/useWorkActions';
+import { postponeTargets } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
-import { useDb } from '@/shared/db';
-import { userMessageKey } from '@/shared/errors';
-import { ChoiceSheet, showError } from '@/shared/ui';
+import { ChoiceSheet } from '@/shared/ui';
 
-type Target = Pick<WorkItem, 'id' | 'kind' | 'title'>;
+type Target = WorkTarget;
 
 /**
  * Menu « Reporter » : demain, dans 2 jours, lundi prochain, ou une autre date (formulaire).
@@ -16,7 +15,7 @@ type Target = Pick<WorkItem, 'id' | 'kind' | 'title'>;
  */
 export function usePostpone(onDone?: () => void) {
   const { t } = useTranslation();
-  const db = useDb();
+  const actions = useWorkActions();
   const [item, setItem] = useState<Target | null>(null);
   const close = () => setItem(null);
 
@@ -24,9 +23,7 @@ export function usePostpone(onDone?: () => void) {
     if (!item) return;
     const target = item;
     close();
-    rescheduleWorkItem(db, target.kind, target.id, date).then(onDone, (e: unknown) =>
-      showError(userMessageKey(e)),
-    );
+    void actions.postpone(target, date).then(onDone);
   };
 
   const targets = postponeTargets(toIsoDate(new Date()));

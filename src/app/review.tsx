@@ -9,6 +9,7 @@ import { HabitRow } from '@/components/HabitRow';
 import { ReviewMoney } from '@/components/money/ReviewMoney';
 import { MoodPicker } from '@/components/MoodPicker';
 import { usePostpone } from '@/components/PostponeSheet';
+import { useWorkActions } from '@/hooks/useWorkActions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useWeekStart } from '@/hooks/useWeekStart';
@@ -17,7 +18,6 @@ import {
   logOn,
   rescheduleWorkItem,
   setRevisionStatus,
-  setWorkStatus,
   type Habit,
   type WorkItem,
 } from '@/modules/productivity';
@@ -54,6 +54,7 @@ export default function EveningReviewScreen() {
   const { byId } = useSubjects();
   const weekStart = useWeekStart();
   const postpone = usePostpone();
+  const actions = useWorkActions();
   const [habitSheet, setHabitSheet] = useState<Habit | null>(null);
   const review = useMemo(
     () => (agenda.data ? buildEveningReview(agenda.data, now) : null),
@@ -84,13 +85,13 @@ export default function EveningReviewScreen() {
         <Checkbox
           checked={false}
           accessibilityLabel={w.title}
-          onToggle={() => setWorkStatus(db, w.kind, w.id, 'done').catch(fail)}
+          onToggle={() => void actions.setDone(w, true)}
         />
       }
       trailing={
         <TextButton
           label={t('postpone.tomorrow')}
-          onPress={() => rescheduleWorkItem(db, w.kind, w.id, review.tomorrow).catch(fail)}
+          onPress={() => void actions.postpone(w, review.tomorrow)}
         />
       }
       onPress={() => postpone.open(w)}

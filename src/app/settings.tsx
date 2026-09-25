@@ -68,6 +68,7 @@ import {
   showError,
   showInfo,
   TextButton,
+  showToast,
 } from '@/shared/ui';
 import { wipeAllData } from '@/workflows';
 
@@ -168,7 +169,7 @@ export default function SettingsScreen() {
   const backupNow = () =>
     run(async () => {
       await writeBackup(db);
-      showInfo(t('backup.doneTitle'), t('backup.doneMessage'));
+      showToast(t('backup.doneMessage'));
     });
 
   const share = (file: BackupFile) =>

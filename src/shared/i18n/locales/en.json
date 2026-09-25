@@ -2,6 +2,9 @@
   "app": {
     "name": "MySky"
   },
+  "toast": {
+    "undo": "Undo"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -370,6 +373,7 @@
     "completedOn": "Completed on {{date}}",
     "markDone": "Mark as done",
     "reopen": "Mark as not done",
+    "doneToast": "Done: {{title}}",
     "prefilled": "Subject taken from your class.",
     "repeat": "Repeat",
     "estimate": "Estimated time",
@@ -861,6 +865,7 @@
     "clearDayMessage": "What you logged for {{name}} on that day will be removed.",
     "more": "Log the day for {{name}}",
     "addOne": "Add 1 to {{name}}",
+    "addOneToast": "+1 for {{name}}",
     "progressCount": "{{count}} / {{target}} {{unit}}",
     "progressWeek": "{{done}} / {{target}} this week",
     "streakDays": "{{count}} day(s) in a row",
@@ -1083,7 +1088,8 @@
     "tomorrow": "Tomorrow",
     "inTwoDays": "In 2 days",
     "nextMonday": "Next Monday",
-    "pickDate": "Pick another date…"
+    "pickDate": "Pick another date…",
+    "doneToast": "Postponed to {{date}}."
   },
   "review": {
     "title": "Evening review",

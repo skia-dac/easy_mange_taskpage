@@ -2,6 +2,9 @@
   "app": {
     "name": "MySky"
   },
+  "toast": {
+    "undo": "Annuler"
+  },
   "common": {
     "save": "Enregistrer",
     "cancel": "Annuler",
@@ -370,6 +373,7 @@
     "completedOn": "Terminé le {{date}}",
     "markDone": "Marquer comme terminé",
     "reopen": "Remettre à faire",
+    "doneToast": "Terminé : {{title}}",
     "prefilled": "Matière reprise de ton cours.",
     "repeat": "Répéter",
     "estimate": "Durée estimée",
@@ -861,6 +865,7 @@
     "clearDayMessage": "Ce que tu as noté pour {{name}} ce jour-là sera retiré.",
     "more": "Noter le jour pour {{name}}",
     "addOne": "Ajouter 1 à {{name}}",
+    "addOneToast": "+1 pour {{name}}",
     "progressCount": "{{count}} / {{target}} {{unit}}",
     "progressWeek": "{{done}} / {{target}} cette semaine",
     "streakDays": "{{count}} jour(s) d’affilée",
@@ -1083,7 +1088,8 @@
     "tomorrow": "Demain",
     "inTwoDays": "Dans 2 jours",
     "nextMonday": "Lundi prochain",
-    "pickDate": "Choisir une autre date…"
+    "pickDate": "Choisir une autre date…",
+    "doneToast": "Reporté au {{date}}."
   },
   "review": {
     "title": "Bilan du soir",

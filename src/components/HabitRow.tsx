@@ -19,7 +19,7 @@ import { startOfWeekOn, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Checkbox, showError } from '@/shared/ui';
+import { AppText, Checkbox, showError, showUndoToast } from '@/shared/ui';
 
 import { HabitIcon } from './HabitIcon';
 
@@ -128,7 +128,15 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
           accessibilityRole="button"
           accessibilityLabel={t('habits.addOne', { name: habit.name })}
           disabled={done}
-          onPress={() => addHabitCount(db, habit.id, day, 1).catch(fail)}
+          onPress={() =>
+            addHabitCount(db, habit.id, day, 1).then(
+              () =>
+                showUndoToast(t('habits.addOneToast', { name: habit.name }), () =>
+                  addHabitCount(db, habit.id, day, -1),
+                ),
+              fail,
+            )
+          }
           style={({ pressed }) => ({
             minWidth: minTouchSize,
             height: minTouchSize,

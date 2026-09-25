@@ -24,7 +24,7 @@ import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 import { fonts, useTheme } from '@/shared/theme';
-import { AppText, Button, LoadingScreen } from '@/shared/ui';
+import { AppText, Button, LoadingScreen, ToastHost } from '@/shared/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -62,6 +62,7 @@ export default function RootLayout() {
                 <SpacesProvider>
                   <ThemedStack />
                 </SpacesProvider>
+                <ToastHost />
                 <LockGate />
               </AppearanceProvider>
             </AuthProvider>
