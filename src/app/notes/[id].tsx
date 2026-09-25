@@ -55,6 +55,7 @@ import {
   SubjectDot,
   TextButton,
   reportLoadError,
+  LoadingScreen,
 } from '@/shared/ui';
 
 type Params = {
@@ -299,7 +300,7 @@ export default function NoteScreen() {
     }
   };
 
-  if (!loaded) return null;
+  if (!loaded) return <LoadingScreen />;
   if (!isNew && !noteId) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 
   const subject = subjectId ? byId.get(subjectId) : undefined;

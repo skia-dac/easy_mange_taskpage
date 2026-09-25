@@ -14,7 +14,7 @@ import { useSpaces } from '@/shared/SpacesContext';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, showError, TextButton } from '@/shared/ui';
+import { AppText, Card, confirmAction, showError, TextButton } from '@/shared/ui';
 
 /** L'étudiant choisit l'ordre des sections d'Aujourd'hui et celles qu'il veut voir. */
 const STUDY_SECTIONS: readonly TodaySectionId[] = ['next', 'courses', 'revision', 'exams'];
@@ -69,6 +69,15 @@ export default function TodayLayoutScreen() {
     </Pressable>
   );
 
+  const reset = async () => {
+    const ok = await confirmAction(
+      t('todayLayout.resetTitle'),
+      t('todayLayout.resetMessage'),
+      t('todayLayout.resetConfirm'),
+    );
+    if (ok) await save(normalizeTodayLayout(null));
+  };
+
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
       <Stack.Screen options={{ title: t('todayLayout.title') }} />
@@ -97,10 +106,7 @@ export default function TodayLayoutScreen() {
           );
         })}
       </Card>
-      <TextButton
-        label={t('todayLayout.reset')}
-        onPress={() => void save(normalizeTodayLayout(null))}
-      />
+      <TextButton label={t('todayLayout.reset')} onPress={() => void reset()} />
     </ScrollView>
   );
 }

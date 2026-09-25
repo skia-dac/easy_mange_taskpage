@@ -39,6 +39,7 @@ import {
   SectionHeader,
   showError,
   TextButton,
+  confirmAction,
 } from '@/shared/ui';
 
 /** Bilan du soir : en une minute, on clôt la journée et on prépare demain. */
@@ -96,10 +97,18 @@ export default function EveningReviewScreen() {
     />
   );
 
-  const postponeAll = () =>
-    Promise.all(
+  const postponeAll = async () => {
+    const count = review.remaining.length;
+    const ok = await confirmAction(
+      t('review.postponeAllTitle'),
+      t('review.postponeAllMessage', { count }),
+      t('review.postponeAllConfirm'),
+    );
+    if (!ok) return;
+    await Promise.all(
       review.remaining.map((w) => rescheduleWorkItem(db, w.kind, w.id, review.tomorrow)),
     ).catch(fail);
+  };
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>

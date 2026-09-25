@@ -50,7 +50,8 @@ export function TodayGlance({
   const { spacing } = useTheme();
   const spaces = useSpaces();
   const weekStart = useWeekStart();
-  const money = useMoneyData(0).data?.overview;
+  const moneyQ = useMoneyData(0);
+  const money = moneyQ.data?.overview;
   const hoursQ = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
   const weekFrom = startOfWeekOn(view.today, weekStart);
 
@@ -88,7 +89,7 @@ export function TodayGlance({
               {t('glance.perDay', { amount: formatMoney(money.perDay, money.currency) })}
             </AppText>
           </>
-        ) : (
+        ) : moneyQ.loading ? null : (
           <AppText variant="caption" color="muted">
             {t('glance.moneyStart')}
           </AppText>

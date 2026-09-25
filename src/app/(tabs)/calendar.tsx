@@ -160,6 +160,7 @@ export default function CalendarScreen() {
 
   const dayList = (day: IsoDate) => {
     const items = days.get(day) ?? [];
+    if (agenda.loading && items.length === 0) return null;
     if (items.length === 0)
       return (
         <EmptyState icon="calendar" title={t('calendar.empty')} message={t('calendar.emptyHint')} />

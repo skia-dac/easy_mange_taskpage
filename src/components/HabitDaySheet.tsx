@@ -22,6 +22,7 @@ import {
   AppText,
   Button,
   ChoiceChips,
+  confirmDestructive,
   KeyboardAvoiding,
   showError,
   TextButton,
@@ -77,6 +78,12 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   };
 
   const clear = async () => {
+    const ok = await confirmDestructive(
+      t('habits.clearDayTitle'),
+      t('habits.clearDayMessage', { name: habit.name }),
+      t('common.clear'),
+    );
+    if (!ok) return;
     try {
       await setHabitDone(db, habit.id, date, false);
       onClose();

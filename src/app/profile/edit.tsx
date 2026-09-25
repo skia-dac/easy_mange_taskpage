@@ -19,6 +19,7 @@ import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
 import {
   AppText,
+  confirmDestructive,
   FormScreen,
   showError,
   TextButton,
@@ -81,6 +82,12 @@ export default function ProfileEditScreen() {
   };
 
   const removePhoto = async () => {
+    const ok = await confirmDestructive(
+      t('profile.removePhotoTitle'),
+      t('profile.removePhotoMessage'),
+      t('common.delete'),
+    );
+    if (!ok) return;
     try {
       if (photo) deleteLocalFile(photo);
       await setProfilePhoto(db, null);

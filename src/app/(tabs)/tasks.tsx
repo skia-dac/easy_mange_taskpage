@@ -199,7 +199,7 @@ export default function TasksScreen() {
                 {t('tasks.swipeHint')}
               </AppText>
             ) : null}
-            {openCount === 0 ? (
+            {!work.loading && openCount === 0 ? (
               <EmptyState
                 icon="check-circle"
                 title={t('tasks.empty')}

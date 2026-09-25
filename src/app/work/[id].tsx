@@ -31,6 +31,7 @@ import {
   ListRow,
   showError,
   TextButton,
+  LoadingScreen,
 } from '@/shared/ui';
 
 export default function WorkDetailScreen() {
@@ -49,7 +50,7 @@ export default function WorkDetailScreen() {
     [kind, params.id],
   );
 
-  if (item.loading) return null;
+  if (item.loading) return <LoadingScreen />;
   const w = item.data;
   if (!w) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 

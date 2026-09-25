@@ -28,6 +28,7 @@ import {
   ListRow,
   SectionHeader,
   showError,
+  LoadingScreen,
 } from '@/shared/ui';
 import { saveRevisionPlan } from '@/workflows';
 
@@ -108,7 +109,7 @@ export default function RevisionPlanScreen() {
     });
   }, [e, agenda.data, examId, today, sessions, minutes, daysBefore, windowStart, windowEnd]);
 
-  if (exam.loading || agenda.loading) return null;
+  if (exam.loading || agenda.loading) return <LoadingScreen />;
   if (!e) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
   if (e.date <= today)
     return (

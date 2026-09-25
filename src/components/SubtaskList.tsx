@@ -15,7 +15,7 @@ import {
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, Checkbox, showError } from '@/shared/ui';
+import { AppText, Card, Checkbox, confirmDestructive, showError } from '@/shared/ui';
 
 /** Checklist d'une tâche ou d'un devoir : cocher, ajouter, monter / descendre, retirer. */
 export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }) {
@@ -36,6 +36,15 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
     const title = draft.trim();
     if (!title) return;
     addSubtask(db, kind, workId, title).then(() => setDraft(''), fail);
+  };
+
+  const remove = async (id: string, title: string) => {
+    const ok = await confirmDestructive(
+      t('subtasks.removeTitle', { title }),
+      t('subtasks.removeMessage'),
+      t('common.delete'),
+    );
+    if (ok) await deleteSubtask(db, id).catch(fail);
   };
 
   const icon = (name: 'arrow-up' | 'arrow-down' | 'x', label: string, onPress: () => void) => (
@@ -79,7 +88,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
           {i < items.length - 1
             ? icon('arrow-down', t('subtasks.down'), () => moveSubtask(db, s.id, 1).catch(fail))
             : null}
-          {icon('x', t('subtasks.remove'), () => deleteSubtask(db, s.id).catch(fail))}
+          {icon('x', t('subtasks.remove'), () => void remove(s.id, s.title))}
         </View>
       ))}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>

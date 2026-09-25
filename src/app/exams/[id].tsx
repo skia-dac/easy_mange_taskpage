@@ -30,6 +30,7 @@ import {
   SectionHeader,
   showError,
   TextButton,
+  LoadingScreen,
 } from '@/shared/ui';
 
 export default function ExamDetailScreen() {
@@ -47,7 +48,7 @@ export default function ExamDetailScreen() {
     [id],
   );
 
-  if (exam.loading) return null;
+  if (exam.loading) return <LoadingScreen />;
   const e = exam.data;
   if (!e) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 

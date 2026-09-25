@@ -28,6 +28,7 @@ import {
   showError,
   SubjectDot,
   TextButton,
+  LoadingScreen,
 } from '@/shared/ui';
 
 /** Une séance de révision : la lancer (minuteur), la marquer faite, la passer ou la supprimer. */
@@ -46,7 +47,7 @@ export default function RevisionDetailScreen() {
     [examId],
   );
 
-  if (block.loading) return null;
+  if (block.loading) return <LoadingScreen />;
   const b = block.data;
   if (!b) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
   const subject = b.subjectId ? byId.get(b.subjectId) : undefined;

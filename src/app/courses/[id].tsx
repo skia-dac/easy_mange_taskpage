@@ -35,6 +35,7 @@ import {
   showError,
   TextButton,
   type ChoiceOption,
+  LoadingScreen,
 } from '@/shared/ui';
 
 export default function CourseDetailScreen() {
@@ -61,7 +62,7 @@ export default function CourseDetailScreen() {
   );
 
   const [sheet, setSheet] = useState<'edit' | 'delete' | null>(null);
-  if (course.loading || exception.loading) return null;
+  if (course.loading || exception.loading) return <LoadingScreen />;
   const c = course.data;
   if (!c) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 

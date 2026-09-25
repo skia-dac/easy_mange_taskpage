@@ -36,6 +36,7 @@ import {
   showError,
   TextButton,
   type ChoiceOption,
+  LoadingScreen,
 } from '@/shared/ui';
 import { deleteSubject, subjectUsage, type SubjectUsage } from '@/workflows';
 
@@ -72,7 +73,7 @@ export default function SubjectDetailScreen() {
 
   const [deleteSheet, setDeleteSheet] = useState<SubjectUsage | null>(null);
   const s = subject.data;
-  if (subject.loading) return null;
+  if (subject.loading) return <LoadingScreen />;
   if (!s) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
 
   const color = colorOf(s);

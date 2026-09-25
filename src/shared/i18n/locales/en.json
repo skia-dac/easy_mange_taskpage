@@ -262,6 +262,8 @@
     "photo": "Photo",
     "changePhoto": "Change photo",
     "removePhoto": "Remove photo",
+    "removePhotoTitle": "Remove your photo?",
+    "removePhotoMessage": "It will be deleted from this phone.",
     "university": "University / school",
     "field": "Programme",
     "level": "Study level",
@@ -855,6 +857,8 @@
       "other": "Other"
     },
     "clearDay": "Clear this day",
+    "clearDayTitle": "Clear this day?",
+    "clearDayMessage": "What you logged for {{name}} on that day will be removed.",
     "more": "Log the day for {{name}}",
     "addOne": "Add 1 to {{name}}",
     "progressCount": "{{count}} / {{target}} {{unit}}",
@@ -1069,7 +1073,9 @@
     "add": "Add the step",
     "up": "Move up",
     "down": "Move down",
-    "remove": "Remove the step"
+    "remove": "Remove the step",
+    "removeTitle": "Remove “{{title}}”?",
+    "removeMessage": "This step will be deleted."
   },
   "postpone": {
     "action": "Postpone",
@@ -1087,6 +1093,9 @@
     "remaining": "What’s left",
     "allDone": "Everything is done for today. Well done!",
     "postponeAll": "Postpone all to tomorrow ({{count}})",
+    "postponeAllTitle": "Postpone everything to tomorrow?",
+    "postponeAllMessage": "{{count}} item(s) will move to tomorrow.",
+    "postponeAllConfirm": "Postpone",
     "revisions": "Today’s revision",
     "habits": "Your habits",
     "mood": "Your day",
@@ -1137,6 +1146,9 @@
     "customize": "Customize this screen",
     "show": "Show “{{name}}”",
     "reset": "Back to the default order",
+    "resetTitle": "Back to the default order?",
+    "resetMessage": "Your order and hidden sections will be forgotten.",
+    "resetConfirm": "Reset",
     "sections": {
       "next": "Next class",
       "courses": "Today’s classes",

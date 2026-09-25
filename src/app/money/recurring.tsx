@@ -85,7 +85,7 @@ export default function RecurringScreen() {
             })}
           </AppText>
         </>
-      ) : (
+      ) : list.loading ? null : (
         <AppText color="muted">{t('money.noCharges')}</AppText>
       )}
       <Button
@@ -98,7 +98,7 @@ export default function RecurringScreen() {
       <SectionHeader title={t('money.tontines')} />
       {tontines.length > 0 ? (
         <Card>{tontines.map(row)}</Card>
-      ) : (
+      ) : list.loading ? null : (
         <AppText color="muted">{t('money.noTontines')}</AppText>
       )}
       <Button

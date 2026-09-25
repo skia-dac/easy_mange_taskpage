@@ -262,6 +262,8 @@
     "photo": "Photo",
     "changePhoto": "Changer la photo",
     "removePhoto": "Retirer la photo",
+    "removePhotoTitle": "Retirer ta photo ?",
+    "removePhotoMessage": "Elle sera supprimée de ce téléphone.",
     "university": "Université / école",
     "field": "Filière",
     "level": "Niveau d’étude",
@@ -855,6 +857,8 @@
       "other": "Autre"
     },
     "clearDay": "Effacer ce jour",
+    "clearDayTitle": "Effacer ce jour ?",
+    "clearDayMessage": "Ce que tu as noté pour {{name}} ce jour-là sera retiré.",
     "more": "Noter le jour pour {{name}}",
     "addOne": "Ajouter 1 à {{name}}",
     "progressCount": "{{count}} / {{target}} {{unit}}",
@@ -1069,7 +1073,9 @@
     "add": "Ajouter l’étape",
     "up": "Monter",
     "down": "Descendre",
-    "remove": "Retirer l’étape"
+    "remove": "Retirer l’étape",
+    "removeTitle": "Retirer « {{title}} » ?",
+    "removeMessage": "Cette étape sera supprimée."
   },
   "postpone": {
     "action": "Reporter",
@@ -1087,6 +1093,9 @@
     "remaining": "Ce qui reste",
     "allDone": "Tout est fait pour aujourd’hui. Bravo !",
     "postponeAll": "Tout reporter à demain ({{count}})",
+    "postponeAllTitle": "Tout reporter à demain ?",
+    "postponeAllMessage": "{{count}} élément(s) passeront à demain.",
+    "postponeAllConfirm": "Reporter",
     "revisions": "Révisions d’aujourd’hui",
     "habits": "Tes habitudes",
     "mood": "Ta journée",
@@ -1137,6 +1146,9 @@
     "customize": "Personnaliser cet écran",
     "show": "Afficher « {{name}} »",
     "reset": "Revenir à l’ordre par défaut",
+    "resetTitle": "Revenir à l’ordre par défaut ?",
+    "resetMessage": "Ton ordre et tes sections masquées seront oubliés.",
+    "resetConfirm": "Réinitialiser",
     "sections": {
       "next": "Prochain cours",
       "courses": "Cours du jour",
