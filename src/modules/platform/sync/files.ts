@@ -11,6 +11,7 @@ export type FileStore = {
   existsLocally(path: string): boolean;
   upload(remotePath: string, localPath: string): Promise<void>;
   download(remotePath: string, localPath: string): Promise<boolean>;
+  remove(remotePath: string): Promise<void>;
 };
 
 export function supabaseFileStore(client: SupabaseClient): FileStore {
@@ -40,6 +41,10 @@ export function supabaseFileStore(client: SupabaseClient): FileStore {
       await File.downloadFileAsync(data.signedUrl, target, { idempotent: true });
       return true;
     },
+    async remove(remotePath) {
+      const { error } = await bucket().remove([remotePath]);
+      if (error) throw error;
+    },
   };
 }
 
@@ -60,6 +65,23 @@ export async function syncFiles(db: Db, userId: string, store: FileStore): Promi
     (await db.getAllAsync<{ path: string }>('SELECT path FROM sync_files', [])).map((r) => r.path),
   );
   let moved = 0;
+  // Lignes supprimées dont le fichier a déjà été envoyé : on l'efface aussi du serveur.
+  const gone = await db.getAllAsync<{ path: string }>(
+    `SELECT local_path AS path FROM attachments WHERE deleted_at IS NOT NULL
+     UNION SELECT photo_path AS path FROM profiles WHERE deleted_at IS NOT NULL AND photo_path IS NOT NULL`,
+    [],
+  );
+  const alive = new Set(rows.map((r) => r.path));
+  for (const { path } of gone) {
+    if (!path || !done.has(path) || alive.has(path) || path.includes('..')) continue;
+    try {
+      await store.remove(`${userId}/${path}`);
+      await db.runAsync('DELETE FROM sync_files WHERE path = ?', [path]);
+      moved++;
+    } catch (e) {
+      logger.error(e, { where: 'syncFiles.remove' });
+    }
+  }
   for (const { path } of rows) {
     if (!path || done.has(path) || path.includes('..')) continue;
     const remote = `${userId}/${path}`;

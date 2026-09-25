@@ -59,7 +59,12 @@ export default function PlanningScreen() {
   const spaces = useSpaces();
   const today = toIsoDate(new Date());
   const thisWeek = startOfWeekOn(today, weekStart);
-  const slots = useLiveQuery(listSlots, ['work_slots'], []);
+  const allSlots = useLiveQuery(listSlots, ['work_slots'], []);
+  // Seulement les créneaux des espaces actifs (un espace coupé ne montre rien).
+  const slots = {
+    ...allSlots,
+    data: allSlots.data?.filter((s) => spaces.has(s.space)),
+  };
   const anchor = useLiveQuery(getRotationAnchor, ['app_settings'], []);
   const hours = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
   const agenda = useAgendaData();

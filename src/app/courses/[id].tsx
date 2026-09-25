@@ -11,7 +11,6 @@ import { useSubjects } from '@/hooks/useSubjects';
 import {
   cancelOccurrence,
   colorOf,
-  deleteCourse,
   endSeriesBefore,
   getCourseException,
   getCourseSeries,
@@ -20,6 +19,7 @@ import {
 import { NoteCard } from '@/components/NoteCard';
 import { listNotes } from '@/modules/productivity';
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
+import { deleteCourseEverywhere } from '@/workflows';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDate, formatLongDate, formatShortDate } from '@/shared/format';
@@ -102,7 +102,7 @@ export default function CourseDetailScreen() {
         : t('courses.deleteOnce'),
       t('common.delete'),
     );
-    if (ok) deleteCourse(db, c.id).then(() => goBack(), fail);
+    if (ok) deleteCourseEverywhere(db, c.id).then(() => goBack(), fail);
   };
 
   const edit = () => {

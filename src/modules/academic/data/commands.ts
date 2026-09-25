@@ -37,8 +37,18 @@ export async function removeSubjectAndCourses(w: EntityWriter, subjectId: string
     'SELECT id FROM course_series WHERE subject_id = ? AND deleted_at IS NULL',
     [subjectId],
   );
-  for (const s of series) await w.softDelete('course_series', s.id);
+  for (const s of series) await removeCourse(w, s.id);
   await w.softDelete('subjects', subjectId);
+}
+
+/** Supprime un cours et ses exceptions (annulations, séances modifiées). */
+export async function removeCourse(w: EntityWriter, id: string) {
+  const exceptions = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM course_exceptions WHERE series_id = ? AND deleted_at IS NULL',
+    [id],
+  );
+  for (const e of exceptions) await w.softDelete('course_exceptions', e.id);
+  await w.softDelete('course_series', id);
 }
 
 // ---- Emplois du temps ----
@@ -140,15 +150,9 @@ export async function updateCourse(db: Db, id: string, input: CourseInput) {
   return write(db, (w) => w.update('course_series', id, values));
 }
 
+/** Voir aussi `deleteCourseEverywhere` (workflows) : détache en plus les notes du cours. */
 export async function deleteCourse(db: Db, id: string) {
-  return write(db, async (w) => {
-    const exceptions = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM course_exceptions WHERE series_id = ? AND deleted_at IS NULL',
-      [id],
-    );
-    for (const e of exceptions) await w.softDelete('course_exceptions', e.id);
-    await w.softDelete('course_series', id);
-  });
+  return write(db, (w) => removeCourse(w, id));
 }
 
 // ---- Examens ----

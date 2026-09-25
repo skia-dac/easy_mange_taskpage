@@ -249,6 +249,8 @@ beforeAll(async () => {
     endTime: '06:00',
     rotation: 'A',
     validFrom: '2026-09-01',
+    // Le test tourne avec les espaces par défaut (Études + Perso) : le créneau doit être visible.
+    space: 'personal',
   });
   ids.noteCategory = await createNoteCategory(mockDb, { name: 'Idées', colorId: 'green' });
 });

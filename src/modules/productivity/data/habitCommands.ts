@@ -68,7 +68,8 @@ const toHabit = (r: HabitRow): Habit => ({
   unit: r.unit,
   reminderTime: r.reminder_time,
   autoStudy: r.auto_study === 1,
-  tracksBody: r.tracks_body === 1,
+  // Aussi dérivé de l'icône : la mise à jour de la migration 15 n'est pas passée par le serveur.
+  tracksBody: r.tracks_body === 1 || r.icon === 'activity',
   position: r.position,
 });
 

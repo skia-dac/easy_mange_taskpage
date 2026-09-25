@@ -1,4 +1,4 @@
-import { nowIso, write, type Db } from '@/shared/db';
+import { nowIso, write, type Db, type EntityWriter } from '@/shared/db';
 import { parseInput } from '@/shared/validation';
 
 import {
@@ -89,4 +89,13 @@ export async function listStudySessions(db: Db, from: string, to: string): Promi
     [`${from}T00:00:00`, `${to}T23:59:59.999Z`],
   );
   return rows.map(toStudySession);
+}
+
+/** Une matière supprimée : ses sessions de révision restent, sans matière. */
+export async function detachStudySessionsFromSubject(w: EntityWriter, subjectId: string) {
+  const rows = await w.db.getAllAsync<{ id: string }>(
+    `SELECT id FROM study_sessions WHERE ${ALIVE} AND subject_id = ?`,
+    [subjectId],
+  );
+  for (const r of rows) await w.update('study_sessions', r.id, { subject_id: null });
 }

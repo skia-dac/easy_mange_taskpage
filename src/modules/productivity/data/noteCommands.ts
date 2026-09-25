@@ -94,6 +94,15 @@ export async function detachNotesFromSubject(w: EntityWriter, subjectId: string)
   for (const r of rows) await w.update('notes', r.id, { subject_id: null, course_series_id: null });
 }
 
+/** Un cours supprimé : ses notes restent, sans lien vers lui. */
+export async function detachNotesFromCourse(w: EntityWriter, seriesId: string) {
+  const rows = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM notes WHERE course_series_id = ? AND deleted_at IS NULL',
+    [seriesId],
+  );
+  for (const r of rows) await w.update('notes', r.id, { course_series_id: null });
+}
+
 export async function deleteNotesOfSubject(w: EntityWriter, subjectId: string) {
   const rows = await w.db.getAllAsync<{ id: string }>(
     'SELECT id FROM notes WHERE subject_id = ? AND deleted_at IS NULL',
@@ -107,17 +116,17 @@ export async function deleteNotesOfSubject(w: EntityWriter, subjectId: string) {
 
 export async function createNoteCategory(db: Db, input: NoteCategoryInput) {
   const v = parseInput(noteCategoryInputSchema, input);
-  const last = await db.getFirstAsync<{ p: number | null }>(
-    'SELECT MAX(position) AS p FROM note_categories WHERE deleted_at IS NULL',
-    [],
-  );
-  return write(db, (w) =>
-    w.insert('note_categories', {
+  return write(db, async (w) => {
+    const last = await w.db.getFirstAsync<{ p: number | null }>(
+      'SELECT MAX(position) AS p FROM note_categories WHERE deleted_at IS NULL',
+      [],
+    );
+    return w.insert('note_categories', {
       name: v.name,
       color_id: v.colorId,
       position: (last?.p ?? -1) + 1,
-    }),
-  );
+    });
+  });
 }
 
 export async function updateNoteCategory(db: Db, id: string, input: NoteCategoryInput) {

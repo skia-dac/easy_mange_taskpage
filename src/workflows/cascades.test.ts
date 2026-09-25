@@ -4,7 +4,6 @@ import {
   getCourseException,
   listCourseExceptions,
   listCourseSeries,
-  deleteCourse,
   cancelOccurrence,
 } from '@/modules/academic';
 import {
@@ -40,6 +39,7 @@ import type { Db } from '@/shared/db';
 import { AppError } from '@/shared/errors';
 import { createTestDb } from '@/test/memoryDb';
 
+import { deleteCourseEverywhere } from './deleteCourse';
 import { deleteHabitEverywhere } from './deleteHabit';
 import { moveCalendarItem } from './moveItem';
 import { wipeAllData } from './wipeAllData';
@@ -74,10 +74,19 @@ describe('suppressions en cascade et déplacements', () => {
       endTime: '10:00',
     });
     await cancelOccurrence(db, seriesId, '2026-09-21');
+    const noteId = await createNote(db, {
+      title: 'Cours 1',
+      content: 'x',
+      subjectId,
+      courseSeriesId: seriesId,
+      courseDate: '2026-09-14',
+    });
     expect(await listCourseExceptions(db)).toHaveLength(1);
-    await deleteCourse(db, seriesId);
+    await deleteCourseEverywhere(db, seriesId);
     expect(await listCourseSeries(db)).toEqual([]);
     expect(await listCourseExceptions(db)).toEqual([]);
+    // La note reste, détachée du cours (elle garde sa matière).
+    expect(await getNote(db, noteId)).toMatchObject({ courseSeriesId: null, subjectId });
   });
 
   it('supprimer un créneau ; un créneau inconnu est refusé', async () => {

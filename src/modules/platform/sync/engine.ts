@@ -1,5 +1,15 @@
 import { getSyncCursor, setLastSyncAt, setSyncCursor } from '@/modules/identity';
 import { newId, notifyChange, nowIso, SYNCED_TABLES, type Db, type SqlValue } from '@/shared/db';
+import { logger } from '@/shared/logger';
+
+import { deleteLocalFile } from '../files/attachments';
+
+/** Colonnes qui désignent un fichier sur le téléphone : effacé quand la ligne arrive supprimée. */
+const FILE_COLUMNS: Partial<Record<string, string>> = {
+  attachments: 'local_path',
+  profiles: 'photo_path',
+  habit_checkpoints: 'photo_path',
+};
 
 /**
  * Moteur de synchronisation (architecture §7) :
@@ -271,6 +281,7 @@ async function pull(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
     for (;;) {
       const rows = await remote.pull(table, cursor, PULL_PAGE);
       if (rows.length === 0) break;
+      const filesToDelete: string[] = [];
       await db.withExclusiveTransactionAsync(async (txn) => {
         // Un enfant peut arriver avant son parent (autre table) : clés étrangères vérifiées à la fin.
         await txn.execAsync('PRAGMA defer_foreign_keys = ON');
@@ -284,11 +295,27 @@ async function pull(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
             report.skipped++;
             continue;
           }
+          const fileColumn = FILE_COLUMNS[table];
+          if (fileColumn && row.deleted_at) {
+            const local = await txn.getFirstAsync<Record<string, unknown>>(
+              `SELECT ${fileColumn} AS path FROM ${table} WHERE id = ?`,
+              [id],
+            );
+            if (typeof local?.path === 'string' && local.path) filesToDelete.push(local.path);
+          }
           await applyServerRow(txn, table, row);
           report.pulled++;
           changed.add(table);
         }
       });
+      // Supprimé sur un autre appareil : le fichier n'a plus de raison de rester ici.
+      for (const path of filesToDelete) {
+        try {
+          deleteLocalFile(path);
+        } catch (e) {
+          logger.error(e, { where: 'pull.deleteLocalFile' });
+        }
+      }
       cursor = String(rows[rows.length - 1]!.server_updated_at);
       await setSyncCursor(db, table, cursor);
       if (rows.length < PULL_PAGE) break;
@@ -313,7 +340,7 @@ export async function syncOnce(db: Db, remote: RemoteApi): Promise<SyncReport> {
 /** Nombre de modifications locales pas encore envoyées. */
 export async function pendingCount(db: Db): Promise<number> {
   const r = await db.getFirstAsync<{ n: number }>(
-    'SELECT COUNT(DISTINCT entity || entity_id) AS n FROM sync_outbox',
+    "SELECT COUNT(DISTINCT entity || '/' || entity_id) AS n FROM sync_outbox",
     [],
   );
   return r?.n ?? 0;

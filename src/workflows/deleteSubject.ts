@@ -5,6 +5,7 @@ import {
   deleteNotesOfSubject,
   deleteWorkOfSubject,
   detachNotesFromSubject,
+  detachStudySessionsFromSubject,
   detachWorkFromSubject,
 } from '@/modules/productivity';
 import { write, type Db } from '@/shared/db';
@@ -48,6 +49,7 @@ export async function deleteSubject(db: Db, subjectId: string, mode: 'keepWork' 
       await deleteWorkOfSubject(w, subjectId);
       await deleteNotesOfSubject(w, subjectId);
     }
+    await detachStudySessionsFromSubject(w, subjectId);
     await removeSubjectAndCourses(w, subjectId);
   });
 }
