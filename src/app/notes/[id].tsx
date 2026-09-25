@@ -411,6 +411,7 @@ export default function NoteScreen() {
           editable={editing}
           value={title}
           onChangeText={(v) => scheduleSave({ title: v })}
+          maxLength={120}
           placeholder={t('notes.titlePlaceholder')}
           placeholderTextColor={colors.muted}
           style={{

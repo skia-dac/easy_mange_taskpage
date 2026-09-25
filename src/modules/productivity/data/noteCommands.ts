@@ -36,7 +36,9 @@ export async function updateNote(db: Db, id: string, input: NoteInput) {
 
 /** Enregistrement rapide du contenu seul (sauvegarde automatique pendant la frappe). */
 export async function saveNoteContent(db: Db, id: string, title: string, content: string) {
-  return write(db, (w) => w.update('notes', id, { title: title.trim().slice(0, 120), content }));
+  // Mêmes limites qu'à la création (titre 120, contenu 100 000).
+  const v = parseInput(noteInputSchema.pick({ title: true, content: true }), { title, content });
+  return write(db, (w) => w.update('notes', id, { title: v.title ?? '', content: v.content }));
 }
 
 export async function setNoteFavorite(db: Db, id: string, isFavorite: boolean) {

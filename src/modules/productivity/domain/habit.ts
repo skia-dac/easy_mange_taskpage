@@ -45,9 +45,19 @@ export const habitInputSchema = z
     /** Jours ISO (1 = lundi … 7 = dimanche), pour `weekdays`. */
     weekdays: z.array(z.number().int().min(1).max(7)).default([]),
     /** Pour `weekly` : nombre de fois par semaine. */
-    timesPerWeek: z.number().int().min(1, { error: 'validation.invalidCount' }).max(7).default(1),
+    timesPerWeek: z
+      .number({ error: 'validation.invalidCount' })
+      .int({ error: 'validation.invalidCount' })
+      .min(1, { error: 'validation.invalidCount' })
+      .max(7, { error: 'validation.invalidCount' })
+      .default(1),
     /** Objectif chiffré par jour (8 verres d'eau). 1 = simple case à cocher. */
-    target: z.number().int().min(1, { error: 'validation.invalidCount' }).max(50).default(1),
+    target: z
+      .number({ error: 'validation.invalidCount' })
+      .int({ error: 'validation.invalidCount' })
+      .min(1, { error: 'validation.invalidCount' })
+      .max(50, { error: 'validation.invalidCount' })
+      .default(1),
     unit: optionalText(20),
     reminderTime: optionalTime,
     /** Une session de révision terminée coche cette habitude. */

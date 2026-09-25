@@ -17,8 +17,8 @@ export const examInputSchema = z.object({
   date: isoDate,
   time: optionalTime,
   durationMinutes: z
-    .number()
-    .int()
+    .number({ error: 'validation.invalidDuration' })
+    .int({ error: 'validation.invalidDuration' })
     .min(1, { error: 'validation.invalidDuration' })
     .max(24 * 60, { error: 'validation.invalidDuration' })
     .nullish()
@@ -30,14 +30,23 @@ export const examInputSchema = z.object({
   reminderTime: time.default('09:00'),
   /** Note obtenue (null tant que l'examen n'est pas corrigé). */
   grade: z
-    .number()
+    .number({ error: 'validation.invalidGrade' })
     .min(0, { error: 'validation.invalidGrade' })
+    .max(10_000, { error: 'validation.invalidGrade' })
     .nullish()
     .transform((v) => v ?? null),
   /** Barème (20 par défaut). */
-  gradeMax: z.number().positive({ error: 'validation.invalidGrade' }).default(20),
+  gradeMax: z
+    .number({ error: 'validation.invalidGrade' })
+    .positive({ error: 'validation.invalidGrade' })
+    .max(10_000, { error: 'validation.invalidGrade' })
+    .default(20),
   /** Coefficient dans la moyenne de la matière. */
-  coefficient: z.number().positive({ error: 'validation.invalidCoefficient' }).default(1),
+  coefficient: z
+    .number({ error: 'validation.invalidCoefficient' })
+    .positive({ error: 'validation.invalidCoefficient' })
+    .max(100, { error: 'validation.invalidCoefficient' })
+    .default(1),
   /** Session d'examens (emploi du temps de type « examens »), facultative. */
   timetableId: optionalId,
 });

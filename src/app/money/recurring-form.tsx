@@ -347,6 +347,8 @@ export default function RecurringFormScreen() {
         label={t('money.note')}
         value={form.note}
         onChangeText={(note) => set({ note })}
+        error={errors.note}
+        maxLength={200}
         placeholder={t('common.optional')}
       />
     </FormScreen>

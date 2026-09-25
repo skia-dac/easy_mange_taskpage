@@ -21,6 +21,7 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { ValidationError } from '@/shared/validation';
 import { useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -61,7 +62,7 @@ export default function CheckpointScreen() {
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [initialPhoto, setInitialPhoto] = useState<string | null>(null);
   const [note, setNote] = useState('');
-  const { errors, saving, run, setErrors } = useSave();
+  const { errors, saving, run } = useSave();
   // Photo prise mais pas enregistrée : effacée quand on quitte l'écran (rien ne traîne).
   const pending = useRef<{ photo: string | null; initial: string | null; saved: boolean }>({
     photo: null,
@@ -110,10 +111,9 @@ export default function CheckpointScreen() {
   const submit = () =>
     run(async () => {
       const weightKg = parseWeight(weight);
-      if (weightKg === undefined) {
-        setErrors({ weightKg: 'validation.invalidWeight' });
-        return;
-      }
+      // Une ValidationError s'affiche sous le champ (un setErrors serait effacé par run).
+      if (weightKg === undefined)
+        throw new ValidationError({ weightKg: 'validation.invalidWeight' });
       const input = { habitId, date, weightKg, photoPath, note };
       if (id) await updateCheckpoint(db, id, input);
       else await createCheckpoint(db, input);

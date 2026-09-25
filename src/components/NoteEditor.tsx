@@ -101,6 +101,7 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
         value={value}
         onChangeText={onChangeText}
         onSelectionChange={onSelectionChange}
+        maxLength={100_000}
         placeholder={placeholder}
         placeholderTextColor={colors.muted}
         scrollEnabled

@@ -286,6 +286,7 @@ export default function MoneyAddScreen() {
         value={note}
         onChangeText={setNote}
         placeholder={t('common.optional')}
+        maxLength={120}
       />
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>

@@ -43,7 +43,7 @@ export const slotInputSchema = z
     if (s.startTime === s.endTime)
       ctx.addIssue({ code: 'custom', path: ['endTime'], message: 'validation.endAfterStart' });
     if (s.validUntil && s.validUntil < s.validFrom)
-      ctx.addIssue({ code: 'custom', path: ['validUntil'], message: 'validation.endAfterStart' });
+      ctx.addIssue({ code: 'custom', path: ['validUntil'], message: 'validation.untilAfterFrom' });
   });
 
 export type SlotInput = z.input<typeof slotInputSchema>;

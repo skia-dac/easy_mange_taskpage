@@ -88,11 +88,14 @@ export default function ExamFormScreen() {
     const { duration, grade, gradeMax, coefficient, ...rest } = form;
     const trimmed = duration.trim();
     // Texte non numérique → NaN : refusé par la validation avec un message clair.
-    // Les notes acceptent la virgule (« 14,5 »).
-    const num = (v: string) => Number(v.trim().replace(',', '.'));
+    // Les notes acceptent la virgule (« 14,5 ») ; seuls les chiffres sont admis (pas « 1e3 »).
+    const num = (v: string) => {
+      const t = v.trim().replace(/,/g, '.');
+      return /^\d+(\.\d+)?$/.test(t) ? Number(t) : Number.NaN;
+    };
     return {
       ...rest,
-      durationMinutes: trimmed === '' ? null : Number(trimmed),
+      durationMinutes: trimmed === '' ? null : /^\d+$/.test(trimmed) ? Number(trimmed) : Number.NaN,
       grade: grade.trim() === '' ? null : num(grade),
       gradeMax: gradeMax.trim() === '' ? 20 : num(gradeMax),
       coefficient: coefficient.trim() === '' ? 1 : num(coefficient),

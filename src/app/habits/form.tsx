@@ -229,6 +229,8 @@ export default function HabitFormScreen() {
             label={t('habits.unit')}
             value={form.unit ?? ''}
             onChangeText={(unit) => set({ unit })}
+            error={errors.unit}
+            maxLength={20}
             placeholder={t('habits.unitPlaceholder')}
             editable={Number(form.target) > 1}
           />

@@ -53,7 +53,8 @@
     "invalidCount": "Entre un nombre entre 1 et 50.",
     "pickDay": "Choisis au moins un jour.",
     "invalidWeight": "Poids non valide (entre 20 et 400 kg).",
-    "weightOrPhoto": "Ajoute au moins une photo ou ton poids."
+    "weightOrPhoto": "Ajoute au moins une photo ou ton poids.",
+    "invalid": "Valeur non valide."
   },
   "today": {
     "greeting": "Bonjour",

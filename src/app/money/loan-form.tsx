@@ -14,6 +14,7 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { ValidationError } from '@/shared/validation';
 import {
   AppText,
   confirmDestructive,
@@ -41,7 +42,7 @@ export default function LoanFormScreen() {
   const [date, setDate] = useState(today);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [note, setNote] = useState('');
-  const { errors, saving, run, setErrors } = useSave();
+  const { errors, saving, run } = useSave();
 
   useEffect(() => {
     void (async () => {
@@ -62,10 +63,7 @@ export default function LoanFormScreen() {
       if (params.id) await updateLoan(db, params.id, input);
       else {
         const minor = parseAmount(amount, currency);
-        if (!minor) {
-          setErrors({ amount: 'money.invalidAmount' });
-          return;
-        }
+        if (!minor) throw new ValidationError({ amount: 'money.invalidAmount' });
         await createLoan(db, input, { amountMinor: minor, currency, date });
       }
       router.back();
@@ -148,6 +146,8 @@ export default function LoanFormScreen() {
         label={t('money.note')}
         value={note}
         onChangeText={setNote}
+        error={errors.note}
+        maxLength={200}
         placeholder={t('common.optional')}
       />
     </FormScreen>

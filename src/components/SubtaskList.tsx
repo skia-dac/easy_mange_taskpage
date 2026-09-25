@@ -87,6 +87,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={add}
+          maxLength={120}
           placeholder={t('subtasks.placeholder')}
           placeholderTextColor={colors.muted}
           returnKeyType="done"

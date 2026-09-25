@@ -98,6 +98,7 @@ export function MoodPicker({ date }: { date: IsoDate }) {
             onChangeText={(v) => change({ note: v })}
             onEndEditing={() => save(mood, energy, note)}
             placeholder={t('common.optional')}
+            maxLength={500}
             multiline
           />
         ) : (

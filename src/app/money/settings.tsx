@@ -22,6 +22,7 @@ import {
 } from '@/modules/finance';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { isValidationError } from '@/shared/validation';
 import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -63,10 +64,14 @@ export default function MoneySettingsScreen() {
       setNameError('validation.required');
       return;
     }
-    createCategory(db, { kind, name, icon, colorId }).then(() => {
-      setName('');
-      setNameError(undefined);
-    }, fail);
+    createCategory(db, { kind, name, icon, colorId }).then(
+      () => {
+        setName('');
+        setNameError(undefined);
+      },
+      // Erreur de saisie (ex. nom trop long) sous le champ, le reste en message.
+      (e: unknown) => (isValidationError(e) ? setNameError(e.fields.name) : fail(e)),
+    );
   };
 
   const remove = async (id: string, label: string) => {
@@ -199,6 +204,7 @@ export default function MoneySettingsScreen() {
             onChangeText={setName}
             error={nameError}
             placeholder={t('money.categoryPlaceholder')}
+            maxLength={30}
           />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
             {categoryIcons.map((i) => (

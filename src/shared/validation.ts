@@ -62,6 +62,13 @@ export function isValidationError(error: unknown): error is ValidationError {
   return error instanceof ValidationError;
 }
 
+const MESSAGE_PREFIXES = ['validation.', 'money.', 'auth.'];
+
+/** Un message zod par défaut (technique, en anglais) devient « Valeur non valide ». */
+function userMessage(message: string): string {
+  return MESSAGE_PREFIXES.some((p) => message.startsWith(p)) ? message : 'validation.invalid';
+}
+
 /** Valide une saisie ; lève ValidationError (avec l'erreur de chaque champ) si elle est incorrecte. */
 export function parseInput<S extends z.ZodType>(schema: S, input: unknown): z.output<S> {
   const result = schema.safeParse(input);
@@ -69,7 +76,7 @@ export function parseInput<S extends z.ZodType>(schema: S, input: unknown): z.ou
   const fields: FieldErrors = {};
   for (const issue of result.error.issues) {
     const key = String(issue.path[0] ?? '_form');
-    fields[key] ??= issue.message;
+    fields[key] ??= userMessage(issue.message);
   }
   throw new ValidationError(fields);
 }
