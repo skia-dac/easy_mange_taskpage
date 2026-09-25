@@ -88,7 +88,7 @@ export default function NotesScreen() {
           <ChoiceChips
             scroll
             options={[
-              { value: null, label: t('tasks.allSubjects') },
+              { value: null, label: t('noteCategories.allSubjects') },
               ...subjects.map((s) => ({
                 value: s.id as string | null,
                 label: s.name,

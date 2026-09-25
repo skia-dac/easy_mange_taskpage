@@ -53,14 +53,14 @@ export function NoteCard({
           gap: spacing.xs,
         }}
       >
-        {subject ? (
-          <Chip label={subject.name} subject={colorOf(subject)} />
-        ) : category ? (
-          <Chip label={category.name} subject={colorOf({ colorId: category.colorId })} />
-        ) : (
-          <View />
-        )}
-        <AppText variant="caption" color="muted">
+        <View style={{ flexShrink: 1 }}>
+          {subject ? (
+            <Chip label={subject.name} subject={colorOf(subject)} />
+          ) : category ? (
+            <Chip label={category.name} subject={colorOf({ colorId: category.colorId })} />
+          ) : null}
+        </View>
+        <AppText variant="caption" color="muted" numberOfLines={1} style={{ flexShrink: 0 }}>
           {formatShortDate(toIsoDate(new Date(note.updatedAt)), labels.lang)}
         </AppText>
       </View>

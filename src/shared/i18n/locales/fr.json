@@ -1477,7 +1477,8 @@
     "count": "{{count}} note(s)",
     "delete": "Supprimer la catégorie",
     "deleteTitle": "Supprimer « {{name}} » ?",
-    "deleteMessage": "Tes notes sont gardées : elles passent simplement « sans catégorie »."
+    "deleteMessage": "Tes notes sont gardées : elles passent simplement « sans catégorie ».",
+    "allSubjects": "Toutes les matières"
   },
   "progress": {
     "title": "Ma progression",

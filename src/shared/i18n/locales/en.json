@@ -1477,7 +1477,8 @@
     "count": "{{count}} note(s)",
     "delete": "Delete category",
     "deleteTitle": "Delete “{{name}}”?",
-    "deleteMessage": "Your notes are kept: they just become “no category”."
+    "deleteMessage": "Your notes are kept: they just become “no category”.",
+    "allSubjects": "All subjects"
   },
   "progress": {
     "title": "My progress",
