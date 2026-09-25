@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
+import { eventHref } from '@/components/eventHref';
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
 import { ExportCalendarButton } from '@/components/ExportCalendarButton';
 import { SearchButton } from '@/components/SearchButton';
@@ -28,6 +29,7 @@ import {
   weekdayOrder,
   type IsoDate,
 } from '@/shared/dates';
+import { isSlotEvent } from '@/modules/productivity';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -45,6 +47,7 @@ import {
   Segmented,
   SectionHeader,
   showError,
+  showInfo,
 } from '@/shared/ui';
 import { moveCalendarItem } from '@/workflows';
 
@@ -71,7 +74,8 @@ export default function CalendarScreen() {
   const [shown, setShown] = useState<ReadonlySet<CalendarFilter>>(new Set(calendarFilters));
   const [selected, setSelected] = useState<IsoDate>(today);
   const agenda = useAgendaData();
-  const study = useSpaces().has('study');
+  const spaces = useSpaces();
+  const study = spaces.has('study');
   // Sans Études : ni cours, ni examens, ni révisions à filtrer.
   const filterChoices = calendarFilters.filter((f) => study || f === 'work' || f === 'event');
   const { byId } = useSubjects();
@@ -116,7 +120,7 @@ export default function CalendarScreen() {
           params: { id: item.item.id, kind: item.item.kind },
         });
       case 'event':
-        return router.push({ pathname: '/events/form', params: { id: item.event.id } });
+        return router.push(eventHref(item.event));
       case 'revision':
         return router.push({ pathname: '/revision/[id]', params: { id: item.block.id } });
       default:
@@ -125,6 +129,11 @@ export default function CalendarScreen() {
   };
 
   const move = async (item: CalendarItem, to: MoveTarget) => {
+    if (item.kind === 'event' && isSlotEvent(item.event)) {
+      // Séance d'un créneau fixe : elle se change dans « Mon planning » (toutes les semaines).
+      showInfo(t('planning.slotMoveTitle'), t('planning.slotMoveMessage'));
+      return;
+    }
     if (item.kind === 'course') {
       // Un cours revient chaque semaine : on précise que seule cette séance bouge.
       const ok = await confirmAction(
@@ -199,6 +208,21 @@ export default function CalendarScreen() {
               options={viewModes.map((m) => ({ value: m, label: t(`calendar.${m}`) }))}
             />
           </View>
+          {spaces.has('work') || spaces.has('personal') ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('planning.title')}
+              onPress={() => router.push('/planning')}
+              style={{
+                width: minTouchSize,
+                height: minTouchSize,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Feather name="repeat" size={22} color={colors.primary} />
+            </Pressable>
+          ) : null}
           {study ? (
             <Pressable
               accessibilityRole="button"

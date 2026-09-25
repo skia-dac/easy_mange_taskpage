@@ -23,7 +23,9 @@ import {
   createHabit,
   createRevisionBlock,
   createNote,
+  createNoteCategory,
   createPersonalEvent,
+  createSlot,
   createWorkItem,
   endStudySession,
   saveMoodLog,
@@ -236,6 +238,15 @@ beforeAll(async () => {
     endDate: '2026-11-02',
     suspendCourses: true,
   });
+  ids.slot = await createSlot(mockDb, {
+    title: 'Garde de nuit',
+    weekdays: [1, 3],
+    startTime: '22:00',
+    endTime: '06:00',
+    rotation: 'A',
+    validFrom: '2026-09-01',
+  });
+  ids.noteCategory = await createNoteCategory(mockDb, { name: 'Idées', colorId: 'green' });
 });
 afterAll(() => mockDb.close());
 
@@ -659,6 +670,28 @@ const cases: Case[] = [
     name: 'Onboarding',
     load: () => require('@/app/onboarding') as { default: ComponentType },
     expect: ['Sache toujours ce qui t’attend'],
+  },
+  {
+    name: 'Mon planning',
+    load: () => require('@/app/planning/index') as { default: ComponentType },
+    expect: ['Ma semaine type', 'Garde de nuit', 'Copier la semaine dernière'],
+  },
+  {
+    name: 'Créneau fixe',
+    load: () => require('@/app/planning/slot-form') as { default: ComponentType },
+    params: { id: 'slot' },
+    expect: ['Garde de nuit', 'Semaines A'],
+  },
+  {
+    name: 'Catégories de notes',
+    load: () => require('@/app/notes/categories') as { default: ComponentType },
+    expect: ['Idées', 'Nouvelle catégorie'],
+  },
+  {
+    name: 'Formulaire catégorie de notes',
+    load: () => require('@/app/notes/category-form') as { default: ComponentType },
+    params: { id: 'noteCategory' },
+    expect: ['Idées'],
   },
   {
     name: 'Page introuvable',

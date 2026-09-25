@@ -50,7 +50,8 @@
     "invalidCoefficient": "Enter a coefficient greater than 0.",
     "gradeTooHigh": "The grade is higher than the maximum.",
     "pickDays": "Pick at least one day.",
-    "invalidCount": "Enter a number between 1 and 50."
+    "invalidCount": "Enter a number between 1 and 50.",
+    "pickDay": "Pick at least one day."
   },
   "today": {
     "greeting": "Hello",
@@ -1495,5 +1496,51 @@
     "level4": "done",
     "widgetTitle": "Track in the Progress widget",
     "widgetHint": "The home-screen widget shows this habit (otherwise: all of them)."
+  },
+  "planning": {
+    "title": "My planner",
+    "profileHint": "Fixed slots, A / B rotations, copy the week",
+    "intro": "Your typical week: the slots that come back (work, sport, activities). They show up on their own in your planner and on the home screen. For a different week, add appointments or copy last week.",
+    "slot": "Fixed slot",
+    "newSlot": "New slot",
+    "editSlot": "Edit slot",
+    "slotTitle": "Name",
+    "slotTitlePlaceholder": "E.g. Work, Night shift, Sport",
+    "days": "Days",
+    "start": "Start",
+    "end": "End",
+    "overnight": "Night slot: it ends the next day at {{end}}.",
+    "nextDay": "next day",
+    "rotation": "Repeat",
+    "rotations": {
+      "every": "Every week",
+      "A": "A weeks",
+      "B": "B weeks"
+    },
+    "location": "Place",
+    "from": "From",
+    "until": "Until",
+    "note": "Note",
+    "delete": "Delete slot",
+    "deleteTitle": "Delete “{{title}}”?",
+    "deleteMessage": "It disappears from every week. Appointments you added yourself don’t change.",
+    "rotationTitle": "Rotation",
+    "thisWeekIs": "This week is…",
+    "weekA": "Week A",
+    "weekB": "Week B",
+    "rotationHint": "“A weeks” and “B weeks” slots alternate every week (shifts, alternating custody…).",
+    "rotationNone": "For a rotation (day / night shifts, every other week), choose “A weeks” or “B weeks” on a slot.",
+    "weekType": "My typical week",
+    "empty": "No fixed slot",
+    "emptyHint": "Add your work hours, shifts or sport: they repeat on their own.",
+    "toPlan": "You still have {{duration}} to plan this week.",
+    "copyTitle": "Copy last week",
+    "copyHint": "Copies last week’s appointments to this week (same day, same time). Fixed slots don’t need it.",
+    "copyButton": "Copy last week",
+    "copyConfirm": "{{count}} appointment(s) will be added to this week.",
+    "copyDone": "{{count}} appointment(s) added.",
+    "copyNothing": "Nothing to copy: last week has no appointments, or they are already on this week.",
+    "slotMoveTitle": "Fixed slot",
+    "slotMoveMessage": "It comes back every week: change its times in “My planner”."
   }
 }

@@ -11,9 +11,11 @@ import {
   listMoodLogs,
   listRevisionBlocks,
   listPersonalEvents,
+  listSlots,
   listWorkItems,
+  slotOccurrences,
 } from '@/modules/productivity';
-import { getActiveSpaces } from '@/modules/identity';
+import { getActiveSpaces, getRotationAnchor, getWeekStart } from '@/modules/identity';
 import { listRecurring, listTransactions } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useLiveQuery, type Db } from '@/shared/db';
@@ -37,6 +39,7 @@ const TABLES = [
   'money_recurring',
   'money_transactions',
   'app_settings',
+  'work_slots',
 ] as const;
 
 /** Toutes les données (tous espaces confondus). */
@@ -57,6 +60,9 @@ async function loadAllAgenda(db: Db): Promise<TodayData> {
     moodLogs,
     recurring,
     payments,
+    slots,
+    anchor,
+    weekStart,
   ] = await Promise.all([
     listCourseSeries(db),
     listCourseExceptions(db),
@@ -72,14 +78,29 @@ async function loadAllAgenda(db: Db): Promise<TodayData> {
     listMoodLogs(db, addDaysIso(today, -90), today),
     listRecurring(db),
     listTransactions(db, { from: addDaysIso(today, -7), to: addDaysIso(today, 62) }),
+    listSlots(db),
+    getRotationAnchor(db),
+    getWeekStart(db),
   ]);
+  // Créneaux fixes du planning : séances calculées (jamais enregistrées), vues comme des
+  // rendez-vous partout (Aujourd'hui, planning, heures de la semaine).
+  const slotEvents = slotOccurrences(
+    slots,
+    addDaysIso(today, -120),
+    addDaysIso(today, 365),
+    anchor,
+    weekStart,
+  );
   return {
     series,
     exceptions,
     offPeriods,
     exams,
     work: [...tasks, ...assignments],
-    events,
+    events: [...events, ...slotEvents].sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) || (a.startTime ?? '').localeCompare(b.startTime ?? ''),
+    ),
     studySession,
     habits,
     habitLogs,

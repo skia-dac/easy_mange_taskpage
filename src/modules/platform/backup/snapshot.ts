@@ -36,6 +36,7 @@ export const BACKUP_TABLES = [
   'money_loans',
   'money_recurring',
   'money_transactions',
+  'work_slots',
   'sync_conflicts',
   'sync_files',
 ] as const;

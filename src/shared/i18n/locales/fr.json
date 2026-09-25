@@ -50,7 +50,8 @@
     "invalidCoefficient": "Entre un coefficient supérieur à 0.",
     "gradeTooHigh": "La note dépasse le barème.",
     "pickDays": "Choisis au moins un jour.",
-    "invalidCount": "Entre un nombre entre 1 et 50."
+    "invalidCount": "Entre un nombre entre 1 et 50.",
+    "pickDay": "Choisis au moins un jour."
   },
   "today": {
     "greeting": "Bonjour",
@@ -1495,5 +1496,51 @@
     "level4": "fait",
     "widgetTitle": "Suivre dans le widget Progression",
     "widgetHint": "Le widget de l’écran d’accueil montre cette habitude (sinon : toutes)."
+  },
+  "planning": {
+    "title": "Mon planning",
+    "profileHint": "Créneaux fixes, rotations A / B, copier la semaine",
+    "intro": "Ta semaine type : les créneaux qui reviennent (travail, sport, activités). Ils apparaissent tout seuls dans ton planning et sur l’accueil. Pour une semaine différente, ajoute des rendez-vous ou copie la semaine dernière.",
+    "slot": "Créneau fixe",
+    "newSlot": "Nouveau créneau",
+    "editSlot": "Modifier le créneau",
+    "slotTitle": "Nom",
+    "slotTitlePlaceholder": "Ex. Travail, Garde de nuit, Sport",
+    "days": "Jours",
+    "start": "Début",
+    "end": "Fin",
+    "overnight": "Créneau de nuit : il se termine le lendemain à {{end}}.",
+    "nextDay": "lendemain",
+    "rotation": "Répétition",
+    "rotations": {
+      "every": "Chaque semaine",
+      "A": "Semaines A",
+      "B": "Semaines B"
+    },
+    "location": "Lieu",
+    "from": "À partir du",
+    "until": "Jusqu’au",
+    "note": "Note",
+    "delete": "Supprimer le créneau",
+    "deleteTitle": "Supprimer « {{title}} » ?",
+    "deleteMessage": "Il disparaît de toutes les semaines. Tes rendez-vous ajoutés à la main ne changent pas.",
+    "rotationTitle": "Rotation",
+    "thisWeekIs": "Cette semaine est une…",
+    "weekA": "Semaine A",
+    "weekB": "Semaine B",
+    "rotationHint": "Les créneaux « Semaines A » et « Semaines B » alternent chaque semaine (équipes, garde alternée…).",
+    "rotationNone": "Pour une rotation (équipes jour / nuit, une semaine sur deux), choisis « Semaines A » ou « Semaines B » sur un créneau.",
+    "weekType": "Ma semaine type",
+    "empty": "Aucun créneau fixe",
+    "emptyHint": "Ajoute tes horaires de travail, tes gardes ou ton sport : ils se répètent tout seuls.",
+    "toPlan": "Il te reste {{duration}} à planifier cette semaine.",
+    "copyTitle": "Copier la semaine dernière",
+    "copyHint": "Recopie tes rendez-vous de la semaine dernière sur cette semaine (même jour, même heure). Les créneaux fixes n’en ont pas besoin.",
+    "copyButton": "Copier la semaine dernière",
+    "copyConfirm": "{{count}} rendez-vous seront ajoutés à cette semaine.",
+    "copyDone": "{{count}} rendez-vous ajoutés.",
+    "copyNothing": "Rien à copier : la semaine dernière n’a pas de rendez-vous, ou ils sont déjà sur cette semaine.",
+    "slotMoveTitle": "Créneau fixe",
+    "slotMoveMessage": "Il revient chaque semaine : change ses heures dans « Mon planning »."
   }
 }

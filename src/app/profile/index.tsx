@@ -100,6 +100,17 @@ export default function ProfileScreen() {
       </AppText>
       <SpacesCard />
 
+      {spaces.has('work') || spaces.has('personal') ? (
+        <Card>
+          <ListRow
+            title={t('planning.title')}
+            subtitle={t('planning.profileHint')}
+            leading={<IconBadge icon="repeat" />}
+            onPress={() => router.push('/planning')}
+          />
+        </Card>
+      ) : null}
+
       {spaces.has('study') ? (
         <>
           <SectionHeader

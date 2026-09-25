@@ -2,10 +2,12 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { eventHref } from './eventHref';
 import { useLabels } from '@/hooks/useLabels';
 import { colorOf, countdown, type Exam, type Occurrence, type Subject } from '@/modules/academic';
 import {
   isOverdue,
+  isSlotEvent,
   setWorkStatus,
   type PersonalEvent,
   type RevisionBlock,
@@ -185,9 +187,17 @@ export function EventRow({ event }: { event: PersonalEvent }) {
   return (
     <ListRow
       title={event.title}
-      subtitle={[t('calendarItem.event'), time].join(' · ')}
-      leading={<IconBadge icon="star" color="warning" background="warningSoft" />}
-      onPress={() => router.push({ pathname: '/events/form', params: { id: event.id } })}
+      subtitle={[isSlotEvent(event) ? t('planning.slot') : t('calendarItem.event'), time].join(
+        ' · ',
+      )}
+      leading={
+        <IconBadge
+          icon={isSlotEvent(event) ? 'repeat' : 'star'}
+          color="warning"
+          background="warningSoft"
+        />
+      }
+      onPress={() => router.push(eventHref(event))}
     />
   );
 }

@@ -405,4 +405,23 @@ export const migrations: readonly Migration[] = [
       ALTER TABLE notes ADD COLUMN category_id TEXT REFERENCES note_categories (id);
     `,
   },
+  {
+    version: 14,
+    name: 'planning : créneaux fixes (chaque semaine ou semaine A / B)',
+    sql: `
+      CREATE TABLE work_slots (${SYNC_COLUMNS},
+        title TEXT NOT NULL,
+        weekdays TEXT NOT NULL DEFAULT '[]',
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        location TEXT,
+        note TEXT,
+        rotation TEXT NOT NULL DEFAULT 'every',
+        valid_from TEXT NOT NULL,
+        valid_until TEXT,
+        color_id TEXT NOT NULL DEFAULT 'blue',
+        space TEXT NOT NULL DEFAULT 'work'
+      );
+    `,
+  },
 ];

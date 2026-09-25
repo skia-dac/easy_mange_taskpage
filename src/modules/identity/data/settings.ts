@@ -207,3 +207,19 @@ export async function getProgressWidgetHabit(db: Db): Promise<string | null> {
 export async function setProgressWidgetHabit(db: Db, habitId: string | null): Promise<void> {
   await writeSetting(db, 'progress_widget_habit', habitId ?? '');
 }
+
+/**
+ * Rotation du planning : premier jour d'une semaine A. Par défaut une date fixe (lundi
+ * 21 septembre 2026), pour que A et B ne changent jamais d'eux-mêmes.
+ */
+export const DEFAULT_ROTATION_ANCHOR = '2026-09-21';
+
+export async function getRotationAnchor(db: Db): Promise<string> {
+  const v = await readSetting(db, 'rotation_anchor');
+  return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : DEFAULT_ROTATION_ANCHOR;
+}
+
+export async function setRotationAnchor(db: Db, weekStartDate: string): Promise<void> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStartDate)) throw new AppError('validation');
+  await writeSetting(db, 'rotation_anchor', weekStartDate);
+}

@@ -1019,6 +1019,54 @@ drop trigger if exists money_transactions_touch on public.money_transactions;
 create trigger money_transactions_touch before insert or update on public.money_transactions
   for each row execute function public.mysky_touch();
 
+create table if not exists public.work_slots (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at text not null,
+  updated_at text not null,
+  deleted_at text,
+  version bigint not null default 0,
+  title text not null,
+  weekdays text not null default '[]',
+  start_time text not null,
+  end_time text not null,
+  location text,
+  note text,
+  rotation text not null default 'every',
+  valid_from text not null,
+  valid_until text,
+  color_id text not null default 'blue',
+  space text not null default 'work',
+  server_updated_at timestamptz not null default clock_timestamp()
+);
+alter table public.work_slots
+  add column if not exists user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  add column if not exists created_at text not null,
+  add column if not exists updated_at text not null,
+  add column if not exists deleted_at text,
+  add column if not exists version bigint not null default 0,
+  add column if not exists title text not null,
+  add column if not exists weekdays text not null default '[]',
+  add column if not exists start_time text not null,
+  add column if not exists end_time text not null,
+  add column if not exists location text,
+  add column if not exists note text,
+  add column if not exists rotation text not null default 'every',
+  add column if not exists valid_from text not null,
+  add column if not exists valid_until text,
+  add column if not exists color_id text not null default 'blue',
+  add column if not exists space text not null default 'work',
+  add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+create index if not exists work_slots_sync_idx on public.work_slots (user_id, server_updated_at);
+alter table public.work_slots enable row level security;
+drop policy if exists "own rows" on public.work_slots;
+create policy "own rows" on public.work_slots for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert, update, delete on public.work_slots to authenticated;
+drop trigger if exists work_slots_touch on public.work_slots;
+create trigger work_slots_touch before insert or update on public.work_slots
+  for each row execute function public.mysky_touch();
+
 -- Modifications déjà appliquées (une même modification renvoyée après une coupure ne compte qu’une fois).
 create table if not exists public.sync_mutations (
   mutation_id text primary key,
@@ -1054,7 +1102,7 @@ declare
   v_sets text;
   v_new bigint;
   v_row jsonb;
-  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions'];
+  allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions', 'work_slots'];
 begin
   if auth.uid() is null then
     raise exception 'not authenticated' using errcode = '28000';

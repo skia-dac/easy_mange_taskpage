@@ -6,8 +6,9 @@ import { Pressable, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { colorOf, type Subject } from '@/modules/academic';
+import { eventHref } from '@/components/eventHref';
 import { SpaceTag } from '@/components/SpaceUi';
-import { blockMinutes, workSpace } from '@/modules/productivity';
+import { blockMinutes, isSlotEvent, workSpace } from '@/modules/productivity';
 import type { DayEntry, DayLine, NextCourse } from '@/projections';
 import { toTime } from '@/shared/dates';
 import { formatDuration } from '@/shared/format';
@@ -195,12 +196,15 @@ function Row({
       const e = entry.event;
       title = e.title;
       detail = entry.start
-        ? [t('dayline.event'), entry.end ? `${entry.start} – ${entry.end}` : null]
+        ? [
+            isSlotEvent(e) ? t('planning.slot') : t('dayline.event'),
+            entry.end ? `${entry.start} – ${entry.end}` : null,
+          ]
             .filter(Boolean)
             .join(' · ')
         : t('dayline.allDay');
       dot = colors.warning;
-      href = { pathname: '/events/form', params: { id: e.id } };
+      href = eventHref(e);
       break;
     }
     case 'work': {

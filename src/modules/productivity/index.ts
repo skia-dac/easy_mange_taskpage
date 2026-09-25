@@ -18,3 +18,5 @@ export * from './data/revisionCommands';
 export * from './domain/revision';
 export * from './data/moodCommands';
 export * from './domain/mood';
+export * from './domain/slot';
+export * from './data/slotData';

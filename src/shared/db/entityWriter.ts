@@ -30,6 +30,7 @@ export const SYNCED_TABLES = [
   'money_loans',
   'money_recurring',
   'money_transactions',
+  'work_slots',
 ] as const;
 
 export type EntityTable =
@@ -56,7 +57,8 @@ export type EntityTable =
   | 'money_goals'
   | 'money_loans'
   | 'money_recurring'
-  | 'money_transactions';
+  | 'money_transactions'
+  | 'work_slots';
 
 export type Values = Record<string, SqlValue>;
 
