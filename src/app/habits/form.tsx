@@ -29,6 +29,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 import { deleteHabitEverywhere } from '@/workflows';
 
@@ -59,16 +60,18 @@ export default function HabitFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getHabit(db, params.id).then(
-      (h) =>
-        h &&
-        setForm({
-          ...h,
-          weekdays: h.weekdays.length > 0 ? h.weekdays : [1, 2, 3, 4, 5],
-          target: String(h.target),
-          unit: h.unit ?? '',
-        }),
-    );
+    void getHabit(db, params.id)
+      .then(
+        (h) =>
+          h &&
+          setForm({
+            ...h,
+            weekdays: h.weekdays.length > 0 ? h.weekdays : [1, 2, 3, 4, 5],
+            target: String(h.target),
+            unit: h.unit ?? '',
+          }),
+      )
+      .catch(reportLoadError);
   }, [db, params.id]);
 
   const toInput = (): HabitInput => {

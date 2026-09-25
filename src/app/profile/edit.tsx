@@ -17,7 +17,15 @@ import { useSpaces } from '@/shared/SpacesContext';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
-import { AppText, FormScreen, showError, TextButton, TextField, useSave } from '@/shared/ui';
+import {
+  AppText,
+  FormScreen,
+  showError,
+  TextButton,
+  TextField,
+  useSave,
+  reportLoadError,
+} from '@/shared/ui';
 
 /** Modification du profil (§6). */
 export default function ProfileEditScreen() {
@@ -38,18 +46,20 @@ export default function ProfileEditScreen() {
   const set = (patch: Partial<ProfileInput>) => setForm((f) => ({ ...f, ...patch }));
 
   useEffect(() => {
-    void getProfile(db).then((p) => {
-      if (!p) return;
-      setForm({
-        firstName: p.firstName,
-        lastName: p.lastName,
-        university: p.university,
-        field: p.field,
-        level: p.level,
-        academicYear: p.academicYear,
-      });
-      setPhoto(p.photoPath);
-    });
+    void getProfile(db)
+      .then((p) => {
+        if (!p) return;
+        setForm({
+          firstName: p.firstName,
+          lastName: p.lastName,
+          university: p.university,
+          field: p.field,
+          level: p.level,
+          academicYear: p.academicYear,
+        });
+        setPhoto(p.photoPath);
+      })
+      .catch(reportLoadError);
   }, [db]);
 
   const submit = () =>

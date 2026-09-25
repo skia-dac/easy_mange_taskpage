@@ -14,7 +14,14 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { useTheme } from '@/shared/theme';
-import { DateTimeField, FormScreen, SelectField, TextField, useSave } from '@/shared/ui';
+import {
+  DateTimeField,
+  FormScreen,
+  SelectField,
+  TextField,
+  useSave,
+  reportLoadError,
+} from '@/shared/ui';
 
 /** Ajouter ou modifier une séance de révision à la main. */
 export default function RevisionFormScreen() {
@@ -42,7 +49,9 @@ export default function RevisionFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getRevisionBlock(db, params.id).then((b) => b && setForm(b));
+    void getRevisionBlock(db, params.id)
+      .then((b) => b && setForm(b))
+      .catch(reportLoadError);
   }, [db, params.id]);
 
   const submit = () =>

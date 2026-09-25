@@ -28,6 +28,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 export default function OffPeriodFormScreen() {
@@ -53,7 +54,9 @@ export default function OffPeriodFormScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getOffPeriod(db, id).then((p) => p && setForm(p));
+    void getOffPeriod(db, id)
+      .then((p) => p && setForm(p))
+      .catch(reportLoadError);
   }, [db, id]);
 
   const submit = () =>

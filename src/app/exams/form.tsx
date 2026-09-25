@@ -29,6 +29,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 type Form = Omit<ExamInput, 'durationMinutes' | 'grade' | 'gradeMax' | 'coefficient'> & {
@@ -71,17 +72,19 @@ export default function ExamFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getExam(db, params.id).then(
-      (e) =>
-        e &&
-        setForm({
-          ...e,
-          duration: e.durationMinutes ? String(e.durationMinutes) : '',
-          grade: e.grade === null ? '' : String(e.grade),
-          gradeMax: String(e.gradeMax),
-          coefficient: String(e.coefficient),
-        }),
-    );
+    void getExam(db, params.id)
+      .then(
+        (e) =>
+          e &&
+          setForm({
+            ...e,
+            duration: e.durationMinutes ? String(e.durationMinutes) : '',
+            grade: e.grade === null ? '' : String(e.grade),
+            gradeMax: String(e.gradeMax),
+            coefficient: String(e.coefficient),
+          }),
+      )
+      .catch(reportLoadError);
   }, [db, params.id]);
 
   const toInput = (): ExamInput => {

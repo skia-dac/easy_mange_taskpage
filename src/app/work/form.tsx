@@ -35,6 +35,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 /** Formulaire commun aux tâches et aux devoirs (`kind`). */
@@ -74,7 +75,9 @@ export default function WorkFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getWorkItem(db, kind, params.id).then((w) => w && setForm(w));
+    void getWorkItem(db, kind, params.id)
+      .then((w) => w && setForm(w))
+      .catch(reportLoadError);
   }, [db, kind, params.id]);
 
   const submit = () =>

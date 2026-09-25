@@ -26,6 +26,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 export default function EventFormScreen() {
@@ -50,7 +51,9 @@ export default function EventFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getPersonalEvent(db, params.id).then((e) => e && setForm(e));
+    void getPersonalEvent(db, params.id)
+      .then((e) => e && setForm(e))
+      .catch(reportLoadError);
   }, [db, params.id]);
 
   const submit = () =>

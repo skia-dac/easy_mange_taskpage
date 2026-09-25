@@ -31,6 +31,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 /** Créneau fixe du planning : jours, heures, rotation A / B, période de validité. */
@@ -60,7 +61,9 @@ export default function SlotFormScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getSlot(db, id).then((s) => s && setForm(s));
+    void getSlot(db, id)
+      .then((s) => s && setForm(s))
+      .catch(reportLoadError);
   }, [db, id]);
 
   const submit = () =>

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { getAccountOwner, useAuth } from '@/modules/identity';
 import { SyncGate } from '@/modules/platform';
 import { useDb, useLiveQuery } from '@/shared/db';
+import { logger } from '@/shared/logger';
 import { claimLocalData } from '@/workflows';
 
 /**
@@ -15,7 +16,9 @@ export function AccountGate() {
   const owner = useLiveQuery((d) => getAccountOwner(d), ['app_settings'], []);
 
   useEffect(() => {
-    if (userId && !owner.loading && owner.data === null) void claimLocalData(db, userId);
+    // En cas d'échec, la synchro reste désactivée (`ready` faux) : rien n'est envoyé au mauvais compte.
+    if (userId && !owner.loading && owner.data === null)
+      claimLocalData(db, userId).catch((e: unknown) => logger.error(e, { where: 'AccountGate' }));
   }, [db, userId, owner.loading, owner.data]);
 
   return <SyncGate ready={!!userId && owner.data === userId} />;

@@ -1,6 +1,7 @@
 import { Alert } from 'react-native';
 
 import { i18n } from '../i18n';
+import { logger } from '../logger';
 
 /** Demande confirmation avant une action destructive (§90). Résout `true` si confirmé. */
 export function confirmDestructive(
@@ -48,4 +49,13 @@ export function confirmAction(
       { cancelable: true, onDismiss: () => resolve(false) },
     );
   });
+}
+
+/**
+ * Un chargement a échoué (lecture locale) : journal + message simple. À passer en `catch` des
+ * lectures ponctuelles des formulaires, pour ne jamais laisser un écran vide sans explication.
+ */
+export function reportLoadError(error: unknown): void {
+  logger.error(error, { where: 'load' });
+  showError('errors.loadFailed');
 }

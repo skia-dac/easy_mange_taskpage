@@ -54,6 +54,7 @@ import {
   showError,
   SubjectDot,
   TextButton,
+  reportLoadError,
 } from '@/shared/ui';
 
 type Params = {
@@ -124,10 +125,12 @@ export default function NoteScreen() {
       }
       return;
     }
-    void getNote(db, params.id).then((n) => {
-      if (n) applyNote(n);
-      setLoaded(true);
-    });
+    void getNote(db, params.id)
+      .then((n) => {
+        if (n) applyNote(n);
+        setLoaded(true);
+      })
+      .catch(reportLoadError);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, params.id, isNew, byId]);
 

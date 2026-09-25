@@ -12,7 +12,14 @@ import { useDb } from '@/shared/db';
 import { formatLongDate } from '@/shared/format';
 import { fromIsoDate } from '@/shared/dates';
 import { useTheme } from '@/shared/theme';
-import { AppText, DateTimeField, FormScreen, TextField, useSave } from '@/shared/ui';
+import {
+  AppText,
+  DateTimeField,
+  FormScreen,
+  TextField,
+  useSave,
+  reportLoadError,
+} from '@/shared/ui';
 
 /** « Modifier uniquement ce cours » (§27 option 1) : un champ vide garde la valeur de la série. */
 export default function OccurrenceFormScreen() {
@@ -34,9 +41,11 @@ export default function OccurrenceFormScreen() {
   const set = (patch: Partial<OccurrenceOverrideInput>) => setForm((f) => ({ ...f, ...patch }));
 
   useEffect(() => {
-    void getCourseException(db, seriesId, date).then((ex) => {
-      if (ex && ex.kind === 'modified') set({ ...ex });
-    });
+    void getCourseException(db, seriesId, date)
+      .then((ex) => {
+        if (ex && ex.kind === 'modified') set({ ...ex });
+      })
+      .catch(reportLoadError);
   }, [db, seriesId, date]);
 
   const submit = () =>

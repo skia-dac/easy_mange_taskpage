@@ -21,6 +21,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 /** Créer, renommer ou supprimer une catégorie de notes (ses notes sont gardées). */
@@ -34,7 +35,9 @@ export default function NoteCategoryFormScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getNoteCategory(db, id).then((c) => c && setForm({ name: c.name, colorId: c.colorId }));
+    void getNoteCategory(db, id)
+      .then((c) => c && setForm({ name: c.name, colorId: c.colorId }))
+      .catch(reportLoadError);
   }, [db, id]);
 
   const submit = () =>

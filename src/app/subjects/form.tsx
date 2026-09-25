@@ -6,7 +6,7 @@ import { Pressable, View } from 'react-native';
 import { createSubject, getSubject, updateSubject, type SubjectInput } from '@/modules/academic';
 import { useDb } from '@/shared/db';
 import { subjectColors, useTheme } from '@/shared/theme';
-import { FieldShell, FormScreen, TextField, useSave } from '@/shared/ui';
+import { FieldShell, FormScreen, TextField, useSave, reportLoadError } from '@/shared/ui';
 
 const empty: SubjectInput = {
   name: '',
@@ -28,7 +28,9 @@ export default function SubjectFormScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getSubject(db, id).then((s) => s && setForm({ ...s }));
+    void getSubject(db, id)
+      .then((s) => s && setForm({ ...s }))
+      .catch(reportLoadError);
   }, [db, id]);
 
   const set = (patch: Partial<SubjectInput>) => setForm((f) => ({ ...f, ...patch }));

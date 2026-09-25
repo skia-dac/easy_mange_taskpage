@@ -33,6 +33,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 /** Lit « 72,5 » ou « 72.5 » ; texte vide = pas de poids. */
@@ -83,14 +84,16 @@ export default function CheckpointScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getCheckpoint(db, id).then((c) => {
-      if (!c) return;
-      setDate(c.date);
-      setWeight(c.weightKg === null ? '' : String(c.weightKg).replace('.', ','));
-      setPhotoPath(c.photoPath);
-      setInitialPhoto(c.photoPath);
-      setNote(c.note ?? '');
-    });
+    void getCheckpoint(db, id)
+      .then((c) => {
+        if (!c) return;
+        setDate(c.date);
+        setWeight(c.weightKg === null ? '' : String(c.weightKg).replace('.', ','));
+        setPhotoPath(c.photoPath);
+        setInitialPhoto(c.photoPath);
+        setNote(c.note ?? '');
+      })
+      .catch(reportLoadError);
   }, [db, id]);
 
   const isStart = !id && (existing.data ?? []).length === 0;

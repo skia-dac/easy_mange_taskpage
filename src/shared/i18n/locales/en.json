@@ -31,6 +31,7 @@
     "title": "Oops",
     "generic": "Something went wrong. Please try again.",
     "network": "No internet connection. Your data is kept on your phone.",
+    "loadFailed": "Couldn’t load this data right now. Please try again.",
     "saveFailed": "Couldn’t save right now. Your data hasn’t been lost.",
     "notFound": "This page doesn’t exist.",
     "itemNotFound": "This item no longer exists.",

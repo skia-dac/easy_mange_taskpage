@@ -24,6 +24,7 @@ import {
   TextButton,
   TextField,
   useSave,
+  reportLoadError,
 } from '@/shared/ui';
 
 export default function TimetableFormScreen() {
@@ -41,7 +42,9 @@ export default function TimetableFormScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void getTimetable(db, id).then((tt) => tt && setForm(tt));
+    void getTimetable(db, id)
+      .then((tt) => tt && setForm(tt))
+      .catch(reportLoadError);
   }, [db, id]);
 
   const set = (patch: Partial<TimetableInput>) => setForm((f) => ({ ...f, ...patch }));

@@ -31,6 +31,7 @@
     "title": "Oups",
     "generic": "Une erreur est survenue. Réessaie.",
     "network": "Pas de connexion Internet. Tes données sont gardées sur ton téléphone.",
+    "loadFailed": "Impossible de charger ces données pour le moment. Réessaie.",
     "saveFailed": "Impossible d’enregistrer pour le moment. Tes données n’ont pas été perdues.",
     "notFound": "Cette page n’existe pas.",
     "itemNotFound": "Cet élément n’existe plus.",

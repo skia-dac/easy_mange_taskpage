@@ -62,15 +62,20 @@ export function LockGate() {
 
   useEffect(() => {
     let first = true;
+    const apply = (on: boolean) => {
+      setEnabled(on);
+      // Verrou activé au démarrage : on demande tout de suite.
+      if (on && first) {
+        setLocked(true);
+        void unlock();
+      }
+      first = false;
+    };
+    // Réglage illisible : on verrouille par prudence plutôt que de laisser l'app ouverte.
     const load = () =>
-      void isAppLockEnabled(db).then((on) => {
-        setEnabled(on);
-        // Verrou activé au démarrage : on demande tout de suite.
-        if (on && first) {
-          setLocked(true);
-          void unlock();
-        }
-        first = false;
+      void isAppLockEnabled(db).then(apply, (e: unknown) => {
+        logger.error(e, { where: 'LockGate' });
+        apply(true);
       });
     load();
     return subscribeToChanges((tables) => tables.has('app_settings') && load());

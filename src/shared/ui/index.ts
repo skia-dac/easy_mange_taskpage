@@ -8,7 +8,7 @@ export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
 export { ChoiceChips } from './ChoiceChips';
 export { DateTimeField } from './DateTimeField';
-export { confirmAction, confirmDestructive, showError, showInfo } from './dialogs';
+export { confirmAction, confirmDestructive, reportLoadError, showError, showInfo } from './dialogs';
 export { EmptyState } from './EmptyState';
 export { Fab } from './Fab';
 export { FieldShell } from './FieldShell';
