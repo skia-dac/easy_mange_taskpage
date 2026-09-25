@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppState, Modal, View } from 'react-native';
 
 import { isAppLockEnabled } from '@/modules/identity';
-import { subscribeToChanges, useDb } from '@/shared/db';
+import { settingTable, subscribeToChanges, useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
 import { useTheme } from '@/shared/theme';
 import { AppText, Button } from '@/shared/ui';
@@ -78,7 +78,7 @@ export function LockGate() {
         apply(true);
       });
     load();
-    return subscribeToChanges((tables) => tables.has('app_settings') && load());
+    return subscribeToChanges((tables) => tables.has(settingTable('app_lock')) && load());
   }, [db, unlock]);
 
   useEffect(() => {

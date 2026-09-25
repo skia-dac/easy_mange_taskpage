@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
 import { useAgendaData } from '@/projections';
-import { subscribeToChanges, useDb } from '@/shared/db';
+import { settingTable, subscribeToChanges, useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
 
 import { routeForResponse } from './route';
@@ -46,7 +46,10 @@ export function useNotifications(): void {
       }, 800);
     };
     sync();
-    const unsubscribe = subscribeToChanges((tables) => tables.has('app_settings') && sync());
+    // Les données (`data`) relancent déjà l'effet ; ici, seulement le réglage des rappels.
+    const unsubscribe = subscribeToChanges(
+      (tables) => tables.has(settingTable('notifications')) && sync(),
+    );
     const appState = AppState.addEventListener('change', (s) => s === 'active' && sync());
     return () => {
       unsubscribe();

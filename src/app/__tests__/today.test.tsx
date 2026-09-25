@@ -108,6 +108,7 @@ jest.mock('@/shared/db', () => ({
   ...jest.requireActual('@/shared/db'),
   useDb: () => ({}),
   useLiveQuery: () => ({ data: undefined, loading: true, error: null }),
+  useSharedLiveQuery: () => ({ data: undefined, loading: true, error: null }),
 }));
 jest.mock('@/hooks/useWeekStart', () => ({ useWeekStart: () => 1 }));
 jest.mock('@/hooks/useProfile', () => ({

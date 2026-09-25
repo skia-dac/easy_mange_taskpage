@@ -18,7 +18,7 @@ import {
 import { getActiveSpaces, getRotationAnchor, getWeekStart } from '@/modules/identity';
 import { listRecurring, listTransactions } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
-import { useLiveQuery, type Db } from '@/shared/db';
+import { useSharedLiveQuery, type Db } from '@/shared/db';
 
 import { filterBySpaces } from './spaces';
 import type { TodayData } from './today';
@@ -119,8 +119,13 @@ export async function loadAgenda(db: Db): Promise<TodayData> {
 /**
  * Toutes les données du calendrier et d'« Aujourd'hui », rechargées à chaque modification,
  * limitées aux espaces actifs. `allSpaces` : tout (ex. créneaux déjà occupés du plan de révision).
+ * Une seule lecture partagée par tous les écrans qui l'affichent en même temps.
  */
 export function useAgendaData(options: { allSpaces?: boolean } = {}) {
   const all = options.allSpaces === true;
-  return useLiveQuery(all ? loadAllAgenda : loadAgenda, TABLES, [all]);
+  return useSharedLiveQuery(
+    all ? 'agenda:all' : 'agenda',
+    all ? loadAllAgenda : loadAgenda,
+    TABLES,
+  );
 }

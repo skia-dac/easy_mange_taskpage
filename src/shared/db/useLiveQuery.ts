@@ -2,22 +2,12 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState, type DependencyList } from 'react';
 
 import { logger } from '../logger';
-import { showError } from '../ui/dialogs';
 import { subscribeToChanges } from './changes';
 import { asDb } from './compat';
+import { notifyLoadError } from './loadErrors';
 import type { Db } from './types';
 
 export type LiveQuery<T> = { data: T | undefined; error: unknown; loading: boolean };
-
-/** Un seul message pour plusieurs lectures en échec rapprochées (un écran en lance plusieurs). */
-const LOAD_ERROR_QUIET_MS = 5000;
-let lastLoadErrorAt = 0;
-function notifyLoadError(): void {
-  const now = Date.now();
-  if (now - lastLoadErrorAt < LOAD_ERROR_QUIET_MS) return;
-  lastLoadErrorAt = now;
-  showError('errors.loadFailed');
-}
 
 /**
  * Lit des données et les recharge automatiquement quand une des tables indiquées change.

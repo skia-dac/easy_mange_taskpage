@@ -8,5 +8,6 @@ export type { MigratableDatabase, Migration } from './migrate';
 export { migrations, SYNC_COLUMNS } from './migrations';
 export type { Db, SqlValue } from './types';
 export { useDb, useLiveQuery } from './useLiveQuery';
+export { useSharedLiveQuery } from './useSharedLiveQuery';
 export type { LiveQuery } from './useLiveQuery';
-export { readAppSetting, writeAppSetting } from './settings';
+export { readAppSetting, settingTable, writeAppSetting } from './settings';

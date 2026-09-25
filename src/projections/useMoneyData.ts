@@ -12,7 +12,7 @@ import {
   type MoneyPrefs,
 } from '@/modules/finance';
 import { toIsoDate } from '@/shared/dates';
-import { useLiveQuery, type Db } from '@/shared/db';
+import { useSharedLiveQuery, type Db } from '@/shared/db';
 
 import { moneyOverview, type MoneyInput, type MoneyOverview } from './money';
 
@@ -65,5 +65,5 @@ export async function loadMoney(
 
 /** Données de l'onglet Argent, rechargées à chaque opération notée. */
 export function useMoneyData(offset = 0) {
-  return useLiveQuery((db) => loadMoney(db, offset), TABLES, [offset]);
+  return useSharedLiveQuery(`money:${offset}`, (db) => loadMoney(db, offset), TABLES);
 }
