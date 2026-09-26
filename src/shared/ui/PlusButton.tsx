@@ -23,10 +23,13 @@ export function PlusButton({
   onPress,
   accessibilityLabel,
   open = false,
+  bottomInset = 0,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
   open?: boolean;
+  /** Espace laissé sous le bouton, pour rester au-dessus de la barre d'onglets. */
+  bottomInset?: number;
 }) {
   const { colors, radius, spacing } = useTheme();
   const reduced = useReducedMotion();
@@ -73,7 +76,12 @@ export function PlusButton({
   return (
     <View
       pointerEvents="box-none"
-      style={{ position: 'absolute', right: spacing.xl, bottom: spacing.xl, zIndex: 2 }}
+      style={{
+        position: 'absolute',
+        right: spacing.xl,
+        bottom: spacing.xl + bottomInset,
+        zIndex: 2,
+      }}
     >
       <Animated.View style={scaleStyle}>
         <PressableScale

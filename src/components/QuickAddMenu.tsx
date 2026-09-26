@@ -7,6 +7,7 @@ import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 
 import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
+import { useTabBarInset } from '@/shared/tabBarVisibility';
 import { useTheme, type ColorTokens } from '@/shared/theme';
 import { AppText, Fab } from '@/shared/ui';
 
@@ -28,6 +29,7 @@ type Item = {
 export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
+  const tabBarInset = useTabBarInset();
   const [open, setOpen] = useState(false);
   const spaces = useSpaces();
 
@@ -187,6 +189,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
       ) : null}
       <Fab
         open={open}
+        bottomInset={tabBarInset}
         accessibilityLabel={open ? t('common.close') : t('add.title')}
         onPress={() => setOpen((value) => !value)}
       />
