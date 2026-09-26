@@ -40,14 +40,14 @@ describe('barre d’onglets au défilement', () => {
     expect(screen.getByText('shown')).toBeTruthy();
 
     await fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 0 } },
+      nativeEvent: { contentOffset: { y: 48 } },
     });
     expect(screen.getByText('shown')).toBeTruthy();
 
-    await fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 48 } },
-    });
+    await fireEvent(screen.getByTestId('list'), 'scrollBeginDrag');
     expect(screen.getByText('hidden')).toBeTruthy();
+
+    await fireEvent(screen.getByTestId('list'), 'scrollEndDrag');
 
     await act(async () => {
       jest.advanceTimersByTime(179);
@@ -79,11 +79,11 @@ describe('barre d’onglets au défilement', () => {
     expect(shellOf(screen.getByLabelText('Ajouter')).props.accessibilityElementsHidden).toBe(false);
 
     await fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 0 } },
-    });
-    await fireEvent.scroll(screen.getByTestId('list'), {
       nativeEvent: { contentOffset: { y: 80 } },
     });
+    expect(shellOf(screen.getByLabelText('Ajouter')).props.accessibilityElementsHidden).toBe(false);
+
+    await fireEvent(screen.getByTestId('list'), 'scrollBeginDrag');
     expect(
       shellOf(screen.getByLabelText('Ajouter', { includeHiddenElements: true })).props
         .accessibilityElementsHidden,

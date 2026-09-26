@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { AccessibilityInfo, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
+import { AccessibilityInfo } from 'react-native';
 import { BottomTabBarHeightContext } from 'expo-router/build/react-navigation/bottom-tabs';
 
 const SetScrollingContext = createContext<(scrolling: boolean) => void>(() => {});
@@ -51,14 +51,15 @@ export function useTabBarInset() {
 const STOP_MS = 180;
 
 /**
- * À brancher sur le défilement principal. La barre disparaît tant que la liste
- * bouge, et revient un court instant après l'arrêt.
+ * À brancher sur le défilement principal. La barre et le bouton + ne partent
+ * que quand le doigt (ou l'élan qui suit) fait bouger la liste. Un changement
+ * de mise en page ne compte pas. Ils reviennent un court instant après l'arrêt.
  */
 export function useTabBarScrollHandlers() {
   const setScrolling = useSetTabBarScrolling();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hidden = useRef(false);
-  const lastY = useRef<number | null>(null);
+  const dragging = useRef(false);
 
   useEffect(
     () => () => {
@@ -67,25 +68,46 @@ export function useTabBarScrollHandlers() {
     [],
   );
 
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const y = event.nativeEvent.contentOffset.y;
-      const previous = lastY.current;
-      lastY.current = y;
-      if (previous === null || Math.abs(y - previous) < 2) return;
+  const hide = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current);
+    if (hidden.current) return;
+    hidden.current = true;
+    setScrolling(true);
+  }, [setScrolling]);
 
-      if (!hidden.current) {
-        hidden.current = true;
-        setScrolling(true);
-      }
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        hidden.current = false;
-        setScrolling(false);
-      }, STOP_MS);
-    },
-    [setScrolling],
-  );
+  const showSoon = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      if (dragging.current) return;
+      hidden.current = false;
+      setScrolling(false);
+    }, STOP_MS);
+  }, [setScrolling]);
 
-  return { onScroll, scrollEventThrottle: 16 as const };
+  const onScrollBeginDrag = useCallback(() => {
+    dragging.current = true;
+    hide();
+  }, [hide]);
+
+  const onScrollEndDrag = useCallback(() => {
+    dragging.current = false;
+    showSoon();
+  }, [showSoon]);
+
+  const onMomentumScrollBegin = useCallback(() => {
+    dragging.current = true;
+    hide();
+  }, [hide]);
+
+  const onMomentumScrollEnd = useCallback(() => {
+    dragging.current = false;
+    showSoon();
+  }, [showSoon]);
+
+  return {
+    onScrollBeginDrag,
+    onScrollEndDrag,
+    onMomentumScrollBegin,
+    onMomentumScrollEnd,
+  };
 }
