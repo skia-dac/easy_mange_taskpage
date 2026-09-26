@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { fieldLimits, MONEY_MAX_MINOR } from '@/shared/fieldLimits';
 import { isoDate, optionalId, optionalText } from '@/shared/validation';
 
 /**
@@ -38,11 +39,11 @@ export const transactionInputSchema = z.object({
     .number({ error: 'money.invalidAmount' })
     .int({ error: 'money.invalidAmount' })
     .positive({ error: 'money.invalidAmount' })
-    .max(1_000_000_000_000, { error: 'money.invalidAmount' }),
+    .max(MONEY_MAX_MINOR, { error: 'money.invalidAmount' }),
   currency: z.string().min(3).max(3),
   categoryId: optionalId,
   date: isoDate,
-  note: optionalText(120),
+  note: optionalText(fieldLimits.note120.max),
   recurringId: optionalId,
   occurrenceDate: isoDate.nullish().transform((v) => v ?? null),
   goalId: optionalId,

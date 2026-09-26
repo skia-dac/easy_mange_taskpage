@@ -7,6 +7,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
 
+import { NOTE_TITLE_MAX } from '@/shared/fieldLimits';
+
 import { NoteContent } from '@/components/NoteContent';
 import { NoteEditor } from '@/components/NoteEditor';
 import { subjectOptions } from '@/components/SubjectOptions';
@@ -417,7 +419,7 @@ export default function NoteScreen() {
           editable={editing}
           value={title}
           onChangeText={(v) => scheduleSave({ title: v })}
-          maxLength={120}
+          maxLength={NOTE_TITLE_MAX}
           placeholder={t('notes.titlePlaceholder')}
           placeholderTextColor={colors.muted}
           style={{

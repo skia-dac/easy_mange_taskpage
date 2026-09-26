@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { fieldLimits, NOTE_CONTENT_MAX, NOTE_TITLE_MAX } from '@/shared/fieldLimits';
 import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalId, optionalText, requiredText } from '@/shared/validation';
 
@@ -9,8 +10,8 @@ import { isoDate, optionalId, optionalText, requiredText } from '@/shared/valida
  * Ce format reste lisible tel quel, se synchronise facilement et fonctionne dans Expo Go.
  */
 export const noteInputSchema = z.object({
-  title: optionalText(120),
-  content: z.string().max(100_000, { error: 'validation.tooLong' }).default(''),
+  title: optionalText(NOTE_TITLE_MAX),
+  content: z.string().max(NOTE_CONTENT_MAX, { error: 'validation.tooLong' }).default(''),
   subjectId: optionalId,
   courseSeriesId: optionalId,
   courseDate: isoDate.nullish().transform((v) => v ?? null),
@@ -40,7 +41,7 @@ export type Note = {
  * communes aux trois espaces : les catégories servent à les ranger.
  */
 export const noteCategoryInputSchema = z.object({
-  name: requiredText(40),
+  name: requiredText(fieldLimits.name40.max),
   colorId: z.string().min(1).default('slate'),
 });
 export type NoteCategoryInput = z.input<typeof noteCategoryInputSchema>;

@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-import { isAcademicYear } from '@/shared/fieldLimits';
+import { fieldLimits, isAcademicYear } from '@/shared/fieldLimits';
 import { optionalText } from '@/shared/validation';
 
 /** Profil de l'étudiant (§6). Une seule ligne, synchronisée en phase 2. */
 export const profileInputSchema = z.object({
-  firstName: optionalText(60),
-  lastName: optionalText(60),
-  university: optionalText(120),
-  field: optionalText(120),
-  level: optionalText(60),
+  firstName: optionalText(fieldLimits.firstName.max),
+  lastName: optionalText(fieldLimits.lastName.max),
+  university: optionalText(fieldLimits.university.max),
+  field: optionalText(fieldLimits.studyField.max),
+  level: optionalText(fieldLimits.level.max),
   academicYear: optionalText(20).refine((year) => year === null || isAcademicYear(year), {
     error: 'validation.invalidYear',
   }),

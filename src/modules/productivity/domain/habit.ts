@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { addDaysIso, isoWeekday, startOfWeekOn, type IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import {
   isoDate as isoDateSchema,
   optionalText,
@@ -38,7 +39,7 @@ export type HabitLogStatus = (typeof habitLogStatuses)[number];
 
 export const habitInputSchema = z
   .object({
-    name: requiredText(60),
+    name: requiredText(fieldLimits.name60.max),
     icon: z.string().min(1).default('check-circle'),
     colorId: z.string().min(1).default('blue'),
     frequency: z.enum(habitFrequencies).default('daily'),
@@ -56,9 +57,9 @@ export const habitInputSchema = z
       .number({ error: 'validation.invalidCount' })
       .int({ error: 'validation.invalidCount' })
       .min(1, { error: 'validation.invalidCount' })
-      .max(50, { error: 'validation.invalidCount' })
+      .max(fieldLimits.habitTarget.max, { error: 'validation.invalidCount' })
       .default(1),
-    unit: optionalText(20),
+    unit: optionalText(fieldLimits.unit.max),
     reminderTime: optionalTime,
     /** Une session de révision terminée coche cette habitude. */
     autoStudy: z.boolean().default(false),
@@ -110,8 +111,8 @@ export const checkpointInputSchema = z
     date: isoDateSchema,
     weightKg: z
       .number({ error: 'validation.invalidWeight' })
-      .min(20, { error: 'validation.invalidWeight' })
-      .max(400, { error: 'validation.invalidWeight' })
+      .min(fieldLimits.weight.min, { error: 'validation.invalidWeight' })
+      .max(fieldLimits.weight.max, { error: 'validation.invalidWeight' })
       .nullish()
       .transform((v) => (v === undefined || v === null ? null : Math.round(v * 10) / 10)),
     photoPath: z
@@ -119,7 +120,7 @@ export const checkpointInputSchema = z
       .min(1)
       .nullish()
       .transform((v) => v ?? null),
-    note: optionalText(300),
+    note: optionalText(fieldLimits.note300.max),
   })
   .superRefine((c, ctx) => {
     if (c.weightKg === null && c.photoPath === null)

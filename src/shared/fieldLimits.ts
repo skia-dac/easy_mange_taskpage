@@ -5,10 +5,16 @@
  */
 
 export const EMAIL_MAX = 254;
+/** Plafond de bcrypt : au-delà, le mot de passe est coupé en silence. */
 export const PASSWORD_MAX = 72;
-export const SEARCH_MAX = 80;
-/** Plus petite unité : 1 000 milliards (12 chiffres en FCFA, 10 chiffres + centimes en euro). */
-export const MONEY_MAX_MINOR = 1_000_000_000_000;
+export const SEARCH_MAX = 40;
+/**
+ * Plafond d'un montant : 9 999 999 dans la plus petite unité.
+ * FCFA : 9 999 999. Euro : 99 999,99. Assez pour des frais de scolarité,
+ * trop court pour faire déborder un total ou un widget.
+ */
+export const MONEY_MAX_MINOR = 9_999_999;
+export const MONEY_INTEGER_DIGITS = 7;
 
 export type InputLimit =
   | { kind: 'text'; max: number }
@@ -21,54 +27,68 @@ export type InputLimit =
   | { kind: 'money'; decimals: number };
 
 export const fieldLimits = {
-  title120: { kind: 'text', max: 120 },
-  title80: { kind: 'text', max: 80 },
-  name60: { kind: 'text', max: 60 },
-  name80: { kind: 'text', max: 80 },
-  name40: { kind: 'text', max: 40 },
-  person: { kind: 'text', max: 60 },
-  teacher: { kind: 'text', max: 80 },
-  room: { kind: 'text', max: 40 },
-  location: { kind: 'text', max: 80 },
-  code: { kind: 'code', max: 20 },
-  semester: { kind: 'text', max: 20 },
-  firstName: { kind: 'text', max: 60 },
-  lastName: { kind: 'text', max: 60 },
-  university: { kind: 'text', max: 120 },
-  studyField: { kind: 'text', max: 120 },
-  level: { kind: 'text', max: 60 },
+  /** Tâche, événement : une ligne dans une liste. */
+  title120: { kind: 'text', max: 60 },
+  /** Cours, examen, révision, créneau. */
+  title80: { kind: 'text', max: 50 },
+  /** Emploi du temps, habitude, objectif, charge, vacances. */
+  name60: { kind: 'text', max: 40 },
+  /** Nom de matière. */
+  name80: { kind: 'text', max: 50 },
+  /** Catégorie de notes. */
+  name40: { kind: 'text', max: 24 },
+  person: { kind: 'text', max: 40 },
+  teacher: { kind: 'text', max: 40 },
+  room: { kind: 'text', max: 24 },
+  location: { kind: 'text', max: 40 },
+  code: { kind: 'code', max: 12 },
+  semester: { kind: 'text', max: 16 },
+  firstName: { kind: 'text', max: 40 },
+  lastName: { kind: 'text', max: 40 },
+  university: { kind: 'text', max: 80 },
+  studyField: { kind: 'text', max: 60 },
+  level: { kind: 'text', max: 24 },
   academicYear: { kind: 'academicYear' },
-  description500: { kind: 'text', max: 500 },
-  description1000: { kind: 'text', max: 1000 },
-  description2000: { kind: 'text', max: 2000 },
-  note120: { kind: 'text', max: 120 },
-  note200: { kind: 'text', max: 200 },
-  note300: { kind: 'text', max: 300 },
-  note500: { kind: 'text', max: 500 },
-  unit: { kind: 'text', max: 20 },
-  category: { kind: 'text', max: 30 },
+  /** Description de cours, de créneau, note de séance. */
+  description500: { kind: 'text', max: 280 },
+  /** Description d'examen ou d'événement. */
+  description1000: { kind: 'text', max: 280 },
+  /** Description de tâche ou de devoir. */
+  description2000: { kind: 'text', max: 500 },
+  /** Note d'une dépense. */
+  note120: { kind: 'text', max: 60 },
+  /** Raison d'habitude, note de prêt ou de charge. */
+  note200: { kind: 'text', max: 80 },
+  /** Note d'un point de suivi physique. */
+  note300: { kind: 'text', max: 120 },
+  /** Note d'humeur : une ou deux phrases. */
+  note500: { kind: 'text', max: 140 },
+  unit: { kind: 'text', max: 12 },
+  category: { kind: 'text', max: 20 },
   email: { kind: 'email' },
   newPassword: { kind: 'password', rules: true },
   password: { kind: 'password', rules: false },
-  duration: { kind: 'integer', min: 1, max: 24 * 60, error: 'validation.invalidDuration' },
-  habitTarget: { kind: 'integer', min: 1, max: 50, error: 'validation.invalidCount' },
-  grade: { kind: 'decimal', min: 0, max: 10_000, decimals: 2, error: 'validation.invalidGrade' },
-  gradeMax: {
-    kind: 'decimal',
-    min: 0.01,
-    max: 10_000,
-    decimals: 2,
-    error: 'validation.invalidGrade',
-  },
+  /** Durée d'examen : 5 minutes à 6 heures. */
+  duration: { kind: 'integer', min: 5, max: 360, error: 'validation.invalidDuration' },
+  /** Objectif du jour (verres, pages…) : pas un compteur de pas. */
+  habitTarget: { kind: 'integer', min: 1, max: 20, error: 'validation.invalidCount' },
+  /** Barème réel : /10, /20 ou /100. */
+  grade: { kind: 'decimal', min: 0, max: 100, decimals: 2, error: 'validation.invalidGrade' },
+  gradeMax: { kind: 'decimal', min: 1, max: 100, decimals: 2, error: 'validation.invalidGrade' },
   coefficient: {
     kind: 'decimal',
-    min: 0.01,
-    max: 100,
-    decimals: 2,
+    min: 0.5,
+    max: 10,
+    decimals: 1,
     error: 'validation.invalidCoefficient',
   },
-  weight: { kind: 'decimal', min: 20, max: 400, decimals: 1, error: 'validation.invalidWeight' },
+  weight: { kind: 'decimal', min: 30, max: 250, decimals: 1, error: 'validation.invalidWeight' },
 } as const satisfies Record<string, InputLimit>;
+
+/** Corps d'une note de cours : quelques pages, pas un document qui fige le téléphone. */
+export const NOTE_CONTENT_MAX = 8_000;
+export const NOTE_TITLE_MAX = 60;
+export const SUBTASK_MAX = 60;
 
 export function moneyLimit(decimals: number): InputLimit {
   return { kind: 'money', decimals };
@@ -101,7 +121,7 @@ export function maxLengthOf(limit: InputLimit): number {
     case 'decimal':
       return String(Math.floor(limit.max)).length + (limit.decimals > 0 ? 1 + limit.decimals : 0);
     case 'money':
-      return 12 - limit.decimals + (limit.decimals > 0 ? 1 + limit.decimals : 0);
+      return MONEY_INTEGER_DIGITS - limit.decimals + (limit.decimals > 0 ? 1 + limit.decimals : 0);
   }
 }
 
@@ -147,7 +167,9 @@ export function limitInput(value: string, limit: InputLimit): string {
     case 'money': {
       const decimals = limit.decimals;
       const maxDigits =
-        limit.kind === 'decimal' ? String(Math.floor(limit.max)).length : 12 - decimals;
+        limit.kind === 'decimal'
+          ? String(Math.floor(limit.max)).length
+          : MONEY_INTEGER_DIGITS - decimals;
       let raw = value.replace(/[^\d.,]/g, '').replace(/\./g, ',');
       const comma = raw.indexOf(',');
       if (comma !== -1) raw = raw.slice(0, comma + 1) + raw.slice(comma + 1).replace(/,/g, '');
@@ -195,7 +217,7 @@ export function checkInput(value: string, limit: InputLimit): string | null {
       if (!/^\d+(\.\d+)?$/.test(clean)) return 'money.invalidAmount';
       const [intPart = '', frac = ''] = clean.split('.');
       if (frac.length > limit.decimals) return 'money.invalidAmount';
-      if (intPart.length > 12 - limit.decimals) return 'money.invalidAmount';
+      if (intPart.length > MONEY_INTEGER_DIGITS - limit.decimals) return 'money.invalidAmount';
       return Number(clean) > 0 ? null : 'money.invalidAmount';
     }
   }

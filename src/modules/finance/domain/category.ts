@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { fieldLimits } from '@/shared/fieldLimits';
 import { requiredText } from '@/shared/validation';
 
 export const categoryKinds = ['expense', 'income'] as const;
@@ -103,7 +104,7 @@ export const categoryIcons = [
 
 export const categoryInputSchema = z.object({
   kind: z.enum(categoryKinds),
-  name: requiredText(30),
+  name: requiredText(fieldLimits.category.max),
   icon: z.string().min(1).default('tag'),
   colorId: z.string().min(1).default('slate'),
 });

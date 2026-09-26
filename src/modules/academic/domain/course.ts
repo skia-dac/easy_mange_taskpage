@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { isoWeekday, timeToMinutes, type IsoDate, type Time } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, optionalId, optionalText, requiredId, time } from '@/shared/validation';
 
 export const courseTypes = [
@@ -26,9 +27,9 @@ export const courseInputSchema = z
   .object({
     subjectId: requiredId('validation.subjectRequired'),
     timetableId: optionalId,
-    title: optionalText(80),
-    teacher: optionalText(80),
-    room: optionalText(40),
+    title: optionalText(fieldLimits.title80.max),
+    teacher: optionalText(fieldLimits.teacher.max),
+    room: optionalText(fieldLimits.room.max),
     courseType: z.enum(courseTypes),
     recurrence: z.enum(recurrences),
     weekday: z.number().int().min(1).max(7).nullish(),
@@ -36,7 +37,7 @@ export const courseInputSchema = z
     endDate: isoDate.nullish(),
     startTime: time,
     endTime: time,
-    description: optionalText(500),
+    description: optionalText(fieldLimits.description500.max),
     /** Minutes avant le cours ; null = réglage général ; 0 = aucun. */
     reminderMinutes: z.number().int().min(0).max(1440).nullish(),
   })

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { PASSWORD_MAX } from '@/shared/fieldLimits';
+import { fieldLimits, PASSWORD_MAX } from '@/shared/fieldLimits';
 import { optionalText } from '@/shared/validation';
 
 /** Règles du compte (spécification §5.1) : e-mail valide, mot de passe d'au moins 8 caractères avec lettre et chiffre. */
@@ -30,8 +30,8 @@ export const signInSchema = z.object({
 
 export const signUpSchema = z
   .object({
-    firstName: optionalText(60),
-    lastName: optionalText(60),
+    firstName: optionalText(fieldLimits.firstName.max),
+    lastName: optionalText(fieldLimits.lastName.max),
     email: emailSchema,
     password: passwordSchema,
     confirm: z.string().max(PASSWORD_MAX, { error: 'validation.tooLong' }),

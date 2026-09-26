@@ -1,15 +1,16 @@
 import { z } from 'zod';
 
+import { fieldLimits, MONEY_MAX_MINOR } from '@/shared/fieldLimits';
 import { isoDate, requiredText } from '@/shared/validation';
 
 /** Objectif d'épargne (un téléphone, les frais d'inscription…). */
 export const goalInputSchema = z.object({
-  name: requiredText(60),
+  name: requiredText(fieldLimits.name60.max),
   targetMinor: z
     .number({ error: 'money.invalidAmount' })
     .int({ error: 'money.invalidAmount' })
     .positive({ error: 'money.invalidAmount' })
-    .max(1_000_000_000_000, { error: 'money.invalidAmount' }),
+    .max(MONEY_MAX_MINOR, { error: 'money.invalidAmount' }),
   currency: z.string().min(3).max(3),
   deadline: isoDate.nullish().transform((v) => v ?? null),
 });

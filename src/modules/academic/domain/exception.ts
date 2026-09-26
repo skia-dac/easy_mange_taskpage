@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { timeToMinutes, type IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, optionalText, optionalTime, requiredId } from '@/shared/validation';
 
 export const exceptionKinds = ['cancelled', 'modified'] as const;
@@ -31,10 +32,10 @@ export const occurrenceOverrideSchema = z
     newDate: isoDate.nullable().optional(),
     newStartTime: optionalTime,
     newEndTime: optionalTime,
-    newRoom: optionalText(40),
-    newTeacher: optionalText(80),
-    newTitle: optionalText(80),
-    note: optionalText(500),
+    newRoom: optionalText(fieldLimits.room.max),
+    newTeacher: optionalText(fieldLimits.teacher.max),
+    newTitle: optionalText(fieldLimits.title80.max),
+    note: optionalText(fieldLimits.description500.max),
   })
   .superRefine((o, ctx) => {
     if (

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { daysBetween, type IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import {
   isoDate,
   optionalId,
@@ -13,18 +14,18 @@ import {
 /** Règle 6 : un examen a obligatoirement une matière et une date. */
 export const examInputSchema = z.object({
   subjectId: requiredId('validation.subjectRequired'),
-  title: optionalText(80),
+  title: optionalText(fieldLimits.title80.max),
   date: isoDate,
   time: optionalTime,
   durationMinutes: z
     .number({ error: 'validation.invalidDuration' })
     .int({ error: 'validation.invalidDuration' })
-    .min(1, { error: 'validation.invalidDuration' })
-    .max(24 * 60, { error: 'validation.invalidDuration' })
+    .min(fieldLimits.duration.min, { error: 'validation.invalidDuration' })
+    .max(fieldLimits.duration.max, { error: 'validation.invalidDuration' })
     .nullish()
     .transform((v) => v ?? null),
-  room: optionalText(40),
-  description: optionalText(1000),
+  room: optionalText(fieldLimits.room.max),
+  description: optionalText(fieldLimits.description1000.max),
   /** Jours avant l'examen où envoyer un rappel (§74), ex. [7, 1]. */
   reminderDays: z.array(z.number().int().min(0).max(60)).default([]),
   reminderTime: time.default('09:00'),
@@ -32,20 +33,20 @@ export const examInputSchema = z.object({
   grade: z
     .number({ error: 'validation.invalidGrade' })
     .min(0, { error: 'validation.invalidGrade' })
-    .max(10_000, { error: 'validation.invalidGrade' })
+    .max(fieldLimits.grade.max, { error: 'validation.invalidGrade' })
     .nullish()
     .transform((v) => v ?? null),
-  /** Barème (20 par défaut). */
+  /** Barème (20 par défaut, 100 au plus). */
   gradeMax: z
     .number({ error: 'validation.invalidGrade' })
-    .positive({ error: 'validation.invalidGrade' })
-    .max(10_000, { error: 'validation.invalidGrade' })
+    .min(fieldLimits.gradeMax.min, { error: 'validation.invalidGrade' })
+    .max(fieldLimits.gradeMax.max, { error: 'validation.invalidGrade' })
     .default(20),
   /** Coefficient dans la moyenne de la matière. */
   coefficient: z
     .number({ error: 'validation.invalidCoefficient' })
-    .positive({ error: 'validation.invalidCoefficient' })
-    .max(100, { error: 'validation.invalidCoefficient' })
+    .min(fieldLimits.coefficient.min, { error: 'validation.invalidCoefficient' })
+    .max(fieldLimits.coefficient.max, { error: 'validation.invalidCoefficient' })
     .default(1),
   /** Session d'examens (emploi du temps de type « examens »), facultative. */
   timetableId: optionalId,

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { addDaysIso, fromIsoDate, isoWeekday, toIsoDate, type IsoDate } from '@/shared/dates';
+import { fieldLimits, MONEY_MAX_MINOR } from '@/shared/fieldLimits';
 import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
 /**
@@ -20,12 +21,12 @@ const amount = z
   .number({ error: 'money.invalidAmount' })
   .int({ error: 'money.invalidAmount' })
   .positive({ error: 'money.invalidAmount' })
-  .max(1_000_000_000_000, { error: 'money.invalidAmount' });
+  .max(MONEY_MAX_MINOR, { error: 'money.invalidAmount' });
 
 export const recurringInputSchema = z
   .object({
     kind: z.enum(recurringKinds),
-    name: requiredText(60),
+    name: requiredText(fieldLimits.name60.max),
     categoryId: optionalId,
     amountMinor: amount,
     currency: z.string().min(3).max(3),
@@ -47,7 +48,7 @@ export const recurringInputSchema = z
     payoutMinor: amount.nullish().transform((v) => v ?? null),
     /** Le tour compte tout seul comme une entrée d'argent le jour venu (modifiable). */
     payoutAuto: z.boolean().default(true),
-    note: optionalText(200),
+    note: optionalText(fieldLimits.note200.max),
   })
   .superRefine((r, ctx) => {
     if (r.endDate && r.endDate < r.startDate)

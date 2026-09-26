@@ -2,7 +2,7 @@ import { checkInput, fieldLimits, isAcademicYear, limitInput, moneyLimit } from 
 
 describe('limites de saisie', () => {
   it('coupe un texte à sa longueur maximale', () => {
-    expect(limitInput('a'.repeat(100), fieldLimits.name60)).toHaveLength(60);
+    expect(limitInput('a'.repeat(100), fieldLimits.name60)).toHaveLength(40);
   });
 
   it('un e-mail perd ses espaces et refuse une adresse incomplète', () => {
@@ -25,7 +25,7 @@ describe('limites de saisie', () => {
   });
 
   it('une durée ne dépasse pas 24 heures et refuse 0', () => {
-    expect(limitInput('99999', fieldLimits.duration)).toBe('999');
+    expect(limitInput('99999', fieldLimits.duration)).toBe('99');
     expect(limitInput('12a', fieldLimits.duration)).toBe('12');
     expect(checkInput('0', fieldLimits.duration)).toBe('validation.invalidDuration');
     expect(checkInput('90', fieldLimits.duration)).toBeNull();
@@ -33,7 +33,7 @@ describe('limites de saisie', () => {
 
   it('une note et un coefficient restent dans leur barème', () => {
     expect(limitInput('14,5', fieldLimits.grade)).toBe('14,5');
-    expect(limitInput('100000', fieldLimits.grade)).toBe('10000');
+    expect(limitInput('100000', fieldLimits.grade)).toBe('100');
     expect(checkInput('0', fieldLimits.gradeMax)).toBe('validation.invalidGrade');
     expect(checkInput('150', fieldLimits.coefficient)).toBe('validation.invalidCoefficient');
     expect(checkInput('2', fieldLimits.coefficient)).toBeNull();

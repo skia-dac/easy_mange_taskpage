@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { timeToMinutes, type IsoDate, type Time } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, optionalId, optionalText, time } from '@/shared/validation';
 
 /** Une séance de révision prévue dans le calendrier (souvent proposée par le plan de révision). */
@@ -15,7 +16,7 @@ export const revisionBlockInputSchema = z
     date: isoDate,
     startTime: time,
     endTime: time,
-    title: optionalText(80),
+    title: optionalText(fieldLimits.title80.max),
   })
   .superRefine((b, ctx) => {
     if (timeToMinutes(b.endTime) <= timeToMinutes(b.startTime)) {
