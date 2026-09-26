@@ -16,7 +16,11 @@ function Harness() {
 describe('barre d’onglets au défilement', () => {
   beforeEach(() => {
     jest.spyOn(AccessibilityInfo, 'isScreenReaderEnabled').mockResolvedValue(false);
-    jest.spyOn(AccessibilityInfo, 'addEventListener').mockReturnValue({ remove() {} });
+    jest
+      .spyOn(AccessibilityInfo, 'addEventListener')
+      .mockReturnValue({ remove() {} } as unknown as ReturnType<
+        typeof AccessibilityInfo.addEventListener
+      >);
   });
 
   afterEach(() => {
@@ -24,9 +28,9 @@ describe('barre d’onglets au défilement', () => {
     jest.restoreAllMocks();
   });
 
-  it('se cache pendant le défilement et revient seulement à l’arrêt', () => {
+  it('se cache pendant le défilement et revient seulement à l’arrêt', async () => {
     jest.useFakeTimers();
-    render(
+    await render(
       <TabBarVisibility>
         <Harness />
       </TabBarVisibility>,
@@ -34,22 +38,22 @@ describe('barre d’onglets au défilement', () => {
 
     expect(screen.getByText('shown')).toBeTruthy();
 
-    fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 0 }, contentSize: {}, layoutMeasurement: {} },
+    await fireEvent.scroll(screen.getByTestId('list'), {
+      nativeEvent: { contentOffset: { y: 0 } },
     });
     expect(screen.getByText('shown')).toBeTruthy();
 
-    fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 48 }, contentSize: {}, layoutMeasurement: {} },
+    await fireEvent.scroll(screen.getByTestId('list'), {
+      nativeEvent: { contentOffset: { y: 48 } },
     });
     expect(screen.getByText('hidden')).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       jest.advanceTimersByTime(179);
     });
     expect(screen.getByText('hidden')).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       jest.advanceTimersByTime(1);
     });
     expect(screen.getByText('shown')).toBeTruthy();

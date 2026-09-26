@@ -14,11 +14,10 @@ import { useTranslation } from 'react-i18next';
 import { isOnboardingDone } from '@/modules/identity';
 import { useDb } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
+import { SlidingTabBar } from '@/components/SlidingTabBar';
 import { TabBarVisibility } from '@/shared/tabBarVisibility';
 import { fonts, useTheme } from '@/shared/theme';
 import { LoadingScreen } from '@/shared/ui';
-
-import { SlidingTabBar } from './SlidingTabBar';
 
 type IconName = ComponentProps<typeof Feather>['name'];
 
