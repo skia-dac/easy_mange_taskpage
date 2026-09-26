@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  Pressable,
   View,
   type AccessibilityRole,
   type AccessibilityState,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme';
+import { PressableScale } from './PressableScale';
 
 type Props = {
   children: ReactNode;
@@ -39,14 +39,14 @@ export function Card({
   };
   if (!onPress) return <View style={[base, style]}>{children}</View>;
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
       accessibilityState={accessibilityState}
       onPress={onPress}
-      style={({ pressed }) => [base, { opacity: pressed ? 0.8 : 1 }, style]}
+      style={[base, style]}
     >
       {children}
-    </Pressable>
+    </PressableScale>
   );
 }

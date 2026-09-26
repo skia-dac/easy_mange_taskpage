@@ -9,7 +9,7 @@ import { attachmentUri } from '@/modules/platform';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { AppText } from '@/shared/ui';
 
-/** Ta photo (ou tes initiales) en haut à droite : ouvre le Profil. */
+/** Ta photo (ou tes initiales) en haut à droite de chaque onglet : ouvre le Profil. */
 export function ProfileButton() {
   const { t } = useTranslation();
   const { colors } = useTheme();

@@ -10,7 +10,16 @@ import { accountMessageKey, PASSWORD_MIN, signUp, useAuth } from '@/modules/iden
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useTheme } from '@/shared/theme';
-import { AppText, Button, Card, FormScreen, TextButton, TextField, useSave } from '@/shared/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  FormScreen,
+  TextButton,
+  TextField,
+  fieldLimits,
+  useSave,
+} from '@/shared/ui';
 import { fillProfileFromSignUp } from '@/workflows';
 
 /** Création de compte (§5.1). Le compte est facultatif : l'app marche aussi sans. */
@@ -84,6 +93,7 @@ export default function SignUpScreen() {
             value={form.firstName}
             onChangeText={(firstName) => set({ firstName })}
             error={errors.firstName}
+            limit={fieldLimits.firstName}
             autoComplete="given-name"
           />
         </View>
@@ -93,6 +103,7 @@ export default function SignUpScreen() {
             value={form.lastName}
             onChangeText={(lastName) => set({ lastName })}
             error={errors.lastName}
+            limit={fieldLimits.lastName}
             autoComplete="family-name"
           />
         </View>
@@ -103,6 +114,7 @@ export default function SignUpScreen() {
         value={form.email}
         onChangeText={(email) => set({ email })}
         error={errors.email}
+        limit={fieldLimits.email}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -114,6 +126,7 @@ export default function SignUpScreen() {
         value={form.password}
         onChangeText={(password) => set({ password })}
         error={errors.password}
+        limit={fieldLimits.newPassword}
         hint={t('auth.passwordRules', { min: PASSWORD_MIN })}
         secureTextEntry
         autoComplete="new-password"
@@ -125,6 +138,7 @@ export default function SignUpScreen() {
         value={form.confirm}
         onChangeText={(confirm) => set({ confirm })}
         error={errors.confirm}
+        limit={fieldLimits.password}
         secureTextEntry
         autoComplete="new-password"
         textContentType="newPassword"

@@ -1,6 +1,7 @@
 import { write, type Db, type EntityWriter } from '@/shared/db';
 import { toIsoDate, type IsoDate } from '@/shared/dates';
 import { AppError } from '@/shared/errors';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { enumOr, parseInput } from '@/shared/validation';
 
 import {
@@ -248,7 +249,7 @@ export async function setHabitMissed(
   reasonCode: MissReason | null = null,
   reason: string | null = null,
 ): Promise<void> {
-  const text = reason?.trim() ? reason.trim().slice(0, 200) : null;
+  const text = reason?.trim() ? reason.trim().slice(0, fieldLimits.note200.max) : null;
   await write(db, (w) =>
     upsertLog(w, habitId, date, { count: 0, status, reason_code: reasonCode, reason: text }),
   );

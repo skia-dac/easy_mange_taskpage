@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
@@ -196,7 +197,7 @@ export default function FeedbackScreen() {
           multiline
           value={message}
           onChangeText={setMessage}
-          maxLength={MESSAGE_MAX}
+          limit={{ kind: 'text', max: MESSAGE_MAX }}
           placeholder={placeholder}
           error={errors.message}
           style={{ minHeight: 140 }}
@@ -258,7 +259,7 @@ export default function FeedbackScreen() {
         autoCapitalize="none"
         autoComplete="email"
         autoCorrect={false}
-        maxLength={200}
+        limit={fieldLimits.email}
         hint={t('feedback.contactHint')}
         error={errors.contactEmail}
       />

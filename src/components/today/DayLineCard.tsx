@@ -1,8 +1,18 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, type Href } from 'expo-router';
-import { Fragment } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
+import Animated, {
+  FadeInDown,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { useLabels } from '@/hooks/useLabels';
 import { colorOf, type Subject } from '@/modules/academic';
@@ -18,6 +28,9 @@ import { AppText, SectionHeader } from '@/shared/ui';
 
 /** Largeur de la colonne des heures (« 09:00 ») : suit la taille de police choisie. */
 const timeWidth = (fontSize: number) => Math.round(fontSize * 3.1);
+const slide = LinearTransition.duration(450);
+const easeNext = FadeInDown.duration(320).springify().damping(18).stiffness(170);
+const leaveNext = FadeOut.duration(180);
 
 /**
  * « Ta journée » : tout ce qui a une heure aujourd'hui sur une seule ligne du temps, avec le
@@ -36,10 +49,33 @@ export function DayLineCard({
 }) {
   const { t } = useTranslation();
   const { spacing } = useTheme();
+  const reduced = useReducedMotion();
   const nextKey = next
     ? `course-${next.occurrence.seriesId}-${next.occurrence.originalDate}`
     : null;
   const total = line.entries.length;
+  const move = reduced ? undefined : slide;
+
+  const slots: { key: string; body: ReactNode }[] = [];
+  line.entries.forEach((e, i) => {
+    if (i === line.nowIndex) slots.push({ key: 'now', body: <NowLine now={now} /> });
+    const last = i === total - 1;
+    slots.push({
+      key: e.key,
+      body:
+        e.key === nextKey && next ? (
+          <Animated.View
+            entering={reduced ? undefined : easeNext}
+            exiting={reduced ? undefined : leaveNext}
+          >
+            <NextRow entry={e} next={next} subjects={subjects} last={last} />
+          </Animated.View>
+        ) : (
+          <Row entry={e} subjects={subjects} past={line.pastKeys.has(e.key)} last={last} />
+        ),
+    });
+  });
+  if (line.nowIndex === total) slots.push({ key: 'now', body: <NowLine now={now} /> });
 
   return (
     <>
@@ -57,22 +93,11 @@ export function DayLineCard({
         <AppText color="muted">{t('dayline.empty')}</AppText>
       ) : (
         <View style={{ gap: 0 }}>
-          {line.entries.map((e, i) => (
-            <Fragment key={e.key}>
-              {i === line.nowIndex ? <NowLine now={now} /> : null}
-              {e.key === nextKey && next ? (
-                <NextRow entry={e} next={next} subjects={subjects} last={i === total - 1} />
-              ) : (
-                <Row
-                  entry={e}
-                  subjects={subjects}
-                  past={line.pastKeys.has(e.key)}
-                  last={i === total - 1}
-                />
-              )}
-            </Fragment>
+          {slots.map((slot) => (
+            <Animated.View key={slot.key} layout={move}>
+              {slot.body}
+            </Animated.View>
           ))}
-          {line.nowIndex === total ? <NowLine now={now} /> : null}
         </View>
       )}
       <View style={{ height: spacing.xs }} />
@@ -83,6 +108,13 @@ export function DayLineCard({
 function NowLine({ now }: { now: Date }) {
   const { t } = useTranslation();
   const { colors, spacing, text } = useTheme();
+  const reduced = useReducedMotion();
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    if (reduced) return;
+    opacity.value = withRepeat(withTiming(0.35, { duration: 900 }), -1, true);
+  }, [opacity, reduced]);
+  const pulse = useAnimatedStyle(() => ({ opacity: opacity.value }));
   return (
     <View
       accessibilityLabel={t('dayline.nowA11y', { time: toTime(now) })}
@@ -101,7 +133,9 @@ function NowLine({ now }: { now: Date }) {
       >
         {toTime(now)}
       </AppText>
-      <View style={{ flex: 1, height: 2, backgroundColor: colors.danger, borderRadius: 1 }} />
+      <Animated.View
+        style={[{ flex: 1, height: 2, backgroundColor: colors.danger, borderRadius: 1 }, pulse]}
+      />
       <AppText variant="caption" color="danger" style={{ fontFamily: fonts.bodyBold }}>
         {t('dayline.now')}
       </AppText>

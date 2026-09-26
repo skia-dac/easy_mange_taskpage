@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, requiredText } from '@/shared/validation';
 
 export const offPeriodKinds = ['holiday', 'day_off'] as const;
@@ -9,7 +10,7 @@ export type OffPeriodKind = (typeof offPeriodKinds)[number];
 /** Vacances (période) ou jour sans cours (§41, §43). */
 export const offPeriodInputSchema = z
   .object({
-    name: requiredText(60),
+    name: requiredText(fieldLimits.name60.max),
     kind: z.enum(offPeriodKinds),
     startDate: isoDate,
     endDate: isoDate,

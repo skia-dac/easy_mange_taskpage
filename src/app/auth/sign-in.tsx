@@ -7,7 +7,7 @@ import { AuthButtons } from '@/components/AuthButtons';
 import { useAfterSignIn } from '@/hooks/useAfterSignIn';
 import { accountMessageKey, signIn, useAuth } from '@/modules/identity';
 import { userMessageKey } from '@/shared/errors';
-import { FormScreen, TextButton, TextField, useSave } from '@/shared/ui';
+import { FormScreen, TextButton, TextField, fieldLimits, useSave } from '@/shared/ui';
 
 /** Connexion par e-mail et mot de passe, ou avec Apple / Google (§5.2–5.4). */
 export default function SignInScreen() {
@@ -47,6 +47,7 @@ export default function SignInScreen() {
         value={email}
         onChangeText={setEmail}
         error={errors.email}
+        limit={fieldLimits.email}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -58,6 +59,7 @@ export default function SignInScreen() {
         value={password}
         onChangeText={setPassword}
         error={errors.password}
+        limit={fieldLimits.password}
         secureTextEntry
         autoComplete="current-password"
         textContentType="password"

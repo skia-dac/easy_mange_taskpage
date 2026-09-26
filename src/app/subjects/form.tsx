@@ -9,7 +9,14 @@ import { Pressable, View } from 'react-native';
 import { createSubject, getSubject, updateSubject, type SubjectInput } from '@/modules/academic';
 import { useDb } from '@/shared/db';
 import { subjectColors, useTheme } from '@/shared/theme';
-import { FieldShell, FormScreen, TextField, useSave, reportLoadError } from '@/shared/ui';
+import {
+  FieldShell,
+  FormScreen,
+  TextField,
+  fieldLimits,
+  useSave,
+  reportLoadError,
+} from '@/shared/ui';
 
 const empty: SubjectInput = {
   name: '',
@@ -62,6 +69,7 @@ export default function SubjectFormScreen() {
         value={form.name}
         onChangeText={(name) => set({ name })}
         error={errors.name}
+        limit={fieldLimits.name80}
         placeholder={t('subjects.namePlaceholder')}
         autoFocus={!id}
         returnKeyType="next"
@@ -95,6 +103,7 @@ export default function SubjectFormScreen() {
         value={form.teacher ?? ''}
         onChangeText={(teacher) => set({ teacher })}
         error={errors.teacher}
+        limit={fieldLimits.teacher}
         placeholder={t('common.optional')}
       />
       <TextField
@@ -102,6 +111,7 @@ export default function SubjectFormScreen() {
         value={form.room ?? ''}
         onChangeText={(room) => set({ room })}
         error={errors.room}
+        limit={fieldLimits.room}
         placeholder={t('common.optional')}
       />
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -111,6 +121,7 @@ export default function SubjectFormScreen() {
             value={form.code ?? ''}
             onChangeText={(code) => set({ code })}
             error={errors.code}
+            limit={fieldLimits.code}
             placeholder={t('common.optional')}
             autoCapitalize="characters"
           />
@@ -121,6 +132,7 @@ export default function SubjectFormScreen() {
             value={form.semester ?? ''}
             onChangeText={(semester) => set({ semester })}
             error={errors.semester}
+            limit={fieldLimits.semester}
             placeholder={t('common.optional')}
           />
         </View>
@@ -130,6 +142,7 @@ export default function SubjectFormScreen() {
         value={form.description ?? ''}
         onChangeText={(description) => set({ description })}
         error={errors.description}
+        limit={fieldLimits.description500}
         placeholder={t('common.optional')}
         multiline
       />

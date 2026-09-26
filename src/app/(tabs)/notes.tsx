@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { listNoteCategories, listNotes, searchNotes } from '@/modules/productivity';
@@ -14,6 +15,7 @@ import {
   ChoiceChips,
   EmptyState,
   Fab,
+  RiseIn,
   Screen,
   SearchInput,
   SectionHeader,
@@ -55,49 +57,57 @@ export default function NotesScreen() {
   const grid = (items: typeof list) => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
       {items.map((n) => (
-        <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
+        <RiseIn key={n.id} style={{ width: '48%', flexGrow: 1 }}>
           <NoteCard
             note={n}
             subject={n.subjectId ? byId.get(n.subjectId) : undefined}
             category={n.categoryId ? catById.get(n.categoryId) : undefined}
           />
-        </View>
+        </RiseIn>
       ))}
     </View>
   );
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen title={t('notes.title')}>
-        <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
-        <ChoiceChips
-          scroll
-          options={[
-            { value: null as string | null, label: t('noteCategories.all') },
-            ...(categories.data ?? []).map((c) => ({
-              value: c.id as string | null,
-              label: c.name,
-              leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
-            })),
-            { value: '__manage', label: t('noteCategories.manage') },
-          ]}
-          selected={[categoryId]}
-          onToggle={(v) => (v === '__manage' ? router.push('/notes/categories') : setCategoryId(v))}
-        />
-        {subjects.length > 0 && spaces.has('study') ? (
+      <Screen stagger title={t('notes.title')} actions={<ProfileButton />}>
+        <RiseIn>
+          <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
+        </RiseIn>
+        <RiseIn>
           <ChoiceChips
             scroll
             options={[
-              { value: null, label: t('noteCategories.allSubjects') },
-              ...subjects.map((s) => ({
-                value: s.id as string | null,
-                label: s.name,
-                leading: <SubjectDot color={colorOf(s)} size={10} />,
+              { value: null as string | null, label: t('noteCategories.all') },
+              ...(categories.data ?? []).map((c) => ({
+                value: c.id as string | null,
+                label: c.name,
+                leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
               })),
+              { value: '__manage', label: t('noteCategories.manage') },
             ]}
-            selected={[subjectId]}
-            onToggle={setSubjectId}
+            selected={[categoryId]}
+            onToggle={(v) =>
+              v === '__manage' ? router.push('/notes/categories') : setCategoryId(v)
+            }
           />
+        </RiseIn>
+        {subjects.length > 0 && spaces.has('study') ? (
+          <RiseIn>
+            <ChoiceChips
+              scroll
+              options={[
+                { value: null, label: t('noteCategories.allSubjects') },
+                ...subjects.map((s) => ({
+                  value: s.id as string | null,
+                  label: s.name,
+                  leading: <SubjectDot color={colorOf(s)} size={10} />,
+                })),
+              ]}
+              selected={[subjectId]}
+              onToggle={setSubjectId}
+            />
+          </RiseIn>
         ) : null}
 
         {!notes.loading && list.length === 0 ? (
@@ -109,13 +119,17 @@ export default function NotesScreen() {
         ) : null}
         {favorites.length > 0 && !trimmed ? (
           <>
-            <SectionHeader title={t('notes.favorites')} />
+            <RiseIn>
+              <SectionHeader title={t('notes.favorites')} />
+            </RiseIn>
             {grid(favorites)}
           </>
         ) : null}
         {recent.length > 0 ? (
           <>
-            <SectionHeader title={trimmed ? t('notes.title') : t('notes.recent')} />
+            <RiseIn>
+              <SectionHeader title={trimmed ? t('notes.title') : t('notes.recent')} />
+            </RiseIn>
             {grid(recent)}
           </>
         ) : null}

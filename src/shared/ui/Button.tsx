@@ -1,10 +1,12 @@
-import { Pressable, type PressableProps } from 'react-native';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { PressableScale } from './PressableScale';
 
-type Props = Omit<PressableProps, 'children'> & {
+type Props = Omit<PressableProps, 'children' | 'style'> & {
   label: string;
+  style?: StyleProp<ViewStyle>;
   /** `secondary` : bouton clair avec bordure (action secondaire, ex. « Continuer avec Google »). */
   variant?: 'primary' | 'secondary';
 };
@@ -14,9 +16,9 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
   const secondary = variant === 'secondary';
   const { colors, radius, spacing } = useTheme();
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
-      style={(state) => [
+      style={[
         {
           minHeight: minTouchSize + 8,
           borderRadius: radius.md,
@@ -26,15 +28,14 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
           borderColor: colors.border,
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: state.pressed ? 0.85 : 1,
         },
-        typeof style === 'function' ? style(state) : style,
+        style,
       ]}
       {...rest}
     >
       <AppText variant="bodyStrong" color={secondary ? 'text' : 'onPrimary'}>
         {label}
       </AppText>
-    </Pressable>
+    </PressableScale>
   );
 }

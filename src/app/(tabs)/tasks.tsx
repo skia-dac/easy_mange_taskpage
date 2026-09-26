@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
+import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
 import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -29,6 +30,7 @@ import {
   ChoiceChips,
   EmptyState,
   Fab,
+  RiseIn,
   Screen,
   SectionHeader,
   Segmented,
@@ -95,18 +97,21 @@ export default function TasksScreen() {
   const section = (title: string, items: WorkItem[]) =>
     items.length === 0 ? null : (
       <View key={title} style={{ gap: 8 }}>
-        <SectionHeader title={title} />
+        <RiseIn>
+          <SectionHeader title={title} />
+        </RiseIn>
         <Card>
           {items.map((w) => (
-            <WorkRow
-              key={w.id}
-              item={w}
-              subjects={byId}
-              now={now}
-              showDate
-              onPostpone={postpone.open}
-              progress={counts.data?.get(`${w.kind}:${w.id}`)}
-            />
+            <RiseIn key={w.id}>
+              <WorkRow
+                item={w}
+                subjects={byId}
+                now={now}
+                showDate
+                onPostpone={postpone.open}
+                progress={counts.data?.get(`${w.kind}:${w.id}`)}
+              />
+            </RiseIn>
           ))}
         </Card>
       </View>
@@ -128,41 +133,56 @@ export default function TasksScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen title={t('tasks.title')} actions={<SearchButton />}>
+      <Screen
+        stagger
+        title={t('tasks.title')}
+        actions={
+          <>
+            <SearchButton />
+            <ProfileButton />
+          </>
+        }
+      >
         {study ? (
-          <Segmented
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'task', label: t('tasks.segTasks') },
-              { value: 'assignment', label: t('tasks.segAssignments') },
-              { value: 'exam', label: t('tasks.segExams') },
-            ]}
-          />
+          <RiseIn>
+            <Segmented
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'task', label: t('tasks.segTasks') },
+                { value: 'assignment', label: t('tasks.segAssignments') },
+                { value: 'exam', label: t('tasks.segExams') },
+              ]}
+            />
+          </RiseIn>
         ) : null}
         {tab === 'task' ? (
-          <SpaceFilter
-            value={space}
-            onChange={(v) => {
-              setSpace(v);
-              if (v !== 'study') setSubjectId(null);
-            }}
-          />
+          <RiseIn>
+            <SpaceFilter
+              value={space}
+              onChange={(v) => {
+                setSpace(v);
+                if (v !== 'study') setSubjectId(null);
+              }}
+            />
+          </RiseIn>
         ) : null}
         {subjects.length > 0 && study && (tab !== 'task' || space === null || space === 'study') ? (
-          <ChoiceChips
-            scroll
-            options={[
-              { value: null, label: t('tasks.allSubjects') },
-              ...subjects.map((s) => ({
-                value: s.id as string | null,
-                label: s.name,
-                leading: <SubjectDot color={colorOf(s)} size={10} />,
-              })),
-            ]}
-            selected={[subjectId]}
-            onToggle={setSubjectId}
-          />
+          <RiseIn>
+            <ChoiceChips
+              scroll
+              options={[
+                { value: null, label: t('tasks.allSubjects') },
+                ...subjects.map((s) => ({
+                  value: s.id as string | null,
+                  label: s.name,
+                  leading: <SubjectDot color={colorOf(s)} size={10} />,
+                })),
+              ]}
+              selected={[subjectId]}
+              onToggle={setSubjectId}
+            />
+          </RiseIn>
         ) : null}
 
         {tab === 'exam' ? (
@@ -172,20 +192,28 @@ export default function TasksScreen() {
             <>
               {upcomingExams.length > 0 ? (
                 <>
-                  <SectionHeader title={t('tasks.groupUpcoming')} />
+                  <RiseIn>
+                    <SectionHeader title={t('tasks.groupUpcoming')} />
+                  </RiseIn>
                   <Card>
                     {upcomingExams.map((e) => (
-                      <ExamRow key={e.id} exam={e} subjects={byId} now={now} />
+                      <RiseIn key={e.id}>
+                        <ExamRow exam={e} subjects={byId} now={now} />
+                      </RiseIn>
                     ))}
                   </Card>
                 </>
               ) : null}
               {pastExams.length > 0 ? (
                 <>
-                  <SectionHeader title={t('tasks.groupPast')} />
+                  <RiseIn>
+                    <SectionHeader title={t('tasks.groupPast')} />
+                  </RiseIn>
                   <Card>
                     {pastExams.map((e) => (
-                      <ExamRow key={e.id} exam={e} subjects={byId} now={now} />
+                      <RiseIn key={e.id}>
+                        <ExamRow exam={e} subjects={byId} now={now} />
+                      </RiseIn>
                     ))}
                   </Card>
                 </>
@@ -195,9 +223,11 @@ export default function TasksScreen() {
         ) : (
           <>
             {openCount > 0 ? (
-              <AppText variant="caption" color="muted">
-                {t('tasks.swipeHint')}
-              </AppText>
+              <RiseIn>
+                <AppText variant="caption" color="muted">
+                  {t('tasks.swipeHint')}
+                </AppText>
+              </RiseIn>
             ) : null}
             {!work.loading && openCount === 0 ? (
               <EmptyState

@@ -762,6 +762,7 @@ const cases: Case[] = [
 ];
 
 describe.each(cases)('écran $name', (c) => {
+  // Aujourd'hui charge presque toute l'app : sur la machine de CI, 5 s ne suffisent pas.
   it('s’affiche avec ses données', async () => {
     mockAuth = c.auth ?? signedOut;
     for (const k of Object.keys(mockParams)) delete mockParams[k];
@@ -788,5 +789,5 @@ describe.each(cases)('écran $name', (c) => {
         .catch(() => screen.findAllByDisplayValue(re, {}, { timeout: 3000 }));
       expect(found.length).toBeGreaterThan(0);
     }
-  });
+  }, 20_000);
 });

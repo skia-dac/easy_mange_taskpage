@@ -32,6 +32,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -113,6 +114,7 @@ export default function SlotFormScreen() {
         value={form.title}
         onChangeText={(title) => set({ title })}
         error={errors.title}
+        limit={fieldLimits.title80}
         placeholder={t('planning.slotTitlePlaceholder')}
         autoFocus={!id}
       />
@@ -173,6 +175,7 @@ export default function SlotFormScreen() {
         value={form.location ?? ''}
         onChangeText={(location) => set({ location })}
         error={errors.location}
+        limit={fieldLimits.location}
         placeholder={t('common.optional')}
       />
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -226,6 +229,7 @@ export default function SlotFormScreen() {
         value={form.note ?? ''}
         onChangeText={(note) => set({ note })}
         error={errors.note}
+        limit={fieldLimits.description500}
         placeholder={t('common.optional')}
         multiline
       />

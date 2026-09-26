@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { type IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, requiredText } from '@/shared/validation';
 
 /** Types d'emploi du temps : les cours, une session d'examens, un planning de révisions. */
@@ -9,7 +10,7 @@ export type TimetableKind = (typeof timetableKinds)[number];
 
 export const timetableInputSchema = z
   .object({
-    name: requiredText(60),
+    name: requiredText(fieldLimits.name60.max),
     validFrom: isoDate,
     validUntil: isoDate,
     kind: z.enum(timetableKinds).default('courses'),

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, TextInput, View } from 'react-native';
 
+import { SUBTASK_MAX } from '@/shared/fieldLimits';
 import {
   addSubtask,
   deleteSubtask,
@@ -107,7 +108,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
             setDraftError(null);
           }}
           onSubmitEditing={add}
-          maxLength={120}
+          maxLength={SUBTASK_MAX}
           placeholder={t('subtasks.placeholder')}
           placeholderTextColor={colors.muted}
           returnKeyType="done"

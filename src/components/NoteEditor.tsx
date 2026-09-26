@@ -11,6 +11,7 @@ import {
   type TextInputSelectionChangeEventData,
 } from 'react-native';
 
+import { NOTE_CONTENT_MAX } from '@/shared/fieldLimits';
 import {
   continueListOnEnter,
   toggleLinePrefix,
@@ -101,7 +102,7 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
         value={value}
         onChangeText={onChangeText}
         onSelectionChange={onSelectionChange}
-        maxLength={100_000}
+        maxLength={NOTE_CONTENT_MAX}
         placeholder={placeholder}
         placeholderTextColor={colors.muted}
         scrollEnabled

@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 import {
   createLoan,
   deleteLoan,
+  currencies,
   getLoan,
   getMoneyPrefs,
+  isCurrency,
   parseAmount,
   updateLoan,
   type LoanDirection,
@@ -26,6 +28,8 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
+  moneyLimit,
   useSave,
 } from '@/shared/ui';
 
@@ -114,6 +118,7 @@ export default function LoanFormScreen() {
         value={person}
         onChangeText={setPerson}
         error={errors.person}
+        limit={fieldLimits.person}
         placeholder={t('money.personPlaceholder')}
       />
       {!params.id ? (
@@ -124,7 +129,7 @@ export default function LoanFormScreen() {
             value={amount}
             onChangeText={setAmount}
             error={errors.amount ?? errors.amountMinor}
-            keyboardType="decimal-pad"
+            limit={moneyLimit(isCurrency(currency) ? currencies[currency].decimals : 2)}
             placeholder="0"
           />
           <DateTimeField
@@ -150,7 +155,7 @@ export default function LoanFormScreen() {
         value={note}
         onChangeText={setNote}
         error={errors.note}
-        maxLength={200}
+        limit={fieldLimits.note200}
         placeholder={t('common.optional')}
       />
     </FormScreen>

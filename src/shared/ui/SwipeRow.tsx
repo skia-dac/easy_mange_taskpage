@@ -23,6 +23,8 @@ type Props = {
   right?: Action;
   /** Glisser vers la gauche (ex. reporter). */
   left?: Action;
+  /** Coupe le geste sans démonter la ligne (ex. une tâche déjà terminée). */
+  enabled?: boolean;
 };
 
 /**
@@ -30,7 +32,7 @@ type Props = {
  * La ligne revient en place après l'action. Les mêmes actions restent possibles sans geste
  * (bouton de la ligne, écran de détail) pour l'accessibilité.
  */
-export function SwipeRow({ children, right, left }: Props) {
+export function SwipeRow({ children, right, left, enabled = true }: Props) {
   const { colors, spacing, radius } = useTheme();
   const ref = useRef<SwipeableMethods>(null);
 
@@ -57,6 +59,7 @@ export function SwipeRow({ children, right, left }: Props) {
   return (
     <ReanimatedSwipeable
       ref={ref}
+      enabled={enabled}
       friction={2}
       leftThreshold={80}
       rightThreshold={80}

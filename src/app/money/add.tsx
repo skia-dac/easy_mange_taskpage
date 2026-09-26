@@ -8,6 +8,7 @@ import { Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
+import { MONEY_INTEGER_DIGITS } from '@/shared/fieldLimits';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
 import {
@@ -46,6 +47,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   KeyboardAvoiding,
 } from '@/shared/ui';
 
@@ -161,7 +163,8 @@ export default function MoneyAddScreen() {
       const next = d === '0' ? k : d + k;
       const frac = next.split(',')[1];
       if (frac !== undefined && frac.length > decimals) return d;
-      return next.replace(/^0+(?=\d)/, '').length > 12 ? d : next;
+      const digits = (next.split(',')[0] ?? '').replace(/^0+(?=\d)/, '');
+      return digits.length > MONEY_INTEGER_DIGITS - decimals ? d : next;
     });
   };
 
@@ -323,7 +326,7 @@ export default function MoneyAddScreen() {
           }}
           error={noteError}
           placeholder={t('common.optional')}
-          maxLength={120}
+          limit={fieldLimits.note120}
         />
       </ScrollView>
       {/* Pied fixe : montant, pavé et bouton restent visibles, quelle que soit la taille d'écran. */}

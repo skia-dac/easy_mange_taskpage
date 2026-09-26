@@ -9,6 +9,7 @@ import {
   type IsoDate,
   type Time,
 } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalText, requiredText, time } from '@/shared/validation';
 
@@ -24,15 +25,15 @@ export type SlotRotation = (typeof slotRotations)[number];
 
 export const slotInputSchema = z
   .object({
-    title: requiredText(80),
+    title: requiredText(fieldLimits.title80.max),
     weekdays: z
       .array(z.number().int().min(1).max(7))
       .min(1, { error: 'validation.pickDay' })
       .transform((d) => [...new Set(d)].sort()),
     startTime: time,
     endTime: time,
-    location: optionalText(80),
-    note: optionalText(500),
+    location: optionalText(fieldLimits.location.max),
+    note: optionalText(fieldLimits.description500.max),
     rotation: z.enum(slotRotations).default('every'),
     validFrom: isoDate,
     validUntil: isoDate.nullish().transform((v) => v ?? null),

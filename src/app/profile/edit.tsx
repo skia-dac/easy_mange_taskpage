@@ -26,6 +26,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -152,6 +153,7 @@ export default function ProfileEditScreen() {
             value={form.firstName ?? ''}
             onChangeText={(firstName) => set({ firstName })}
             error={errors.firstName}
+            limit={fieldLimits.firstName}
             autoFocus
             autoCapitalize="words"
           />
@@ -162,6 +164,7 @@ export default function ProfileEditScreen() {
             value={form.lastName ?? ''}
             onChangeText={(lastName) => set({ lastName })}
             error={errors.lastName}
+            limit={fieldLimits.lastName}
             autoCapitalize="words"
           />
         </View>
@@ -174,6 +177,7 @@ export default function ProfileEditScreen() {
             value={form.university ?? ''}
             onChangeText={(university) => set({ university })}
             error={errors.university}
+            limit={fieldLimits.university}
             placeholder={t('common.optional')}
           />
           <TextField
@@ -181,6 +185,7 @@ export default function ProfileEditScreen() {
             value={form.field ?? ''}
             onChangeText={(field) => set({ field })}
             error={errors.field}
+            limit={fieldLimits.studyField}
             placeholder={t('common.optional')}
           />
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
@@ -190,6 +195,7 @@ export default function ProfileEditScreen() {
                 value={form.level ?? ''}
                 onChangeText={(level) => set({ level })}
                 error={errors.level}
+                limit={fieldLimits.level}
                 placeholder={t('common.optional')}
               />
             </View>
@@ -199,6 +205,7 @@ export default function ProfileEditScreen() {
                 value={form.academicYear ?? ''}
                 onChangeText={(academicYear) => set({ academicYear })}
                 error={errors.academicYear}
+                limit={fieldLimits.academicYear}
                 placeholder={t('profile.academicYearPlaceholder')}
               />
             </View>

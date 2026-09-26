@@ -60,12 +60,12 @@ describe('messages de validation : jamais techniques', () => {
   it('la note en autosave respecte la même limite qu’à la création', async () => {
     const db = await createTestDb();
     const id = await createNote(db, { title: 'T', content: 'ok' });
-    await expect(saveNoteContent(db, id, 'T', 'x'.repeat(100_001))).rejects.toBeInstanceOf(
+    await expect(saveNoteContent(db, id, 'T', 'x'.repeat(8_001))).rejects.toBeInstanceOf(
       ValidationError,
     );
     await saveNoteContent(db, id, ' Titre ', 'nouveau');
     expect(await getNote(db, id)).toMatchObject({ title: 'Titre', content: 'nouveau' });
-    expect(noteInputSchema.shape.content.safeParse('x'.repeat(100_000)).success).toBe(true);
+    expect(noteInputSchema.shape.content.safeParse('x'.repeat(8_000)).success).toBe(true);
     db.close();
   });
 });

@@ -6,7 +6,7 @@ import { Pressable, View } from 'react-native';
 import { formatMoney } from '@/modules/finance';
 import { useMoneyData } from '@/projections';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, IconBadge } from '@/shared/ui';
+import { AppText, Card, CountUpText, IconBadge } from '@/shared/ui';
 
 /** Carte d'Aujourd'hui : ce qui est dépensé aujourd'hui, ce qu'on peut encore dépenser, et un « + ». */
 export function TodayMoneyCard() {
@@ -25,16 +25,27 @@ export function TodayMoneyCard() {
           onPress={() => router.navigate('/(tabs)/money')}
           style={{ flex: 1, gap: 2 }}
         >
-          <AppText variant="bodyStrong">
-            {started
-              ? t('money.todaySpent', { amount: formatMoney(o.todaySpent, o.currency) })
-              : t('money.todayStart')}
-          </AppText>
-          <AppText variant="caption" color="muted">
-            {started
-              ? t('money.todayPerDay', { amount: formatMoney(o.perDay, o.currency) })
-              : t('money.todayStartHint')}
-          </AppText>
+          {started ? (
+            <CountUpText
+              variant="bodyStrong"
+              value={o.todaySpent}
+              format={(n) => t('money.todaySpent', { amount: formatMoney(n, o.currency) })}
+            />
+          ) : (
+            <AppText variant="bodyStrong">{t('money.todayStart')}</AppText>
+          )}
+          {started ? (
+            <CountUpText
+              variant="caption"
+              color="muted"
+              value={o.perDay}
+              format={(n) => t('money.todayPerDay', { amount: formatMoney(n, o.currency) })}
+            />
+          ) : (
+            <AppText variant="caption" color="muted">
+              {t('money.todayStartHint')}
+            </AppText>
+          )}
         </Pressable>
         <Pressable
           accessibilityRole="button"

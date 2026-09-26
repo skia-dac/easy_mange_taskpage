@@ -1,46 +1,39 @@
+import { requireOptionalNativeModule } from 'expo';
 import { Platform } from 'react-native';
-import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import type { WidgetData, WidgetTimelineEntry } from '@/projections';
 import { logger } from '@/shared/logger';
 
+import { requestWidgetUpdate } from './android/widgetNative';
 import { ANDROID_WIDGETS, renderAndroidWidget } from './android/widgets';
-import ExamsWidget from './ios/ExamsWidget';
-import GradesWidget from './ios/GradesWidget';
-import HabitsWidget from './ios/HabitsWidget';
-import MoneyLeftWidget from './ios/MoneyLeftWidget';
-import MoneyQuickWidget from './ios/MoneyQuickWidget';
-import MoneyWeekWidget from './ios/MoneyWeekWidget';
-import MonthWidget from './ios/MonthWidget';
-import NextCourseWidget from './ios/NextCourseWidget';
-import ProgressWidget from './ios/ProgressWidget';
-import QuickAddWidget from './ios/QuickAddWidget';
-import StudyActivity from './ios/StudyActivity';
-import SubjectWidget from './ios/SubjectWidget';
-import TasksWidget from './ios/TasksWidget';
-import TodayWidget from './ios/TodayWidget';
-import WeekWidget from './ios/WeekWidget';
 import { readWidgetConfig, writeWidgetSnapshot } from './snapshot';
 
-const IOS_WIDGETS = [
-  NextCourseWidget,
-  TodayWidget,
-  TasksWidget,
-  WeekWidget,
-  SubjectWidget,
-  ExamsWidget,
-  QuickAddWidget,
-  GradesWidget,
-  MonthWidget,
-  HabitsWidget,
-  MoneyQuickWidget,
-  MoneyLeftWidget,
-  MoneyWeekWidget,
-  ProgressWidget,
-];
+type IosRegistry = typeof import('./ios/registry');
+
+let iosRegistry: IosRegistry | null | undefined;
+
+/**
+ * Chargé à la demande : expo-widgets lève dès l'évaluation du module dans Expo Go
+ * (module natif ExpoWidgets absent). On vérifie d'abord sa présence : en développement,
+ * Metro signale une erreur de chargement comme plantage même si elle est attrapée.
+ */
+function loadIosRegistry(): IosRegistry | null {
+  if (iosRegistry !== undefined) return iosRegistry;
+  if (!requireOptionalNativeModule('ExpoWidgets')) {
+    iosRegistry = null;
+    return iosRegistry;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    iosRegistry = require('./ios/registry') as IosRegistry;
+  } catch {
+    iosRegistry = null;
+  }
+  return iosRegistry;
+}
 
 /** Démarre, met à jour ou termine la Live Activity « Révision » selon la session en cours. */
-function syncStudyActivity(current: WidgetData): void {
+function syncStudyActivity(StudyActivity: IosRegistry['StudyActivity'], current: WidgetData): void {
   const instances = StudyActivity.getInstances();
   const study = current.study;
   const props = study
@@ -79,8 +72,10 @@ export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void
   if (!current) return;
   try {
     if (Platform.OS === 'ios') {
-      for (const w of IOS_WIDGETS) w.updateTimeline(timeline);
-      syncStudyActivity(current);
+      const ios = loadIosRegistry();
+      if (!ios) return;
+      for (const w of ios.IOS_WIDGETS) w.updateTimeline(timeline);
+      syncStudyActivity(ios.StudyActivity, current);
     } else if (Platform.OS === 'android') {
       writeWidgetSnapshot(timeline);
       const config = readWidgetConfig();

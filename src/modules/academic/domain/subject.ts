@@ -1,18 +1,19 @@
 import { z } from 'zod';
 
+import { fieldLimits } from '@/shared/fieldLimits';
 import { subjectColors } from '@/shared/theme';
 import { optionalText, requiredText } from '@/shared/validation';
 
 export const subjectInputSchema = z.object({
-  name: requiredText(80),
-  code: optionalText(20),
-  teacher: optionalText(80),
-  room: optionalText(40),
+  name: requiredText(fieldLimits.name80.max),
+  code: optionalText(fieldLimits.code.max),
+  teacher: optionalText(fieldLimits.teacher.max),
+  room: optionalText(fieldLimits.room.max),
   colorId: z
     .string()
     .refine((id) => subjectColors.some((c) => c.id === id), { error: 'validation.required' }),
-  semester: optionalText(20),
-  description: optionalText(500),
+  semester: optionalText(fieldLimits.semester.max),
+  description: optionalText(fieldLimits.description500.max),
 });
 
 export type SubjectInput = z.input<typeof subjectInputSchema>;

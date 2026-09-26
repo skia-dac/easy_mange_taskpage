@@ -11,6 +11,8 @@ import { useLabels } from '@/hooks/useLabels';
 import {
   amountInput,
   categoriesOf,
+  currencies,
+  isCurrency,
   createRecurring,
   deleteRecurring,
   getMoneyPrefs,
@@ -38,6 +40,8 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
+  moneyLimit,
   useSave,
 } from '@/shared/ui';
 
@@ -237,6 +241,7 @@ export default function RecurringFormScreen() {
         value={form.name}
         onChangeText={(name) => set({ name })}
         error={errors.name}
+        limit={fieldLimits.name60}
         placeholder={tontine ? t('money.tontinePlaceholder') : t('money.chargePlaceholder')}
       />
       <TextField
@@ -245,7 +250,7 @@ export default function RecurringFormScreen() {
         value={form.amount}
         onChangeText={(amount) => set({ amount })}
         error={errors.amountMinor}
-        keyboardType="decimal-pad"
+        limit={moneyLimit(isCurrency(currency) ? currencies[currency].decimals : 2)}
         placeholder="0"
       />
       {!tontine ? (
@@ -336,7 +341,7 @@ export default function RecurringFormScreen() {
                 value={form.payout}
                 onChangeText={(payout) => set({ payout })}
                 error={errors.payoutMinor}
-                keyboardType="decimal-pad"
+                limit={moneyLimit(isCurrency(currency) ? currencies[currency].decimals : 2)}
                 placeholder="0"
               />
               {switchRow(
@@ -362,7 +367,7 @@ export default function RecurringFormScreen() {
         value={form.note}
         onChangeText={(note) => set({ note })}
         error={errors.note}
-        maxLength={200}
+        limit={fieldLimits.note200}
         placeholder={t('common.optional')}
       />
     </FormScreen>

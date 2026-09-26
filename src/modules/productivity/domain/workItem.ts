@@ -8,6 +8,7 @@ import {
   toIsoDate,
   type IsoDate,
 } from '@/shared/dates';
+import { fieldLimits, SUBTASK_MAX } from '@/shared/fieldLimits';
 import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
@@ -26,8 +27,8 @@ export const repeatRules = ['none', 'daily', 'weekly', 'monthly'] as const;
 export type RepeatRule = (typeof repeatRules)[number];
 
 export const workItemInputSchema = z.object({
-  title: requiredText(120),
-  description: optionalText(2000),
+  title: requiredText(fieldLimits.title120.max),
+  description: optionalText(fieldLimits.description2000.max),
   subjectId: optionalId,
   dueDate: isoDate,
   dueTime: optionalTime,
@@ -44,7 +45,7 @@ export const workItemInputSchema = z.object({
     .number({ error: 'validation.invalidDuration' })
     .int({ error: 'validation.invalidDuration' })
     .min(5, { error: 'validation.invalidDuration' })
-    .max(24 * 60, { error: 'validation.invalidDuration' })
+    .max(240, { error: 'validation.invalidDuration' })
     .nullish()
     .transform((v) => v ?? null),
   /**
@@ -182,7 +183,7 @@ export type Subtask = {
   position: number;
 };
 
-export const subtaskTitleSchema = requiredText(120);
+export const subtaskTitleSchema = requiredText(SUBTASK_MAX);
 
 /** Avancement d'une checklist : « 2/5 ». */
 export function subtaskProgress(subtasks: readonly Pick<Subtask, 'done'>[]) {

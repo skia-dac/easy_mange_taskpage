@@ -1,16 +1,17 @@
 import { z } from 'zod';
 
 import { timeToMinutes } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { spaceSchema, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
 export const personalEventInputSchema = z
   .object({
-    title: requiredText(120),
+    title: requiredText(fieldLimits.title120.max),
     date: isoDate,
     startTime: optionalTime,
     endTime: optionalTime,
-    description: optionalText(1000),
+    description: optionalText(fieldLimits.description1000.max),
     /** Date et heure du rappel (ISO), null = aucun (§40). */
     reminderAt: z.iso
       .datetime({ offset: true })

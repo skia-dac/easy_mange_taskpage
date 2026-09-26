@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { type IsoDate } from '@/shared/dates';
+import { fieldLimits } from '@/shared/fieldLimits';
 import { isoDate, optionalText } from '@/shared/validation';
 
 /** Journal d'humeur et d'énergie : une entrée par jour, deux notes de 1 à 5. */
@@ -16,7 +17,7 @@ export const moodLogInputSchema = z.object({
   date: isoDate,
   mood: level,
   energy: level,
-  note: optionalText(500),
+  note: optionalText(fieldLimits.note500.max),
 });
 
 export type MoodLogInput = z.input<typeof moodLogInputSchema>;

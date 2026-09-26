@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 
 import { CourseRow, EventRow, ExamRow, RevisionRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
@@ -45,6 +46,7 @@ import {
   Card,
   EmptyState,
   IconBadge,
+  RiseIn,
   Screen,
   SectionHeader,
   TextButton,
@@ -110,20 +112,29 @@ export default function TodayScreen() {
     ? {
         glance:
           agenda.data && fullView ? (
-            <TodayGlance
-              view={fullView}
-              data={agenda.data}
-              habits={allHabits}
-              habitLogs={agenda.data.habitLogs ?? []}
-              subjects={byId}
-            />
+            <RiseIn>
+              <TodayGlance
+                view={fullView}
+                data={agenda.data}
+                habits={allHabits}
+                habitLogs={agenda.data.habitLogs ?? []}
+                subjects={byId}
+              />
+            </RiseIn>
           ) : null,
-        day: line ? <DayLineCard line={line} next={view.next} now={now} subjects={byId} /> : null,
+        day: line ? (
+          <RiseIn>
+            <DayLineCard line={line} next={view.next} now={now} subjects={byId} />
+          </RiseIn>
+        ) : null,
         next: !study ? null : view.next ? (
-          <NextCourseCard
-            next={view.next}
-            subjectName={byId.get(view.next.occurrence.subjectId)?.name ?? ''}
-          />
+          <RiseIn>
+            <NextCourseCard
+              key={`${view.next.occurrence.seriesId}-${view.next.occurrence.originalDate}`}
+              next={view.next}
+              subjectName={byId.get(view.next.occurrence.subjectId)?.name ?? ''}
+            />
+          </RiseIn>
         ) : (
           <EmptyState
             icon="sun"
@@ -133,14 +144,22 @@ export default function TodayScreen() {
             }
           />
         ),
-        money: personal ? <TodayMoneyCard /> : null,
+        money: personal ? (
+          <RiseIn>
+            <TodayMoneyCard />
+          </RiseIn>
+        ) : null,
         courses:
           study && view.courses.length > 0 ? (
             <>
-              <SectionHeader title={t('today.coursesTitle')} />
+              <RiseIn>
+                <SectionHeader title={t('today.coursesTitle')} />
+              </RiseIn>
               <Card>
                 {view.courses.map((o) => (
-                  <CourseRow key={`${o.seriesId}-${o.date}`} occurrence={o} subjects={byId} />
+                  <RiseIn key={`${o.seriesId}-${o.date}`}>
+                    <CourseRow occurrence={o} subjects={byId} />
+                  </RiseIn>
                 ))}
               </Card>
             </>
@@ -148,10 +167,14 @@ export default function TodayScreen() {
         revision:
           study && revisions.length > 0 ? (
             <>
-              <SectionHeader title={t('today.revisionTitle')} />
+              <RiseIn>
+                <SectionHeader title={t('today.revisionTitle')} />
+              </RiseIn>
               <Card>
                 {revisions.map((b) => (
-                  <RevisionRow key={b.id} block={b} subjects={byId} />
+                  <RiseIn key={b.id}>
+                    <RevisionRow block={b} subjects={byId} />
+                  </RiseIn>
                 ))}
               </Card>
             </>
@@ -159,91 +182,111 @@ export default function TodayScreen() {
         habits:
           !personal || (filter && filter !== 'personal') ? null : (
             <>
-              <SectionHeader
-                title={t('habits.todayTitle')}
-                action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
-              />
+              <RiseIn>
+                <SectionHeader
+                  title={t('habits.todayTitle')}
+                  action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
+                />
+              </RiseIn>
               {habits.length > 0 ? (
                 <Card>
                   {habits.map((h) => (
-                    <HabitRow
-                      key={h.id}
-                      habit={h}
-                      logs={habitLogs}
-                      day={view.today}
-                      today={view.today}
-                      weekStart={weekStart}
-                      onMore={setHabitSheet}
-                    />
+                    <RiseIn key={h.id}>
+                      <HabitRow
+                        habit={h}
+                        logs={habitLogs}
+                        day={view.today}
+                        today={view.today}
+                        weekStart={weekStart}
+                        onMore={setHabitSheet}
+                      />
+                    </RiseIn>
                   ))}
                 </Card>
               ) : (
-                <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
-                  <Card>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                      <IconBadge icon="target" />
-                      <View style={{ flex: 1 }}>
-                        <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
-                        <AppText variant="caption" color="muted">
-                          {t('habits.startHint')}
-                        </AppText>
+                <RiseIn>
+                  <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+                    <Card>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                        <IconBadge icon="target" />
+                        <View style={{ flex: 1 }}>
+                          <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
+                          <AppText variant="caption" color="muted">
+                            {t('habits.startHint')}
+                          </AppText>
+                        </View>
                       </View>
-                    </View>
-                  </Card>
-                </Pressable>
+                    </Card>
+                  </Pressable>
+                </RiseIn>
               )}
             </>
           ),
         todo: (
           <>
-            <SectionHeader
-              title={t('today.todoTitle')}
-              action={{
-                label: t('common.seeAll'),
-                onPress: () => router.navigate('/(tabs)/tasks'),
-              }}
-            />
+            <RiseIn>
+              <SectionHeader
+                title={t('today.todoTitle')}
+                action={{
+                  label: t('common.seeAll'),
+                  onPress: () => router.navigate('/(tabs)/tasks'),
+                }}
+              />
+            </RiseIn>
             {todo.length > 0 ? (
               <Card>
                 {todo.map((w) => (
-                  <WorkRow
-                    key={`${w.kind}-${w.id}`}
-                    item={w}
-                    subjects={byId}
-                    now={now}
-                    showDate={w.dueDate !== view.today}
-                    onPostpone={postpone.open}
-                    progress={counts.data?.get(`${w.kind}:${w.id}`)}
-                  />
+                  <RiseIn key={`${w.kind}-${w.id}`}>
+                    <WorkRow
+                      item={w}
+                      subjects={byId}
+                      now={now}
+                      showDate={w.dueDate !== view.today}
+                      onPostpone={postpone.open}
+                      progress={counts.data?.get(`${w.kind}:${w.id}`)}
+                    />
+                  </RiseIn>
                 ))}
               </Card>
             ) : (
-              <AppText color="muted">{t('today.nothingTodo')}</AppText>
+              <RiseIn>
+                <AppText color="muted">{t('today.nothingTodo')}</AppText>
+              </RiseIn>
             )}
           </>
         ),
         events:
           view.events.length > 0 ? (
             <>
-              <SectionHeader title={t('today.eventsTitle')} />
+              <RiseIn>
+                <SectionHeader title={t('today.eventsTitle')} />
+              </RiseIn>
               <Card>
                 {view.events.map((e) => (
-                  <EventRow key={e.id} event={e} />
+                  <RiseIn key={e.id}>
+                    <EventRow event={e} />
+                  </RiseIn>
                 ))}
               </Card>
             </>
           ) : null,
         exams: !study ? null : (
           <>
-            <SectionHeader title={t('today.examsTitle')} />
+            <RiseIn>
+              <SectionHeader title={t('today.examsTitle')} />
+            </RiseIn>
             {view.upcomingExams.length > 0 ? (
               <Card>
                 {view.upcomingExams.map(({ exam }) => (
-                  <ExamRow key={exam.id} exam={exam} subjects={byId} now={now} />
+                  <RiseIn key={exam.id}>
+                    <ExamRow exam={exam} subjects={byId} now={now} />
+                  </RiseIn>
                 ))}
               </Card>
             ) : (
-              <AppText color="muted">{t('today.noExams')}</AppText>
+              <RiseIn>
+                <AppText color="muted">{t('today.noExams')}</AppText>
+              </RiseIn>
             )}
           </>
         ),
@@ -264,6 +307,7 @@ export default function TodayScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Screen
+        stagger
         title={greeting}
         subtitle={formatLongDate(now, i18n.language)}
         actions={
@@ -274,71 +318,81 @@ export default function TodayScreen() {
           </>
         }
       >
-        <SpaceFilter value={filter} onChange={setSpaceFilter} />
+        <RiseIn>
+          <SpaceFilter value={filter} onChange={setSpaceFilter} />
+        </RiseIn>
 
         {study && !loading && subjects.length === 0 ? (
-          <Card>
-            <View style={{ gap: spacing.md }}>
-              <AppText variant="heading">{t('today.firstSubject')}</AppText>
-              <AppText color="muted">{t('today.firstSubjectHint')}</AppText>
-              <Button
-                label={t('profile.addSubject')}
-                onPress={() => router.push('/subjects/form')}
-              />
-            </View>
-          </Card>
+          <RiseIn>
+            <Card>
+              <View style={{ gap: spacing.md }}>
+                <AppText variant="heading">{t('today.firstSubject')}</AppText>
+                <AppText color="muted">{t('today.firstSubjectHint')}</AppText>
+                <Button
+                  label={t('profile.addSubject')}
+                  onPress={() => router.push('/subjects/form')}
+                />
+              </View>
+            </Card>
+          </RiseIn>
         ) : null}
 
         {agenda.data?.studySession ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/study')}
-            style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-          >
-            <Card>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                <IconBadge icon="clock" />
-                <View style={{ flex: 1 }}>
-                  <AppText variant="bodyStrong">{t('study.bannerTitle')}</AppText>
-                  <AppText variant="caption" color="muted">
-                    {t('study.bannerHint')}
-                  </AppText>
+          <RiseIn>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/study')}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <Card>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <IconBadge icon="clock" />
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="bodyStrong">{t('study.bannerTitle')}</AppText>
+                    <AppText variant="caption" color="muted">
+                      {t('study.bannerHint')}
+                    </AppText>
+                  </View>
                 </View>
-              </View>
-            </Card>
-          </Pressable>
+              </Card>
+            </Pressable>
+          </RiseIn>
         ) : null}
 
         {view?.dayOff ? (
-          <Card>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <IconBadge icon="sun" color="warning" background="warningSoft" />
-              <AppText variant="bodyStrong" style={{ flex: 1 }}>
-                {t('today.dayOff', { name: view.dayOff.name })}
-              </AppText>
-            </View>
-          </Card>
+          <RiseIn>
+            <Card>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <IconBadge icon="sun" color="warning" background="warningSoft" />
+                <AppText variant="bodyStrong" style={{ flex: 1 }}>
+                  {t('today.dayOff', { name: view.dayOff.name })}
+                </AppText>
+              </View>
+            </Card>
+          </RiseIn>
         ) : null}
 
         {view && eveningCard ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/review')}
-            style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-          >
-            <Card>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                <IconBadge icon="moon" />
-                <View style={{ flex: 1 }}>
-                  <AppText variant="bodyStrong">{t('review.cardTitle')}</AppText>
-                  <AppText variant="caption" color="muted">
-                    {t('review.cardHint')}
-                  </AppText>
+          <RiseIn>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/review')}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <Card>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <IconBadge icon="moon" />
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="bodyStrong">{t('review.cardTitle')}</AppText>
+                    <AppText variant="caption" color="muted">
+                      {t('review.cardHint')}
+                    </AppText>
+                  </View>
+                  <Feather name="chevron-right" size={20} color={colors.muted} />
                 </View>
-                <Feather name="chevron-right" size={20} color={colors.muted} />
-              </View>
-            </Card>
-          </Pressable>
+              </Card>
+            </Pressable>
+          </RiseIn>
         ) : null}
 
         {view
@@ -348,10 +402,12 @@ export default function TodayScreen() {
           : null}
 
         {view ? (
-          <TextButton
-            label={t('todayLayout.customize')}
-            onPress={() => router.push('/today-layout')}
-          />
+          <RiseIn>
+            <TextButton
+              label={t('todayLayout.customize')}
+              onPress={() => router.push('/today-layout')}
+            />
+          </RiseIn>
         ) : null}
         <View style={{ height: 80 }} />
       </Screen>
@@ -379,9 +435,12 @@ export default function TodayScreen() {
   );
 }
 
+const easeNextCard = FadeInDown.duration(320).springify().damping(18).stiffness(170);
+
 function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: string }) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
+  const reduced = useReducedMotion();
   const o = next.occurrence;
   const ongoing = next.state === 'ongoing';
   const time = formatDuration(next.minutes);
@@ -394,73 +453,78 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
     ) : null;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${ongoing ? t('today.ongoing') : t('today.nextCourse')} : ${subjectName}, ${o.startTime} – ${o.endTime}`}
-      onPress={() =>
-        router.push({ pathname: '/courses/[id]', params: { id: o.seriesId, date: o.originalDate } })
-      }
-      style={({ pressed }) => ({
-        backgroundColor: colors.primary,
-        borderRadius: radius.xl,
-        padding: spacing.xl,
-        gap: spacing.sm,
-        opacity: pressed ? 0.9 : 1,
-      })}
-    >
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: spacing.sm,
-        }}
-      >
-        <AppText variant="label" color="onPrimary" style={{ letterSpacing: 1 }}>
-          {(ongoing ? t('today.ongoing') : t('today.nextCourse')).toLocaleUpperCase()}
-        </AppText>
-        <AppText variant="bodyStrong" color="onPrimary">
-          {ongoing ? t('today.endsIn', { time }) : t('today.startsIn', { time })}
-        </AppText>
-      </View>
-      <AppText variant="title" color="onPrimary" style={{ fontSize: 24, lineHeight: 30 }}>
-        {o.title ?? subjectName}
-      </AppText>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
-        {info('clock', `${o.startTime} – ${o.endTime}`)}
-        {info('map-pin', o.room)}
-        {info('user', o.teacher)}
-      </View>
+    <Animated.View entering={reduced ? undefined : easeNextCard}>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={`${ongoing ? t('today.ongoing') : t('today.nextCourse')} : ${subjectName}, ${o.startTime} – ${o.endTime}`}
         onPress={() =>
           router.push({
-            pathname: '/notes/[id]',
-            params: {
-              id: 'new',
-              subjectId: o.subjectId,
-              courseSeriesId: o.seriesId,
-              courseDate: o.originalDate,
-            },
+            pathname: '/courses/[id]',
+            params: { id: o.seriesId, date: o.originalDate },
           })
         }
         style={({ pressed }) => ({
-          marginTop: spacing.xs,
-          minHeight: 46,
-          borderRadius: radius.md,
-          backgroundColor: colors.onPrimary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
+          backgroundColor: colors.primary,
+          borderRadius: radius.xl,
+          padding: spacing.xl,
           gap: spacing.sm,
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? 0.9 : 1,
         })}
       >
-        <Feather name="file-text" size={18} color={colors.primary} />
-        <AppText variant="bodyStrong" color="primary">
-          {t('notes.takeNotes')}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: spacing.sm,
+          }}
+        >
+          <AppText variant="label" color="onPrimary" style={{ letterSpacing: 1 }}>
+            {(ongoing ? t('today.ongoing') : t('today.nextCourse')).toLocaleUpperCase()}
+          </AppText>
+          <AppText variant="bodyStrong" color="onPrimary">
+            {ongoing ? t('today.endsIn', { time }) : t('today.startsIn', { time })}
+          </AppText>
+        </View>
+        <AppText variant="title" color="onPrimary" style={{ fontSize: 24, lineHeight: 30 }}>
+          {o.title ?? subjectName}
         </AppText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
+          {info('clock', `${o.startTime} – ${o.endTime}`)}
+          {info('map-pin', o.room)}
+          {info('user', o.teacher)}
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: '/notes/[id]',
+              params: {
+                id: 'new',
+                subjectId: o.subjectId,
+                courseSeriesId: o.seriesId,
+                courseDate: o.originalDate,
+              },
+            })
+          }
+          style={({ pressed }) => ({
+            marginTop: spacing.xs,
+            minHeight: 46,
+            borderRadius: radius.md,
+            backgroundColor: colors.onPrimary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            gap: spacing.sm,
+            opacity: pressed ? 0.85 : 1,
+          })}
+        >
+          <Feather name="file-text" size={18} color={colors.primary} />
+          <AppText variant="bodyStrong" color="primary">
+            {t('notes.takeNotes')}
+          </AppText>
+        </Pressable>
       </Pressable>
-    </Pressable>
+    </Animated.View>
   );
 }
