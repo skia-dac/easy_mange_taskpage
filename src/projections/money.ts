@@ -217,13 +217,17 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
         'saving_back',
       ),
     }));
-  const loans = input.loans.map((loan) => {
-    const moves = linked.filter((t) => t.loanId === loan.id);
-    const [out, back] =
-      loan.direction === 'lent' ? ['lend', 'lend_back'] : ['borrow', 'borrow_back'];
-    const totalMinor = moves.filter((t) => t.kind === out).reduce((s, t) => s + t.amountMinor, 0);
-    return { loan, totalMinor, outstandingMinor: net(moves, out, back) };
-  });
+  // Un prêt a la devise de son premier mouvement : seuls ceux de la devise affichée comptent
+  // (sinon un prêt en EUR paraît « réglé » quand on regarde les XAF).
+  const loans = input.loans
+    .filter((loan) => loan.currency === currency)
+    .map((loan) => {
+      const moves = linked.filter((t) => t.loanId === loan.id);
+      const [out, back] =
+        loan.direction === 'lent' ? ['lend', 'lend_back'] : ['borrow', 'borrow_back'];
+      const totalMinor = moves.filter((t) => t.kind === out).reduce((s, t) => s + t.amountMinor, 0);
+      return { loan, totalMinor, outstandingMinor: net(moves, out, back) };
+    });
 
   const tontines = input.recurring
     .filter((r) => r.kind === 'tontine' && r.active)

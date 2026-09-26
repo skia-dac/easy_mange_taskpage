@@ -1,6 +1,6 @@
 import type { TodayData } from '@/projections';
 
-import { buildIcs, icsEscape } from './ics';
+import { buildIcs, fold, icsEscape } from './ics';
 
 const now = new Date(2026, 8, 23, 10, 0);
 const data: TodayData = {
@@ -133,6 +133,21 @@ describe('export .ics', () => {
 
   it('échappe le texte et plie les longues lignes', () => {
     expect(icsEscape('a,b;c\nd')).toBe('a\\,b\\;c\\nd');
+    // Un retour Windows ne laisse jamais un \r isolé (il casserait la structure du fichier).
+    expect(icsEscape('a\r\nb')).toBe('a\\nb');
     for (const line of ics.split('\r\n')) expect(line.length).toBeLessThanOrEqual(75);
+  });
+
+  it('plie à 75 octets (pas 75 caractères) sans couper un caractère accentué ou un emoji', () => {
+    const bytes = (s: string) => new TextEncoder().encode(s).length;
+    const long = `DESCRIPTION:${'é'.repeat(60)}🎓${'à'.repeat(40)}`;
+    const folded = fold(long);
+    const lines = folded.split('\r\n');
+    expect(lines.length).toBeGreaterThan(2);
+    for (const line of lines) expect(bytes(line)).toBeLessThanOrEqual(75);
+    for (const line of lines.slice(1)) expect(line.startsWith(' ')).toBe(true);
+    // Dépliée, la ligne est intacte : aucun caractère n'a été coupé en deux.
+    expect(folded.replace(/\r\n /g, '')).toBe(long);
+    expect(fold('SUMMARY:court')).toBe('SUMMARY:court');
   });
 });

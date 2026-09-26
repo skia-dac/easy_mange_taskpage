@@ -1,4 +1,5 @@
 import {
+  getLoan,
   balanceBefore,
   createCategory,
   createGoal,
@@ -307,6 +308,24 @@ describe('module Argent', () => {
     await updateTransaction(db, id, back(10000));
     await expect(updateTransaction(db, id, back(11000))).rejects.toBeInstanceOf(ValidationError);
     expect((await overview('2026-09-15')).loans[0]?.outstandingMinor).toBe(0);
+  });
+
+  it('un prêt a la devise de son premier mouvement et n’apparaît que dans cette devise (#6)', async () => {
+    const eur = await createLoan(
+      db,
+      { direction: 'lent', person: 'Léa' },
+      { amountMinor: 5000, currency: 'EUR', date: '2026-09-04' },
+    );
+    const xaf = await createLoan(
+      db,
+      { direction: 'lent', person: 'Kevin' },
+      { amountMinor: 10000, currency: XAF, date: '2026-09-04' },
+    );
+    expect((await getLoan(db, eur))?.currency).toBe('EUR');
+    // En XAF : le prêt en euros n'est ni « réglé » ni compté, il est absent.
+    const o = await overview('2026-09-15');
+    expect(o.loans.map((l) => l.loan.id)).toEqual([xaf]);
+    expect(openLoans(o.loans, 'lent').map((l) => l.loan.id)).toEqual([xaf]);
   });
 
   it('tuile « Prêts » et charges mensuelles : mêmes règles que leurs écrans (#12)', async () => {

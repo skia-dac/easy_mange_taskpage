@@ -27,6 +27,8 @@ async function columnsOf(db: Db, table: string): Promise<Column[]> {
 }
 
 export const FILES_BUCKET = 'mysky-files';
+/** Taille maximale d'un fichier dans le bucket (25 Mo, comme MAX_ATTACHMENT_MB). */
+export const FILE_SIZE_LIMIT = 25 * 1024 * 1024;
 
 export async function generateServerSql(db: Db): Promise<string> {
   const out: string[] = [
@@ -73,7 +75,9 @@ export async function generateServerSql(db: Db): Promise<string> {
       `drop policy if exists "own rows" on public.${table};`,
       `create policy "own rows" on public.${table} for all to authenticated`,
       '  using (user_id = auth.uid()) with check (user_id = auth.uid());',
-      `grant select, insert, update, delete on public.${table} to authenticated;`,
+      // Lecture directe seulement : toute écriture passe par mysky_push (versions, idempotence).
+      `revoke insert, update, delete on public.${table} from authenticated;`,
+      `grant select on public.${table} to authenticated;`,
       `drop trigger if exists ${table}_touch on public.${table};`,
       `create trigger ${table}_touch before insert or update on public.${table}`,
       '  for each row execute function public.mysky_touch();',
@@ -83,24 +87,40 @@ export async function generateServerSql(db: Db): Promise<string> {
 
   out.push(
     '-- Modifications déjà appliquées (une même modification renvoyée après une coupure ne compte qu’une fois).',
+    '-- Purgées après 30 jours au début de chaque mysky_push ; clé (user_id, mutation_id) : un identifiant',
+    '-- de modification n’appartient qu’à son utilisateur.',
     'create table if not exists public.sync_mutations (',
-    '  mutation_id text primary key,',
     '  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,',
+    '  mutation_id text not null,',
     '  entity text not null,',
     '  entity_id text not null,',
     '  result_version bigint not null,',
-    '  applied_at timestamptz not null default now()',
+    '  created_at timestamptz not null default now(),',
+    '  primary key (user_id, mutation_id)',
     ');',
+    'alter table public.sync_mutations add column if not exists created_at timestamptz not null default now();',
+    '-- Projet créé avec l’ancienne clé (mutation_id seule) : on passe à la clé composée.',
+    'do $$ begin',
+    "  if not exists (select 1 from pg_constraint where conrelid = 'public.sync_mutations'::regclass",
+    "                 and contype = 'p' and array_length(conkey, 1) = 2) then",
+    '    alter table public.sync_mutations drop constraint if exists sync_mutations_pkey;',
+    '    alter table public.sync_mutations add primary key (user_id, mutation_id);',
+    '  end if;',
+    'end $$;',
+    'create index if not exists sync_mutations_created_idx on public.sync_mutations (user_id, created_at);',
     'alter table public.sync_mutations enable row level security;',
     'drop policy if exists "own rows" on public.sync_mutations;',
     'create policy "own rows" on public.sync_mutations for all to authenticated',
     '  using (user_id = auth.uid()) with check (user_id = auth.uid());',
-    'grant select, insert on public.sync_mutations to authenticated;',
+    'revoke insert, update, delete on public.sync_mutations from authenticated;',
+    'grant select on public.sync_mutations to authenticated;',
     '',
     PUSH_FUNCTION.replace('__TABLES__', SYNCED_TABLES.map((t) => `'${t}'`).join(', ')),
     '',
-    `insert into storage.buckets (id, name, public) values ('${FILES_BUCKET}', '${FILES_BUCKET}', false)`,
-    '  on conflict (id) do nothing;',
+    `-- Bucket privé ; ${FILE_SIZE_LIMIT} octets = 25 Mo, la limite d'une pièce jointe dans l'app.`,
+    `insert into storage.buckets (id, name, public, file_size_limit)`,
+    `  values ('${FILES_BUCKET}', '${FILES_BUCKET}', false, ${FILE_SIZE_LIMIT})`,
+    '  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;',
     'drop policy if exists "mysky own files" on storage.objects;',
     'create policy "mysky own files" on storage.objects for all to authenticated',
     `  using (bucket_id = '${FILES_BUCKET}' and (storage.foldername(name))[1] = auth.uid()::text)`,
@@ -113,9 +133,12 @@ export async function generateServerSql(db: Db): Promise<string> {
 const PUSH_FUNCTION = `-- Applique une liste de modifications envoyées par le téléphone, dans l'ordre.
 -- Résultat par modification : applied (avec la nouvelle version), conflict (avec la ligne du serveur),
 -- missing, ou rejected (la modification est invalide : les autres sont quand même appliquées).
+-- « security definer » : les utilisateurs n'ont pas le droit d'écrire directement dans les tables ;
+-- la fonction écrit pour eux, toujours limitée à leurs lignes (user_id = auth.uid() à chaque requête).
 create or replace function public.mysky_push(p_mutations jsonb) returns jsonb
-language plpgsql security invoker set search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
+  v_user uuid := auth.uid();
   m jsonb;
   results jsonb := '[]'::jsonb;
   v_mid text;
@@ -133,9 +156,11 @@ declare
   v_row jsonb;
   allowed text[] := array[__TABLES__];
 begin
-  if auth.uid() is null then
+  if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
+  -- Ménage : les identifiants de modification ne servent plus après 30 jours.
+  delete from sync_mutations where user_id = v_user and created_at < now() - interval '30 days';
   for m in select value from jsonb_array_elements(p_mutations) loop
     v_mid := m->>'mutation_id';
     -- Chaque modification est isolée : une erreur (contrainte violée, table inconnue…) la rejette
@@ -153,13 +178,13 @@ begin
         raise exception 'unknown entity %', v_table using errcode = '22023';
       end if;
 
-      select result_version into v_prev from sync_mutations where mutation_id = v_mid;
+      select result_version into v_prev from sync_mutations where user_id = v_user and mutation_id = v_mid;
       if found then
         results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_prev));
         continue;
       end if;
 
-      execute format('select version from public.%I where id = $1', v_table) into v_current using v_id;
+      execute format('select version from public.%I where id = $1 and user_id = $2', v_table) into v_current using v_id, v_user;
 
       select string_agg(quote_ident(k), ', '),
              string_agg('r.' || quote_ident(k), ', '),
@@ -175,14 +200,14 @@ begin
         if v_current is not null then
           -- La ligne existe déjà (ex. sauvegarde restaurée avant la première synchro) :
           -- on ne l'écrase pas en silence, le téléphone arbitre avec la version du serveur.
-          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1 and user_id = $2', v_table) into v_row using v_id, v_user;
           results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
           continue;
         else
           execute format(
-            'insert into public.%I (id, version%s) select $1, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
+            'insert into public.%I (id, user_id, version%s) select $1, $3, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
             v_table, coalesce(', ' || v_cols, ''), coalesce(', ' || v_vals, ''), v_table)
-            using v_id, v_payload;
+            using v_id, v_payload, v_user;
           v_new := 1;
         end if;
       else
@@ -191,18 +216,18 @@ begin
           continue;
         end if;
         if v_base is distinct from v_current then
-          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1 and user_id = $2', v_table) into v_row using v_id, v_user;
           results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
           continue;
         end if;
         execute format(
-          'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1',
+          'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1 and t.user_id = $3',
           v_table, coalesce(v_sets || ', ', ''), v_table)
-          using v_id, v_payload;
+          using v_id, v_payload, v_user;
         v_new := v_current + 1;
       end if;
 
-      insert into sync_mutations (mutation_id, entity, entity_id, result_version) values (v_mid, v_table, v_id, v_new);
+      insert into sync_mutations (user_id, mutation_id, entity, entity_id, result_version) values (v_user, v_mid, v_table, v_id, v_new);
       results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_new));
     exception when others then
       results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'rejected', 'reason', sqlerrm));

@@ -92,7 +92,7 @@ export default function MoneyAddScreen() {
   }, []);
   const [date, setDate] = useState(params.date ?? today);
   const [note, setNote] = useState('');
-  const [currency, setCurrency] = useState('XAF');
+  const [preferredCurrency, setCurrency] = useState('XAF');
   const [existing, setExisting] = useState<Transaction | null>(null);
   // Modification : 'loading' tant que l'opération n'est pas chargée (pas de bouton Enregistrer
   // qui créerait un doublon), 'missing' si elle n'existe plus.
@@ -136,6 +136,10 @@ export default function MoneyAddScreen() {
       setCurrency(tx.currency);
     })();
   }, [db, params.id]);
+
+  // Mouvement lié à un prêt ou à un objectif : il a forcément leur devise.
+  const currency =
+    context.data?.loan?.currency ?? context.data?.goal?.currency ?? preferredCurrency;
 
   const plain = kind === 'expense' || kind === 'income';
   const cats = useMemo(

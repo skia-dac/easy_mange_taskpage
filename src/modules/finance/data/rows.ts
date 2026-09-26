@@ -130,10 +130,12 @@ export type LoanRow = {
   due_date: string | null;
   note: string | null;
   closed: number;
+  currency: string;
 };
 
 export const toLoan = (r: LoanRow): Loan => ({
   id: r.id,
+  currency: r.currency,
   direction: enumOr(loanDirections, r.direction, 'lent'),
   person: r.person,
   dueDate: r.due_date,

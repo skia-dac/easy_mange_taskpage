@@ -1,4 +1,11 @@
-import { createSubject, listSubjects, updateSubject } from '@/modules/academic';
+import {
+  cancelOccurrence,
+  createCourse,
+  createSubject,
+  listCourseExceptions,
+  listSubjects,
+  updateSubject,
+} from '@/modules/academic';
 import { createNote, deleteNote, listNotes } from '@/modules/productivity';
 import { FakeServer } from '@/test/fakeServer';
 import { createTestDb } from '@/test/memoryDb';
@@ -264,6 +271,42 @@ describe('synchronisation', () => {
     // Une nouvelle passe relit avec une marge sans rien réappliquer ni compter deux fois.
     const rb2 = await syncOnce(b, server.remote(), { pageSize: 2 });
     expect(rb2.pulled).toBe(0);
+    a.close();
+    b.close();
+  });
+
+  it('exception créée sur deux appareils pour la même séance : une seule ligne vivante partout', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const subjectId = await createSubject(a, subject);
+    const seriesId = await createCourse(a, {
+      subjectId,
+      courseType: 'lecture',
+      recurrence: 'weekly',
+      weekday: 1,
+      startDate: '2026-09-07',
+      endDate: '2026-12-14',
+      startTime: '08:00',
+      endTime: '10:00',
+    });
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+
+    // Chacun annule la même séance hors ligne, puis les deux synchronisent jusqu'à convergence.
+    await cancelOccurrence(a, seriesId, '2026-09-21');
+    await cancelOccurrence(b, seriesId, '2026-09-21');
+    for (let round = 0; round < 3; round++) {
+      await syncOnce(a, server.remote());
+      await syncOnce(b, server.remote());
+    }
+    const aliveA = await listCourseExceptions(a);
+    const aliveB = await listCourseExceptions(b);
+    expect(aliveA).toHaveLength(1);
+    expect(aliveB.map((e) => e.id)).toEqual(aliveA.map((e) => e.id));
+    expect(server.rows('course_exceptions').filter((r) => !r.deleted_at)).toHaveLength(1);
+    expect(await pendingCount(a)).toBe(0);
+    expect(await pendingCount(b)).toBe(0);
     a.close();
     b.close();
   });

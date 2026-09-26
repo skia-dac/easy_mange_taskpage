@@ -441,4 +441,17 @@ export const migrations: readonly Migration[] = [
       UPDATE habits SET tracks_body = 1 WHERE icon = 'activity';
     `,
   },
+  {
+    version: 16,
+    name: 'prêts : devise ; exceptions de cours : une seule ligne vivante par (série, date)',
+    sql: `
+      ALTER TABLE money_loans ADD COLUMN currency TEXT NOT NULL DEFAULT 'XAF';
+      UPDATE money_loans SET currency = (
+        SELECT currency FROM money_transactions
+        WHERE loan_id = money_loans.id ORDER BY date, created_at LIMIT 1
+      ) WHERE EXISTS (SELECT 1 FROM money_transactions WHERE loan_id = money_loans.id);
+      CREATE UNIQUE INDEX idx_course_exceptions_series_date_alive
+        ON course_exceptions (series_id, date) WHERE deleted_at IS NULL;
+    `,
+  },
 ];

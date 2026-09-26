@@ -20,7 +20,7 @@ await db.exec(`
   create role authenticated nologin;
   create role anon nologin;
   create schema storage;
-  create table storage.buckets (id text primary key, name text, public boolean);
+  create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint);
   create table storage.objects (id serial primary key, bucket_id text, name text);
   create function storage.foldername(name text) returns text[] language sql immutable as $$
     select string_to_array(name, '/') $$;
@@ -36,9 +36,34 @@ const check = (label, ok, extra) => {
   if (!ok) failures++;
 };
 
-// Projet créé avec une version plus ancienne du fichier : le relancer ajoute ce qui manque.
+// Projet créé avec une version plus ancienne du fichier : le relancer ajoute ce qui manque
+// (colonne, clé composée de sync_mutations, limite de taille du bucket).
 await db.exec('alter table public.tasks drop column estimated_minutes;');
+await db.exec(`
+  alter table public.sync_mutations drop constraint sync_mutations_pkey;
+  alter table public.sync_mutations drop column created_at;
+  alter table public.sync_mutations add primary key (mutation_id);
+  update storage.buckets set file_size_limit = null;
+`);
 await db.exec(sql);
+const pkey = await db.query(
+  `select a.attname from pg_constraint c join unnest(c.conkey) as k(n) on true
+   join pg_attribute a on a.attrelid = c.conrelid and a.attnum = k.n
+   where c.conrelid = 'public.sync_mutations'::regclass and c.contype = 'p' order by a.attname`,
+);
+check(
+  'sync_mutations : clé (user_id, mutation_id) rétablie',
+  pkey.rows.map((r) => r.attname).join(',') === 'mutation_id,user_id',
+  pkey.rows,
+);
+const bucket = (
+  await db.query("select public, file_size_limit from storage.buckets where id = 'mysky-files'")
+).rows[0];
+check(
+  'bucket privé limité à 25 Mo',
+  bucket?.public === false && Number(bucket?.file_size_limit) === 26214400,
+  bucket,
+);
 const upgraded = await db.query(
   `select 1 from information_schema.columns
    where table_schema = 'public' and table_name = 'tasks' and column_name = 'estimated_minutes'`,
@@ -160,6 +185,20 @@ const rowsA = await as(
 check('A voit sa ligne', rowsA.length === 1 && rowsA[0].deleted_at !== null, rowsA);
 const rowsB = await as(B, async () => (await db.query('select id from public.subjects')).rows);
 check('B ne voit pas les lignes de A (RLS)', rowsB.length === 0, rowsB);
+for (const stmt of [
+  "insert into public.subjects (id, name, color_id, created_at, updated_at) values ('direct', 'x', 'blue', 'now', 'now')",
+  "update public.subjects set name = 'x'",
+  'delete from public.subjects',
+  "insert into public.sync_mutations (mutation_id, entity, entity_id, result_version) values ('x', 'subjects', 's1', 1)",
+]) {
+  let denied = false;
+  try {
+    await as(B, () => db.query(stmt));
+  } catch (e) {
+    denied = /permission denied/i.test(String(e.message));
+  }
+  check(`écriture directe refusée : ${stmt.slice(0, 40)}…`, denied);
+}
 
 r = await push(B, [
   {
@@ -172,6 +211,41 @@ r = await push(B, [
   },
 ]);
 check('B ne peut pas modifier la ligne de A', r[0].status === 'missing', r);
+r = await push(B, [
+  {
+    mutation_id: 'm1',
+    entity: 'subjects',
+    entity_id: 's1',
+    operation: 'create',
+    base_version: null,
+    payload: { ...create.payload, name: 'usurpation' },
+  },
+]);
+check(
+  'B réutilisant un identifiant de modification de A ne rejoue pas la sienne',
+  r[0].status === 'conflict' || r[0].status === 'rejected',
+  r,
+);
+const unchanged = await as(
+  A,
+  async () => (await db.query("select name, version from public.subjects where id = 's1'")).rows[0],
+);
+check(
+  'la ligne de A est intacte',
+  unchanged?.name === 'Mathématiques' && unchanged?.version === 3,
+  unchanged,
+);
+
+// Purge des identifiants de modification de plus de 30 jours (au début de chaque envoi).
+await db.exec(
+  `update public.sync_mutations set created_at = now() - interval '31 days' where mutation_id = 'm1'`,
+);
+r = await push(A, [create]);
+check(
+  'identifiant purgé après 30 jours : la modification est réexaminée (ligne présente → conflit)',
+  r[0].status === 'conflict',
+  r,
+);
 
 r = await push(B, [
   {

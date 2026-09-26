@@ -42,7 +42,8 @@ alter table public.profiles enable row level security;
 drop policy if exists "own rows" on public.profiles;
 create policy "own rows" on public.profiles for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.profiles to authenticated;
+revoke insert, update, delete on public.profiles from authenticated;
+grant select on public.profiles to authenticated;
 drop trigger if exists profiles_touch on public.profiles;
 create trigger profiles_touch before insert or update on public.profiles
   for each row execute function public.mysky_touch();
@@ -82,7 +83,8 @@ alter table public.subjects enable row level security;
 drop policy if exists "own rows" on public.subjects;
 create policy "own rows" on public.subjects for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.subjects to authenticated;
+revoke insert, update, delete on public.subjects from authenticated;
+grant select on public.subjects to authenticated;
 drop trigger if exists subjects_touch on public.subjects;
 create trigger subjects_touch before insert or update on public.subjects
   for each row execute function public.mysky_touch();
@@ -116,7 +118,8 @@ alter table public.timetables enable row level security;
 drop policy if exists "own rows" on public.timetables;
 create policy "own rows" on public.timetables for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.timetables to authenticated;
+revoke insert, update, delete on public.timetables from authenticated;
+grant select on public.timetables to authenticated;
 drop trigger if exists timetables_touch on public.timetables;
 create trigger timetables_touch before insert or update on public.timetables
   for each row execute function public.mysky_touch();
@@ -170,7 +173,8 @@ alter table public.course_series enable row level security;
 drop policy if exists "own rows" on public.course_series;
 create policy "own rows" on public.course_series for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.course_series to authenticated;
+revoke insert, update, delete on public.course_series from authenticated;
+grant select on public.course_series to authenticated;
 drop trigger if exists course_series_touch on public.course_series;
 create trigger course_series_touch before insert or update on public.course_series
   for each row execute function public.mysky_touch();
@@ -216,7 +220,8 @@ alter table public.course_exceptions enable row level security;
 drop policy if exists "own rows" on public.course_exceptions;
 create policy "own rows" on public.course_exceptions for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.course_exceptions to authenticated;
+revoke insert, update, delete on public.course_exceptions from authenticated;
+grant select on public.course_exceptions to authenticated;
 drop trigger if exists course_exceptions_touch on public.course_exceptions;
 create trigger course_exceptions_touch before insert or update on public.course_exceptions
   for each row execute function public.mysky_touch();
@@ -252,7 +257,8 @@ alter table public.off_periods enable row level security;
 drop policy if exists "own rows" on public.off_periods;
 create policy "own rows" on public.off_periods for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.off_periods to authenticated;
+revoke insert, update, delete on public.off_periods from authenticated;
+grant select on public.off_periods to authenticated;
 drop trigger if exists off_periods_touch on public.off_periods;
 create trigger off_periods_touch before insert or update on public.off_periods
   for each row execute function public.mysky_touch();
@@ -304,7 +310,8 @@ alter table public.exams enable row level security;
 drop policy if exists "own rows" on public.exams;
 create policy "own rows" on public.exams for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.exams to authenticated;
+revoke insert, update, delete on public.exams from authenticated;
+grant select on public.exams to authenticated;
 drop trigger if exists exams_touch on public.exams;
 create trigger exams_touch before insert or update on public.exams
   for each row execute function public.mysky_touch();
@@ -354,7 +361,8 @@ alter table public.tasks enable row level security;
 drop policy if exists "own rows" on public.tasks;
 create policy "own rows" on public.tasks for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.tasks to authenticated;
+revoke insert, update, delete on public.tasks from authenticated;
+grant select on public.tasks to authenticated;
 drop trigger if exists tasks_touch on public.tasks;
 create trigger tasks_touch before insert or update on public.tasks
   for each row execute function public.mysky_touch();
@@ -404,7 +412,8 @@ alter table public.assignments enable row level security;
 drop policy if exists "own rows" on public.assignments;
 create policy "own rows" on public.assignments for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.assignments to authenticated;
+revoke insert, update, delete on public.assignments from authenticated;
+grant select on public.assignments to authenticated;
 drop trigger if exists assignments_touch on public.assignments;
 create trigger assignments_touch before insert or update on public.assignments
   for each row execute function public.mysky_touch();
@@ -444,7 +453,8 @@ alter table public.personal_events enable row level security;
 drop policy if exists "own rows" on public.personal_events;
 create policy "own rows" on public.personal_events for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.personal_events to authenticated;
+revoke insert, update, delete on public.personal_events from authenticated;
+grant select on public.personal_events to authenticated;
 drop trigger if exists personal_events_touch on public.personal_events;
 create trigger personal_events_touch before insert or update on public.personal_events
   for each row execute function public.mysky_touch();
@@ -476,7 +486,8 @@ alter table public.note_categories enable row level security;
 drop policy if exists "own rows" on public.note_categories;
 create policy "own rows" on public.note_categories for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.note_categories to authenticated;
+revoke insert, update, delete on public.note_categories from authenticated;
+grant select on public.note_categories to authenticated;
 drop trigger if exists note_categories_touch on public.note_categories;
 create trigger note_categories_touch before insert or update on public.note_categories
   for each row execute function public.mysky_touch();
@@ -518,7 +529,8 @@ alter table public.notes enable row level security;
 drop policy if exists "own rows" on public.notes;
 create policy "own rows" on public.notes for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.notes to authenticated;
+revoke insert, update, delete on public.notes from authenticated;
+grant select on public.notes to authenticated;
 drop trigger if exists notes_touch on public.notes;
 create trigger notes_touch before insert or update on public.notes
   for each row execute function public.mysky_touch();
@@ -560,7 +572,8 @@ alter table public.attachments enable row level security;
 drop policy if exists "own rows" on public.attachments;
 create policy "own rows" on public.attachments for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.attachments to authenticated;
+revoke insert, update, delete on public.attachments from authenticated;
+grant select on public.attachments to authenticated;
 drop trigger if exists attachments_touch on public.attachments;
 create trigger attachments_touch before insert or update on public.attachments
   for each row execute function public.mysky_touch();
@@ -596,7 +609,8 @@ alter table public.study_sessions enable row level security;
 drop policy if exists "own rows" on public.study_sessions;
 create policy "own rows" on public.study_sessions for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.study_sessions to authenticated;
+revoke insert, update, delete on public.study_sessions from authenticated;
+grant select on public.study_sessions to authenticated;
 drop trigger if exists study_sessions_touch on public.study_sessions;
 create trigger study_sessions_touch before insert or update on public.study_sessions
   for each row execute function public.mysky_touch();
@@ -646,7 +660,8 @@ alter table public.habits enable row level security;
 drop policy if exists "own rows" on public.habits;
 create policy "own rows" on public.habits for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.habits to authenticated;
+revoke insert, update, delete on public.habits from authenticated;
+grant select on public.habits to authenticated;
 drop trigger if exists habits_touch on public.habits;
 create trigger habits_touch before insert or update on public.habits
   for each row execute function public.mysky_touch();
@@ -686,7 +701,8 @@ alter table public.habit_logs enable row level security;
 drop policy if exists "own rows" on public.habit_logs;
 create policy "own rows" on public.habit_logs for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.habit_logs to authenticated;
+revoke insert, update, delete on public.habit_logs from authenticated;
+grant select on public.habit_logs to authenticated;
 drop trigger if exists habit_logs_touch on public.habit_logs;
 create trigger habit_logs_touch before insert or update on public.habit_logs
   for each row execute function public.mysky_touch();
@@ -722,7 +738,8 @@ alter table public.habit_checkpoints enable row level security;
 drop policy if exists "own rows" on public.habit_checkpoints;
 create policy "own rows" on public.habit_checkpoints for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.habit_checkpoints to authenticated;
+revoke insert, update, delete on public.habit_checkpoints from authenticated;
+grant select on public.habit_checkpoints to authenticated;
 drop trigger if exists habit_checkpoints_touch on public.habit_checkpoints;
 create trigger habit_checkpoints_touch before insert or update on public.habit_checkpoints
   for each row execute function public.mysky_touch();
@@ -758,7 +775,8 @@ alter table public.work_subtasks enable row level security;
 drop policy if exists "own rows" on public.work_subtasks;
 create policy "own rows" on public.work_subtasks for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.work_subtasks to authenticated;
+revoke insert, update, delete on public.work_subtasks from authenticated;
+grant select on public.work_subtasks to authenticated;
 drop trigger if exists work_subtasks_touch on public.work_subtasks;
 create trigger work_subtasks_touch before insert or update on public.work_subtasks
   for each row execute function public.mysky_touch();
@@ -802,7 +820,8 @@ alter table public.revision_blocks enable row level security;
 drop policy if exists "own rows" on public.revision_blocks;
 create policy "own rows" on public.revision_blocks for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.revision_blocks to authenticated;
+revoke insert, update, delete on public.revision_blocks from authenticated;
+grant select on public.revision_blocks to authenticated;
 drop trigger if exists revision_blocks_touch on public.revision_blocks;
 create trigger revision_blocks_touch before insert or update on public.revision_blocks
   for each row execute function public.mysky_touch();
@@ -836,7 +855,8 @@ alter table public.mood_logs enable row level security;
 drop policy if exists "own rows" on public.mood_logs;
 create policy "own rows" on public.mood_logs for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.mood_logs to authenticated;
+revoke insert, update, delete on public.mood_logs from authenticated;
+grant select on public.mood_logs to authenticated;
 drop trigger if exists mood_logs_touch on public.mood_logs;
 create trigger mood_logs_touch before insert or update on public.mood_logs
   for each row execute function public.mysky_touch();
@@ -874,7 +894,8 @@ alter table public.money_categories enable row level security;
 drop policy if exists "own rows" on public.money_categories;
 create policy "own rows" on public.money_categories for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.money_categories to authenticated;
+revoke insert, update, delete on public.money_categories from authenticated;
+grant select on public.money_categories to authenticated;
 drop trigger if exists money_categories_touch on public.money_categories;
 create trigger money_categories_touch before insert or update on public.money_categories
   for each row execute function public.mysky_touch();
@@ -910,7 +931,8 @@ alter table public.money_goals enable row level security;
 drop policy if exists "own rows" on public.money_goals;
 create policy "own rows" on public.money_goals for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.money_goals to authenticated;
+revoke insert, update, delete on public.money_goals from authenticated;
+grant select on public.money_goals to authenticated;
 drop trigger if exists money_goals_touch on public.money_goals;
 create trigger money_goals_touch before insert or update on public.money_goals
   for each row execute function public.mysky_touch();
@@ -927,6 +949,7 @@ create table if not exists public.money_loans (
   due_date text,
   note text,
   closed bigint not null default 0,
+  currency text not null default 'XAF',
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.money_loans
@@ -940,13 +963,15 @@ alter table public.money_loans
   add column if not exists due_date text,
   add column if not exists note text,
   add column if not exists closed bigint not null default 0,
+  add column if not exists currency text not null default 'XAF',
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists money_loans_sync_idx on public.money_loans (user_id, server_updated_at);
 alter table public.money_loans enable row level security;
 drop policy if exists "own rows" on public.money_loans;
 create policy "own rows" on public.money_loans for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.money_loans to authenticated;
+revoke insert, update, delete on public.money_loans from authenticated;
+grant select on public.money_loans to authenticated;
 drop trigger if exists money_loans_touch on public.money_loans;
 create trigger money_loans_touch before insert or update on public.money_loans
   for each row execute function public.mysky_touch();
@@ -1008,7 +1033,8 @@ alter table public.money_recurring enable row level security;
 drop policy if exists "own rows" on public.money_recurring;
 create policy "own rows" on public.money_recurring for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.money_recurring to authenticated;
+revoke insert, update, delete on public.money_recurring from authenticated;
+grant select on public.money_recurring to authenticated;
 drop trigger if exists money_recurring_touch on public.money_recurring;
 create trigger money_recurring_touch before insert or update on public.money_recurring
   for each row execute function public.mysky_touch();
@@ -1054,7 +1080,8 @@ alter table public.money_transactions enable row level security;
 drop policy if exists "own rows" on public.money_transactions;
 create policy "own rows" on public.money_transactions for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.money_transactions to authenticated;
+revoke insert, update, delete on public.money_transactions from authenticated;
+grant select on public.money_transactions to authenticated;
 drop trigger if exists money_transactions_touch on public.money_transactions;
 create trigger money_transactions_touch before insert or update on public.money_transactions
   for each row execute function public.mysky_touch();
@@ -1102,32 +1129,50 @@ alter table public.work_slots enable row level security;
 drop policy if exists "own rows" on public.work_slots;
 create policy "own rows" on public.work_slots for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert, update, delete on public.work_slots to authenticated;
+revoke insert, update, delete on public.work_slots from authenticated;
+grant select on public.work_slots to authenticated;
 drop trigger if exists work_slots_touch on public.work_slots;
 create trigger work_slots_touch before insert or update on public.work_slots
   for each row execute function public.mysky_touch();
 
 -- Modifications déjà appliquées (une même modification renvoyée après une coupure ne compte qu’une fois).
+-- Purgées après 30 jours au début de chaque mysky_push ; clé (user_id, mutation_id) : un identifiant
+-- de modification n’appartient qu’à son utilisateur.
 create table if not exists public.sync_mutations (
-  mutation_id text primary key,
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  mutation_id text not null,
   entity text not null,
   entity_id text not null,
   result_version bigint not null,
-  applied_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  primary key (user_id, mutation_id)
 );
+alter table public.sync_mutations add column if not exists created_at timestamptz not null default now();
+-- Projet créé avec l’ancienne clé (mutation_id seule) : on passe à la clé composée.
+do $$ begin
+  if not exists (select 1 from pg_constraint where conrelid = 'public.sync_mutations'::regclass
+                 and contype = 'p' and array_length(conkey, 1) = 2) then
+    alter table public.sync_mutations drop constraint if exists sync_mutations_pkey;
+    alter table public.sync_mutations add primary key (user_id, mutation_id);
+  end if;
+end $$;
+create index if not exists sync_mutations_created_idx on public.sync_mutations (user_id, created_at);
 alter table public.sync_mutations enable row level security;
 drop policy if exists "own rows" on public.sync_mutations;
 create policy "own rows" on public.sync_mutations for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-grant select, insert on public.sync_mutations to authenticated;
+revoke insert, update, delete on public.sync_mutations from authenticated;
+grant select on public.sync_mutations to authenticated;
 
 -- Applique une liste de modifications envoyées par le téléphone, dans l'ordre.
 -- Résultat par modification : applied (avec la nouvelle version), conflict (avec la ligne du serveur),
 -- missing, ou rejected (la modification est invalide : les autres sont quand même appliquées).
+-- « security definer » : les utilisateurs n'ont pas le droit d'écrire directement dans les tables ;
+-- la fonction écrit pour eux, toujours limitée à leurs lignes (user_id = auth.uid() à chaque requête).
 create or replace function public.mysky_push(p_mutations jsonb) returns jsonb
-language plpgsql security invoker set search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
+  v_user uuid := auth.uid();
   m jsonb;
   results jsonb := '[]'::jsonb;
   v_mid text;
@@ -1145,9 +1190,11 @@ declare
   v_row jsonb;
   allowed text[] := array['profiles', 'subjects', 'timetables', 'course_series', 'course_exceptions', 'off_periods', 'exams', 'tasks', 'assignments', 'personal_events', 'note_categories', 'notes', 'attachments', 'study_sessions', 'habits', 'habit_logs', 'habit_checkpoints', 'work_subtasks', 'revision_blocks', 'mood_logs', 'money_categories', 'money_goals', 'money_loans', 'money_recurring', 'money_transactions', 'work_slots'];
 begin
-  if auth.uid() is null then
+  if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
+  -- Ménage : les identifiants de modification ne servent plus après 30 jours.
+  delete from sync_mutations where user_id = v_user and created_at < now() - interval '30 days';
   for m in select value from jsonb_array_elements(p_mutations) loop
     v_mid := m->>'mutation_id';
     -- Chaque modification est isolée : une erreur (contrainte violée, table inconnue…) la rejette
@@ -1165,13 +1212,13 @@ begin
         raise exception 'unknown entity %', v_table using errcode = '22023';
       end if;
 
-      select result_version into v_prev from sync_mutations where mutation_id = v_mid;
+      select result_version into v_prev from sync_mutations where user_id = v_user and mutation_id = v_mid;
       if found then
         results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_prev));
         continue;
       end if;
 
-      execute format('select version from public.%I where id = $1', v_table) into v_current using v_id;
+      execute format('select version from public.%I where id = $1 and user_id = $2', v_table) into v_current using v_id, v_user;
 
       select string_agg(quote_ident(k), ', '),
              string_agg('r.' || quote_ident(k), ', '),
@@ -1187,14 +1234,14 @@ begin
         if v_current is not null then
           -- La ligne existe déjà (ex. sauvegarde restaurée avant la première synchro) :
           -- on ne l'écrase pas en silence, le téléphone arbitre avec la version du serveur.
-          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1 and user_id = $2', v_table) into v_row using v_id, v_user;
           results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
           continue;
         else
           execute format(
-            'insert into public.%I (id, version%s) select $1, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
+            'insert into public.%I (id, user_id, version%s) select $1, $3, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
             v_table, coalesce(', ' || v_cols, ''), coalesce(', ' || v_vals, ''), v_table)
-            using v_id, v_payload;
+            using v_id, v_payload, v_user;
           v_new := 1;
         end if;
       else
@@ -1203,18 +1250,18 @@ begin
           continue;
         end if;
         if v_base is distinct from v_current then
-          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1 and user_id = $2', v_table) into v_row using v_id, v_user;
           results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
           continue;
         end if;
         execute format(
-          'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1',
+          'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1 and t.user_id = $3',
           v_table, coalesce(v_sets || ', ', ''), v_table)
-          using v_id, v_payload;
+          using v_id, v_payload, v_user;
         v_new := v_current + 1;
       end if;
 
-      insert into sync_mutations (mutation_id, entity, entity_id, result_version) values (v_mid, v_table, v_id, v_new);
+      insert into sync_mutations (user_id, mutation_id, entity, entity_id, result_version) values (v_user, v_mid, v_table, v_id, v_new);
       results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_new));
     exception when others then
       results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'rejected', 'reason', sqlerrm));
@@ -1225,8 +1272,10 @@ end $$;
 revoke all on function public.mysky_push(jsonb) from public, anon;
 grant execute on function public.mysky_push(jsonb) to authenticated;
 
-insert into storage.buckets (id, name, public) values ('mysky-files', 'mysky-files', false)
-  on conflict (id) do nothing;
+-- Bucket privé ; 26214400 octets = 25 Mo, la limite d'une pièce jointe dans l'app.
+insert into storage.buckets (id, name, public, file_size_limit)
+  values ('mysky-files', 'mysky-files', false, 26214400)
+  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;
 drop policy if exists "mysky own files" on storage.objects;
 create policy "mysky own files" on storage.objects for all to authenticated
   using (bucket_id = 'mysky-files' and (storage.foldername(name))[1] = auth.uid()::text)

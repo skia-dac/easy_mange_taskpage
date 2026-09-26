@@ -192,12 +192,61 @@ async function markSynced(db: Db, g: Group, version: number): Promise<void> {
   else await db.runAsync(`UPDATE ${g.entity} SET version = ? WHERE id = ?`, [version, g.id]);
 }
 
+async function enqueue(
+  db: Db,
+  table: SyncedTable,
+  id: string,
+  operation: 'create' | 'update' | 'delete',
+  payload: Row,
+): Promise<void> {
+  await db.runAsync(
+    `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [newId(), table, id, operation, JSON.stringify(payload), null, nowIso()],
+  );
+}
+
+/**
+ * Exceptions de cours : une seule ligne vivante par (série, date) (index unique, migration 16).
+ * Deux appareils hors ligne ont pu en créer chacun une : la ligne au plus petit id est gardée
+ * partout (règle identique sur chaque appareil), l'autre est supprimée logiquement via la file,
+ * pour que le serveur l'apprenne aussi. Renvoie la ligne à écrire, et l'id à marquer supprimé.
+ */
+async function resolveExceptionDuplicate(
+  db: Db,
+  server: Record<string, unknown>,
+): Promise<{ row: Record<string, unknown>; loser: string | null }> {
+  if (server.deleted_at) return { row: server, loser: null };
+  const id = String(server.id);
+  const dup = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM course_exceptions WHERE series_id = ? AND date = ? AND deleted_at IS NULL AND id != ?',
+    [String(server.series_id ?? ''), String(server.date ?? ''), id],
+  );
+  if (!dup) return { row: server, loser: null };
+  const now = nowIso();
+  const payload = { deleted_at: now, updated_at: now };
+  if (dup.id < id) {
+    await enqueue(db, 'course_exceptions', id, 'delete', payload);
+    return { row: { ...server, ...payload }, loser: id };
+  }
+  await db.runAsync(
+    `UPDATE course_exceptions SET deleted_at = ?, updated_at = ?, sync_status = 'pending_delete' WHERE id = ?`,
+    [now, now, dup.id],
+  );
+  await enqueue(db, 'course_exceptions', dup.id, 'delete', payload);
+  return { row: server, loser: null };
+}
+
 /** Écrit une ligne reçue du serveur dans la base du téléphone (sans passer par la file d'envoi). */
 async function applyServerRow(
   db: Db,
   table: SyncedTable,
-  server: Record<string, unknown>,
+  received: Record<string, unknown>,
 ): Promise<void> {
+  const { row: server, loser } =
+    table === 'course_exceptions'
+      ? await resolveExceptionDuplicate(db, received)
+      : { row: received, loser: null };
   const cols = await columnsOf(db, table);
   const entries = Object.entries(server).filter(
     ([k]) => cols.has(k) && !SERVER_ONLY.has(k) && !LOCAL_ONLY.has(k),
@@ -220,6 +269,8 @@ async function applyServerRow(
      ON CONFLICT(id) DO UPDATE SET ${[...updates, "sync_status = 'synced'"].join(', ')}`,
     [...values, 'synced'],
   );
+  if (loser)
+    await db.runAsync(`UPDATE ${table} SET sync_status = 'pending_delete' WHERE id = ?`, [loser]);
 }
 
 async function recordConflict(

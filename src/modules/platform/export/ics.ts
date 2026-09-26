@@ -18,21 +18,35 @@ export const ICS_FUTURE_DAYS = 180;
 /** Échappement du texte selon la RFC 5545 (virgules, points-virgules, retours à la ligne). */
 export function icsEscape(text: string): string {
   return text
+    .replace(/\r/g, '')
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
     .replace(/\n/g, '\\n');
 }
 
-/** Coupe les lignes à 75 octets (RFC 5545 §3.1) : suite de ligne = espace en tête. */
-function fold(line: string): string {
+const MAX_LINE_BYTES = 75;
+const encoder = new TextEncoder();
+
+/**
+ * Coupe les lignes à 75 octets UTF-8 (RFC 5545 §3.1, la limite est en octets, pas en caractères) :
+ * suite de ligne = espace en tête (compté dans les 75). Jamais au milieu d'un caractère.
+ */
+export function fold(line: string): string {
   const out: string[] = [];
-  let rest = line;
-  while (rest.length > 73) {
-    out.push(rest.slice(0, 73));
-    rest = ' ' + rest.slice(73);
+  let current = '';
+  let bytes = 0;
+  for (const ch of line) {
+    const n = encoder.encode(ch).length;
+    if (bytes + n > MAX_LINE_BYTES) {
+      out.push(current);
+      current = ' ';
+      bytes = 1;
+    }
+    current += ch;
+    bytes += n;
   }
-  out.push(rest);
+  out.push(current);
   return out.join('\r\n');
 }
 

@@ -13,4 +13,9 @@ export const loanInputSchema = z.object({
   note: optionalText(200),
 });
 export type LoanInput = z.input<typeof loanInputSchema>;
-export type Loan = z.output<typeof loanInputSchema> & { id: string; closed: boolean };
+/** La devise est celle du premier mouvement : tous les mouvements du prêt la partagent. */
+export type Loan = z.output<typeof loanInputSchema> & {
+  id: string;
+  closed: boolean;
+  currency: string;
+};

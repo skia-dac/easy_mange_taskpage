@@ -303,7 +303,7 @@ export async function createLoan(
   const kind = values.direction === 'lent' ? 'lend' : 'borrow';
   const tx = transactionValues({ kind, ...first });
   return write(db, async (w) => {
-    const id = await w.insert('money_loans', { ...values, closed: 0 });
+    const id = await w.insert('money_loans', { ...values, closed: 0, currency: first.currency });
     await w.insert('money_transactions', { ...tx, loan_id: id, note: values.person as string });
     return id;
   });
