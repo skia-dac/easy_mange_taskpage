@@ -1,0 +1,9 @@
+# Mises à jour automatiques des actions GitHub.
+# Les dépendances de l'app sont mises à jour avec `npx expo install --fix` pour rester
+# compatibles avec la version du SDK Expo (Dependabot ne connaît pas ces règles).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
