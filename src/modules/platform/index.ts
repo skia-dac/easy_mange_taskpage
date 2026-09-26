@@ -55,7 +55,9 @@ export type {
   SyncReport,
 } from './sync/engine';
 export { PULL_MARGIN_MS, withMargin } from './sync/remote';
-export { runSync } from './sync/runner';
+export { cancelSyncRetry, pendingRetryDelay, runSync } from './sync/runner';
+export { ignoreConflict, listConflicts, restoreConflict } from './sync/conflicts';
+export type { SyncConflict } from './sync/conflicts';
 export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';
 export { SyncGate } from './sync/SyncGate';

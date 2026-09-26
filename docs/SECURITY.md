@@ -27,8 +27,8 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 ## 3. Données de l'utilisateur
 
 - **Serveur** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS. Le schéma est généré depuis celui du téléphone et vérifié sur un vrai Postgres (`npm run test:server`) : un utilisateur ne peut ni lire ni modifier les lignes d'un autre.
-- **Écritures serveur** : uniquement par la fonction `mysky_push` (liste blanche des tables, droits de l'utilisateur appelant, versions pour détecter les conflits, identifiant de modification pour ne jamais appliquer deux fois la même).
-- **Fichiers** : bucket privé `mysky-files`, chaque utilisateur limité à son dossier `<id>/`.
+- **Écritures serveur** : uniquement par la fonction `mysky_push` (liste blanche des tables, versions pour détecter les conflits, identifiant de modification pour ne jamais appliquer deux fois la même, purgé après 30 jours). Les utilisateurs n'ont que le droit de lecture sur les tables : la fonction est `security definer` et limite chaque lecture et écriture à `user_id = auth.uid()`. Une modification invalide est rejetée seule (`rejected`) sans bloquer les autres ; le téléphone la garde dans l'écran « Conflits de synchronisation », où l'utilisateur restaure sa version ou l'ignore.
+- **Fichiers** : bucket privé `mysky-files` (25 Mo max par fichier), chaque utilisateur limité à son dossier `<id>/`.
 - **Suppression du compte** : fonction serveur `delete-account` (clé service_role côté serveur uniquement) : fichiers puis compte, les lignes partent en cascade.
 - **Téléphone** : la session de connexion est stockée avec `expo-secure-store` (trousseau iOS / keystore Android, accessible après le premier déverrouillage, jamais copiée sur un autre appareil), découpée en morceaux, jamais en clair.
 - **Mots de passe** : 8 caractères minimum avec une lettre et un chiffre ; gérés par Supabase Auth, jamais stockés par l'app.

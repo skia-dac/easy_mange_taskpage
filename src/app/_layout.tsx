@@ -135,6 +135,7 @@ function ThemedStack() {
         <Stack.Screen name="stats" options={{ title: t('stats.title') }} />
         <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
         <Stack.Screen name="account/index" options={{ title: t('account.title') }} />
+        <Stack.Screen name="account/conflicts" options={{ title: t('conflicts.title') }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
     </>

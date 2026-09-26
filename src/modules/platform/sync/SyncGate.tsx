@@ -4,7 +4,7 @@ import { AppState } from 'react-native';
 import { useAuth } from '@/modules/identity';
 import { SYNCED_TABLES, subscribeToChanges, useDb } from '@/shared/db';
 
-import { runSync } from './runner';
+import { cancelSyncRetry, runSync } from './runner';
 
 const AFTER_CHANGE_MS = 4000;
 const EVERY_MS = 5 * 60 * 1000;
@@ -38,6 +38,8 @@ export function SyncGate({ ready }: { ready: boolean }) {
       app.remove();
       clearInterval(every);
       if (timer.current) clearTimeout(timer.current);
+      // Déconnexion ou changement de compte : aucune reprise ne doit tourner pour l'ancien compte.
+      cancelSyncRetry();
     };
   }, [db, userId, ready]);
 

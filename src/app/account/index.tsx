@@ -191,9 +191,15 @@ export default function AccountScreen() {
                   : t('sync.never')}
               </AppText>
               {d?.conflicts ? (
-                <AppText variant="caption" color="muted">
-                  {t('sync.conflicts', { count: d.conflicts })}
-                </AppText>
+                <>
+                  <AppText variant="caption" color="muted">
+                    {t('sync.conflicts', { count: d.conflicts })}
+                  </AppText>
+                  <TextButton
+                    label={t('conflicts.open', { count: d.conflicts })}
+                    onPress={() => router.push('/account/conflicts')}
+                  />
+                </>
               ) : null}
               <Button
                 label={t('sync.now')}

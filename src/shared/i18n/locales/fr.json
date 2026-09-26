@@ -996,8 +996,8 @@
     "never": "Pas encore synchronisé",
     "now": "Synchroniser maintenant",
     "hint": "La synchronisation est automatique : au lancement, au retour dans l’app et quelques secondes après chaque modification.",
-    "conflicts_one": "{{count}} modification faite ici remplacée par une version plus récente d’un autre appareil. Elle est gardée dans la sauvegarde locale.",
-    "conflicts_other": "{{count}} modifications faites ici remplacées par une version plus récente d’un autre appareil. Elles sont gardées dans la sauvegarde locale."
+    "conflicts_one": "{{count}} modification faite ici remplacée par une version plus récente d’un autre appareil ou refusée par le serveur. Elle est gardée : tu peux la restaurer.",
+    "conflicts_other": "{{count}} modifications faites ici remplacées par une version plus récente d’un autre appareil ou refusées par le serveur. Elles sont gardées : tu peux les restaurer."
   },
   "privacy": {
     "title": "Politique de confidentialité",
@@ -1634,5 +1634,46 @@
     "now": "Maintenant",
     "change": "{{delta}} depuis le {{date}}",
     "withPhoto": "avec photo"
+  },
+  "conflicts": {
+    "title": "Conflits de synchronisation",
+    "intro": "Ces modifications faites sur ce téléphone ont été remplacées par une version plus récente d’un autre appareil, ou refusées par le serveur. Rien n’est perdu : tu choisis.",
+    "empty": "Aucun conflit en attente",
+    "replaced": "Remplacée par la version d’un autre appareil",
+    "rejected": "Refusée par le serveur",
+    "restore": "Restaurer ma version",
+    "restoreTitle": "Restaurer ta version ?",
+    "restoreMessage": "La version actuelle sera remplacée par celle faite sur ce téléphone, puis envoyée au serveur.",
+    "ignore": "Ignorer",
+    "open_one": "Voir le conflit",
+    "open_other": "Voir les {{count}} conflits",
+    "entities": {
+      "profiles": "Profil",
+      "subjects": "Matière",
+      "timetables": "Emploi du temps",
+      "course_series": "Cours",
+      "course_exceptions": "Séance modifiée",
+      "off_periods": "Période sans cours",
+      "exams": "Examen",
+      "tasks": "Tâche",
+      "assignments": "Devoir",
+      "personal_events": "Événement",
+      "note_categories": "Catégorie de notes",
+      "notes": "Note",
+      "attachments": "Pièce jointe",
+      "study_sessions": "Session de révision",
+      "habits": "Habitude",
+      "habit_logs": "Suivi d’habitude",
+      "habit_checkpoints": "Point de suivi physique",
+      "work_subtasks": "Sous-tâche",
+      "revision_blocks": "Bloc de révision",
+      "mood_logs": "Humeur",
+      "money_categories": "Catégorie d’argent",
+      "money_goals": "Objectif d’épargne",
+      "money_loans": "Prêt",
+      "money_recurring": "Charge fixe ou tontine",
+      "money_transactions": "Opération d’argent",
+      "work_slots": "Créneau fixe"
+    }
   }
 }

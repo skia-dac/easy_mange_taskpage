@@ -253,6 +253,12 @@ beforeAll(async () => {
     space: 'personal',
   });
   ids.noteCategory = await createNoteCategory(mockDb, { name: 'Idées', colorId: 'green' });
+  // Un conflit de synchronisation gardé de côté (version locale d'une matière remplacée).
+  await mockDb.runAsync(
+    `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
+     VALUES ('conflict', 'subjects', ?, ?, '{}', '2026-09-23T08:00:00.000Z')`,
+    [ids.subject, JSON.stringify({ id: ids.subject, name: 'Marketing (ancienne version)' })],
+  );
 });
 afterAll(() => mockDb.close());
 
@@ -648,6 +654,12 @@ const cases: Case[] = [
       'Supprimer mon compte',
       'Se déconnecter',
     ],
+  },
+  {
+    name: 'Conflits de synchronisation',
+    load: () => require('@/app/account/conflicts') as { default: ComponentType },
+    auth: signedIn,
+    expect: ['Marketing (ancienne version)', 'Matière', 'Restaurer ma version', 'Ignorer'],
   },
   {
     name: 'Connexion',

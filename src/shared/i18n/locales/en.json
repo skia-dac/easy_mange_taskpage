@@ -996,8 +996,8 @@
     "never": "Not synced yet",
     "now": "Sync now",
     "hint": "Sync is automatic: at launch, when you come back to the app and a few seconds after each change.",
-    "conflicts_one": "{{count}} change made here replaced by a newer version from another device. It is kept in the local backup.",
-    "conflicts_other": "{{count}} changes made here replaced by a newer version from another device. They are kept in the local backup."
+    "conflicts_one": "{{count}} change made here replaced by a newer version from another device or refused by the server. It is kept: you can restore it.",
+    "conflicts_other": "{{count}} changes made here replaced by a newer version from another device or refused by the server. They are kept: you can restore them."
   },
   "privacy": {
     "title": "Privacy policy",
@@ -1634,5 +1634,46 @@
     "now": "Now",
     "change": "{{delta}} since {{date}}",
     "withPhoto": "with photo"
+  },
+  "conflicts": {
+    "title": "Sync conflicts",
+    "intro": "These changes made on this phone were replaced by a newer version from another device, or refused by the server. Nothing is lost: you decide.",
+    "empty": "No pending conflict",
+    "replaced": "Replaced by another device’s version",
+    "rejected": "Refused by the server",
+    "restore": "Restore my version",
+    "restoreTitle": "Restore your version?",
+    "restoreMessage": "The current version will be replaced by the one made on this phone, then sent to the server.",
+    "ignore": "Ignore",
+    "open_one": "View the conflict",
+    "open_other": "View the {{count}} conflicts",
+    "entities": {
+      "profiles": "Profile",
+      "subjects": "Subject",
+      "timetables": "Timetable",
+      "course_series": "Course",
+      "course_exceptions": "Changed session",
+      "off_periods": "Break",
+      "exams": "Exam",
+      "tasks": "Task",
+      "assignments": "Assignment",
+      "personal_events": "Event",
+      "note_categories": "Note category",
+      "notes": "Note",
+      "attachments": "Attachment",
+      "study_sessions": "Study session",
+      "habits": "Habit",
+      "habit_logs": "Habit log",
+      "habit_checkpoints": "Body checkpoint",
+      "work_subtasks": "Subtask",
+      "revision_blocks": "Revision block",
+      "mood_logs": "Mood",
+      "money_categories": "Money category",
+      "money_goals": "Savings goal",
+      "money_loans": "Loan",
+      "money_recurring": "Fixed charge or tontine",
+      "money_transactions": "Money transaction",
+      "work_slots": "Fixed slot"
+    }
   }
 }
