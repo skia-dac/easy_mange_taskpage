@@ -10,7 +10,9 @@ import {
   createOffPeriod,
   deleteOffPeriod,
   getOffPeriod,
+  listCourseExceptions,
   listCourseSeries,
+  listOffPeriods,
   offPeriodKinds,
   updateOffPeriod,
   type OffPeriodInput,
@@ -49,9 +51,16 @@ export default function OffPeriodFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<OffPeriodInput>) => setForm((f) => ({ ...f, ...patch }));
   const series = useLiveQuery((d) => listCourseSeries(d), ['course_series'], []);
+  const exceptions = useLiveQuery((d) => listCourseExceptions(d), ['course_exceptions'], []);
+  const offPeriods = useLiveQuery((d) => listOffPeriods(d), ['off_periods'], []);
+  // Séances qui disparaîtraient : sans celles déjà annulées ni celles masquées par une autre période
+  // (la période en cours de modification est exclue, sinon elle masquerait ses propres séances).
   const affected =
     form.endDate >= form.startDate
-      ? countAffectedOccurrences(series.data ?? [], form.startDate, form.endDate)
+      ? countAffectedOccurrences(series.data ?? [], form.startDate, form.endDate, {
+          exceptions: exceptions.data ?? [],
+          offPeriods: (offPeriods.data ?? []).filter((p) => p.id !== id),
+        })
       : 0;
 
   useEffect(() => {
@@ -156,11 +165,13 @@ export default function OffPeriodFormScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <View style={{ flex: 1, gap: spacing.xs }}>
             <AppText variant="bodyStrong">{t('offPeriods.suspend')}</AppText>
-            <AppText variant="caption" color="muted">
-              {affected > 0
-                ? t('offPeriods.suspendHint', { count: affected })
-                : t('offPeriods.suspendNone')}
-            </AppText>
+            {form.suspendCourses ? (
+              <AppText variant="caption" color="muted">
+                {affected > 0
+                  ? t('offPeriods.suspendHint', { count: affected })
+                  : t('offPeriods.suspendNone')}
+              </AppText>
+            ) : null}
           </View>
           <Switch
             accessibilityLabel={t('offPeriods.suspend')}

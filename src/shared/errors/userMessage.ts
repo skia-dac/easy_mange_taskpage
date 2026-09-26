@@ -13,5 +13,5 @@ const keyByCode: Record<AppErrorCode, string> = {
  * On n'affiche jamais le message technique (ex. « Error 500 ») à l'utilisateur.
  */
 export function userMessageKey(error: unknown): string {
-  return isAppError(error) ? keyByCode[error.code] : keyByCode.unknown;
+  return isAppError(error) ? (error.messageKey ?? keyByCode[error.code]) : keyByCode.unknown;
 }

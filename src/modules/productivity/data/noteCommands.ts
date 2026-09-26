@@ -103,6 +103,20 @@ export async function detachNotesFromCourse(w: EntityWriter, seriesId: string) {
   for (const r of rows) await w.update('notes', r.id, { course_series_id: null });
 }
 
+/** Les notes d'un cours prises à partir de `fromDate` suivent une nouvelle série (§27 « et les suivants »). */
+export async function moveNotesToSeries(
+  w: EntityWriter,
+  fromSeriesId: string,
+  toSeriesId: string,
+  fromDate: string,
+) {
+  const rows = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM notes WHERE course_series_id = ? AND course_date >= ? AND deleted_at IS NULL',
+    [fromSeriesId, fromDate],
+  );
+  for (const r of rows) await w.update('notes', r.id, { course_series_id: toSeriesId });
+}
+
 export async function deleteNotesOfSubject(w: EntityWriter, subjectId: string) {
   const rows = await w.db.getAllAsync<{ id: string }>(
     'SELECT id FROM notes WHERE subject_id = ? AND deleted_at IS NULL',

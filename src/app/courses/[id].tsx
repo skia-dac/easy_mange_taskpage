@@ -11,7 +11,6 @@ import { useSubjects } from '@/hooks/useSubjects';
 import {
   cancelOccurrence,
   colorOf,
-  endSeriesBefore,
   getCourseException,
   getCourseSeries,
   restoreOccurrence,
@@ -19,7 +18,7 @@ import {
 import { NoteCard } from '@/components/NoteCard';
 import { listNotes } from '@/modules/productivity';
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
-import { deleteCourseEverywhere } from '@/workflows';
+import { deleteCourseEverywhere, endCourseSeriesEverywhere } from '@/workflows';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDate, formatLongDate, formatShortDate } from '@/shared/format';
@@ -55,10 +54,7 @@ export default function CourseDetailScreen() {
   );
 
   const notes = useLiveQuery(
-    async (d) =>
-      (await listNotes(d)).filter(
-        (n) => n.courseSeriesId === id && (!date || n.courseDate === date),
-      ),
+    (d) => listNotes(d, { courseSeriesId: id, courseDate: date || undefined }),
     ['notes'],
     [id, date],
   );
@@ -91,7 +87,6 @@ export default function CourseDetailScreen() {
       : formatLongDate(fromIsoDate(c.validFrom), labels.lang);
   const fail = (e: unknown) => showError(userMessageKey(e));
 
-  /** Modifier : une seule séance, cette séance et les suivantes, ou toute la série (§27). */
   /** Modifier ou supprimer : une seule séance, cette séance et les suivantes, ou toute la série (§27, §28). */
 
   const deleteAll = async () => {
@@ -103,6 +98,17 @@ export default function CourseDetailScreen() {
       t('common.delete'),
     );
     if (ok) deleteCourseEverywhere(db, c.id).then(() => goBack(), fail);
+  };
+
+  /** « Ce cours et les suivants » : la série s'arrête la veille (§28), après confirmation. */
+  const deleteFollowing = async () => {
+    if (!date) return;
+    const ok = await confirmDestructive(
+      t('courses.deleteTitle'),
+      t('occurrence.deleteFollowingMessage', { date: formatShortDate(date, labels.lang) }),
+      t('common.delete'),
+    );
+    if (ok) endCourseSeriesEverywhere(db, c.id, date).then(() => goBack(), fail);
   };
 
   const edit = () => {
@@ -141,9 +147,7 @@ export default function CourseDetailScreen() {
     {
       label: t('occurrence.scopeFollowing'),
       destructive: true,
-      onPress: () => {
-        if (date) endSeriesBefore(db, c.id, date).then(() => goBack(), fail);
-      },
+      onPress: () => void deleteFollowing(),
     },
     { label: t('occurrence.scopeAll'), destructive: true, onPress: () => void deleteAll() },
   ];

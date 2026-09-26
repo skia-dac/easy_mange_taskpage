@@ -1,11 +1,16 @@
 import { addDaysIso, type IsoDate } from '@/shared/dates';
 import { write, type Db, type EntityWriter, type Values } from '@/shared/db';
 import { AppError } from '@/shared/errors';
-import { parseInput } from '@/shared/validation';
+import { parseInput, ValidationError } from '@/shared/validation';
 
-import { courseInputSchema, type CourseInput } from '../domain/course';
-import { occurrenceOverrideSchema, type OccurrenceOverrideInput } from '../domain/exception';
+import type { CourseInput } from '../domain/course';
+import {
+  occurrenceOverrideSchema,
+  overrideEndAfterStart,
+  type OccurrenceOverrideInput,
+} from '../domain/exception';
 import { offPeriodInputSchema, type OffPeriodInput } from '../domain/offPeriod';
+import { courseValues, removeCourse } from './commands';
 import { toCourseSeries, type CourseSeriesRow } from './rows';
 
 /** Portée d'une modification ou suppression sur un cours récurrent (§27, §28). */
@@ -24,7 +29,16 @@ async function upsertException(w: EntityWriter, seriesId: string, date: IsoDate,
   else await w.insert('course_exceptions', { series_id: seriesId, date, ...values });
 }
 
-/** Marque UNE séance comme annulée : elle reste visible, barrée (§29). */
+async function loadSeries(w: EntityWriter, seriesId: string) {
+  const row = await w.db.getFirstAsync<CourseSeriesRow>(
+    'SELECT * FROM course_series WHERE id = ? AND deleted_at IS NULL',
+    [seriesId],
+  );
+  if (!row) throw new AppError('notFound');
+  return toCourseSeries(row);
+}
+
+/** Marque UNE séance comme annulée : elle reste visible, barrée (§29). Tout ajustement antérieur est effacé. */
 export async function cancelOccurrence(db: Db, seriesId: string, date: IsoDate) {
   return write(db, (w) =>
     upsertException(w, seriesId, date, {
@@ -35,6 +49,7 @@ export async function cancelOccurrence(db: Db, seriesId: string, date: IsoDate) 
       new_room: null,
       new_teacher: null,
       new_title: null,
+      note: null,
     }),
   );
 }
@@ -47,11 +62,18 @@ export async function restoreOccurrence(db: Db, seriesId: string, date: IsoDate)
   });
 }
 
-/** Modifie UNE séance (option 1 de §27). */
+/**
+ * Modifie UNE séance (option 1 de §27). Les heures laissées vides reprennent celles de la série :
+ * on vérifie donc fin > début sur les heures effectives (nouvelle heure ou heure de la série).
+ */
 export async function overrideOccurrence(db: Db, input: OccurrenceOverrideInput) {
   const v = parseInput(occurrenceOverrideSchema, input);
-  return write(db, (w) =>
-    upsertException(w, v.seriesId, v.date, {
+  return write(db, async (w) => {
+    const series = await loadSeries(w, v.seriesId);
+    if (!overrideEndAfterStart(series, v)) {
+      throw new ValidationError({ newEndTime: 'validation.endAfterStart' });
+    }
+    await upsertException(w, v.seriesId, v.date, {
       kind: 'modified',
       ...(v.newDate === undefined ? {} : { new_date: v.newDate === v.date ? null : v.newDate }),
       new_start_time: v.newStartTime,
@@ -60,28 +82,8 @@ export async function overrideOccurrence(db: Db, input: OccurrenceOverrideInput)
       new_teacher: v.newTeacher,
       new_title: v.newTitle,
       note: v.note,
-    }),
-  );
-}
-
-function seriesValues(input: CourseInput): Values {
-  const v = parseInput(courseInputSchema, input);
-  return {
-    subject_id: v.subjectId,
-    timetable_id: v.timetableId,
-    title: v.title,
-    teacher: v.teacher,
-    room: v.room,
-    course_type: v.courseType,
-    weekday: v.weekday,
-    start_time: v.startTime,
-    end_time: v.endTime,
-    valid_from: v.validFrom,
-    valid_until: v.validUntil,
-    recurrence: v.recurrence,
-    description: v.description,
-    reminder_minutes: v.reminderMinutes,
-  };
+    });
+  });
 }
 
 /**
@@ -96,49 +98,62 @@ export async function splitSeries(
   date: IsoDate,
   input: CourseInput,
 ): Promise<string> {
-  const values = seriesValues({ ...input, startDate: date });
-  return write(db, async (w) => {
-    const row = await w.db.getFirstAsync<CourseSeriesRow>(
-      'SELECT * FROM course_series WHERE id = ? AND deleted_at IS NULL',
-      [seriesId],
-    );
-    if (!row) throw new AppError('notFound');
-    const current = toCourseSeries(row);
-    if (date <= current.validFrom) {
-      // Rien avant cette date : c'est toute la série qui change.
-      await w.update('course_series', seriesId, values);
-      return seriesId;
-    }
-    await w.update('course_series', seriesId, { valid_until: addDaysIso(date, -1) });
-    const newId = await w.insert('course_series', values);
-    const moved = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM course_exceptions WHERE series_id = ? AND date >= ? AND deleted_at IS NULL',
-      [seriesId, date],
-    );
-    for (const e of moved) await w.update('course_exceptions', e.id, { series_id: newId });
-    return newId;
-  });
+  return write(db, (w) => splitSeriesIn(w, seriesId, date, input));
+}
+
+/**
+ * Même chose dans une transaction existante (voir workflows/splitSeriesEverywhere, qui fait aussi
+ * suivre les notes prises à partir de `date`). Retourne l'id de la série qui porte `date`.
+ */
+export async function splitSeriesIn(
+  w: EntityWriter,
+  seriesId: string,
+  date: IsoDate,
+  input: CourseInput,
+): Promise<string> {
+  const values = courseValues({ ...input, startDate: date });
+  const current = await loadSeries(w, seriesId);
+  if (date <= current.validFrom) {
+    // Rien avant cette date : c'est toute la série qui change.
+    await w.update('course_series', seriesId, values);
+    return seriesId;
+  }
+  await w.update('course_series', seriesId, { valid_until: addDaysIso(date, -1) });
+  const newId = await w.insert('course_series', values);
+  const moved = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM course_exceptions WHERE series_id = ? AND date >= ? AND deleted_at IS NULL',
+    [seriesId, date],
+  );
+  for (const e of moved) await w.update('course_exceptions', e.id, { series_id: newId });
+  return newId;
 }
 
 /** « Ce cours et les suivants » pour une suppression (§28) : la série s'arrête la veille. */
 export async function endSeriesBefore(db: Db, seriesId: string, date: IsoDate) {
-  return write(db, async (w) => {
-    const row = await w.db.getFirstAsync<{ valid_from: string }>(
-      'SELECT valid_from FROM course_series WHERE id = ? AND deleted_at IS NULL',
-      [seriesId],
-    );
-    if (!row) throw new AppError('notFound');
-    if (date <= row.valid_from) {
-      await w.softDelete('course_series', seriesId);
-      return;
-    }
-    await w.update('course_series', seriesId, { valid_until: addDaysIso(date, -1) });
-    const later = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM course_exceptions WHERE series_id = ? AND date >= ? AND deleted_at IS NULL',
-      [seriesId, date],
-    );
-    for (const e of later) await w.softDelete('course_exceptions', e.id);
-  });
+  return write(db, (w) => endSeriesBeforeIn(w, seriesId, date));
+}
+
+/**
+ * Même chose dans une transaction existante. Si rien ne précède `date`, c'est toute la série qui
+ * disparaît, exceptions comprises (`removeCourse`). Retourne `true` dans ce cas.
+ */
+export async function endSeriesBeforeIn(
+  w: EntityWriter,
+  seriesId: string,
+  date: IsoDate,
+): Promise<boolean> {
+  const current = await loadSeries(w, seriesId);
+  if (date <= current.validFrom) {
+    await removeCourse(w, seriesId);
+    return true;
+  }
+  await w.update('course_series', seriesId, { valid_until: addDaysIso(date, -1) });
+  const later = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM course_exceptions WHERE series_id = ? AND date >= ? AND deleted_at IS NULL',
+    [seriesId, date],
+  );
+  for (const e of later) await w.softDelete('course_exceptions', e.id);
+  return false;
 }
 
 // ---- Vacances et jours sans cours ----

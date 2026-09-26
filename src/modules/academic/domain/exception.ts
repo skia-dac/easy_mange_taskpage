@@ -47,3 +47,16 @@ export const occurrenceOverrideSchema = z
   });
 
 export type OccurrenceOverrideInput = z.input<typeof occurrenceOverrideSchema>;
+
+/**
+ * Une heure laissée vide reprend celle de la série : la fin effective doit rester après le début
+ * effectif (ex. série 08:00–10:00, nouvelle fin 07:30 → refusé même sans nouveau début).
+ */
+export function overrideEndAfterStart(
+  series: { startTime: string; endTime: string },
+  override: { newStartTime?: string | null; newEndTime?: string | null },
+): boolean {
+  const start = override.newStartTime || series.startTime;
+  const end = override.newEndTime || series.endTime;
+  return timeToMinutes(end) > timeToMinutes(start);
+}

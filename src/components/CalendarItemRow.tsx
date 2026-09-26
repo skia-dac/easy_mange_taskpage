@@ -26,7 +26,9 @@ export function CalendarItemRow({ item, subjects, now }: Props) {
 export function calendarItemKey(item: CalendarItem): string {
   switch (item.kind) {
     case 'course':
-      return `c-${item.occurrence.seriesId}-${item.occurrence.date}`;
+      // Une séance déplacée peut tomber le même jour qu'une séance régulière : le jour d'origine
+      // distingue les deux.
+      return `c-${item.occurrence.seriesId}-${item.occurrence.originalDate}`;
     case 'exam':
       return `x-${item.exam.id}`;
     case 'work':

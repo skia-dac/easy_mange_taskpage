@@ -15,4 +15,9 @@ export { saveRevisionPlan } from './revisionPlan';
 export type { SaveRevisionPlan } from './revisionPlan';
 export { moveCalendarItem } from './moveItem';
 export { deleteHabitEverywhere } from './deleteHabit';
-export { deleteCourseEverywhere } from './deleteCourse';
+export {
+  deleteCourseEverywhere,
+  deleteTimetableEverywhere,
+  endCourseSeriesEverywhere,
+  splitSeriesEverywhere,
+} from './deleteCourse';

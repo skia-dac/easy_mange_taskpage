@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import {
   createTimetable,
-  deleteTimetable,
   getTimetable,
   listCourseSeries,
   timetableKinds,
@@ -28,6 +27,7 @@ import {
   useSave,
   reportLoadError,
 } from '@/shared/ui';
+import { deleteTimetableEverywhere } from '@/workflows';
 
 export default function TimetableFormScreen() {
   const { t } = useTranslation();
@@ -70,7 +70,7 @@ export default function TimetableFormScreen() {
     );
     if (!ok) return;
     try {
-      await deleteTimetable(db, id);
+      await deleteTimetableEverywhere(db, id);
       goBack();
     } catch (e) {
       showError(userMessageKey(e));

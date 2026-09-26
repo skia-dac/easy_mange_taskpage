@@ -101,6 +101,9 @@ export function countAffectedOccurrences(
   series: readonly CourseSeries[],
   from: IsoDate,
   to: IsoDate,
+  context: OccurrenceContext = {},
 ): number {
-  return occurrencesInRange(series, from, to).length;
+  // Une séance déjà annulée ou déjà masquée par une autre suspension ne compte pas.
+  return occurrencesInRange(series, from, to, context).filter((o) => o.status !== 'cancelled')
+    .length;
 }

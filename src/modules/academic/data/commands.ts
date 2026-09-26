@@ -95,31 +95,43 @@ export async function ensureTimetable(
   return row.id;
 }
 
+/** Séries de cours (vivantes) rattachées à un emploi du temps. */
+export async function seriesIdsOfTimetable(w: EntityWriter, timetableId: string) {
+  const rows = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM course_series WHERE timetable_id = ? AND deleted_at IS NULL',
+    [timetableId],
+  );
+  return rows.map((r) => r.id);
+}
+
+/**
+ * Supprime l'emploi du temps ET ses cours (exceptions comprises), dans une transaction existante.
+ * Voir aussi `deleteTimetableEverywhere` (workflows) : détache en plus les notes des cours.
+ */
+export async function removeTimetable(w: EntityWriter, id: string) {
+  for (const seriesId of await seriesIdsOfTimetable(w, id)) await removeCourse(w, seriesId);
+  // Examens et révisions rattachés : on les garde, simplement détachés de cet emploi du temps.
+  const exams = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM exams WHERE timetable_id = ? AND deleted_at IS NULL',
+    [id],
+  );
+  for (const e of exams) await w.update('exams', e.id, { timetable_id: null });
+  const blocks = await w.db.getAllAsync<{ id: string }>(
+    'SELECT id FROM revision_blocks WHERE timetable_id = ? AND deleted_at IS NULL',
+    [id],
+  );
+  for (const b of blocks) await w.update('revision_blocks', b.id, { timetable_id: null });
+  await w.softDelete('timetables', id);
+}
+
 /** Supprime l'emploi du temps ET ses cours (l'écran demande confirmation avant). */
 export async function deleteTimetable(db: Db, id: string) {
-  return write(db, async (w) => {
-    const series = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM course_series WHERE timetable_id = ? AND deleted_at IS NULL',
-      [id],
-    );
-    for (const s of series) await w.softDelete('course_series', s.id);
-    // Examens et révisions rattachés : on les garde, simplement détachés de cet emploi du temps.
-    const exams = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM exams WHERE timetable_id = ? AND deleted_at IS NULL',
-      [id],
-    );
-    for (const e of exams) await w.update('exams', e.id, { timetable_id: null });
-    const blocks = await w.db.getAllAsync<{ id: string }>(
-      'SELECT id FROM revision_blocks WHERE timetable_id = ? AND deleted_at IS NULL',
-      [id],
-    );
-    for (const b of blocks) await w.update('revision_blocks', b.id, { timetable_id: null });
-    await w.softDelete('timetables', id);
-  });
+  return write(db, (w) => removeTimetable(w, id));
 }
 
 // ---- Cours ----
-function courseValues(input: CourseInput) {
+/** Colonnes d'une série de cours à partir de la saisie validée (partagé avec exceptionCommands). */
+export function courseValues(input: CourseInput) {
   const v = parseInput(courseInputSchema, input);
   return {
     subject_id: v.subjectId,

@@ -11,12 +11,29 @@ import {
 
 const ALIVE = 'deleted_at IS NULL';
 
-export async function listNotes(db: Db, filter: { subjectId?: string; favorites?: boolean } = {}) {
+export async function listNotes(
+  db: Db,
+  filter: {
+    subjectId?: string;
+    favorites?: boolean;
+    /** Notes prises pendant ce cours (et, avec `courseDate`, pendant cette séance). */
+    courseSeriesId?: string;
+    courseDate?: string;
+  } = {},
+) {
   const where = [ALIVE];
   const params: string[] = [];
   if (filter.subjectId) {
     where.push('subject_id = ?');
     params.push(filter.subjectId);
+  }
+  if (filter.courseSeriesId) {
+    where.push('course_series_id = ?');
+    params.push(filter.courseSeriesId);
+  }
+  if (filter.courseDate) {
+    where.push('course_date = ?');
+    params.push(filter.courseDate);
   }
   if (filter.favorites) where.push('is_favorite = 1');
   const rows = await db.getAllAsync<NoteRow>(

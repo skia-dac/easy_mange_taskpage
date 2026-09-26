@@ -14,8 +14,10 @@ import {
   colorOf,
   formatGrade,
   getSubject,
+  listCourseExceptions,
   listCourseSeries,
   listExams,
+  listOffPeriods,
   weightedAverage,
   occurrencesInRange,
 } from '@/modules/academic';
@@ -57,6 +59,9 @@ export default function SubjectDetailScreen() {
     ['course_series'],
     [id],
   );
+  // Pour « Prochain : … » : une séance annulée ou tombant pendant des vacances suspendues ne compte pas.
+  const exceptions = useLiveQuery((d) => listCourseExceptions(d), ['course_exceptions'], []);
+  const offPeriods = useLiveQuery((d) => listOffPeriods(d), ['off_periods'], []);
   const exams = useLiveQuery((d) => listExams(d, { subjectId: id }), ['exams'], [id]);
   const average = weightedAverage(exams.data ?? []);
   const gradedCount = (exams.data ?? []).filter((e) => e.grade !== null).length;
@@ -177,9 +182,10 @@ export default function SubjectDetailScreen() {
         ) : null}
         {(series.data ?? []).map((c) => {
           const today = toIsoDate(now);
-          const next = occurrencesInRange([c], today, addDaysIso(today, 60)).find(
-            (o) => o.status !== 'cancelled',
-          );
+          const next = occurrencesInRange([c], today, addDaysIso(today, 60), {
+            exceptions: exceptions.data ?? [],
+            offPeriods: offPeriods.data ?? [],
+          }).find((o) => o.status !== 'cancelled');
           return (
             <ListRow
               key={c.id}

@@ -120,6 +120,7 @@
     "weekly": "Chaque semaine"
   },
   "calendar": {
+    "moveOnDayOff": "Impossible de déplacer une séance sur un jour de vacances : les cours y sont suspendus.",
     "title": "Calendrier",
     "day": "Jour",
     "week": "Semaine",
@@ -449,6 +450,7 @@
     "scopeAll": "Toute la série",
     "deleteScopeTitle": "Que veux-tu supprimer ?",
     "deleteThisHint": "Supprimer une seule séance = la marquer « Annulé ».",
+    "deleteFollowingMessage": "Ce cours et tous les suivants à partir du {{date}} seront supprimés. Les séances précédentes restent.",
     "overrideHint": "Laisse un champ vide pour garder la valeur habituelle.",
     "note": "Note pour ce jour",
     "notePlaceholder": "Ex. Cours déplacé en salle C04",

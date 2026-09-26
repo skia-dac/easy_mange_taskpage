@@ -120,6 +120,7 @@
     "weekly": "Every week"
   },
   "calendar": {
+    "moveOnDayOff": "A session can’t be moved to a day off: courses are suspended that day.",
     "title": "Calendar",
     "day": "Day",
     "week": "Week",
@@ -449,6 +450,7 @@
     "scopeAll": "The whole series",
     "deleteScopeTitle": "What do you want to delete?",
     "deleteThisHint": "Deleting a single session = marking it “Cancelled”.",
+    "deleteFollowingMessage": "This session and all the following ones from {{date}} will be deleted. Earlier sessions are kept.",
     "overrideHint": "Leave a field empty to keep the usual value.",
     "note": "Note for this day",
     "notePlaceholder": "e.g. Class moved to room C04",

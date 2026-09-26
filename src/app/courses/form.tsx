@@ -15,11 +15,9 @@ import {
   courseInputSchema,
   courseTypes,
   createCourse,
-  deleteCourse,
   getCourseSeries,
   listTimetables,
   occurrencesInRange,
-  splitSeries,
   updateCourse,
   type CourseInput,
 } from '@/modules/academic';
@@ -42,6 +40,7 @@ import {
   TextField,
   useSave,
 } from '@/shared/ui';
+import { deleteCourseEverywhere, splitSeriesEverywhere } from '@/workflows';
 
 type Form = Omit<CourseInput, 'weekday'> & { weekday: number };
 
@@ -157,7 +156,8 @@ export default function CourseFormScreen() {
 
   const submit = () =>
     run(async () => {
-      if (params.id && following) await splitSeries(db, params.id, params.date as string, form);
+      if (params.id && following)
+        await splitSeriesEverywhere(db, params.id, params.date as string, form);
       else if (params.id) await updateCourse(db, params.id, form);
       else await createCourse(db, form);
       goBack();
@@ -174,7 +174,7 @@ export default function CourseFormScreen() {
     );
     if (!ok) return;
     try {
-      await deleteCourse(db, params.id);
+      await deleteCourseEverywhere(db, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
       backToList();
     } catch (e) {

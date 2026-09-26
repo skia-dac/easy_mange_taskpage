@@ -3,11 +3,18 @@ export type AppErrorCode = 'network' | 'saveFailed' | 'notFound' | 'validation' 
 
 export class AppError extends Error {
   readonly code: AppErrorCode;
+  /** Clé de traduction plus précise que celle du code (ex. `calendar.moveOnDayOff`). */
+  readonly messageKey: string | undefined;
 
-  constructor(code: AppErrorCode, message?: string, options?: { cause?: unknown }) {
-    super(message ?? code, options);
+  constructor(
+    code: AppErrorCode,
+    message?: string,
+    options?: { cause?: unknown; messageKey?: string },
+  ) {
+    super(message ?? code, options?.cause === undefined ? undefined : { cause: options.cause });
     this.name = 'AppError';
     this.code = code;
+    this.messageKey = options?.messageKey;
   }
 }
 
