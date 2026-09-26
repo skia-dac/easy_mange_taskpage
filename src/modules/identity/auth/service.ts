@@ -58,10 +58,9 @@ export async function signUp(input: SignUpInput): Promise<{ needsConfirmation: b
   const { data, error } = await requireClient().auth.signUp({
     email: v.email,
     password: v.password,
-    options: {
-      emailRedirectTo: redirectUrl('auth/callback'),
-      data: { first_name: v.firstName ?? '', last_name: v.lastName ?? '' },
-    },
+    // Prénom et nom ne partent pas en `user_metadata` : le profil est synchronisé comme le reste
+    // (voir workflows/fillProfileFromSignUp, qui lit le formulaire, pas les métadonnées).
+    options: { emailRedirectTo: redirectUrl('auth/callback') },
   });
   if (error) fail(error, 'signUp');
   // Adresse déjà utilisée : Supabase répond sans erreur mais avec une liste d'identités vide.
@@ -115,10 +114,23 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<boole
   return true;
 }
 
+let explicitSignOut = false;
+
+/**
+ * Vrai (une seule fois) si la dernière déconnexion vient d'un `signOut()` de l'app : AuthProvider
+ * s'en sert pour distinguer une session expirée (à signaler) d'une déconnexion voulue.
+ */
+export function takeExplicitSignOut(): boolean {
+  const was = explicitSignOut;
+  explicitSignOut = false;
+  return was;
+}
+
 /** Déconnexion de ce téléphone seulement (les autres appareils restent connectés). */
 export async function signOut(): Promise<void> {
   const c = getSupabase();
   if (!c) return;
+  explicitSignOut = true;
   const { error } = await c.auth.signOut({ scope: 'local' });
   if (error) logger.warn('Déconnexion incomplète', { where: 'signOut' });
 }

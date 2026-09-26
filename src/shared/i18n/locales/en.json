@@ -938,6 +938,7 @@
     "otherConfirm": "Erase and continue"
   },
   "auth": {
+    "sessionExpired": "Your session has expired. Sign in again to keep syncing.",
     "signInTitle": "Sign in",
     "signUpTitle": "Create an account",
     "signUpHint": "Your account syncs your data between your devices.",
@@ -979,7 +980,8 @@
       "tooMany": "Too many attempts. Try again in a few minutes.",
       "linkExpired": "This link has expired or was already used. Ask for a new one.",
       "notConfigured": "Accounts are not available in this version.",
-      "deleteFailed": "The account could not be deleted. Check your connection and try again."
+      "deleteFailed": "The account could not be deleted. Check your connection and try again.",
+      "localWipeFailed": "Your account was deleted from the server, but the data on this phone could not be erased. Use “Delete all my data” in Settings."
     }
   },
   "sync": {

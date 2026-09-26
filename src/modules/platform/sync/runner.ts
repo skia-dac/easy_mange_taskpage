@@ -1,4 +1,4 @@
-import { getSupabase } from '@/modules/identity';
+import { getSupabase, mergeDuplicateProfiles } from '@/modules/identity';
 import type { Db } from '@/shared/db';
 import { isAppError } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -18,7 +18,11 @@ export function runSync(db: Db, userId: string): Promise<SyncReport | null> {
   running = (async () => {
     setSyncStatus({ state: 'syncing' });
     try {
-      const report = await syncOnce(db, supabaseRemote(client));
+      const remote = supabaseRemote(client);
+      let report = await syncOnce(db, remote);
+      // Le pull vient de ramener le profil du compte : s'il double un profil créé hors ligne,
+      // on fusionne tout de suite et on renvoie le résultat sans attendre la prochaine synchro.
+      if (await mergeDuplicateProfiles(db)) report = await syncOnce(db, remote);
       await syncFiles(db, userId, supabaseFileStore(client));
       setSyncStatus({ state: 'idle', lastError: null });
       return report;

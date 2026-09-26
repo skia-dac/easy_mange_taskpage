@@ -7,6 +7,7 @@ import { AccentPicker } from '@/components/AccentPicker';
 import { useLabels } from '@/hooks/useLabels';
 import {
   courseReminderOptions,
+  defaultNotificationPreferences,
   getAccentPreference,
   getAppearancePreference,
   getLanguagePreference,
@@ -16,7 +17,6 @@ import {
   getWeekStart,
   isAppLockEnabled,
   signOut,
-  useAuth,
   setAccentPreference,
   setAppearancePreference,
   setAppLockEnabled,
@@ -69,6 +69,7 @@ import {
   showInfo,
   TextButton,
   showToast,
+  reportLoadError,
 } from '@/shared/ui';
 import { wipeAllData } from '@/workflows';
 
@@ -97,7 +98,6 @@ export default function SettingsScreen() {
   const [granted, setGranted] = useState<boolean | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
   const [appLock, setAppLock] = useState(false);
-  const auth = useAuth();
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [busy, setBusy] = useState(false);
@@ -118,17 +118,25 @@ export default function SettingsScreen() {
       isAppLockEnabled(db),
       getAccentPreference(db),
       getTextScalePreference(db),
-    ]).then(([p, l, a, w, g, lock, ac, ts]) => {
-      setAccent(ac);
-      setTextScale(ts);
-      setPrefs(p);
-      setLang(l);
-      setAppearance(a);
-      setWeekStartState(w);
-      setGranted(g);
-      setAppLock(lock);
-      void refreshBackups();
-    });
+    ])
+      .then(([p, l, a, w, g, lock, ac, ts]) => {
+        setAccent(ac);
+        setTextScale(ts);
+        setPrefs(p);
+        setLang(l);
+        setAppearance(a);
+        setWeekStartState(w);
+        setGranted(g);
+        setAppLock(lock);
+      })
+      .catch((e: unknown) => {
+        // Une lecture a échoué : l'écran s'affiche quand même avec les valeurs par défaut.
+        reportLoadError(e);
+        setPrefs((current) => current ?? defaultNotificationPreferences);
+        setGranted((current) => current ?? false);
+      })
+      .then(() => refreshBackups())
+      .catch(reportLoadError);
   }, [db, refreshBackups]);
 
   const update = (patch: Partial<NotificationPreferences>) => {
@@ -215,8 +223,9 @@ export default function SettingsScreen() {
       );
       if (!second) return;
       await wipeAllData(db);
-      // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau.
-      if (auth.userId) await signOut();
+      // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau
+      // (sans condition : une session peut exister sans que l'état d'auth soit encore renseigné).
+      await signOut();
       router.replace('/onboarding');
     });
 

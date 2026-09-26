@@ -6,7 +6,13 @@ import { ScrollView, View } from 'react-native';
 import { AccountsUnavailable } from '@/components/AccountsUnavailable';
 import { useLabels } from '@/hooks/useLabels';
 import { accountMessageKey, getAccountOwner, getLastSyncAt, useAuth } from '@/modules/identity';
-import { conflictCount, pendingCount, runSync, useSyncStatus } from '@/modules/platform';
+import {
+  conflictCount,
+  getSyncStatus,
+  pendingCount,
+  runSync,
+  useSyncStatus,
+} from '@/modules/platform';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDateTime } from '@/shared/format';
@@ -77,6 +83,16 @@ export default function AccountScreen() {
       fail(e);
     } finally {
       setBusy(false);
+    }
+  };
+
+  /** « Synchroniser maintenant » : runSync ne lève jamais, on lit l'état pour signaler un échec. */
+  const syncNow = async () => {
+    if (!userId) return;
+    await runSync(db, userId);
+    const after = getSyncStatus();
+    if (after.state === 'error' || after.state === 'offline') {
+      showError(after.lastError ?? 'sync.error');
     }
   };
 
@@ -181,7 +197,7 @@ export default function AccountScreen() {
               ) : null}
               <Button
                 label={t('sync.now')}
-                onPress={() => void runSync(db, userId)}
+                onPress={() => void syncNow()}
                 disabled={sync.state === 'syncing'}
               />
               <AppText variant="caption" color="muted">
@@ -215,6 +231,7 @@ export default function AccountScreen() {
       <TextButton
         label={t('account.delete')}
         color="danger"
+        disabled={busy}
         onPress={() =>
           void guard(async () => {
             const first = await confirmDestructive(

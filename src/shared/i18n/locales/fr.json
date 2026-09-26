@@ -938,6 +938,7 @@
     "otherConfirm": "Effacer et continuer"
   },
   "auth": {
+    "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer à synchroniser.",
     "signInTitle": "Connexion",
     "signUpTitle": "Créer un compte",
     "signUpHint": "Ton compte sert à synchroniser tes données entre tes appareils.",
@@ -979,7 +980,8 @@
       "tooMany": "Trop d’essais. Réessaie dans quelques minutes.",
       "linkExpired": "Ce lien a expiré ou a déjà servi. Demande-en un nouveau.",
       "notConfigured": "Les comptes ne sont pas disponibles dans cette version.",
-      "deleteFailed": "Le compte n’a pas pu être supprimé. Vérifie ta connexion et réessaie."
+      "deleteFailed": "Le compte n’a pas pu être supprimé. Vérifie ta connexion et réessaie.",
+      "localWipeFailed": "Ton compte a été supprimé du serveur, mais les données de ce téléphone n’ont pas pu être effacées. Utilise « Supprimer toutes mes données » dans les réglages."
     }
   },
   "sync": {

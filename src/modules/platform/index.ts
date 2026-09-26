@@ -48,6 +48,6 @@ export { SubjectConfigScreen } from './widgets/android/SubjectConfigScreen';
 export { conflictCount, pendingCount, syncOnce } from './sync/engine';
 export type { Mutation, PushResult, RemoteApi, SyncedTable, SyncReport } from './sync/engine';
 export { runSync } from './sync/runner';
-export { useSyncStatus } from './sync/status';
+export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';
 export { SyncGate } from './sync/SyncGate';

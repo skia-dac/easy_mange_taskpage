@@ -1,7 +1,11 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { i18n } from '@/shared/i18n';
+import { showToast } from '@/shared/ui';
+
 import { getSupabase } from './client';
+import { takeExplicitSignOut } from './service';
 
 export type AuthState = {
   /** Comptes disponibles dans cette version (projet Supabase configuré). */
@@ -34,7 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
     });
-    const { data } = client.auth.onAuthStateChange((_event, next) => {
+    const { data } = client.auth.onAuthStateChange((event, next) => {
+      // Déconnexion que l'app n'a pas demandée (jeton expiré ou révoqué) : on prévient.
+      if (event === 'SIGNED_OUT' && !takeExplicitSignOut())
+        showToast(i18n.t('auth.sessionExpired'));
       setSession(next);
       setLoading(false);
     });

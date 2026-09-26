@@ -1,4 +1,5 @@
 import {
+  AccountError,
   deleteRemoteAccount,
   getAccountOwner,
   getProfile,
@@ -8,6 +9,7 @@ import {
   signOut,
 } from '@/modules/identity';
 import type { Db } from '@/shared/db';
+import { logger } from '@/shared/logger';
 
 import { wipeAllData } from './wipeAllData';
 
@@ -61,9 +63,26 @@ export async function signOutFromPhone(db: Db, keepOnPhone: boolean): Promise<vo
   if (!keepOnPhone) await wipeAllData(db);
 }
 
-/** Supprime le compte partout : serveur (données et fichiers), puis ce téléphone. */
+/**
+ * Supprime le compte partout : serveur (données et fichiers), puis ce téléphone. Une fois le
+ * serveur supprimé, le téléphone est toujours détaché du compte et vidé, même si la déconnexion
+ * locale échoue ; si le vidage échoue, l'erreur le dit clairement (le compte n'existe plus).
+ */
 export async function deleteAccountEverywhere(db: Db): Promise<void> {
   await deleteRemoteAccount();
-  await signOut();
-  await wipeAllData(db);
+  try {
+    await signOut();
+  } catch (e) {
+    // Le compte n'existe plus : une déconnexion locale ratée ne doit pas empêcher le nettoyage.
+    logger.warn('Déconnexion incomplète après suppression du compte', { where: 'deleteAccount' });
+    logger.error(e, { where: 'deleteAccountEverywhere' });
+  } finally {
+    try {
+      await setAccountOwner(db, null);
+      await wipeAllData(db);
+    } catch (e) {
+      logger.error(e, { where: 'deleteAccountEverywhere' });
+      throw new AccountError('auth.error.localWipeFailed', e);
+    }
+  }
 }

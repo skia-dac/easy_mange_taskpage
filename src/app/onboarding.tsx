@@ -9,10 +9,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { spaceColor } from '@/components/SpaceUi';
 import { setActiveSpaces, setOnboardingDone, useAuth } from '@/modules/identity';
 import { useDb } from '@/shared/db';
+import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 import { spaceIds, toggleSpace, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
-import { AppText, Button, Card, IconBadge, TextButton } from '@/shared/ui';
+import { AppText, Button, Card, IconBadge, showError, TextButton } from '@/shared/ui';
 
 type Step = { icon: ComponentProps<typeof Feather>['name']; title: string; body: string };
 
@@ -68,7 +69,11 @@ export default function OnboardingScreen() {
     try {
       await setActiveSpaces(db, picked);
     } catch (e) {
+      // Les espaces n'ont pas été enregistrés : on le dit et on reste sur l'étape.
       logger.error(e, { where: 'onboarding' });
+      showError(userMessageKey(e));
+      setSavingSpaces(false);
+      return;
     }
     setSavingSpaces(false);
     setIndex(last + 1);
