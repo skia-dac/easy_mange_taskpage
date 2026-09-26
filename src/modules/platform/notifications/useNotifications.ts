@@ -6,6 +6,7 @@ import { useAgendaData } from '@/projections';
 import { settingTable, subscribeToChanges, useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
 
+import { registerNotificationsTask } from './backgroundTask';
 import { routeForResponse } from './route';
 import {
   addResponseListener,
@@ -19,7 +20,8 @@ import {
 /**
  * À monter une fois (layout racine) :
  * - configure les notifications ;
- * - reprogramme les rappels quand les données ou les réglages changent, et au retour de l'app ;
+ * - reprogramme les rappels quand les données ou les réglages changent, au retour de l'app,
+ *   et une fois par jour en tâche de fond ;
  * - ouvre le bon écran quand l'utilisateur touche une notification.
  */
 export function useNotifications(): void {
@@ -32,6 +34,8 @@ export function useNotifications(): void {
     void configureNotifications().catch((e: unknown) =>
       logger.error(e, { where: 'configureNotifications' }),
     );
+    // Tâche de fond quotidienne : les rappels restent programmés même si l'app n'est pas ouverte.
+    void registerNotificationsTask();
   }, []);
 
   // Reprogrammation (avec un léger délai pour regrouper plusieurs changements).

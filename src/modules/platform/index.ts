@@ -1,6 +1,16 @@
 // Module platform : notifications, fichiers (import, synchronisation, recherche : phases suivantes).
 // Point d'entrée unique du module : les autres parties de l'app importent uniquement depuis ce fichier.
-export { HORIZON_DAYS, MAX_SCHEDULED, planReminders } from './notifications/plan';
+export {
+  HORIZON_DAYS,
+  MAX_COURSE_REMINDERS,
+  MAX_SCHEDULED,
+  planReminders,
+} from './notifications/plan';
+export {
+  defineNotificationsTask,
+  NOTIFICATIONS_TASK,
+  refreshNotificationsInBackground,
+} from './notifications/backgroundTask';
 export type { PlannedReminder, ReminderAction } from './notifications/plan';
 export { routeForResponse } from './notifications/route';
 export {

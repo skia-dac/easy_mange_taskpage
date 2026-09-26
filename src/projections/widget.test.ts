@@ -140,9 +140,53 @@ describe('données des widgets', () => {
   it('prévoit une entrée de chronologie à chaque début et fin de séance, puis à minuit', () => {
     const entries = buildWidgetTimeline(data, subjects, now, texts, themes);
     const hours = entries.map((e) => `${e.date.getHours()}:${e.date.getMinutes()}`);
-    expect(hours).toEqual(['8:30', '9:0', '11:0', '14:0', '16:0', '0:0']);
+    expect(hours).toEqual(['8:30', '9:0', '11:0', '14:0', '16:0', '0:0', '0:0', '0:0']);
     expect(entries[1]?.props.next?.ongoing).toBe(true);
     expect(entries[5]?.props.courses).toEqual([]);
+  });
+
+  it('prolonge la chronologie sur trois jours, une entrée à chaque minuit', () => {
+    const entries = buildWidgetTimeline(data, subjects, now, texts, themes);
+    const days = entries.map((e) => e.date.getDate());
+    expect(days).toEqual([23, 23, 23, 23, 23, 24, 25, 26]);
+    expect(entries[5]?.props.next).toBeNull();
+    expect(entries[6]?.props.exams).toEqual([{ title: 'Marketing', when: 'countdown.today' }]);
+  });
+
+  it('inclut les séances des jours suivants et plafonne à 60 entrées', () => {
+    const base = data.series[0]!;
+    const daily = [3, 4, 5].map((weekday) => ({ ...base, id: `d${weekday}`, weekday }));
+    const entries = buildWidgetTimeline({ ...data, series: daily }, subjects, now, texts, themes);
+    const stamps = entries.map((e) => `${e.date.getDate()} ${e.date.getHours()}`);
+    expect(stamps).toEqual([
+      '23 8',
+      '23 9',
+      '23 11',
+      '24 0',
+      '24 9',
+      '24 11',
+      '25 0',
+      '25 9',
+      '25 11',
+      '26 0',
+    ]);
+    expect(entries[4]?.props.next?.ongoing).toBe(true);
+    const many = {
+      ...data,
+      series: Array.from({ length: 40 }, (_, i) => ({
+        ...base,
+        id: `s${i}`,
+        weekday: 3 + (i % 3),
+        startTime: `${String(8 + (i % 10)).padStart(2, '0')}:${String((i * 7) % 60).padStart(2, '0')}`,
+        endTime: `${String(18 + (i % 4)).padStart(2, '0')}:${String((i * 11) % 60).padStart(2, '0')}`,
+      })),
+    };
+    const capped = buildWidgetTimeline(many, subjects, now, texts, themes);
+    expect(capped.length).toBeLessThanOrEqual(60);
+    expect(capped.length).toBeGreaterThan(12);
+    expect(capped[0]?.date.getTime()).toBe(now.getTime());
+    const times = capped.map((e) => e.date.getTime());
+    expect([...times].sort((a, b) => a - b)).toEqual(times);
   });
 
   it('prépare les données des autres widgets : révision, semaine, matières, notes, examens, mois', () => {

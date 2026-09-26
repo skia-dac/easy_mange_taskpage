@@ -3,7 +3,7 @@ import { defaultNotificationPreferences } from '@/modules/identity';
 import type { WorkItem } from '@/modules/productivity';
 import { atTime, toIsoDate } from '@/shared/dates';
 
-import { MAX_SCHEDULED, planReminders } from './plan';
+import { HABIT_HORIZON_DAYS, MAX_COURSE_REMINDERS, MAX_SCHEDULED, planReminders } from './plan';
 
 const series: CourseSeries = {
   id: 's1',
@@ -157,16 +157,49 @@ describe('devoirs, tâches, examens', () => {
   });
 });
 
-it(`ne dépasse jamais ${MAX_SCHEDULED} notifications, les plus proches d’abord`, () => {
+it(`ne dépasse jamais ${MAX_SCHEDULED} notifications ni ${MAX_COURSE_REMINDERS} rappels de cours, les plus proches d’abord`, () => {
   const many = Array.from({ length: 10 }, (_, i) => ({
     ...series,
     id: `s${i}`,
     weekday: (i % 7) + 1,
   }));
   const plan = planReminders({ ...empty, series: many }, prefs, now, names);
-  expect(plan).toHaveLength(MAX_SCHEDULED);
+  expect(plan).toHaveLength(MAX_COURSE_REMINDERS);
   for (let i = 1; i < plan.length; i++)
     expect(plan[i]!.fireAt.getTime()).toBeGreaterThanOrEqual(plan[i - 1]!.fireAt.getTime());
+
+  // Six rappels de cours par jour contre un d'habitude : les cours atteignent leur quota en
+  // quelques jours, l'habitude garde ses 7 jours de rappels, même plus lointains.
+  const dense = Array.from({ length: 20 }, (_, i) => ({
+    ...series,
+    id: `s${i}`,
+    weekday: (i % 7) + 1,
+  }));
+  const habits = Array.from({ length: 1 }, (_, i) => ({
+    id: `h${i}`,
+    position: i,
+    name: `Habitude ${i}`,
+    icon: 'star',
+    colorId: 'blue',
+    frequency: 'daily' as const,
+    weekdays: [],
+    timesPerWeek: 1,
+    target: 1,
+    unit: null,
+    reminderTime: '21:00',
+    autoStudy: false,
+    tracksBody: false,
+  }));
+  const mixed = planReminders({ ...empty, series: dense, habits }, prefs, now, names);
+  const courses = mixed.filter(
+    (r) => r.action.kind === 'course' || r.action.kind === 'endOfCourse',
+  );
+  const others = mixed.filter((r) => r.action.kind === 'habit');
+  expect(courses).toHaveLength(MAX_COURSE_REMINDERS);
+  expect(others).toHaveLength(HABIT_HORIZON_DAYS);
+  expect(mixed).toHaveLength(MAX_COURSE_REMINDERS + HABIT_HORIZON_DAYS);
+  const lastCourse = courses[courses.length - 1]!.fireAt.getTime();
+  expect(others[others.length - 1]!.fireAt.getTime()).toBeGreaterThan(lastCourse);
 });
 
 it('un événement avec rappel est programmé, et le réglage « événements » peut le couper', () => {

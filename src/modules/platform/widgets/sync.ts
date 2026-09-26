@@ -72,7 +72,7 @@ function syncStudyActivity(current: WidgetData): void {
 /**
  * Pousse les données vers les widgets de l'écran d'accueil.
  * iPhone : une chronologie (le widget change seul aux heures de début / fin de séance).
- * Android : rendu immédiat de chaque widget posé, plus une photo pour la tâche de fond.
+ * Android : rendu immédiat de chaque widget posé, plus la chronologie pour la tâche de fond.
  */
 export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void> {
   const current = timeline[0]?.props;
@@ -82,7 +82,7 @@ export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void
       for (const w of IOS_WIDGETS) w.updateTimeline(timeline);
       syncStudyActivity(current);
     } else if (Platform.OS === 'android') {
-      writeWidgetSnapshot(current);
+      writeWidgetSnapshot(timeline);
       const config = readWidgetConfig();
       await Promise.all(
         ANDROID_WIDGETS.map((name) =>

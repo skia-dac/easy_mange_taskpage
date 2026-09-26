@@ -1,22 +1,30 @@
 import type { WidgetConfigurationScreenProps } from 'react-native-android-widget';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Appearance, Pressable, ScrollView, Text, View } from 'react-native';
 
-import { lightColors, radius, spacing } from '@/shared/theme';
+import { pickWidgetTheme, type WidgetTheme } from '@/projections';
+import { darkColors, lightColors, radius, spacing } from '@/shared/theme';
 
-import { readWidgetConfig, readWidgetSnapshot, writeWidgetConfig } from '../snapshot';
+import { readCurrentWidgetData, readWidgetConfig, writeWidgetConfig } from '../snapshot';
 import { renderAndroidWidget } from './widgets';
+
+/** Sans chronologie écrite (app jamais ouverte), on retombe sur le thème du kit. */
+function fallbackTheme(dark: boolean): WidgetTheme {
+  return pickWidgetTheme(dark ? darkColors : lightColors);
+}
 
 /**
  * Écran de configuration du widget Android « Matière » (appui long → Configurer).
  * Il tourne hors de l'app (pas de base, pas de thème, pas de traductions chargées) :
- * il lit la dernière photo écrite par l'app, qui contient déjà les matières et les textes.
+ * il lit la chronologie écrite par l'app, qui contient déjà les matières, les textes traduits
+ * et les couleurs claires / sombres.
  */
 export function SubjectConfigScreen({ widgetInfo, renderWidget, setResult }: WidgetConfigurationScreenProps) {
-  const data = readWidgetSnapshot();
+  const data = readCurrentWidgetData();
   const current = readWidgetConfig()[String(widgetInfo.widgetId)]?.subjectId ?? null;
   const [selected, setSelected] = useState<string | null>(current);
-  const colors = lightColors;
+  const dark = Appearance.getColorScheme() === 'dark';
+  const colors = data ? (dark ? data.dark : data.light) : fallbackTheme(dark);
 
   const confirm = () => {
     if (!data) {
@@ -31,13 +39,14 @@ export function SubjectConfigScreen({ widgetInfo, renderWidget, setResult }: Wid
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, padding: spacing.xl, gap: spacing.md }}>
       <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text }}>
-        {data?.labels.subjectPick ?? 'MySky'}
+        {data?.labels.subjectPick ?? data?.labels.appName ?? ''}
       </Text>
       <ScrollView contentContainerStyle={{ gap: spacing.sm }}>
         {(data?.subjects ?? []).map((s) => (
           <Pressable
             key={s.id}
             accessibilityRole="button"
+            accessibilityState={{ selected: selected === s.id }}
             onPress={() => setSelected(s.id)}
             style={{
               flexDirection: 'row',
@@ -63,7 +72,9 @@ export function SubjectConfigScreen({ widgetInfo, renderWidget, setResult }: Wid
         onPress={confirm}
         style={{ backgroundColor: colors.primary, borderRadius: radius.md, padding: spacing.lg, alignItems: 'center' }}
       >
-        <Text style={{ color: colors.onPrimary, fontWeight: '600', fontSize: 16 }}>OK</Text>
+        <Text style={{ color: colors.onPrimary, fontWeight: '600', fontSize: 16 }}>
+          {data?.labels.ok ?? ''}
+        </Text>
       </Pressable>
     </View>
   );

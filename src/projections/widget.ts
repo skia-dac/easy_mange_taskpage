@@ -53,6 +53,7 @@ type WidgetBaseTheme = Pick<
   | 'primary'
   | 'primarySoft'
   | 'onPrimary'
+  | 'border'
   | 'danger'
   | 'success'
   | 'warning'
@@ -142,6 +143,9 @@ export type WidgetLabels = {
   habits: string;
   noHabit: string;
   progress: string;
+  /** Écran de configuration Android (hors app) : nom de l'app et bouton de validation. */
+  appName: string;
+  ok: string;
 };
 
 export type WidgetLinks = {
@@ -248,6 +252,7 @@ export function pickWidgetTheme(colors: ColorTokens): WidgetTheme {
     primary: colors.primary,
     primarySoft: colors.primarySoft,
     onPrimary: colors.onPrimary,
+    border: colors.border,
     danger: colors.danger,
     success: colors.success,
     warning: colors.warning,
@@ -615,6 +620,8 @@ export function buildWidgetData(
       habits: texts.t('widget.habits'),
       noHabit: texts.t('widget.noHabit'),
       progress: texts.t('widget.progress'),
+      appName: texts.t('app.name'),
+      ok: texts.t('common.ok'),
     },
     light: pickWidgetTheme(themes.light),
     dark: pickWidgetTheme(themes.dark),
@@ -624,9 +631,16 @@ export function buildWidgetData(
 
 export type WidgetTimelineEntry = { date: Date; props: WidgetData };
 
+/** Jours couverts par la chronologie iOS (aujourd'hui compris) : le widget avance seul jusque-là. */
+export const WIDGET_TIMELINE_DAYS = 3;
+/** Nombre maximal d'entrées : iOS n'en conserve qu'un nombre limité par chronologie. */
+export const WIDGET_TIMELINE_MAX_ENTRIES = 60;
+
 /**
  * Chronologie pour iOS : une entrée maintenant, puis une à chaque début et fin de séance
- * du jour et à minuit, pour que « Prochain cours » avance sans que l'app soit ouverte.
+ * et à minuit, sur trois jours, pour que « Prochain cours » avance sans que l'app soit ouverte.
+ * Les moments sont pris dans l'ordre, jusqu'à la limite d'entrées : l'échéance la plus proche
+ * est toujours servie en premier.
  */
 export function buildWidgetTimeline(
   data: TodayData,
@@ -637,8 +651,9 @@ export function buildWidgetTimeline(
   extras: WidgetExtras = EMPTY_EXTRAS,
 ): WidgetTimelineEntry[] {
   const today = toIsoDate(now);
+  const last = addDaysIso(today, WIDGET_TIMELINE_DAYS - 1);
   const moments = new Set<number>([now.getTime()]);
-  for (const o of occurrencesInRange(data.series, today, today, data)) {
+  for (const o of occurrencesInRange(data.series, today, last, data)) {
     for (const t of [o.startTime, o.endTime]) {
       const at = atTime(o.date, t).getTime() + 1000;
       if (at > now.getTime()) moments.add(at);
@@ -649,10 +664,12 @@ export function buildWidgetTimeline(
     const end = plannedEnd(session).getTime() + 1000;
     if (end > now.getTime()) moments.add(end);
   }
-  moments.add(atTime(addDaysIso(today, 1), '00:00').getTime() + 1000);
+  for (let d = 1; d <= WIDGET_TIMELINE_DAYS; d += 1) {
+    moments.add(atTime(addDaysIso(today, d), '00:00').getTime() + 1000);
+  }
   return [...moments]
     .sort((a, b) => a - b)
-    .slice(0, 12)
+    .slice(0, WIDGET_TIMELINE_MAX_ENTRIES)
     .map((ms) => {
       const at = new Date(ms);
       return { date: at, props: buildWidgetData(data, subjects, at, texts, themes, extras) };

@@ -39,6 +39,12 @@ export type PlannedReminder = {
 
 /** iOS garde au plus 64 notifications programmées : on en planifie moins, par ordre de date. */
 export const MAX_SCHEDULED = 60;
+/**
+ * Part du quota réservée aux rappels de cours (début et fin de séance) : au-delà, la place
+ * restante revient aux devoirs, examens, événements, habitudes… qui sinon n'y entreraient jamais
+ * (5 cours par jour remplissent 60 rappels en 6 jours).
+ */
+export const MAX_COURSE_REMINDERS = 40;
 export const HORIZON_DAYS = 45;
 /** Les rappels d'habitudes sont planifiés sur une semaine (ils se répètent chaque jour). */
 export const HABIT_HORIZON_DAYS = 7;
@@ -292,7 +298,28 @@ export function planReminders(
   }
 
   const kept = applyFocus(out, data, prefs, now);
-  return kept.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime()).slice(0, MAX_SCHEDULED);
+  return capReminders(kept.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime()));
+}
+
+const isCourseReminder = (r: PlannedReminder) =>
+  r.action.kind === 'course' || r.action.kind === 'endOfCourse';
+
+/**
+ * Limite à MAX_SCHEDULED rappels, les plus proches d'abord, avec au plus MAX_COURSE_REMINDERS
+ * rappels de cours : le reste du quota va aux autres rappels, même plus lointains.
+ */
+export function capReminders(sorted: readonly PlannedReminder[]): PlannedReminder[] {
+  const out: PlannedReminder[] = [];
+  let courses = 0;
+  for (const r of sorted) {
+    if (out.length >= MAX_SCHEDULED) break;
+    if (isCourseReminder(r)) {
+      if (courses >= MAX_COURSE_REMINDERS) continue;
+      courses += 1;
+    }
+    out.push(r);
+  }
+  return out;
 }
 
 type Window = { from: number; to: number };
