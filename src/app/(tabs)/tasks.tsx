@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
+import { useNotesDesk } from '@/components/NotesDesk';
 import { usePostpone } from '@/components/PostponeSheet';
 import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
@@ -39,9 +40,12 @@ import {
 } from '@/shared/ui';
 
 type Tab = 'task' | 'assignment' | 'exam';
+type Pane = 'tasks' | 'notes';
 
 export default function TasksScreen() {
   const { t } = useTranslation();
+  const [pane, setPane] = useState<Pane>('tasks');
+  const notes = useNotesDesk();
   const now = useNow();
   const today = toIsoDate(now);
   const spaces = useSpaces();
@@ -135,128 +139,156 @@ export default function TasksScreen() {
     <View style={{ flex: 1 }}>
       <Screen
         stagger
-        title={t('tasks.title')}
+        title={pane === 'notes' ? t('notes.title') : t('tasks.title')}
         actions={
           <>
-            <SearchButton />
+            {pane === 'tasks' ? <SearchButton /> : null}
             <ProfileButton />
           </>
         }
       >
-        {study ? (
-          <RiseIn>
-            <Segmented
-              value={tab}
-              onChange={setTab}
-              options={[
-                { value: 'task', label: t('tasks.segTasks') },
-                { value: 'assignment', label: t('tasks.segAssignments') },
-                { value: 'exam', label: t('tasks.segExams') },
-              ]}
-            />
-          </RiseIn>
-        ) : null}
-        {tab === 'task' ? (
-          <RiseIn>
-            <SpaceFilter
-              value={space}
-              onChange={(v) => {
-                setSpace(v);
-                if (v !== 'study') setSubjectId(null);
-              }}
-            />
-          </RiseIn>
-        ) : null}
-        {subjects.length > 0 && study && (tab !== 'task' || space === null || space === 'study') ? (
-          <RiseIn>
-            <ChoiceChips
-              scroll
-              options={[
-                { value: null, label: t('tasks.allSubjects') },
-                ...subjects.map((s) => ({
-                  value: s.id as string | null,
-                  label: s.name,
-                  leading: <SubjectDot color={colorOf(s)} size={10} />,
-                })),
-              ]}
-              selected={[subjectId]}
-              onToggle={setSubjectId}
-            />
-          </RiseIn>
-        ) : null}
-
-        {tab === 'exam' ? (
-          examList.length === 0 ? (
-            <EmptyState icon="award" title={t('tasks.noExams')} message={t('tasks.noExamsHint')} />
-          ) : (
-            <>
-              {upcomingExams.length > 0 ? (
-                <>
-                  <RiseIn>
-                    <SectionHeader title={t('tasks.groupUpcoming')} />
-                  </RiseIn>
-                  <Card>
-                    {upcomingExams.map((e) => (
-                      <RiseIn key={e.id}>
-                        <ExamRow exam={e} subjects={byId} now={now} />
-                      </RiseIn>
-                    ))}
-                  </Card>
-                </>
-              ) : null}
-              {pastExams.length > 0 ? (
-                <>
-                  <RiseIn>
-                    <SectionHeader title={t('tasks.groupPast')} />
-                  </RiseIn>
-                  <Card>
-                    {pastExams.map((e) => (
-                      <RiseIn key={e.id}>
-                        <ExamRow exam={e} subjects={byId} now={now} />
-                      </RiseIn>
-                    ))}
-                  </Card>
-                </>
-              ) : null}
-            </>
-          )
+        <RiseIn>
+          <Segmented
+            value={pane}
+            onChange={setPane}
+            accessibilityLabel={t('tabs.notebook')}
+            options={[
+              { value: 'tasks', label: t('tabs.tasks') },
+              { value: 'notes', label: t('tabs.notes') },
+            ]}
+          />
+        </RiseIn>
+        {pane === 'notes' ? (
+          notes.body
         ) : (
           <>
-            {openCount > 0 ? (
+            {study ? (
               <RiseIn>
-                <AppText variant="caption" color="muted">
-                  {t('tasks.swipeHint')}
-                </AppText>
+                <Segmented
+                  value={tab}
+                  onChange={setTab}
+                  options={[
+                    { value: 'task', label: t('tasks.segTasks') },
+                    { value: 'assignment', label: t('tasks.segAssignments') },
+                    { value: 'exam', label: t('tasks.segExams') },
+                  ]}
+                />
               </RiseIn>
             ) : null}
-            {!work.loading && openCount === 0 ? (
-              <EmptyState
-                icon="check-circle"
-                title={t('tasks.empty')}
-                message={tab === 'task' ? t('tasks.emptyHint') : t('tasks.emptyAssignmentsHint')}
-              />
-            ) : null}
-            {section(t('tasks.groupOverdue'), groups.overdue)}
-            {section(t('tasks.groupToday'), groups.today)}
-            {section(t('tasks.groupUpcoming'), groups.upcoming)}
-            {groups.done.length > 0 ? (
-              <>
-                <TextButton
-                  label={
-                    showDone
-                      ? t('tasks.hideDone')
-                      : t('tasks.showDone', { count: groups.done.length })
-                  }
-                  onPress={() => setShowDone(!showDone)}
+            {tab === 'task' ? (
+              <RiseIn>
+                <SpaceFilter
+                  value={space}
+                  onChange={(v) => {
+                    setSpace(v);
+                    if (v !== 'study') setSubjectId(null);
+                  }}
                 />
-                {showDone ? section(t('tasks.groupDone'), groups.done) : null}
-              </>
+              </RiseIn>
             ) : null}
+            {subjects.length > 0 &&
+            study &&
+            (tab !== 'task' || space === null || space === 'study') ? (
+              <RiseIn>
+                <ChoiceChips
+                  scroll
+                  options={[
+                    { value: null, label: t('tasks.allSubjects') },
+                    ...subjects.map((s) => ({
+                      value: s.id as string | null,
+                      label: s.name,
+                      leading: <SubjectDot color={colorOf(s)} size={10} />,
+                    })),
+                  ]}
+                  selected={[subjectId]}
+                  onToggle={setSubjectId}
+                />
+              </RiseIn>
+            ) : null}
+
+            {tab === 'exam' ? (
+              examList.length === 0 ? (
+                <EmptyState
+                  icon="award"
+                  title={t('tasks.noExams')}
+                  message={t('tasks.noExamsHint')}
+                />
+              ) : (
+                <>
+                  {upcomingExams.length > 0 ? (
+                    <>
+                      <RiseIn>
+                        <SectionHeader title={t('tasks.groupUpcoming')} />
+                      </RiseIn>
+                      <Card>
+                        {upcomingExams.map((e) => (
+                          <RiseIn key={e.id}>
+                            <ExamRow exam={e} subjects={byId} now={now} />
+                          </RiseIn>
+                        ))}
+                      </Card>
+                    </>
+                  ) : null}
+                  {pastExams.length > 0 ? (
+                    <>
+                      <RiseIn>
+                        <SectionHeader title={t('tasks.groupPast')} />
+                      </RiseIn>
+                      <Card>
+                        {pastExams.map((e) => (
+                          <RiseIn key={e.id}>
+                            <ExamRow exam={e} subjects={byId} now={now} />
+                          </RiseIn>
+                        ))}
+                      </Card>
+                    </>
+                  ) : null}
+                </>
+              )
+            ) : (
+              <>
+                {openCount > 0 ? (
+                  <RiseIn>
+                    <AppText variant="caption" color="muted">
+                      {t('tasks.swipeHint')}
+                    </AppText>
+                  </RiseIn>
+                ) : null}
+                {!work.loading && openCount === 0 ? (
+                  <EmptyState
+                    icon="check-circle"
+                    title={t('tasks.empty')}
+                    message={
+                      tab === 'task' ? t('tasks.emptyHint') : t('tasks.emptyAssignmentsHint')
+                    }
+                  />
+                ) : null}
+                {section(t('tasks.groupOverdue'), groups.overdue)}
+                {section(t('tasks.groupToday'), groups.today)}
+                {section(t('tasks.groupUpcoming'), groups.upcoming)}
+                {groups.done.length > 0 ? (
+                  <>
+                    <TextButton
+                      label={
+                        showDone
+                          ? t('tasks.hideDone')
+                          : t('tasks.showDone', { count: groups.done.length })
+                      }
+                      onPress={() => setShowDone(!showDone)}
+                    />
+                    {showDone ? section(t('tasks.groupDone'), groups.done) : null}
+                  </>
+                ) : null}
+              </>
+            )}
           </>
         )}
         <View style={{ height: 80 }} />
       </Screen>
-      <Fab accessibilityLabel={t('add.title')} onPress={add} />
+      <Fab
+        accessibilityLabel={pane === 'notes' ? t('notes.new') : t('add.title')}
+        onPress={pane === 'notes' ? notes.add : add}
+      />
       {postpone.sheet}
     </View>
   );

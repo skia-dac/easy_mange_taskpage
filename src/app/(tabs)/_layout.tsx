@@ -47,7 +47,8 @@ function tabIcon(name: IconName) {
 }
 
 /**
- * Les 5 onglets : Aujourd'hui · Calendrier · Tâches · Notes · Argent.
+ * Les onglets : Aujourd'hui · Calendrier · Carnet · Argent.
+ * Carnet réunit les tâches et les notes.
  * Le Profil s'ouvre avec la photo en haut à droite de chaque onglet.
  */
 export default function TabsLayout() {
@@ -94,11 +95,16 @@ export default function TabsLayout() {
         />
         <Tabs.Screen
           name="tasks"
-          options={{ title: t('tabs.tasks'), tabBarIcon: tabIcon('check-square') }}
+          options={{ title: t('tabs.notebook'), tabBarIcon: tabIcon('book') }}
         />
         <Tabs.Screen
           name="notes"
-          options={{ title: t('tabs.notes'), tabBarIcon: tabIcon('file-text') }}
+          options={{
+            title: t('tabs.notes'),
+            tabBarIcon: tabIcon('file-text'),
+            // Les notes s'ouvrent dans Carnet. La route reste pour les liens déjà ouverts.
+            href: null,
+          }}
         />
         <Tabs.Screen
           name="money"
