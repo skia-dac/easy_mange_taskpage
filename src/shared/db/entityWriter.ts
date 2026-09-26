@@ -66,11 +66,19 @@ export type Values = Record<string, SqlValue>;
 
 const SAFE_NAME = /^[a-z_]+$/;
 
-function assertSafeColumns(values: Values): string[] {
+/**
+ * Vérifie les colonnes écrites. Un `undefined` est refusé : il mettrait la colonne à NULL sur le
+ * téléphone (`?? null`) alors que JSON l'omet dans la file de synchronisation, et le serveur ne
+ * verrait jamais ce changement. L'appelant passe `null` s'il veut vider la colonne.
+ */
+export function assertSafeColumns(values: Values): string[] {
   const columns = Object.keys(values);
   for (const c of columns) {
     // Les noms de colonnes viennent du code, jamais de l'utilisateur. Garde-fou quand même.
     if (!SAFE_NAME.test(c)) throw new Error(`Nom de colonne invalide : ${c}`);
+    if (values[c] === undefined) {
+      throw new AppError('saveFailed', `Valeur absente pour la colonne : ${c}`);
+    }
   }
   return columns;
 }

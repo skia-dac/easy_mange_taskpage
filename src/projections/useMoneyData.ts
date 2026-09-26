@@ -65,7 +65,9 @@ export async function loadMoney(
   return { prefs, input, overview: moneyOverview(input) };
 }
 
-/** Données de l'onglet Argent, rechargées à chaque opération notée. */
+/** Données de l'onglet Argent, rechargées à chaque opération notée, au retour de l'app et au changement de jour. */
 export function useMoneyData(offset = 0) {
-  return useSharedLiveQuery(`money:${offset}`, (db) => loadMoney(db, offset), TABLES);
+  return useSharedLiveQuery(`money:${offset}`, (db) => loadMoney(db, offset), TABLES, {
+    refreshOn: 'foreground',
+  });
 }

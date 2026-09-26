@@ -99,6 +99,7 @@ export default function LoanFormScreen() {
       <Stack.Screen options={{ title: params.id ? t('money.editLoan') : t('money.newLoan') }} />
       {!params.id ? (
         <Segmented
+          accessibilityLabel={t('money.loanDirection')}
           value={direction}
           onChange={setDirection}
           options={[

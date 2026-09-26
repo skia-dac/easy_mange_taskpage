@@ -26,7 +26,9 @@
     "none": "None",
     "back": "Back",
     "seeAll": "See all",
-    "optional": "Optional"
+    "optional": "Optional",
+    "previous": "Previous",
+    "next": "Next"
   },
   "tabs": {
     "today": "Today",
@@ -908,7 +910,21 @@
     },
     "durationOptional": "Duration (optional)",
     "noDuration": "Not noted",
-    "timeThisMonth": "Time noted this month: {{duration}}"
+    "timeThisMonth": "Time noted this month: {{duration}}",
+    "iconName": {
+      "check-circle": "Check mark",
+      "book-open": "Book",
+      "activity": "Activity",
+      "droplet": "Water drop",
+      "moon": "Moon",
+      "sun": "Sun",
+      "coffee": "Coffee",
+      "heart": "Heart",
+      "music": "Music",
+      "edit-3": "Pencil",
+      "map-pin": "Map pin",
+      "smartphone": "Phone"
+    }
   },
   "account": {
     "title": "Account and sync",
@@ -1428,7 +1444,10 @@
     "categoryPlaceholder": "E.g. Hairdresser",
     "addCategory": "Add category",
     "deleteCategoryTitle": "Delete “{{name}}”?",
-    "deleteCategoryMessage": "Its entries stay, filed under “Other”."
+    "deleteCategoryMessage": "Its entries stay, filed under “Other”.",
+    "filterLabel": "Filter transactions",
+    "loanDirection": "Loan direction",
+    "categoryKind": "Category type"
   },
   "glance": {
     "money": "Money",

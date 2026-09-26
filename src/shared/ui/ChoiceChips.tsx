@@ -27,7 +27,7 @@ export function ChoiceChips<T>({ label, options, selected, onToggle, scroll }: P
         accessibilityState={{ selected: on }}
         onPress={() => onToggle(o.value)}
         style={{
-          minHeight: minTouchSize - 4,
+          minHeight: minTouchSize,
           paddingHorizontal: spacing.lg,
           borderRadius: radius.md,
           borderWidth: 1.5,

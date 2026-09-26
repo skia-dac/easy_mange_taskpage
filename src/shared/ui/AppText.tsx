@@ -1,6 +1,6 @@
 import { Text, type TextProps } from 'react-native';
 
-import { useTheme, type ColorTokens, type TextVariant } from '../theme';
+import { maxFontSizeMultiplier, useTheme, type ColorTokens, type TextVariant } from '../theme';
 
 type Props = TextProps & {
   variant?: TextVariant;
@@ -13,7 +13,7 @@ export function AppText({ variant = 'body', color = 'text', style, ...rest }: Pr
   const theme = useTheme();
   return (
     <Text
-      maxFontSizeMultiplier={1.6}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       style={[theme.text[variant], { color: theme.colors[color] }, style]}
       {...rest}
     />

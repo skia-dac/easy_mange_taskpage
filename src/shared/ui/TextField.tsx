@@ -1,6 +1,6 @@
 import { TextInput, type TextInputProps } from 'react-native';
 
-import { fonts, minTouchSize, useTheme } from '../theme';
+import { fonts, maxFontSizeMultiplier, minTouchSize, useTheme } from '../theme';
 import { FieldShell } from './FieldShell';
 
 type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
@@ -18,6 +18,7 @@ export function TextField({ label, required, error, hint, multiline, style, ...r
     <FieldShell label={label} required={required} error={error} hint={hint}>
       <TextInput
         accessibilityLabel={label}
+        maxFontSizeMultiplier={maxFontSizeMultiplier}
         placeholderTextColor={colors.muted}
         multiline={multiline}
         style={[

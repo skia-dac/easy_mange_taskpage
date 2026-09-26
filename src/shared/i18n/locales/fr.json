@@ -26,7 +26,9 @@
     "none": "Aucune",
     "back": "Retour",
     "seeAll": "Tout voir",
-    "optional": "Facultatif"
+    "optional": "Facultatif",
+    "previous": "Précédent",
+    "next": "Suivant"
   },
   "tabs": {
     "today": "Aujourd’hui",
@@ -908,7 +910,21 @@
     },
     "durationOptional": "Durée (facultatif)",
     "noDuration": "Pas noté",
-    "timeThisMonth": "Temps noté ce mois : {{duration}}"
+    "timeThisMonth": "Temps noté ce mois : {{duration}}",
+    "iconName": {
+      "check-circle": "Coche",
+      "book-open": "Livre",
+      "activity": "Activité",
+      "droplet": "Goutte d’eau",
+      "moon": "Lune",
+      "sun": "Soleil",
+      "coffee": "Café",
+      "heart": "Cœur",
+      "music": "Musique",
+      "edit-3": "Crayon",
+      "map-pin": "Repère",
+      "smartphone": "Téléphone"
+    }
   },
   "account": {
     "title": "Compte et synchronisation",
@@ -1428,7 +1444,10 @@
     "categoryPlaceholder": "Ex. Coiffeur",
     "addCategory": "Ajouter la catégorie",
     "deleteCategoryTitle": "Supprimer « {{name}} » ?",
-    "deleteCategoryMessage": "Ses opérations restent, rangées dans « Autre »."
+    "deleteCategoryMessage": "Ses opérations restent, rangées dans « Autre ».",
+    "filterLabel": "Filtrer les opérations",
+    "loanDirection": "Sens du prêt",
+    "categoryKind": "Type de catégorie"
   },
   "glance": {
     "money": "Argent",

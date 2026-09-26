@@ -16,7 +16,8 @@ import type { SpaceId } from '@/shared/spaces';
 import { minTouchSize, useTheme, fonts } from '@/shared/theme';
 import { AppText, SectionHeader } from '@/shared/ui';
 
-const TIME_WIDTH = 46;
+/** Largeur de la colonne des heures (« 09:00 ») : suit la taille de police choisie. */
+const timeWidth = (fontSize: number) => Math.round(fontSize * 3.1);
 
 /**
  * « Ta journée » : tout ce qui a une heure aujourd'hui sur une seule ligne du temps, avec le
@@ -81,7 +82,7 @@ export function DayLineCard({
 
 function NowLine({ now }: { now: Date }) {
   const { t } = useTranslation();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, text } = useTheme();
   return (
     <View
       accessibilityLabel={t('dayline.nowA11y', { time: toTime(now) })}
@@ -96,7 +97,7 @@ function NowLine({ now }: { now: Date }) {
       <AppText
         variant="caption"
         color="danger"
-        style={{ width: TIME_WIDTH, fontFamily: fonts.bodyBold }}
+        style={{ width: timeWidth(text.caption.fontSize), fontFamily: fonts.bodyBold }}
       >
         {toTime(now)}
       </AppText>
@@ -122,13 +123,13 @@ function Rail({
   last: boolean;
   muted: boolean;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, text } = useTheme();
   return (
     <>
       <AppText
         variant="bodyStrong"
         color={muted ? 'muted' : 'text'}
-        style={{ width: TIME_WIDTH, paddingTop: spacing.sm }}
+        style={{ width: timeWidth(text.bodyStrong.fontSize), paddingTop: spacing.sm }}
       >
         {time ?? ''}
       </AppText>

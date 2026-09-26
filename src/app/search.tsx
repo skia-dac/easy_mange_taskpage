@@ -1,5 +1,5 @@
 import { router, Stack } from 'expo-router';
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -41,7 +41,9 @@ export default function SearchScreen() {
   const { colors, spacing } = useTheme();
   const [query, setQuery] = useState('');
   const { byId } = useSubjects();
-  const trimmed = query.trim();
+  // La frappe reste fluide : la recherche suit le texte avec un léger retard.
+  const deferredQuery = useDeferredValue(query);
+  const trimmed = deferredQuery.trim();
   const results = useLiveQuery(
     (db) =>
       trimmed.length >= MIN_QUERY_LENGTH ? searchAll(db, trimmed) : Promise.resolve(emptyResults),

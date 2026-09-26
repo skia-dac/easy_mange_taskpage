@@ -8,13 +8,22 @@ type Props = {
   onPress: () => void;
   color?: keyof ColorTokens;
   disabled?: boolean;
+  /** Pour un libellé purement visuel (« ‹ »), ce que le lecteur d'écran annonce. */
+  accessibilityLabel?: string;
 };
 
 /** Bouton texte (actions secondaires, « Supprimer »…). */
-export function TextButton({ label, onPress, color = 'primary', disabled = false }: Props) {
+export function TextButton({
+  label,
+  onPress,
+  color = 'primary',
+  disabled = false,
+  accessibilityLabel,
+}: Props) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}

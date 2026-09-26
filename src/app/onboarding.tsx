@@ -115,13 +115,11 @@ export default function OnboardingScreen() {
                 key={id}
                 onPress={() => pick(id, !on)}
                 accessibilityLabel={t(`spaces.name.${id}`)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: on }}
                 style={{ borderWidth: 2, borderColor: on ? colors.primary : colors.border }}
               >
-                <View
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: on }}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}
-                >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <View
                     style={{
                       width: 48,

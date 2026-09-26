@@ -39,7 +39,7 @@ export function Segmented<T extends string>({
             onPress={() => onChange(o.value)}
             style={{
               flex: 1,
-              minHeight: minTouchSize - 6,
+              minHeight: minTouchSize,
               borderRadius: radius.md - 3,
               alignItems: 'center',
               justifyContent: 'center',

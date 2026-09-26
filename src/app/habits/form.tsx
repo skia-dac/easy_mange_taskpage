@@ -140,8 +140,8 @@ export default function HabitFormScreen() {
             return (
               <Pressable
                 key={icon}
-                accessibilityRole="button"
-                accessibilityLabel={icon}
+                accessibilityRole="radio"
+                accessibilityLabel={t(`habits.iconName.${icon}`)}
                 accessibilityState={{ selected: on }}
                 onPress={() => set({ icon })}
                 style={{
@@ -167,13 +167,13 @@ export default function HabitFormScreen() {
       </FieldShell>
       <FieldShell label={t('habits.color')}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {subjectColors.map((c) => {
+          {subjectColors.map((c, i) => {
             const on = form.colorId === c.id;
             return (
               <Pressable
                 key={c.id}
-                accessibilityRole="button"
-                accessibilityLabel={c.id}
+                accessibilityRole="radio"
+                accessibilityLabel={t('subjects.colorName', { n: i + 1 })}
                 accessibilityState={{ selected: on }}
                 onPress={() => set({ colorId: c.id })}
                 style={{

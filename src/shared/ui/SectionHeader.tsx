@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { useTheme } from '../theme';
+import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 
 type Props = { title: string; action?: { label: string; onPress: () => void } };
@@ -11,7 +11,7 @@ export function SectionHeader({ title, action }: Props) {
     <View
       style={{
         flexDirection: 'row',
-        alignItems: 'baseline',
+        alignItems: 'center',
         justifyContent: 'space-between',
         marginTop: spacing.sm,
       }}
@@ -20,7 +20,12 @@ export function SectionHeader({ title, action }: Props) {
         {title}
       </AppText>
       {action ? (
-        <Pressable accessibilityRole="button" onPress={action.onPress} hitSlop={12}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={action.onPress}
+          hitSlop={12}
+          style={{ minHeight: minTouchSize, justifyContent: 'center' }}
+        >
           <AppText variant="bodyStrong" color="primary">
             {action.label}
           </AppText>

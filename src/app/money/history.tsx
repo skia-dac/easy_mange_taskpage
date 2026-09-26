@@ -60,6 +60,7 @@ export default function MoneyHistoryScreen() {
         <TextButton label={`${t('money.next')} ›`} onPress={() => setOffset(offset + 1)} />
       </View>
       <Segmented
+        accessibilityLabel={t('money.filterLabel')}
         value={filter}
         onChange={setFilter}
         options={[

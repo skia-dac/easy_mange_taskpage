@@ -33,7 +33,7 @@ import {
   type NextCourse,
 } from '@/projections';
 import { timeToMinutes } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
 import { formatDuration, formatLongDate } from '@/shared/format';
@@ -87,9 +87,9 @@ export default function TodayScreen() {
     (h) => fullView && isScheduledOn(h, fullView.today),
   );
   const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
-  const layoutQuery = useLiveQuery(getTodayLayout, ['app_settings'], []);
+  const layoutQuery = useLiveQuery(getTodayLayout, [settingTable('today_layout')], []);
   const layout = layoutQuery.data ?? normalizeTodayLayout(null);
-  const notif = useLiveQuery(getNotificationPreferences, ['app_settings'], []);
+  const notif = useLiveQuery(getNotificationPreferences, [settingTable('notifications')], []);
   const postpone = usePostpone();
   // Le soir (à partir de 2 h avant l'heure du bilan), une carte propose de préparer demain.
   const reviewTime = notif.data?.eveningReviewTime ?? '20:30';

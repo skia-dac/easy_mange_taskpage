@@ -108,6 +108,7 @@ export default function MoneySettingsScreen() {
 
         <SectionHeader title={t('money.periodTitle')} />
         <Segmented
+          accessibilityLabel={t('money.periodTitle')}
           value={period.kind}
           onChange={(k) =>
             void save({
@@ -192,6 +193,7 @@ export default function MoneySettingsScreen() {
           <View style={{ gap: spacing.md }}>
             <AppText variant="bodyStrong">{t('money.newCategory')}</AppText>
             <Segmented
+              accessibilityLabel={t('money.categoryKind')}
               value={kind}
               onChange={setKind}
               options={[

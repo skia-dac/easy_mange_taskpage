@@ -8,6 +8,7 @@
     "@expo/ui": "~57.0.20",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
+    "@react-navigation/elements": "^2.9.43",
     "@supabase/supabase-js": "^2.117.1",
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",

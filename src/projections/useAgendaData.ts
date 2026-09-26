@@ -18,7 +18,7 @@ import {
 import { getActiveSpaces, getRotationAnchor, getWeekStart } from '@/modules/identity';
 import { listRecurring, listTransactions } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
-import { useSharedLiveQuery, type Db } from '@/shared/db';
+import { settingTable, useSharedLiveQuery, type Db } from '@/shared/db';
 
 import { filterBySpaces } from './spaces';
 import type { TodayData } from './today';
@@ -38,8 +38,11 @@ const TABLES = [
   'mood_logs',
   'money_recurring',
   'money_transactions',
-  'app_settings',
   'work_slots',
+  // Seuls ces réglages changent l'agenda : les autres (apparence, rappels…) ne le relancent pas.
+  settingTable('spaces'),
+  settingTable('week_start'),
+  settingTable('rotation_anchor'),
 ] as const;
 
 /** Toutes les données (tous espaces confondus). */
@@ -119,7 +122,8 @@ export async function loadAgenda(db: Db): Promise<TodayData> {
 /**
  * Toutes les données du calendrier et d'« Aujourd'hui », rechargées à chaque modification,
  * limitées aux espaces actifs. `allSpaces` : tout (ex. créneaux déjà occupés du plan de révision).
- * Une seule lecture partagée par tous les écrans qui l'affichent en même temps.
+ * Une seule lecture partagée par tous les écrans qui l'affichent en même temps ; rechargée au
+ * retour de l'app (lecture de plus d'une minute) et au changement de jour.
  */
 export function useAgendaData(options: { allSpaces?: boolean } = {}) {
   const all = options.allSpaces === true;
@@ -127,5 +131,6 @@ export function useAgendaData(options: { allSpaces?: boolean } = {}) {
     all ? 'agenda:all' : 'agenda',
     all ? loadAllAgenda : loadAgenda,
     TABLES,
+    { refreshOn: 'foreground' },
   );
 }

@@ -1,8 +1,13 @@
 import { act, renderHook } from '@testing-library/react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { notifyChange } from './changes';
 import type { Db } from './types';
-import { useSharedLiveQuery } from './useSharedLiveQuery';
+import {
+  FOREGROUND_REFRESH_MS,
+  shouldRefreshOnForeground,
+  useSharedLiveQuery,
+} from './useSharedLiveQuery';
 
 const fakeDb = { id: 'db' } as unknown as Db;
 jest.mock('expo-sqlite', () => ({ useSQLiteContext: () => fakeDb }));
@@ -40,6 +45,63 @@ describe('useSharedLiveQuery', () => {
     await flush();
     expect(calls).toBe(3);
     expect(c.result.current.data).toBe(3);
+  });
+
+  it('recharge au retour au premier plan après 60 s ou un changement de jour', async () => {
+    const handlers: ((s: AppStateStatus) => void)[] = [];
+    const remove = jest.fn();
+    const spy = jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+      handlers.push(handler as (s: AppStateStatus) => void);
+      return { remove } as never;
+    });
+    const start = new Date(2026, 8, 23, 23, 59, 30);
+    jest.useFakeTimers({ now: start, doNotFake: ['nextTick', 'queueMicrotask'] });
+    try {
+      let calls = 0;
+      const query = async () => ++calls;
+      const h = await renderHook(() =>
+        useSharedLiveQuery('fg', query, ['tasks'], { refreshOn: 'foreground' }),
+      );
+      await flush();
+      expect(calls).toBe(1);
+      expect(handlers).toHaveLength(1);
+
+      // Retour immédiat : rien (moins de 60 s, même jour).
+      jest.setSystemTime(start.getTime() + 10_000);
+      await act(async () => handlers[0]!('active'));
+      await flush();
+      expect(calls).toBe(1);
+
+      // Retour après minuit (40 s plus tard, mais le jour a changé) : relecture.
+      jest.setSystemTime(start.getTime() + 40_000);
+      await act(async () => handlers[0]!('active'));
+      await flush();
+      expect(calls).toBe(2);
+      expect(h.result.current.data).toBe(2);
+
+      // Passage en arrière-plan : rien ; retour après plus de 60 s : relecture.
+      jest.setSystemTime(start.getTime() + 40_000 + FOREGROUND_REFRESH_MS + 1);
+      await act(async () => handlers[0]!('background'));
+      await flush();
+      expect(calls).toBe(2);
+      await act(async () => handlers[0]!('active'));
+      await flush();
+      expect(calls).toBe(3);
+
+      await h.unmount();
+      expect(remove).toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+      spy.mockRestore();
+    }
+  });
+
+  it('shouldRefreshOnForeground : lecture ancienne ou jour changé', () => {
+    const at = new Date(2026, 8, 23, 10, 0);
+    const fresh = { loadedAt: at.getTime(), loadedDay: '2026-09-23' };
+    expect(shouldRefreshOnForeground(fresh, new Date(2026, 8, 23, 10, 0, 30))).toBe(false);
+    expect(shouldRefreshOnForeground(fresh, new Date(2026, 8, 23, 10, 1))).toBe(true);
+    expect(shouldRefreshOnForeground(fresh, new Date(2026, 8, 24, 0, 0, 10))).toBe(true);
   });
 
   it('garde les clés séparées', async () => {

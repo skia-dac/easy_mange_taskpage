@@ -198,9 +198,17 @@ export default function HabitDetailScreen() {
         <View
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          <TextButton label="‹" onPress={() => stepMonth(-1)} />
+          <TextButton
+            label="‹"
+            accessibilityLabel={t('common.previous')}
+            onPress={() => stepMonth(-1)}
+          />
           <AppText variant="bodyStrong">{formatMonthYear(month, labels.lang)}</AppText>
-          <TextButton label="›" onPress={() => stepMonth(1)} />
+          <TextButton
+            label="›"
+            accessibilityLabel={t('common.next')}
+            onPress={() => stepMonth(1)}
+          />
         </View>
         <View style={{ flexDirection: 'row' }}>
           {weekdayOrder(weekStart).map((n) => (

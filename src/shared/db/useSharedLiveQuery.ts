@@ -1,6 +1,8 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 
+import { toIsoDate } from '../dates';
 import { logger } from '../logger';
 import { subscribeToChanges } from './changes';
 import { asDb } from './compat';
@@ -18,7 +20,21 @@ type Entry<T> = {
   run: number;
   /** Données à recharger au prochain abonné (des changements ont pu passer sans abonné). */
   stale: boolean;
+  /** Moment de la dernière lecture lancée (retour au premier plan). */
+  loadedAt: number;
+  loadedDay: string;
 };
+
+export type SharedLiveQueryOptions = {
+  /**
+   * `foreground` : recharge aussi au retour de l'app au premier plan, si la dernière lecture date
+   * de plus de FOREGROUND_REFRESH_MS ou si le jour a changé (les fenêtres « aujourd'hui » suivent).
+   */
+  refreshOn?: 'foreground';
+};
+
+/** Âge à partir duquel une lecture est refaite au retour de l'app. */
+export const FOREGROUND_REFRESH_MS = 60_000;
 
 const stores = new WeakMap<Db, Map<string, Entry<unknown>>>();
 
@@ -43,15 +59,19 @@ function entryFor<T>(
       unsubscribe: null,
       run: 0,
       stale: true,
+      loadedAt: 0,
+      loadedDay: '',
     };
     store.set(key, entry as Entry<unknown>);
   }
   return entry;
 }
 
-function reload<T>(db: Db, entry: Entry<T>): void {
+function reload<T>(db: Db, entry: Entry<T>, now = new Date()): void {
   const run = ++entry.run;
   entry.stale = false;
+  entry.loadedAt = now.getTime();
+  entry.loadedDay = toIsoDate(now);
   entry.query(db).then(
     (data) => {
       if (run !== entry.run) return;
@@ -68,6 +88,16 @@ function reload<T>(db: Db, entry: Entry<T>): void {
   );
 }
 
+/** Faut-il relire au retour au premier plan ? Lecture trop ancienne, ou jour changé. */
+export function shouldRefreshOnForeground(
+  loaded: { loadedAt: number; loadedDay: string },
+  now: Date,
+): boolean {
+  return (
+    now.getTime() - loaded.loadedAt >= FOREGROUND_REFRESH_MS || toIsoDate(now) !== loaded.loadedDay
+  );
+}
+
 /**
  * Comme `useLiveQuery`, mais une seule lecture partagée par `key` (par base) quel que soit le
  * nombre d'écrans qui l'utilisent : l'agenda ou l'argent ne sont chargés qu'une fois, et rechargés
@@ -78,14 +108,16 @@ export function useSharedLiveQuery<T>(
   key: string,
   query: (db: Db) => Promise<T>,
   tables: readonly string[],
+  options: SharedLiveQueryOptions = {},
 ): LiveQuery<T> {
   const db = asDb(useSQLiteContext());
+  const refreshOnForeground = options.refreshOn === 'foreground';
   const subscribe = useCallback(
     (onChange: () => void) => {
       const entry = entryFor(db, key, query, tables);
       entry.listeners.add(onChange);
       if (!entry.unsubscribe) {
-        entry.unsubscribe = subscribeToChanges((changed) => {
+        const unsubscribeChanges = subscribeToChanges((changed) => {
           for (const t of changed) {
             if (entry.tables.has(t)) {
               reload(db, entry);
@@ -93,6 +125,16 @@ export function useSharedLiveQuery<T>(
             }
           }
         });
+        const appState = refreshOnForeground
+          ? AppState.addEventListener('change', (s) => {
+              const now = new Date();
+              if (s === 'active' && shouldRefreshOnForeground(entry, now)) reload(db, entry, now);
+            })
+          : null;
+        entry.unsubscribe = () => {
+          unsubscribeChanges();
+          appState?.remove();
+        };
       }
       if (entry.stale) reload(db, entry);
       return () => {
@@ -106,7 +148,7 @@ export function useSharedLiveQuery<T>(
     },
     // `query` et `tables` sont fixes pour une `key` donnée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [db, key],
+    [db, key, refreshOnForeground],
   );
   const getSnapshot = useCallback(
     () => entryFor(db, key, query, tables).state,

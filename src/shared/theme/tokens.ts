@@ -46,3 +46,6 @@ export function scaledTextVariants(scale: TextScale) {
 
 /** Taille minimale d'une zone touchable (accessibilité). */
 export const minTouchSize = 44;
+
+/** Grossissement maximal des textes (réglage d'accessibilité) : libellés et saisies ensemble. */
+export const maxFontSizeMultiplier = 1.6;

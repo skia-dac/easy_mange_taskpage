@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState, type DependencyList } from 'react';
+import { useEffect, useRef, useState, type DependencyList } from 'react';
 
 import { logger } from '../logger';
 import { subscribeToChanges } from './changes';
@@ -23,6 +23,7 @@ export function useLiveQuery<T>(
   const [state, setState] = useState<LiveQuery<T>>({ data: undefined, error: null, loading: true });
   const [version, setVersion] = useState(0);
   const tablesKey = tables.join(',');
+  const previousDeps = useRef<DependencyList | null>(null);
 
   useEffect(() => {
     const watched = new Set(tablesKey.split(','));
@@ -38,6 +39,14 @@ export function useLiveQuery<T>(
 
   useEffect(() => {
     let active = true;
+    // Nouvelle requête (autre id, autre texte cherché) : on le dit, en gardant l'ancienne donnée
+    // affichée pour éviter un écran vide ; un simple changement de table recharge en silence.
+    const depsChanged =
+      previousDeps.current !== null &&
+      (previousDeps.current.length !== deps.length ||
+        previousDeps.current.some((d, i) => !Object.is(d, deps[i])));
+    previousDeps.current = deps;
+    if (depsChanged) setState((s) => (s.loading ? s : { ...s, loading: true }));
     query(db).then(
       (data) => active && setState({ data, error: null, loading: false }),
       (error: unknown) => {
