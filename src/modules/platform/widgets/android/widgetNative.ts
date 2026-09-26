@@ -5,9 +5,14 @@
  * le reste de l'app reste utilisable. Un development build les réactive.
  */
 
+import { NativeModules, Platform, TurboModuleRegistry } from 'react-native';
+
 type AndroidWidgetPackage = typeof import('react-native-android-widget');
 
 function loadAndroidWidgetPackage(): AndroidWidgetPackage | null {
+  if (Platform.OS === 'android' && !TurboModuleRegistry.get('AndroidWidget') && !NativeModules.AndroidWidget) {
+    return null;
+  }
   try {
     // Un import statique ne peut pas être attrapé : Expo Go lève pendant l'évaluation du module.
     // eslint-disable-next-line @typescript-eslint/no-require-imports

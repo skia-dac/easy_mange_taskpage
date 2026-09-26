@@ -1,3 +1,4 @@
+import { requireOptionalNativeModule } from 'expo';
 import { Platform } from 'react-native';
 
 import type { WidgetData, WidgetTimelineEntry } from '@/projections';
@@ -13,10 +14,15 @@ let iosRegistry: IosRegistry | null | undefined;
 
 /**
  * Chargé à la demande : expo-widgets lève dès l'évaluation du module dans Expo Go
- * (module natif ExpoWidgets absent), ce qu'un import statique ne permet pas d'attraper.
+ * (module natif ExpoWidgets absent). On vérifie d'abord sa présence : en développement,
+ * Metro signale une erreur de chargement comme plantage même si elle est attrapée.
  */
 function loadIosRegistry(): IosRegistry | null {
   if (iosRegistry !== undefined) return iosRegistry;
+  if (!requireOptionalNativeModule('ExpoWidgets')) {
+    iosRegistry = null;
+    return iosRegistry;
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     iosRegistry = require('./ios/registry') as IosRegistry;
