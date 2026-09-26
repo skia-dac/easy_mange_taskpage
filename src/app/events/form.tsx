@@ -27,6 +27,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -99,6 +100,7 @@ export default function EventFormScreen() {
         value={form.title}
         onChangeText={(title) => set({ title })}
         error={errors.title}
+        limit={fieldLimits.title120}
         placeholder={t('events.titlePlaceholder')}
         autoFocus={!params.id}
       />
@@ -147,6 +149,7 @@ export default function EventFormScreen() {
         value={form.description ?? ''}
         onChangeText={(description) => set({ description })}
         error={errors.description}
+        limit={fieldLimits.description1000}
         placeholder={t('common.optional')}
         multiline
       />

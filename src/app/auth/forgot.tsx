@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AccountsUnavailable } from '@/components/AccountsUnavailable';
 import { accountMessageKey, sendPasswordReset, useAuth } from '@/modules/identity';
 import { userMessageKey } from '@/shared/errors';
-import { AppText, Card, FormScreen, TextField, useSave } from '@/shared/ui';
+import { AppText, Card, FormScreen, TextField, fieldLimits, useSave } from '@/shared/ui';
 
 /** Mot de passe oublié (§5.5) : un lien est envoyé par e-mail, il rouvre l'app pour choisir un nouveau mot de passe. */
 export default function ForgotScreen() {
@@ -36,6 +36,7 @@ export default function ForgotScreen() {
         value={email}
         onChangeText={setEmail}
         error={errors.email ?? errors._form}
+        limit={fieldLimits.email}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"

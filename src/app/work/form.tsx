@@ -36,6 +36,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -137,6 +138,7 @@ export default function WorkFormScreen() {
         value={form.title}
         onChangeText={(v) => set({ title: v })}
         error={errors.title}
+        limit={fieldLimits.title120}
         placeholder={isTask ? t('work.titlePlaceholderTask') : t('work.titlePlaceholderAssignment')}
         autoFocus={!params.id}
       />
@@ -210,6 +212,7 @@ export default function WorkFormScreen() {
         value={form.description ?? ''}
         onChangeText={(description) => set({ description })}
         error={errors.description}
+        limit={fieldLimits.description2000}
         placeholder={t('common.optional')}
         multiline
       />

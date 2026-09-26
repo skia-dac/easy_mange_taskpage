@@ -40,6 +40,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
 } from '@/shared/ui';
 
@@ -332,6 +333,7 @@ export default function CourseFormScreen() {
             value={form.room ?? ''}
             onChangeText={(room) => set({ room })}
             error={errors.room}
+            limit={fieldLimits.room}
             placeholder={t('common.optional')}
           />
         </View>
@@ -341,6 +343,7 @@ export default function CourseFormScreen() {
             value={form.teacher ?? ''}
             onChangeText={(teacher) => set({ teacher })}
             error={errors.teacher}
+            limit={fieldLimits.teacher}
             placeholder={t('common.optional')}
           />
         </View>
@@ -362,6 +365,7 @@ export default function CourseFormScreen() {
         value={form.title ?? ''}
         onChangeText={(title) => set({ title })}
         error={errors.title}
+        limit={fieldLimits.title80}
         placeholder={t('common.optional')}
       />
       <TextField
@@ -369,6 +373,7 @@ export default function CourseFormScreen() {
         value={form.description ?? ''}
         onChangeText={(description) => set({ description })}
         error={errors.description}
+        limit={fieldLimits.description500}
         placeholder={t('common.optional')}
         multiline
       />

@@ -13,7 +13,7 @@ import type { IsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, showError, TextField } from '@/shared/ui';
+import { AppText, Card, fieldLimits, showError, TextField } from '@/shared/ui';
 
 /**
  * Humeur et énergie du jour, de 1 à 5, avec une note facultative.
@@ -98,7 +98,7 @@ export function MoodPicker({ date }: { date: IsoDate }) {
             onChangeText={(v) => change({ note: v })}
             onEndEditing={() => save(mood, energy, note)}
             placeholder={t('common.optional')}
-            maxLength={500}
+            limit={fieldLimits.note500}
             multiline
           />
         ) : (

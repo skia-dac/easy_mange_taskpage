@@ -22,6 +22,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -87,6 +88,7 @@ export default function NoteCategoryFormScreen() {
         value={form.name}
         onChangeText={(name) => setForm((f) => ({ ...f, name }))}
         error={errors.name}
+        limit={fieldLimits.name40}
         placeholder={t('noteCategories.namePlaceholder')}
         autoFocus={!id}
       />

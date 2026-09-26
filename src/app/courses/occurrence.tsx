@@ -19,6 +19,7 @@ import {
   DateTimeField,
   FormScreen,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -90,6 +91,7 @@ export default function OccurrenceFormScreen() {
             value={form.newRoom ?? ''}
             onChangeText={(newRoom) => set({ newRoom })}
             error={errors.newRoom}
+            limit={fieldLimits.room}
             placeholder={t('common.optional')}
           />
         </View>
@@ -99,6 +101,7 @@ export default function OccurrenceFormScreen() {
             value={form.newTeacher ?? ''}
             onChangeText={(newTeacher) => set({ newTeacher })}
             error={errors.newTeacher}
+            limit={fieldLimits.teacher}
             placeholder={t('common.optional')}
           />
         </View>
@@ -108,6 +111,7 @@ export default function OccurrenceFormScreen() {
         value={form.newTitle ?? ''}
         onChangeText={(newTitle) => set({ newTitle })}
         error={errors.newTitle}
+        limit={fieldLimits.title80}
         placeholder={t('common.optional')}
       />
       <TextField
@@ -115,6 +119,7 @@ export default function OccurrenceFormScreen() {
         value={form.note ?? ''}
         onChangeText={(note) => set({ note })}
         error={errors.note}
+        limit={fieldLimits.description500}
         placeholder={t('occurrence.notePlaceholder')}
         multiline
       />

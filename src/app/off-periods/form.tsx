@@ -29,6 +29,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -116,6 +117,7 @@ export default function OffPeriodFormScreen() {
         value={form.name}
         onChangeText={(name) => set({ name })}
         error={errors.name}
+        limit={fieldLimits.name60}
         placeholder={t('offPeriods.namePlaceholder')}
         autoFocus={!id}
       />

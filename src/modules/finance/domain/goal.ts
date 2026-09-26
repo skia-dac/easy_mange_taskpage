@@ -8,7 +8,8 @@ export const goalInputSchema = z.object({
   targetMinor: z
     .number({ error: 'money.invalidAmount' })
     .int({ error: 'money.invalidAmount' })
-    .positive({ error: 'money.invalidAmount' }),
+    .positive({ error: 'money.invalidAmount' })
+    .max(1_000_000_000_000, { error: 'money.invalidAmount' }),
   currency: z.string().min(3).max(3),
   deadline: isoDate.nullish().transform((v) => v ?? null),
 });

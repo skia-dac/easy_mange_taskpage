@@ -11,7 +11,15 @@ import {
   useAuth,
 } from '@/modules/identity';
 import { userMessageKey } from '@/shared/errors';
-import { EmptyState, FormScreen, LoadingScreen, showInfo, TextField, useSave } from '@/shared/ui';
+import {
+  EmptyState,
+  FormScreen,
+  LoadingScreen,
+  showInfo,
+  TextField,
+  fieldLimits,
+  useSave,
+} from '@/shared/ui';
 
 /**
  * Nouveau mot de passe : après le lien « mot de passe oublié » (`code`),
@@ -55,6 +63,7 @@ export default function ResetPasswordScreen() {
         value={form.password}
         onChangeText={(password) => setForm((f) => ({ ...f, password }))}
         error={errors.password}
+        limit={fieldLimits.newPassword}
         hint={t('auth.passwordRules', { min: PASSWORD_MIN })}
         secureTextEntry
         autoComplete="new-password"
@@ -66,6 +75,7 @@ export default function ResetPasswordScreen() {
         value={form.confirm}
         onChangeText={(confirm) => setForm((f) => ({ ...f, confirm }))}
         error={errors.confirm}
+        limit={fieldLimits.password}
         secureTextEntry
         autoComplete="new-password"
         textContentType="newPassword"

@@ -27,6 +27,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
 } from '@/shared/ui';
 
 type Props = {
@@ -178,7 +179,7 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
                   value={reason}
                   onChangeText={setReason}
                   placeholder={t('common.optional')}
-                  maxLength={200}
+                  limit={fieldLimits.note200}
                 />
                 {choice === 'excused' ? (
                   <AppText variant="caption" color="muted">

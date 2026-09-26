@@ -43,6 +43,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   KeyboardAvoiding,
 } from '@/shared/ui';
 
@@ -289,7 +290,7 @@ export default function MoneyAddScreen() {
           value={note}
           onChangeText={setNote}
           placeholder={t('common.optional')}
-          maxLength={120}
+          limit={fieldLimits.note120}
         />
       </ScrollView>
       {/* Pied fixe : montant, pavé et bouton restent visibles, quelle que soit la taille d'écran. */}

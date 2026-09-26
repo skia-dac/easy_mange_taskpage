@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { SEARCH_MAX } from '../fieldLimits';
 import { fonts, minTouchSize, useTheme } from '../theme';
 
 type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
@@ -34,7 +35,8 @@ export function SearchInput({ value, onChangeText, placeholder, emphasized, ...r
       <TextInput
         accessibilityLabel={placeholder}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={(next) => onChangeText(next.slice(0, SEARCH_MAX))}
+        maxLength={SEARCH_MAX}
         placeholder={placeholder}
         placeholderTextColor={colors.muted}
         returnKeyType="search"

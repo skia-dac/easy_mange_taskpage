@@ -36,6 +36,7 @@ import {
   SelectField,
   showError,
   TextField,
+  fieldLimits,
   KeyboardAvoiding,
 } from '@/shared/ui';
 
@@ -205,8 +206,8 @@ export default function MoneySettingsScreen() {
               value={name}
               onChangeText={setName}
               error={nameError}
+              limit={fieldLimits.category}
               placeholder={t('money.categoryPlaceholder')}
-              maxLength={30}
             />
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
               {categoryIcons.map((i) => (

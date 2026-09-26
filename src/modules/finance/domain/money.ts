@@ -56,7 +56,7 @@ export function parseAmount(text: string, currency: string): number | null {
   const [int, frac = ''] = clean.split('.') as [string, string?];
   if (frac.length > d) return null;
   const minor = Number(int) * 10 ** d + Number((frac ?? '').padEnd(d, '0') || '0');
-  return Number.isSafeInteger(minor) && minor > 0 ? minor : null;
+  return Number.isSafeInteger(minor) && minor > 0 && minor <= 1_000_000_000_000 ? minor : null;
 }
 
 /** Montant en plus petite unité → texte modifiable dans un champ (« 12500 », « 12,50 »). */

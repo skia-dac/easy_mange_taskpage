@@ -19,7 +19,8 @@ export const MAX_REMINDERS = 3;
 const amount = z
   .number({ error: 'money.invalidAmount' })
   .int({ error: 'money.invalidAmount' })
-  .positive({ error: 'money.invalidAmount' });
+  .positive({ error: 'money.invalidAmount' })
+  .max(1_000_000_000_000, { error: 'money.invalidAmount' });
 
 export const recurringInputSchema = z
   .object({

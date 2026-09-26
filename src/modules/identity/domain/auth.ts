@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { PASSWORD_MAX } from '@/shared/fieldLimits';
 import { optionalText } from '@/shared/validation';
 
 /** Règles du compte (spécification §5.1) : e-mail valide, mot de passe d'au moins 8 caractères avec lettre et chiffre. */
@@ -16,12 +17,15 @@ export const PASSWORD_MIN = 8;
 export const passwordSchema = z
   .string({ error: 'validation.required' })
   .min(PASSWORD_MIN, { error: 'auth.error.passwordShort' })
-  .max(72, { error: 'validation.tooLong' })
+  .max(PASSWORD_MAX, { error: 'validation.tooLong' })
   .refine((p) => /[A-Za-zÀ-ÿ]/.test(p) && /\d/.test(p), { error: 'auth.error.passwordWeak' });
 
 export const signInSchema = z.object({
   email: emailSchema,
-  password: z.string({ error: 'validation.required' }).min(1, { error: 'validation.required' }),
+  password: z
+    .string({ error: 'validation.required' })
+    .min(1, { error: 'validation.required' })
+    .max(PASSWORD_MAX, { error: 'validation.tooLong' }),
 });
 
 export const signUpSchema = z
@@ -30,7 +34,7 @@ export const signUpSchema = z
     lastName: optionalText(60),
     email: emailSchema,
     password: passwordSchema,
-    confirm: z.string(),
+    confirm: z.string().max(PASSWORD_MAX, { error: 'validation.tooLong' }),
   })
   .superRefine((v, ctx) => {
     if (v.password !== v.confirm)
@@ -38,7 +42,10 @@ export const signUpSchema = z
   });
 
 export const newPasswordSchema = z
-  .object({ password: passwordSchema, confirm: z.string() })
+  .object({
+    password: passwordSchema,
+    confirm: z.string().max(PASSWORD_MAX, { error: 'validation.tooLong' }),
+  })
   .superRefine((v, ctx) => {
     if (v.password !== v.confirm)
       ctx.addIssue({ code: 'custom', path: ['confirm'], message: 'auth.error.passwordMismatch' });

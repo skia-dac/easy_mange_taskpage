@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import {
   amountInput,
   createGoal,
+  currencies,
+  isCurrency,
   deleteGoal,
   getGoal,
   getMoneyPrefs,
@@ -22,6 +24,8 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
+  moneyLimit,
   useSave,
 } from '@/shared/ui';
 
@@ -94,6 +98,7 @@ export default function GoalFormScreen() {
         value={name}
         onChangeText={setName}
         error={errors.name}
+        limit={fieldLimits.name60}
         placeholder={t('money.goalPlaceholder')}
       />
       <TextField
@@ -102,7 +107,7 @@ export default function GoalFormScreen() {
         value={target}
         onChangeText={setTarget}
         error={errors.targetMinor}
-        keyboardType="decimal-pad"
+        limit={moneyLimit(isCurrency(currency) ? currencies[currency].decimals : 2)}
         placeholder="0"
       />
       <DateTimeField

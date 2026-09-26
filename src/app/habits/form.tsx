@@ -30,6 +30,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -130,6 +131,7 @@ export default function HabitFormScreen() {
         value={form.name}
         onChangeText={(name) => set({ name })}
         error={errors.name}
+        limit={fieldLimits.name60}
         placeholder={t('habits.namePlaceholder')}
         autoFocus={!params.id}
       />
@@ -225,7 +227,7 @@ export default function HabitFormScreen() {
             value={form.target}
             onChangeText={(target) => set({ target })}
             error={errors.target}
-            keyboardType="number-pad"
+            limit={fieldLimits.habitTarget}
             hint={t('habits.targetHint')}
           />
         </View>
@@ -235,7 +237,7 @@ export default function HabitFormScreen() {
             value={form.unit ?? ''}
             onChangeText={(unit) => set({ unit })}
             error={errors.unit}
-            maxLength={20}
+            limit={fieldLimits.unit}
             placeholder={t('habits.unitPlaceholder')}
             editable={Number(form.target) > 1}
           />

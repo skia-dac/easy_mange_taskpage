@@ -65,7 +65,8 @@
     "pickDay": "Choisis au moins un jour.",
     "invalidWeight": "Poids non valide (entre 20 et 400 kg).",
     "weightOrPhoto": "Ajoute au moins une photo ou ton poids.",
-    "invalid": "Valeur non valide."
+    "invalid": "Valeur non valide.",
+    "invalidYear": "Entre une année scolaire, par exemple 2026–2027."
   },
   "today": {
     "greeting": "Bonjour",

@@ -34,6 +34,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -232,7 +233,7 @@ export default function CheckpointScreen() {
         label={t('bodyProgress.weight')}
         value={weight}
         onChangeText={setWeight}
-        keyboardType="decimal-pad"
+        limit={fieldLimits.weight}
         placeholder={t('bodyProgress.weightPlaceholder')}
         error={errors.weightKg}
       />
@@ -249,7 +250,7 @@ export default function CheckpointScreen() {
         value={note}
         onChangeText={setNote}
         placeholder={t('common.optional')}
-        maxLength={300}
+        limit={fieldLimits.note300}
         error={errors.note}
       />
     </FormScreen>

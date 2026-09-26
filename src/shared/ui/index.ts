@@ -28,5 +28,6 @@ export { TextButton } from './TextButton';
 export { showToast, showUndoToast, ToastHost } from './Toast';
 export type { ToastAction } from './Toast';
 export { TextField } from './TextField';
+export { fieldLimits, moneyLimit } from '../fieldLimits';
 export { useSave } from './useSave';
 export { SwipeRow } from './SwipeRow';

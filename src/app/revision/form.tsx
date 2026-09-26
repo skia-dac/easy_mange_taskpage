@@ -21,6 +21,7 @@ import {
   FormScreen,
   SelectField,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -78,6 +79,7 @@ export default function RevisionFormScreen() {
         value={form.title ?? ''}
         onChangeText={(title) => set({ title })}
         error={errors.title}
+        limit={fieldLimits.title80}
         placeholder={t('revision.titlePlaceholder')}
       />
       <DateTimeField

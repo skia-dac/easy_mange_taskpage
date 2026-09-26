@@ -31,6 +31,7 @@ import {
   showError,
   TextButton,
   TextField,
+  fieldLimits,
   useSave,
   reportLoadError,
 } from '@/shared/ui';
@@ -173,6 +174,7 @@ export default function ExamFormScreen() {
         value={form.title ?? ''}
         onChangeText={(title) => set({ title })}
         error={errors.title}
+        limit={fieldLimits.title80}
         placeholder={t('exams.titlePlaceholder')}
       />
       <View style={{ flexDirection: 'row', gap: spacing.md }}>
@@ -204,7 +206,7 @@ export default function ExamFormScreen() {
             value={form.duration}
             onChangeText={(duration) => set({ duration })}
             error={errors.durationMinutes}
-            keyboardType="number-pad"
+            limit={fieldLimits.duration}
             placeholder="120"
           />
         </View>
@@ -214,6 +216,7 @@ export default function ExamFormScreen() {
             value={form.room ?? ''}
             onChangeText={(room) => set({ room })}
             error={errors.room}
+            limit={fieldLimits.room}
             placeholder={t('common.optional')}
           />
         </View>
@@ -257,6 +260,7 @@ export default function ExamFormScreen() {
         value={form.description ?? ''}
         onChangeText={(description) => set({ description })}
         error={errors.description}
+        limit={fieldLimits.description1000}
         placeholder={t('common.optional')}
         multiline
       />
@@ -271,8 +275,8 @@ export default function ExamFormScreen() {
             value={form.grade}
             onChangeText={(grade) => set({ grade })}
             error={errors.grade}
+            limit={fieldLimits.grade}
             placeholder="—"
-            keyboardType="decimal-pad"
           />
         </View>
         <View style={{ flex: 1 }}>
@@ -281,7 +285,7 @@ export default function ExamFormScreen() {
             value={form.gradeMax}
             onChangeText={(gradeMax) => set({ gradeMax })}
             error={errors.gradeMax}
-            keyboardType="decimal-pad"
+            limit={fieldLimits.gradeMax}
           />
         </View>
         <View style={{ flex: 1 }}>
@@ -290,7 +294,7 @@ export default function ExamFormScreen() {
             value={form.coefficient}
             onChangeText={(coefficient) => set({ coefficient })}
             error={errors.coefficient}
-            keyboardType="decimal-pad"
+            limit={fieldLimits.coefficient}
           />
         </View>
       </View>
