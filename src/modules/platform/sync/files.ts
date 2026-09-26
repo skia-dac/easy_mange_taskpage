@@ -50,7 +50,11 @@ export function supabaseFileStore(client: SupabaseClient): FileStore {
 
 /**
  * Pièces jointes et photo de profil : les fichiers suivent les lignes.
- * Présent sur le téléphone et pas encore envoyé → envoi ; absent → téléchargement.
+ * Présent sur le téléphone et pas encore envoyé → envoi ; absent du téléphone → téléchargement
+ * (même s'il a déjà été envoyé : après une sauvegarde restaurée sur un autre téléphone, la fiche
+ * dit « envoyé » mais le fichier n'est pas là).
+ * Un fichier envoyé que plus aucune ligne vivante ne référence (pièce jointe supprimée, photo de
+ * profil remplacée) est retiré du serveur.
  * Chemin sur le serveur : <id utilisateur>/<chemin local> (la règle du bucket l'impose).
  * Les photos de progression physique (habit_checkpoints) ne sont volontairement PAS envoyées :
  * elles restent sur le téléphone.
@@ -65,15 +69,10 @@ export async function syncFiles(db: Db, userId: string, store: FileStore): Promi
     (await db.getAllAsync<{ path: string }>('SELECT path FROM sync_files', [])).map((r) => r.path),
   );
   let moved = 0;
-  // Lignes supprimées dont le fichier a déjà été envoyé : on l'efface aussi du serveur.
-  const gone = await db.getAllAsync<{ path: string }>(
-    `SELECT local_path AS path FROM attachments WHERE deleted_at IS NOT NULL
-     UNION SELECT photo_path AS path FROM profiles WHERE deleted_at IS NOT NULL AND photo_path IS NOT NULL`,
-    [],
-  );
   const alive = new Set(rows.map((r) => r.path));
-  for (const { path } of gone) {
-    if (!path || !done.has(path) || alive.has(path) || path.includes('..')) continue;
+  // Déjà envoyé mais plus référencé par une ligne vivante : on l'efface aussi du serveur.
+  for (const path of done) {
+    if (!path || alive.has(path) || path.includes('..')) continue;
     try {
       await store.remove(`${userId}/${path}`);
       await db.runAsync('DELETE FROM sync_files WHERE path = ?', [path]);
@@ -83,10 +82,12 @@ export async function syncFiles(db: Db, userId: string, store: FileStore): Promi
     }
   }
   for (const { path } of rows) {
-    if (!path || done.has(path) || path.includes('..')) continue;
+    if (!path || path.includes('..')) continue;
+    const local = store.existsLocally(path);
+    if (done.has(path) && local) continue;
     const remote = `${userId}/${path}`;
     try {
-      if (store.existsLocally(path)) await store.upload(remote, path);
+      if (local) await store.upload(remote, path);
       else if (!(await store.download(remote, path))) continue;
       await db.runAsync('INSERT OR REPLACE INTO sync_files (path, synced_at) VALUES (?, ?)', [
         path,

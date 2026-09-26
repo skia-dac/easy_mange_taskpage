@@ -111,7 +111,8 @@ export async function generateServerSql(db: Db): Promise<string> {
 }
 
 const PUSH_FUNCTION = `-- Applique une liste de modifications envoyées par le téléphone, dans l'ordre.
--- Résultat par modification : applied (avec la nouvelle version), conflict (avec la ligne du serveur) ou missing.
+-- Résultat par modification : applied (avec la nouvelle version), conflict (avec la ligne du serveur),
+-- missing, ou rejected (la modification est invalide : les autres sont quand même appliquées).
 create or replace function public.mysky_push(p_mutations jsonb) returns jsonb
 language plpgsql security invoker set search_path = public as $$
 declare
@@ -137,66 +138,75 @@ begin
   end if;
   for m in select value from jsonb_array_elements(p_mutations) loop
     v_mid := m->>'mutation_id';
-    v_table := m->>'entity';
-    v_id := m->>'entity_id';
-    v_op := m->>'operation';
-    v_base := nullif(m->>'base_version', '')::bigint;
-    v_payload := coalesce(m->'payload', '{}'::jsonb) - 'id' - 'user_id' - 'version' - 'server_updated_at' - 'sync_status';
-    if v_table is null or not (v_table = any (allowed)) then
-      raise exception 'unknown entity %', v_table using errcode = '22023';
-    end if;
+    -- Chaque modification est isolée : une erreur (contrainte violée, table inconnue…) la rejette
+    -- sans annuler les autres ni faire échouer l'appel.
+    begin
+      v_table := m->>'entity';
+      v_id := m->>'entity_id';
+      v_op := m->>'operation';
+      v_base := nullif(m->>'base_version', '')::bigint;
+      v_payload := coalesce(m->'payload', '{}'::jsonb) - 'id' - 'user_id' - 'version' - 'server_updated_at' - 'sync_status';
+      if v_mid is null or v_id is null then
+        raise exception 'mutation incomplète' using errcode = '22023';
+      end if;
+      if v_table is null or not (v_table = any (allowed)) then
+        raise exception 'unknown entity %', v_table using errcode = '22023';
+      end if;
 
-    select result_version into v_prev from sync_mutations where mutation_id = v_mid;
-    if found then
-      results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_prev));
-      continue;
-    end if;
-
-    execute format('select version from public.%I where id = $1', v_table) into v_current using v_id;
-
-    select string_agg(quote_ident(k), ', '),
-           string_agg('r.' || quote_ident(k), ', '),
-           string_agg(quote_ident(k) || ' = r.' || quote_ident(k), ', ')
-      into v_cols, v_vals, v_sets
-      from jsonb_object_keys(v_payload) as k
-     where exists (
-       select 1 from information_schema.columns c
-        where c.table_schema = 'public' and c.table_name = v_table and c.column_name = k
-          and c.column_name not in ('id', 'user_id', 'version', 'server_updated_at'));
-
-    if v_op = 'create' then
-      if v_current is not null then
-        -- La ligne existe déjà (ex. sauvegarde restaurée avant la première synchro) :
-        -- on ne l'écrase pas en silence, le téléphone arbitre avec la version du serveur.
-        execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
-        results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
+      select result_version into v_prev from sync_mutations where mutation_id = v_mid;
+      if found then
+        results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_prev));
         continue;
+      end if;
+
+      execute format('select version from public.%I where id = $1', v_table) into v_current using v_id;
+
+      select string_agg(quote_ident(k), ', '),
+             string_agg('r.' || quote_ident(k), ', '),
+             string_agg(quote_ident(k) || ' = r.' || quote_ident(k), ', ')
+        into v_cols, v_vals, v_sets
+        from jsonb_object_keys(v_payload) as k
+       where exists (
+         select 1 from information_schema.columns c
+          where c.table_schema = 'public' and c.table_name = v_table and c.column_name = k
+            and c.column_name not in ('id', 'user_id', 'version', 'server_updated_at'));
+
+      if v_op = 'create' then
+        if v_current is not null then
+          -- La ligne existe déjà (ex. sauvegarde restaurée avant la première synchro) :
+          -- on ne l'écrase pas en silence, le téléphone arbitre avec la version du serveur.
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
+          continue;
+        else
+          execute format(
+            'insert into public.%I (id, version%s) select $1, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
+            v_table, coalesce(', ' || v_cols, ''), coalesce(', ' || v_vals, ''), v_table)
+            using v_id, v_payload;
+          v_new := 1;
+        end if;
       else
+        if v_current is null then
+          results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'missing'));
+          continue;
+        end if;
+        if v_base is distinct from v_current then
+          execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
+          results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
+          continue;
+        end if;
         execute format(
-          'insert into public.%I (id, version%s) select $1, 1%s from jsonb_populate_record(null::public.%I, $2) as r',
-          v_table, coalesce(', ' || v_cols, ''), coalesce(', ' || v_vals, ''), v_table)
+          'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1',
+          v_table, coalesce(v_sets || ', ', ''), v_table)
           using v_id, v_payload;
-        v_new := 1;
+        v_new := v_current + 1;
       end if;
-    else
-      if v_current is null then
-        results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'missing'));
-        continue;
-      end if;
-      if v_base is distinct from v_current then
-        execute format('select to_jsonb(t) - ''user_id'' from public.%I as t where id = $1', v_table) into v_row using v_id;
-        results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'conflict', 'server', v_row));
-        continue;
-      end if;
-      execute format(
-        'update public.%I as t set %sversion = t.version + 1 from jsonb_populate_record(null::public.%I, $2) as r where t.id = $1',
-        v_table, coalesce(v_sets || ', ', ''), v_table)
-        using v_id, v_payload;
-      v_new := v_current + 1;
-    end if;
 
-    insert into sync_mutations (mutation_id, entity, entity_id, result_version) values (v_mid, v_table, v_id, v_new);
-    results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_new));
+      insert into sync_mutations (mutation_id, entity, entity_id, result_version) values (v_mid, v_table, v_id, v_new);
+      results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'applied', 'version', v_new));
+    exception when others then
+      results := results || jsonb_build_array(jsonb_build_object('mutation_id', v_mid, 'status', 'rejected', 'reason', sqlerrm));
+    end;
   end loop;
   return results;
 end $$;

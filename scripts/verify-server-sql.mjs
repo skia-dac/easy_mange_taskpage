@@ -173,23 +173,84 @@ r = await push(B, [
 ]);
 check('B ne peut pas modifier la ligne de A', r[0].status === 'missing', r);
 
-let refused = false;
-try {
-  await push(B, [
-    {
-      mutation_id: 'b2',
-      entity: 'sync_mutations',
-      entity_id: 'x',
-      operation: 'create',
-      payload: {},
-    },
-  ]);
-} catch {
-  refused = true;
-}
-check('table non autorisée refusée', refused);
+r = await push(B, [
+  {
+    mutation_id: 'b2',
+    entity: 'sync_mutations',
+    entity_id: 'x',
+    operation: 'create',
+    payload: {},
+  },
+]);
+check('table non autorisée → rejected', r[0].status === 'rejected', r);
 
-refused = false;
+// Une modification invalide est rejetée seule : celles qui l'entourent sont appliquées.
+r = await push(A, [
+  {
+    mutation_id: 'r1',
+    entity: 'subjects',
+    entity_id: 's-ok1',
+    operation: 'create',
+    base_version: null,
+    payload: { ...create.payload, id: 's-ok1', name: 'Avant' },
+  },
+  {
+    mutation_id: 'r2',
+    entity: 'subjects',
+    entity_id: 's-bad',
+    operation: 'create',
+    base_version: null,
+    payload: { ...create.payload, id: 's-bad', name: null },
+  },
+  {
+    mutation_id: 'r3',
+    entity: 'subjects',
+    entity_id: 's-ok2',
+    operation: 'create',
+    base_version: null,
+    payload: { ...create.payload, id: 's-ok2', name: 'Après' },
+  },
+]);
+check(
+  'not null violé → rejected avec la raison, les autres appliquées',
+  r.length === 3 &&
+    r[0].status === 'applied' &&
+    r[1].status === 'rejected' &&
+    /null/i.test(r[1].reason ?? '') &&
+    r[2].status === 'applied',
+  r,
+);
+const afterReject = await as(
+  A,
+  async () =>
+    (
+      await db.query(
+        "select id from public.subjects where id in ('s-ok1', 's-bad', 's-ok2') order by id",
+      )
+    ).rows,
+);
+check(
+  'la ligne rejetée est absente, les deux autres présentes',
+  afterReject.map((x) => x.id).join(',') === 's-ok1,s-ok2',
+  afterReject,
+);
+r = await push(A, [
+  {
+    mutation_id: 'r2',
+    entity: 'subjects',
+    entity_id: 's-bad',
+    operation: 'create',
+    base_version: null,
+    payload: { ...create.payload, id: 's-bad', name: 'Corrigée' },
+  },
+]);
+check(
+  'une modification rejetée n’est pas mémorisée : renvoyée corrigée, elle passe',
+  r[0].status === 'applied',
+  r,
+);
+
+let refused = false;
 try {
   await db.exec('set role anon;');
   await db.query("select public.mysky_push('[]'::jsonb)");

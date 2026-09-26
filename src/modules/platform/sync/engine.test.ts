@@ -201,4 +201,70 @@ describe('synchronisation', () => {
     a.close();
     b.close();
   });
+
+  it('une modification refusée par le serveur est mise de côté et ne bloque ni les autres ni la réception', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const fromB = await createSubject(b, { name: 'Physique', colorId: 'red' });
+    await syncOnce(b, server.remote());
+
+    const bad = await createSubject(a, { name: 'Invalide', colorId: 'blue' });
+    const good = await createSubject(a, subject);
+    server.rejectIds.add(bad);
+    const ra = await syncOnce(a, server.remote());
+    expect(ra.rejected).toBe(1);
+    expect(ra.pushed).toBe(1);
+    expect(ra.pulled).toBe(1);
+    expect(
+      server
+        .rows('subjects')
+        .map((r) => r.id)
+        .sort(),
+    ).toEqual([fromB, good].sort());
+    // Sortie de la file, gardée de côté avec la raison ; la réception a bien eu lieu.
+    expect(await pendingCount(a)).toBe(0);
+    expect(await conflictCount(a)).toBe(1);
+    const kept = await a.getFirstAsync<{ entity_id: string; server_payload: string }>(
+      'SELECT entity_id, server_payload FROM sync_conflicts',
+      [],
+    );
+    expect(kept?.entity_id).toBe(bad);
+    expect(JSON.parse(kept!.server_payload)).toEqual({ reason: 'not-null violation' });
+    expect((await listSubjects(a)).map((s) => s.name).sort()).toEqual([
+      'Invalide',
+      'Maths',
+      'Physique',
+    ]);
+    a.close();
+    b.close();
+  });
+
+  it('réception par pages : deux lignes au même horodatage réparties sur deux pages ne sont pas perdues', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    await createSubject(a, { name: 'Un', colorId: 'blue' });
+    await syncOnce(a, server.remote());
+    // Trois matières écrites au même instant sur le serveur.
+    server.fixedStamp = '2030-06-01T00:00:00.000Z';
+    for (const name of ['Deux', 'Trois', 'Quatre'])
+      await createSubject(a, { name, colorId: 'blue' });
+    await syncOnce(a, server.remote());
+    server.fixedStamp = null;
+
+    const rb = await syncOnce(b, server.remote(), { pageSize: 2 });
+    expect(rb.pulled).toBe(4);
+    expect((await listSubjects(b)).map((s) => s.name).sort()).toEqual([
+      'Deux',
+      'Quatre',
+      'Trois',
+      'Un',
+    ]);
+    // Une nouvelle passe relit avec une marge sans rien réappliquer ni compter deux fois.
+    const rb2 = await syncOnce(b, server.remote(), { pageSize: 2 });
+    expect(rb2.pulled).toBe(0);
+    a.close();
+    b.close();
+  });
 });

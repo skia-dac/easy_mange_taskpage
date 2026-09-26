@@ -1,3 +1,4 @@
+import { setProfilePhoto } from '@/modules/identity';
 import { addAttachment, createNote, removeAttachment } from '@/modules/productivity';
 import { createTestDb } from '@/test/memoryDb';
 
@@ -83,6 +84,50 @@ describe('synchronisation des fichiers', () => {
     };
     expect(await syncFiles(db, 'u1', store)).toBe(0);
     expect(remote.size).toBe(0);
+    db.close();
+  });
+
+  it('sauvegarde restaurée : un fichier marqué envoyé mais absent du téléphone est téléchargé', async () => {
+    const db = await createTestDb();
+    const noteId = await createNote(db, { title: 'Cours', content: '' });
+    await addAttachment(db, noteId, {
+      kind: 'file',
+      name: 'poly.pdf',
+      mimeType: 'application/pdf',
+      size: 20,
+      localPath: 'attachments/n/poly.pdf',
+    });
+    // La fiche vient d'une sauvegarde : « déjà envoyé », mais le fichier n'est pas sur ce téléphone.
+    await db.runAsync(
+      "INSERT INTO sync_files (path, synced_at) VALUES ('attachments/n/poly.pdf', 'x')",
+      [],
+    );
+    const local = new Set<string>();
+    const { store, remote } = fakeStore(local);
+    remote.set('u1/attachments/n/poly.pdf', 'attachments/n/poly.pdf');
+
+    expect(await syncFiles(db, 'u1', store)).toBe(1);
+    expect(local.has('attachments/n/poly.pdf')).toBe(true);
+    expect(await syncFiles(db, 'u1', store)).toBe(0);
+    db.close();
+  });
+
+  it('photo de profil remplacée : l’ancienne est retirée du serveur', async () => {
+    const db = await createTestDb();
+    await setProfilePhoto(db, 'profile/photo-1.jpg');
+    const local = new Set(['profile/photo-1.jpg', 'profile/photo-2.jpg']);
+    const { store, remote } = fakeStore(local);
+    expect(await syncFiles(db, 'u1', store)).toBe(1);
+    expect(remote.has('u1/profile/photo-1.jpg')).toBe(true);
+
+    await setProfilePhoto(db, 'profile/photo-2.jpg');
+    // Une opération par fichier : l'ancienne retirée, la nouvelle envoyée.
+    expect(await syncFiles(db, 'u1', store)).toBe(2);
+    expect(remote.has('u1/profile/photo-1.jpg')).toBe(false);
+    expect(remote.has('u1/profile/photo-2.jpg')).toBe(true);
+    const kept = await db.getAllAsync<{ path: string }>('SELECT path FROM sync_files', []);
+    expect(kept.map((r) => r.path)).toEqual(['profile/photo-2.jpg']);
+    expect(await syncFiles(db, 'u1', store)).toBe(0);
     db.close();
   });
 });

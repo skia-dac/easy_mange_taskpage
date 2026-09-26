@@ -46,7 +46,15 @@ export { syncWidgets } from './widgets/sync';
 export { widgetTaskHandler } from './widgets/android/taskHandler';
 export { SubjectConfigScreen } from './widgets/android/SubjectConfigScreen';
 export { conflictCount, pendingCount, syncOnce } from './sync/engine';
-export type { Mutation, PushResult, RemoteApi, SyncedTable, SyncReport } from './sync/engine';
+export type {
+  Mutation,
+  PullCursor,
+  PushResult,
+  RemoteApi,
+  SyncedTable,
+  SyncReport,
+} from './sync/engine';
+export { PULL_MARGIN_MS, withMargin } from './sync/remote';
 export { runSync } from './sync/runner';
 export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';

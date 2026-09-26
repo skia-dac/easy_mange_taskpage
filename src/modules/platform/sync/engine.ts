@@ -36,16 +36,37 @@ export type Mutation = {
 export type PushResult =
   | { mutation_id: string; status: 'applied'; version: number }
   | { mutation_id: string; status: 'missing' }
+  | { mutation_id: string; status: 'rejected'; reason: string }
   | { mutation_id: string; status: 'conflict'; server: Record<string, unknown> };
+
+/**
+ * Position de lecture : `since` = dernier `server_updated_at` appliqué ; `afterId` = id de la dernière
+ * ligne de la page précédente dans la même passe (page suivante), absent pour reprendre depuis le curseur
+ * enregistré (avec une marge de relecture, voir remote.ts).
+ */
+export type PullCursor = { since: string; afterId: string | null };
 
 /** Ce que le moteur attend du serveur (Supabase en vrai, un faux serveur dans les tests). */
 export interface RemoteApi {
   push(mutations: Mutation[]): Promise<PushResult[]>;
-  /** Lignes modifiées après `since` (exclu), triées par `server_updated_at`. */
-  pull(table: SyncedTable, since: string | null, limit: number): Promise<Record<string, unknown>[]>;
+  /** Lignes modifiées après le curseur, triées par (`server_updated_at`, `id`). */
+  pull(
+    table: SyncedTable,
+    cursor: PullCursor | null,
+    limit: number,
+  ): Promise<Record<string, unknown>[]>;
 }
 
-export type SyncReport = { pushed: number; pulled: number; conflicts: number; skipped: number };
+export type SyncReport = {
+  pushed: number;
+  pulled: number;
+  conflicts: number;
+  skipped: number;
+  /** Modifications refusées par le serveur (données invalides) : gardées dans `sync_conflicts`. */
+  rejected: number;
+};
+
+export type SyncOptions = { pageSize?: number };
 
 const PUSH_BATCH = 100;
 export const PULL_PAGE = 500;
@@ -236,6 +257,15 @@ async function push(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
           ]);
           await rewriteOutbox(db, g, 'create');
           retry = true;
+        } else if (r.status === 'rejected') {
+          // Le serveur refuse cette modification (contrainte violée…) : on la retire de la file pour
+          // ne pas bloquer les autres, et on garde la ligne locale de côté avec la raison.
+          const local = await localRow(db, g.entity, g.id);
+          if (local) await recordConflict(db, g.entity, local, { reason: r.reason });
+          await deleteOutbox(db, g.ids);
+          logger.warn('sync.rejected', { entity: g.entity, reason: r.reason });
+          changed.add(g.entity);
+          report.rejected++;
         } else {
           const local = await localRow(db, g.entity, g.id);
           if (!local) continue;
@@ -275,26 +305,42 @@ async function rewriteOutbox(db: Db, g: Group, operation: 'create' | 'update'): 
   );
 }
 
-async function pull(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<string>) {
+/** Une page : au plus une ligne par id (la dernière reçue gagne), dans l'ordre du serveur. */
+function dedupeById(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  const byId = new Map<string, Record<string, unknown>>();
+  for (const row of rows) byId.set(String(row.id), row);
+  return [...byId.values()];
+}
+
+async function pull(
+  db: Db,
+  remote: RemoteApi,
+  report: SyncReport,
+  changed: Set<string>,
+  pageSize: number,
+) {
   for (const table of SYNCED_TABLES) {
-    let cursor = await getSyncCursor(db, table);
+    const saved = await getSyncCursor(db, table);
+    let cursor: PullCursor | null = saved ? { since: saved, afterId: null } : null;
     for (;;) {
-      const rows = await remote.pull(table, cursor, PULL_PAGE);
-      if (rows.length === 0) break;
+      const page = await remote.pull(table, cursor, pageSize);
+      if (page.length === 0) break;
       const filesToDelete: string[] = [];
       await db.withExclusiveTransactionAsync(async (txn) => {
         // Un enfant peut arriver avant son parent (autre table) : clés étrangères vérifiées à la fin.
         await txn.execAsync('PRAGMA defer_foreign_keys = ON');
-        for (const row of rows) {
+        for (const row of dedupeById(page)) {
           const id = String(row.id);
-          const local = await txn.getFirstAsync<{ sync_status: string }>(
-            `SELECT sync_status FROM ${table} WHERE id = ?`,
+          const local = await txn.getFirstAsync<{ sync_status: string; version: number }>(
+            `SELECT sync_status, version FROM ${table} WHERE id = ?`,
             [id],
           );
           if (local && local.sync_status !== 'synced') {
             report.skipped++;
             continue;
           }
+          // Déjà appliquée (relecture avec marge) : même version = même contenu.
+          if (local && Number(local.version) === Number(row.version)) continue;
           const fileColumn = FILE_COLUMNS[table];
           if (fileColumn && row.deleted_at) {
             const local = await txn.getFirstAsync<Record<string, unknown>>(
@@ -318,20 +364,26 @@ async function pull(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
           logger.error(e, { where: 'pull.deleteLocalFile' });
         }
       }
-      cursor = String(rows[rows.length - 1]!.server_updated_at);
-      await setSyncCursor(db, table, cursor);
-      if (rows.length < PULL_PAGE) break;
+      const last = page[page.length - 1]!;
+      cursor = { since: String(last.server_updated_at), afterId: String(last.id) };
+      await setSyncCursor(db, table, cursor.since);
+      if (page.length < pageSize) break;
     }
   }
 }
 
 /** Une synchronisation complète : envoi, puis réception. */
-export async function syncOnce(db: Db, remote: RemoteApi): Promise<SyncReport> {
-  const report: SyncReport = { pushed: 0, pulled: 0, conflicts: 0, skipped: 0 };
+export async function syncOnce(
+  db: Db,
+  remote: RemoteApi,
+  options: SyncOptions = {},
+): Promise<SyncReport> {
+  const report: SyncReport = { pushed: 0, pulled: 0, conflicts: 0, skipped: 0, rejected: 0 };
   const changed = new Set<string>();
   try {
+    // Une modification rejetée n'empêche pas la réception : le pull suit toujours le push.
     await push(db, remote, report, changed);
-    await pull(db, remote, report, changed);
+    await pull(db, remote, report, changed, options.pageSize ?? PULL_PAGE);
     await setLastSyncAt(db, nowIso());
   } finally {
     if (changed.size > 0) notifyChange([...changed, 'sync_conflicts']);

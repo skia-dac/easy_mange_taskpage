@@ -1,4 +1,11 @@
-import type { Mutation, PushResult, RemoteApi, SyncedTable } from '@/modules/platform';
+import {
+  withMargin,
+  type Mutation,
+  type PullCursor,
+  type PushResult,
+  type RemoteApi,
+  type SyncedTable,
+} from '@/modules/platform';
 
 /**
  * Faux serveur pour les tests : même logique que la fonction SQL `mysky_push`
@@ -11,6 +18,10 @@ export class FakeServer {
   private clock = 0;
   /** Simule une réponse perdue : la modification est appliquée mais le téléphone reçoit une erreur. */
   loseNextResponse = false;
+  /** Refuse les modifications de ces éléments (comme une contrainte violée sur le serveur). */
+  rejectIds = new Set<string>();
+  /** Horodatage fixe pour les prochaines écritures (lignes au même instant), sinon horloge croissante. */
+  fixedStamp: string | null = null;
 
   private table(name: string) {
     let t = this.tables.get(name);
@@ -22,6 +33,7 @@ export class FakeServer {
   }
 
   private stamp(): string {
+    if (this.fixedStamp) return this.fixedStamp;
     this.clock += 1;
     return new Date(Date.UTC(2030, 0, 1) + this.clock).toISOString();
   }
@@ -40,10 +52,20 @@ export class FakeServer {
         }
         return out;
       },
-      pull: async (table: SyncedTable, since, limit) =>
+      pull: async (table: SyncedTable, cursor: PullCursor | null, limit) =>
         this.rows(table)
-          .filter((r) => since === null || String(r.server_updated_at) > since)
-          .sort((a, b) => String(a.server_updated_at).localeCompare(String(b.server_updated_at)))
+          .filter((r) => {
+            if (!cursor) return true;
+            const at = String(r.server_updated_at);
+            if (cursor.afterId)
+              return at > cursor.since || (at === cursor.since && String(r.id) > cursor.afterId);
+            return at >= withMargin(cursor.since);
+          })
+          .sort(
+            (a, b) =>
+              String(a.server_updated_at).localeCompare(String(b.server_updated_at)) ||
+              String(a.id).localeCompare(String(b.id)),
+          )
           .slice(0, limit)
           .map((r) => ({ ...r })),
     };
@@ -52,6 +74,8 @@ export class FakeServer {
   private apply(m: Mutation): PushResult {
     const done = this.applied.get(m.mutation_id);
     if (done !== undefined) return { mutation_id: m.mutation_id, status: 'applied', version: done };
+    if (this.rejectIds.has(m.entity_id))
+      return { mutation_id: m.mutation_id, status: 'rejected', reason: 'not-null violation' };
     const t = this.table(m.entity);
     const current = t.get(m.entity_id);
     const payload = { ...m.payload };
