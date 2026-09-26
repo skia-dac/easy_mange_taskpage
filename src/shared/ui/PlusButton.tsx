@@ -25,14 +25,14 @@ const SIZE = 58;
 export const FAB_CLEARANCE = 96;
 
 /**
- * Espace sous le bouton : celui demandé ; sinon rien dans les onglets (le contenu est déjà
- * au-dessus de la barre) et, sur un écran de pile, la barre d'accueil de l'iPhone.
+ * Espace sous le bouton : celui demandé ; sinon la hauteur de la barre d'onglets
+ * (elle recouvre le bas de l'écran) et, hors des onglets, la barre d'accueil de l'iPhone.
  */
 export function usePlusButtonInset(bottomInset?: number) {
-  const onTabs = useTabBarInset() > 0;
+  const tabBar = useTabBarInset();
   const homeIndicator = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
   if (bottomInset !== undefined) return bottomInset;
-  return onTabs ? 0 : homeIndicator;
+  return tabBar > 0 ? tabBar : homeIndicator;
 }
 
 const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
@@ -56,7 +56,7 @@ export function PlusButton({
   open?: boolean;
   /**
    * Espace laissé sous le bouton, pour rester au-dessus de la barre d'onglets. Par défaut :
-   * 0 dans les onglets, la barre d'accueil de l'iPhone ailleurs.
+   * la hauteur de cette barre dans les onglets, la barre d'accueil de l'iPhone ailleurs.
    */
   bottomInset?: number;
 }) {
