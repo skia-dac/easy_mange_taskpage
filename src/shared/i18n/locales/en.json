@@ -240,7 +240,9 @@
     "addAssignment": "Add homework",
     "addExam": "Add an exam",
     "nextOn": "Next: {{date}}",
-    "ended": "Ended"
+    "ended": "Ended",
+    "addToSubject": "Add to this subject",
+    "addForSubject": "Add for {{name}}"
   },
   "tasks": {
     "title": "Tasks",
@@ -1464,7 +1466,10 @@
     "archivedGoals_other": "{{count}} archived goals",
     "showArchivedGoals": "Show archived goals",
     "hideArchivedGoals": "Hide archived goals",
-    "endDate": "Until (optional)"
+    "endDate": "Until (optional)",
+    "addRecurringMenu": "Add a fixed cost or a tontine",
+    "chargeOption": "Fixed cost",
+    "tontineOption": "Tontine"
   },
   "glance": {
     "money": "Money",
@@ -1572,7 +1577,9 @@
     "delete": "Delete category",
     "deleteTitle": "Delete “{{name}}”?",
     "deleteMessage": "Your notes are kept: they just become “no category”.",
-    "allSubjects": "All subjects"
+    "allSubjects": "All subjects",
+    "empty": "No categories yet",
+    "emptyHint": "Create a category to sort your notes (ideas, shopping, projects…)."
   },
   "progress": {
     "title": "My progress",
@@ -1638,7 +1645,12 @@
     "copyDone_other": "{{count}} appointments added.",
     "copyNothing": "Nothing to copy: last week has no appointments, or they are already on this week.",
     "slotMoveTitle": "Fixed slot",
-    "slotMoveMessage": "It comes back every week: change its times in “My planner”."
+    "slotMoveMessage": "It comes back every week: change its times in “My planner”.",
+    "addMenu": "Add to planning",
+    "slotOption": "Fixed slot",
+    "slotOptionHint": "Repeats every week (or week A / B)",
+    "eventOption": "Appointment",
+    "eventOptionHint": "Just once, on a given date"
   },
   "bodyProgress": {
     "title": "My physical progress",

@@ -3,6 +3,7 @@ import { router, Stack } from 'expo-router';
 import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getSupabase } from '@/modules/identity';
 import {
@@ -25,6 +26,8 @@ import {
   Chip,
   confirmDestructive,
   EmptyState,
+  Fab,
+  FAB_CLEARANCE,
   showError,
   showToast,
   TextButton,
@@ -43,6 +46,8 @@ export default function FeedbackHistoryScreen() {
   const { colors, radius, spacing } = useTheme();
   const list = useLiveQuery(listFeedback, [FEEDBACK_TABLE], []);
   const [busy, setBusy] = useState(false);
+  const insets = useSafeAreaInsets();
+  const write = () => router.push('/feedback');
   const items = list.data ?? [];
   const pending = items.filter((f) => f.status === 'pending').length;
 
@@ -73,65 +78,76 @@ export default function FeedbackHistoryScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
-      <Stack.Screen options={{ title: t('feedback.historyTitle') }} />
-      {pending > 0 ? (
-        <Button label={t('feedback.retry')} onPress={() => void retry()} disabled={busy} />
-      ) : null}
-      {list.data && items.length === 0 ? (
-        <EmptyState
-          icon="message-square"
-          title={t('feedback.emptyTitle')}
-          message={t('feedback.emptyMessage')}
-        />
-      ) : null}
-      {items.map((f) => (
-        <Card key={f.id}>
-          <View style={{ flexDirection: 'row', gap: spacing.md }}>
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: radius.sm,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colors.primarySoft,
-              }}
-            >
-              <Feather name={KIND_ICONS[f.kind]} size={18} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1, gap: spacing.xs }}>
-              <AppText variant="bodyStrong">
-                {t(`feedback.kind.${f.kind}.title`)} · {t(`feedback.area.${f.area}`)}
-              </AppText>
-              <AppText numberOfLines={2}>{previewOf(f.message)}</AppText>
-              <AppText variant="caption" color="muted">
-                {formatDateTime(new Date(f.createdAt), i18n.language)}
-              </AppText>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
+        }}
+      >
+        <Stack.Screen options={{ title: t('feedback.historyTitle') }} />
+        {pending > 0 ? (
+          <Button label={t('feedback.retry')} onPress={() => void retry()} disabled={busy} />
+        ) : null}
+        {list.data && items.length === 0 ? (
+          <>
+            <EmptyState
+              icon="message-square"
+              title={t('feedback.emptyTitle')}
+              message={t('feedback.emptyMessage')}
+            />
+            <Button label={t('feedback.write')} onPress={write} />
+          </>
+        ) : null}
+        {items.map((f) => (
+          <Card key={f.id}>
+            <View style={{ flexDirection: 'row', gap: spacing.md }}>
               <View
                 style={{
-                  flexDirection: 'row',
+                  width: 36,
+                  height: 36,
+                  borderRadius: radius.sm,
                   alignItems: 'center',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
+                  backgroundColor: colors.primarySoft,
                 }}
               >
-                <Chip
-                  label={t(`feedback.status.${f.status}`)}
-                  tone={f.status === 'sent' ? 'success' : 'warning'}
-                />
-                {f.status === 'pending' ? (
-                  <TextButton
-                    label={t('common.delete')}
-                    color="danger"
-                    onPress={() => void remove(f)}
+                <Feather name={KIND_ICONS[f.kind]} size={18} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, gap: spacing.xs }}>
+                <AppText variant="bodyStrong">
+                  {t(`feedback.kind.${f.kind}.title`)} · {t(`feedback.area.${f.area}`)}
+                </AppText>
+                <AppText numberOfLines={2}>{previewOf(f.message)}</AppText>
+                <AppText variant="caption" color="muted">
+                  {formatDateTime(new Date(f.createdAt), i18n.language)}
+                </AppText>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Chip
+                    label={t(`feedback.status.${f.status}`)}
+                    tone={f.status === 'sent' ? 'success' : 'warning'}
                   />
-                ) : null}
+                  {f.status === 'pending' ? (
+                    <TextButton
+                      label={t('common.delete')}
+                      color="danger"
+                      onPress={() => void remove(f)}
+                    />
+                  ) : null}
+                </View>
               </View>
             </View>
-          </View>
-        </Card>
-      ))}
-      <TextButton label={t('feedback.write')} onPress={() => router.push('/feedback')} />
-    </ScrollView>
+          </Card>
+        ))}
+      </ScrollView>
+      <Fab accessibilityLabel={t('feedback.write')} onPress={write} />
+    </View>
   );
 }

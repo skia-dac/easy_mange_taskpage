@@ -2,6 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, setGoalArchived, type Goal } from '@/modules/finance';
@@ -15,6 +16,8 @@ import {
   Button,
   Card,
   EmptyState,
+  Fab,
+  FAB_CLEARANCE,
   LoadingScreen,
   SectionHeader,
   showError,
@@ -145,41 +148,51 @@ function GoalCard({
 export default function GoalsScreen() {
   const { t } = useTranslation();
   const { spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const data = useMoneyData(0);
   const [showArchived, setShowArchived] = useState(false);
   if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const { goals, archivedGoals } = data.data.overview;
 
+  const add = () => router.push('/money/goal-form');
+
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
-      <Stack.Screen options={{ title: t('money.goalsTitle') }} />
-      <AppText color="muted">{t('money.goalsIntro')}</AppText>
-      {goals.length === 0 ? (
-        <EmptyState icon="target" title={t('money.noGoals')} message={t('money.noGoalsHint')} />
-      ) : null}
-      {goals.map(({ goal, savedMinor }) => (
-        <GoalCard key={goal.id} goal={goal} savedMinor={savedMinor} archived={false} />
-      ))}
-      <Button
-        variant="secondary"
-        label={t('money.newGoal')}
-        onPress={() => router.push('/money/goal-form')}
-      />
-      {archivedGoals.length > 0 ? (
-        <>
-          <SectionHeader title={t('money.archivedGoals', { count: archivedGoals.length })} />
-          <TextButton
-            label={showArchived ? t('money.hideArchivedGoals') : t('money.showArchivedGoals')}
-            onPress={() => setShowArchived((v) => !v)}
-          />
-          {showArchived
-            ? archivedGoals.map(({ goal, savedMinor }) => (
-                <GoalCard key={goal.id} goal={goal} savedMinor={savedMinor} archived />
-              ))
-            : null}
-        </>
-      ) : null}
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
+        }}
+      >
+        <Stack.Screen options={{ title: t('money.goalsTitle') }} />
+        <AppText color="muted">{t('money.goalsIntro')}</AppText>
+        {goals.length === 0 ? (
+          <>
+            <EmptyState icon="target" title={t('money.noGoals')} message={t('money.noGoalsHint')} />
+            <Button label={t('money.newGoal')} onPress={add} />
+          </>
+        ) : null}
+        {goals.map(({ goal, savedMinor }) => (
+          <GoalCard key={goal.id} goal={goal} savedMinor={savedMinor} archived={false} />
+        ))}
+        {archivedGoals.length > 0 ? (
+          <>
+            <SectionHeader title={t('money.archivedGoals', { count: archivedGoals.length })} />
+            <TextButton
+              label={showArchived ? t('money.hideArchivedGoals') : t('money.showArchivedGoals')}
+              onPress={() => setShowArchived((v) => !v)}
+            />
+            {showArchived
+              ? archivedGoals.map(({ goal, savedMinor }) => (
+                  <GoalCard key={goal.id} goal={goal} savedMinor={savedMinor} archived />
+                ))
+              : null}
+          </>
+        ) : null}
+      </ScrollView>
+      <Fab accessibilityLabel={t('money.newGoal')} onPress={add} />
+    </View>
   );
 }

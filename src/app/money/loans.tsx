@@ -1,6 +1,8 @@
 import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, setLoanClosed } from '@/modules/finance';
@@ -14,7 +16,10 @@ import {
   Button,
   Card,
   Chip,
+  ChoiceSheet,
   EmptyState,
+  Fab,
+  FAB_CLEARANCE,
   LoadingScreen,
   SectionHeader,
   showError,
@@ -27,7 +32,11 @@ export default function LoansScreen() {
   const labels = useLabels();
   const db = useDb();
   const { spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const data = useMoneyData(0);
+  const [menu, setMenu] = useState(false);
+  const add = (direction: 'lent' | 'borrowed') =>
+    router.push({ pathname: '/money/loan-form', params: { direction } });
   if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const loans = data.data.overview.loans;
@@ -129,32 +138,49 @@ export default function LoansScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
-      <Stack.Screen options={{ title: t('money.loansTitle') }} />
-      {loans.length === 0 ? (
-        <EmptyState icon="users" title={t('money.noLoansTitle')} message={t('money.noLoansHint')} />
-      ) : null}
-      {section('lent')}
-      {section('borrowed')}
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <View style={{ flex: 1 }}>
-          <Button
-            label={t('money.iLent')}
-            onPress={() =>
-              router.push({ pathname: '/money/loan-form', params: { direction: 'lent' } })
-            }
-          />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Button
-            variant="secondary"
-            label={t('money.iBorrowed')}
-            onPress={() =>
-              router.push({ pathname: '/money/loan-form', params: { direction: 'borrowed' } })
-            }
-          />
-        </View>
-      </View>
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
+        }}
+      >
+        <Stack.Screen options={{ title: t('money.loansTitle') }} />
+        {loans.length === 0 ? (
+          <>
+            <EmptyState
+              icon="users"
+              title={t('money.noLoansTitle')}
+              message={t('money.noLoansHint')}
+            />
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <View style={{ flex: 1 }}>
+                <Button label={t('money.iLent')} onPress={() => add('lent')} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  variant="secondary"
+                  label={t('money.iBorrowed')}
+                  onPress={() => add('borrowed')}
+                />
+              </View>
+            </View>
+          </>
+        ) : null}
+        {section('lent')}
+        {section('borrowed')}
+      </ScrollView>
+      <Fab accessibilityLabel={t('money.newLoan')} onPress={() => setMenu(true)} />
+      <ChoiceSheet
+        visible={menu}
+        title={t('money.newLoan')}
+        options={[
+          { label: t('money.iLent'), onPress: () => add('lent') },
+          { label: t('money.iBorrowed'), onPress: () => add('borrowed') },
+        ]}
+        onClose={() => setMenu(false)}
+      />
+    </View>
   );
 }

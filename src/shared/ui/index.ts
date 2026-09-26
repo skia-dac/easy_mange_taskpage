@@ -12,7 +12,7 @@ export { ChoiceChips } from './ChoiceChips';
 export { DateTimeField } from './DateTimeField';
 export { confirmAction, confirmDestructive, reportLoadError, showError, showInfo } from './dialogs';
 export { EmptyState } from './EmptyState';
-export { Fab } from './Fab';
+export { FAB_CLEARANCE, Fab } from './Fab';
 export { FieldShell } from './FieldShell';
 export { FormScreen } from './FormScreen';
 export { IconBadge } from './IconBadge';

@@ -275,6 +275,8 @@ type Case = {
   /** État de connexion simulé (par défaut : comptes pas configurés). */
   auth?: Record<string, unknown>;
   expect: string[];
+  /** Libellé d'accessibilité du bouton « + » que l'écran doit montrer. */
+  plus?: string;
 };
 
 const enabledOut = { ...signedOut, enabled: true };
@@ -343,6 +345,7 @@ const cases: Case[] = [
   },
   {
     name: 'Mes retours',
+    plus: 'Donner mon avis',
     load: () => require('@/app/feedback/history') as { default: ComponentType },
     expect: [
       'Une idée · Tâches',
@@ -353,11 +356,13 @@ const cases: Case[] = [
   },
   {
     name: 'Matières',
+    plus: 'Nouvelle matière',
     load: () => require('@/app/subjects/index') as { default: ComponentType },
     expect: ['Marketing stratégique', 'Prof. Martin'],
   },
   {
     name: 'Détail matière',
+    plus: 'Ajouter à cette matière',
     load: () => require('@/app/subjects/[id]') as { default: ComponentType },
     params: { id: 'subject' },
     expect: ['Marketing stratégique', 'Les 4P', 'Étude de cas Marketing', 'Prochain'],
@@ -370,6 +375,7 @@ const cases: Case[] = [
   },
   {
     name: 'Emplois du temps',
+    plus: 'Nouvel emploi du temps',
     load: () => require('@/app/timetables/index') as { default: ComponentType },
     expect: ['Semestre 1', 'Actif', 'Marketing stratégique'],
   },
@@ -448,6 +454,7 @@ const cases: Case[] = [
   },
   {
     name: 'Charges fixes',
+    plus: 'Ajouter une charge fixe ou une tontine',
     load: () => require('@/app/money/recurring') as { default: ComponentType },
     expect: ['Loyer', 'Tontine du quartier', 'Le 28 de chaque mois'],
   },
@@ -459,6 +466,7 @@ const cases: Case[] = [
   },
   {
     name: 'Épargne',
+    plus: 'Nouvel objectif',
     load: () => require('@/app/money/goals') as { default: ComponentType },
     expect: ['Téléphone', 'Mettre de côté'],
   },
@@ -470,6 +478,7 @@ const cases: Case[] = [
   },
   {
     name: 'Prêts',
+    plus: 'Nouveau prêt',
     load: () => require('@/app/money/loans') as { default: ComponentType },
     expect: ['Kevin', 'On m’a rendu…'],
   },
@@ -518,6 +527,7 @@ const cases: Case[] = [
   },
   {
     name: 'Vacances',
+    plus: 'Nouvelle période',
     load: () => require('@/app/off-periods/index') as { default: ComponentType },
     expect: ['Toussaint', 'Cours suspendus'],
   },
@@ -633,6 +643,7 @@ const cases: Case[] = [
   },
   {
     name: 'Mes habitudes',
+    plus: 'Nouvelle habitude',
     load: () => require('@/app/habits/index') as { default: ComponentType },
     expect: ['Faire du sport', '3 / 8 verres', 'Fatigue', 'Nuit courte', 'Suggestions'],
   },
@@ -734,6 +745,7 @@ const cases: Case[] = [
   },
   {
     name: 'Mon planning',
+    plus: 'Ajouter au planning',
     load: () => require('@/app/planning/index') as { default: ComponentType },
     expect: ['Ma semaine type', 'Garde de nuit', 'Copier la semaine dernière'],
   },
@@ -745,8 +757,9 @@ const cases: Case[] = [
   },
   {
     name: 'Catégories de notes',
+    plus: 'Nouvelle catégorie',
     load: () => require('@/app/notes/categories') as { default: ComponentType },
-    expect: ['Idées', 'Nouvelle catégorie'],
+    expect: ['Idées'],
   },
   {
     name: 'Formulaire catégorie de notes',
@@ -789,5 +802,6 @@ describe.each(cases)('écran $name', (c) => {
         .catch(() => screen.findAllByDisplayValue(re, {}, { timeout: 3000 }));
       expect(found.length).toBeGreaterThan(0);
     }
+    if (c.plus) expect(screen.getByLabelText(c.plus)).toBeTruthy();
   }, 20_000);
 });

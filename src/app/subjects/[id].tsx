@@ -5,6 +5,7 @@ import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { NoteCard } from '@/components/NoteCard';
@@ -34,6 +35,8 @@ import {
   ChoiceSheet,
   confirmDestructive,
   EmptyState,
+  Fab,
+  FAB_CLEARANCE,
   IconBadge,
   ListRow,
   SectionHeader,
@@ -79,6 +82,8 @@ export default function SubjectDetailScreen() {
   );
 
   const [deleteSheet, setDeleteSheet] = useState<SubjectUsage | null>(null);
+  const [addSheet, setAddSheet] = useState(false);
+  const insets = useSafeAreaInsets();
   const s = subject.data;
   if (subject.loading) return <LoadingScreen />;
   if (!s) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
@@ -122,6 +127,28 @@ export default function SubjectDetailScreen() {
     },
   ];
 
+  /** Le « + » de la fiche : tout ce qu'on peut ajouter, déjà rattaché à cette matière. */
+  const addOptions: ChoiceOption[] = [
+    {
+      label: t('add.course'),
+      onPress: () => router.push({ pathname: '/courses/form', params: { subjectId: s.id } }),
+    },
+    {
+      label: t('add.exam'),
+      onPress: () => router.push({ pathname: '/exams/form', params: { subjectId: s.id } }),
+    },
+    {
+      label: t('add.assignment'),
+      onPress: () =>
+        router.push({ pathname: '/work/form', params: { kind: 'assignment', subjectId: s.id } }),
+    },
+    {
+      label: t('add.note'),
+      onPress: () =>
+        router.push({ pathname: '/notes/[id]', params: { id: 'new', subjectId: s.id } }),
+    },
+  ];
+
   const info = (icon: 'user' | 'map-pin' | 'hash' | 'layers', text: string | null) =>
     text ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
@@ -131,155 +158,164 @@ export default function SubjectDetailScreen() {
     ) : null;
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        padding: spacing.xl,
-        gap: spacing.lg,
-        paddingBottom: spacing.xxl * 2,
-      }}
-    >
-      <Stack.Screen
-        options={{
-          title: '',
-          headerRight: () => (
-            <TextButton
-              label={t('common.edit')}
-              onPress={() => router.push({ pathname: '/subjects/form', params: { id: s.id } })}
-            />
-          ),
-        }}
-      />
-      <View
-        style={{
-          backgroundColor: soft,
-          borderRadius: radius.xl,
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        contentContainerStyle={{
           padding: spacing.xl,
-          gap: spacing.sm,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
         }}
       >
-        <AppText variant="title" style={{ color: strong }}>
-          {s.name}
-        </AppText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
-          {info('user', s.teacher)}
-          {info('map-pin', s.room)}
-          {info('hash', s.code)}
-          {info('layers', s.semester)}
+        <Stack.Screen
+          options={{
+            title: '',
+            headerRight: () => (
+              <TextButton
+                label={t('common.edit')}
+                onPress={() => router.push({ pathname: '/subjects/form', params: { id: s.id } })}
+              />
+            ),
+          }}
+        />
+        <View
+          style={{
+            backgroundColor: soft,
+            borderRadius: radius.xl,
+            padding: spacing.xl,
+            gap: spacing.sm,
+          }}
+        >
+          <AppText variant="title" style={{ color: strong }}>
+            {s.name}
+          </AppText>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
+            {info('user', s.teacher)}
+            {info('map-pin', s.room)}
+            {info('hash', s.code)}
+            {info('layers', s.semester)}
+          </View>
+          {s.description ? <AppText color="muted">{s.description}</AppText> : null}
         </View>
-        {s.description ? <AppText color="muted">{s.description}</AppText> : null}
-      </View>
 
-      <SectionHeader
-        title={t('subjects.courses')}
-        action={{
-          label: t('common.add'),
-          onPress: () => router.push({ pathname: '/courses/form', params: { subjectId: s.id } }),
-        }}
-      />
-      <Card>
-        {(series.data ?? []).length === 0 ? (
-          <AppText color="muted">{t('subjects.noCourses')}</AppText>
-        ) : null}
-        {(series.data ?? []).map((c) => {
-          const today = toIsoDate(now);
-          const next = occurrencesInRange([c], today, addDaysIso(today, 60), {
-            exceptions: exceptions.data ?? [],
-            offPeriods: offPeriods.data ?? [],
-          }).find((o) => o.status !== 'cancelled');
-          return (
-            <ListRow
-              key={c.id}
-              title={
-                c.recurrence === 'weekly'
-                  ? t('courses.every', { weekday: labels.weekday(c.weekday) })
-                  : formatShortDate(c.validFrom, labels.lang)
-              }
-              subtitle={[
-                `${c.startTime} – ${c.endTime}`,
-                labels.courseType(c.courseType),
-                c.room,
-                next
-                  ? t('subjects.nextOn', { date: formatShortDate(next.date, labels.lang) })
-                  : t('subjects.ended'),
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-              onPress={() =>
-                router.push({
-                  pathname: '/courses/[id]',
-                  params: { id: c.id, ...(next ? { date: next.originalDate } : {}) },
-                })
-              }
-            />
-          );
-        })}
-      </Card>
+        <SectionHeader
+          title={t('subjects.courses')}
+          action={{
+            label: t('common.add'),
+            onPress: () => router.push({ pathname: '/courses/form', params: { subjectId: s.id } }),
+          }}
+        />
+        <Card>
+          {(series.data ?? []).length === 0 ? (
+            <AppText color="muted">{t('subjects.noCourses')}</AppText>
+          ) : null}
+          {(series.data ?? []).map((c) => {
+            const today = toIsoDate(now);
+            const next = occurrencesInRange([c], today, addDaysIso(today, 60), {
+              exceptions: exceptions.data ?? [],
+              offPeriods: offPeriods.data ?? [],
+            }).find((o) => o.status !== 'cancelled');
+            return (
+              <ListRow
+                key={c.id}
+                title={
+                  c.recurrence === 'weekly'
+                    ? t('courses.every', { weekday: labels.weekday(c.weekday) })
+                    : formatShortDate(c.validFrom, labels.lang)
+                }
+                subtitle={[
+                  `${c.startTime} – ${c.endTime}`,
+                  labels.courseType(c.courseType),
+                  c.room,
+                  next
+                    ? t('subjects.nextOn', { date: formatShortDate(next.date, labels.lang) })
+                    : t('subjects.ended'),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/courses/[id]',
+                    params: { id: c.id, ...(next ? { date: next.originalDate } : {}) },
+                  })
+                }
+              />
+            );
+          })}
+        </Card>
 
-      <SectionHeader
-        title={t('subjects.notes')}
-        action={{
-          label: t('notes.takeNotes'),
-          onPress: () =>
-            router.push({ pathname: '/notes/[id]', params: { id: 'new', subjectId: s.id } }),
-        }}
-      />
-      {(notes.data ?? []).length === 0 ? (
-        <AppText color="muted">{t('subjects.noNotes')}</AppText>
-      ) : (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-          {(notes.data ?? []).slice(0, 4).map((n) => (
-            <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
-              <NoteCard note={n} subject={s} />
-            </View>
+        <SectionHeader
+          title={t('subjects.notes')}
+          action={{
+            label: t('notes.takeNotes'),
+            onPress: () =>
+              router.push({ pathname: '/notes/[id]', params: { id: 'new', subjectId: s.id } }),
+          }}
+        />
+        {(notes.data ?? []).length === 0 ? (
+          <AppText color="muted">{t('subjects.noNotes')}</AppText>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+            {(notes.data ?? []).slice(0, 4).map((n) => (
+              <View key={n.id} style={{ width: '48%', flexGrow: 1 }}>
+                <NoteCard note={n} subject={s} />
+              </View>
+            ))}
+          </View>
+        )}
+
+        <SectionHeader
+          title={t('subjects.work')}
+          action={{
+            label: t('common.add'),
+            onPress: () =>
+              router.push({
+                pathname: '/work/form',
+                params: { kind: 'assignment', subjectId: s.id },
+              }),
+          }}
+        />
+        <Card>
+          {(work.data ?? []).length === 0 ? (
+            <AppText color="muted">{t('subjects.nothing')}</AppText>
+          ) : null}
+          {(work.data ?? []).map((w) => (
+            <WorkRow key={`${w.kind}-${w.id}`} item={w} subjects={byId} now={now} showDate />
           ))}
-        </View>
-      )}
+        </Card>
 
-      <SectionHeader
-        title={t('subjects.work')}
-        action={{
-          label: t('common.add'),
-          onPress: () =>
-            router.push({
-              pathname: '/work/form',
-              params: { kind: 'assignment', subjectId: s.id },
-            }),
-        }}
+        <SectionHeader
+          title={t('subjects.exams')}
+          action={{
+            label: t('common.add'),
+            onPress: () => router.push({ pathname: '/exams/form', params: { subjectId: s.id } }),
+          }}
+        />
+        <Card>
+          {(exams.data ?? []).length === 0 ? (
+            <AppText color="muted">{t('subjects.nothing')}</AppText>
+          ) : null}
+          {average !== null ? (
+            <ListRow
+              title={t('grades.on20', { value: formatGrade(average, labels.lang) })}
+              subtitle={t('grades.subjectAverage', { count: gradedCount })}
+              leading={<IconBadge icon="award" color="success" background="successSoft" />}
+              onPress={() => router.push('/grades')}
+            />
+          ) : null}
+          {(exams.data ?? []).map((e) => (
+            <ExamRow key={e.id} exam={e} subjects={byId} now={now} />
+          ))}
+        </Card>
+
+        <TextButton label={t('subjects.delete')} color="danger" onPress={() => void askDelete()} />
+      </ScrollView>
+      <Fab accessibilityLabel={t('subjects.addToSubject')} onPress={() => setAddSheet(true)} />
+      <ChoiceSheet
+        visible={addSheet}
+        title={t('subjects.addForSubject', { name: s.name })}
+        options={addOptions}
+        onClose={() => setAddSheet(false)}
       />
-      <Card>
-        {(work.data ?? []).length === 0 ? (
-          <AppText color="muted">{t('subjects.nothing')}</AppText>
-        ) : null}
-        {(work.data ?? []).map((w) => (
-          <WorkRow key={`${w.kind}-${w.id}`} item={w} subjects={byId} now={now} showDate />
-        ))}
-      </Card>
-
-      <SectionHeader
-        title={t('subjects.exams')}
-        action={{
-          label: t('common.add'),
-          onPress: () => router.push({ pathname: '/exams/form', params: { subjectId: s.id } }),
-        }}
-      />
-      <Card>
-        {(exams.data ?? []).length === 0 ? (
-          <AppText color="muted">{t('subjects.nothing')}</AppText>
-        ) : null}
-        {average !== null ? (
-          <ListRow
-            title={t('grades.on20', { value: formatGrade(average, labels.lang) })}
-            subtitle={t('grades.subjectAverage', { count: gradedCount })}
-            leading={<IconBadge icon="award" color="success" background="successSoft" />}
-            onPress={() => router.push('/grades')}
-          />
-        ) : null}
-        {(exams.data ?? []).map((e) => (
-          <ExamRow key={e.id} exam={e} subjects={byId} now={now} />
-        ))}
-      </Card>
-
-      <TextButton label={t('subjects.delete')} color="danger" onPress={() => void askDelete()} />
       <ChoiceSheet
         visible={deleteSheet !== null}
         title={t('subjects.deleteTitle', { name: s.name })}
@@ -287,6 +323,6 @@ export default function SubjectDetailScreen() {
         options={deleteOptions}
         onClose={() => setDeleteSheet(null)}
       />
-    </ScrollView>
+    </View>
   );
 }

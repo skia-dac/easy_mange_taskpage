@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import Animated, {
   Easing,
   interpolateColor,
@@ -11,8 +11,9 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { useTabBarHidden } from '../tabBarVisibility';
+import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 import { PressableScale } from './PressableScale';
 
@@ -20,26 +21,47 @@ const TURN = { damping: 14, stiffness: 220 };
 const POP = { damping: 11, stiffness: 280 };
 const SIZE = 58;
 
+/** Place à laisser en bas d'une liste pour que le « + » ne cache jamais la dernière ligne. */
+export const FAB_CLEARANCE = 96;
+
+/**
+ * Espace sous le bouton : celui demandé ; sinon rien dans les onglets (le contenu est déjà
+ * au-dessus de la barre) et, sur un écran de pile, la barre d'accueil de l'iPhone.
+ */
+export function usePlusButtonInset(bottomInset?: number) {
+  const onTabs = useTabBarInset() > 0;
+  const homeIndicator = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+  if (bottomInset !== undefined) return bottomInset;
+  return onTabs ? 0 : homeIndicator;
+}
+
 function slideY(shift: { value: number }, to: number, duration: number) {
   shift.value = withTiming(to, { duration, easing: Easing.out(Easing.cubic) });
 }
 
-/** Bouton rond « + ». `open` le fait tourner d'un quart de tour pour fermer le menu. */
+/**
+ * Bouton rond « + », au même endroit sur tous les écrans. `open` le fait tourner d'un quart de
+ * tour pour fermer le menu.
+ */
 export function PlusButton({
   onPress,
   accessibilityLabel,
   open = false,
-  bottomInset = 0,
+  bottomInset: requestedInset,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
   open?: boolean;
-  /** Espace laissé sous le bouton, pour rester au-dessus de la barre d'onglets. */
+  /**
+   * Espace laissé sous le bouton, pour rester au-dessus de la barre d'onglets. Par défaut :
+   * 0 dans les onglets, la barre d'accueil de l'iPhone ailleurs.
+   */
   bottomInset?: number;
 }) {
   const { colors, radius, spacing } = useTheme();
   const reduced = useReducedMotion();
   const hidden = useTabBarHidden();
+  const bottomInset = usePlusButtonInset(requestedInset);
   const arrive = useSharedValue(reduced ? 1 : 0);
   const breathe = useSharedValue(1);
   const pop = useSharedValue(1);

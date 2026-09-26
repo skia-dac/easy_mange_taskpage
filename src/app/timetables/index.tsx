@@ -1,6 +1,7 @@
 import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -25,6 +26,8 @@ import {
   Card,
   Chip,
   EmptyState,
+  Fab,
+  FAB_CLEARANCE,
   IconBadge,
   ListRow,
   SectionHeader,
@@ -36,6 +39,7 @@ export default function TimetablesScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const { spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const { byId } = useSubjects();
   const timetables = useLiveQuery(listTimetables, ['timetables'], []);
   const series = useLiveQuery((db) => listCourseSeries(db), ['course_series'], []);
@@ -169,67 +173,59 @@ export default function TimetablesScreen() {
 
   const withoutTimetable = (series.data ?? []).filter((c) => !c.timetableId);
 
+  const add = () => router.push('/timetables/form');
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        padding: spacing.xl,
-        gap: spacing.lg,
-        paddingBottom: spacing.xxl * 2,
-      }}
-    >
-      <Stack.Screen
-        options={{
-          title: t('timetables.title'),
-          headerRight: () => (
-            <TextButton label={t('common.add')} onPress={() => router.push('/timetables/form')} />
-          ),
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
         }}
-      />
-      {!timetables.loading && (timetables.data ?? []).length === 0 ? (
-        <>
-          <EmptyState
-            icon="calendar"
-            title={t('timetables.empty')}
-            message={t('timetables.emptyHint')}
+      >
+        <Stack.Screen options={{ title: t('timetables.title') }} />
+        {!timetables.loading && (timetables.data ?? []).length === 0 ? (
+          <>
+            <EmptyState
+              icon="calendar"
+              title={t('timetables.empty')}
+              message={t('timetables.emptyHint')}
+            />
+            <Button label={t('timetables.new')} onPress={add} />
+          </>
+        ) : null}
+
+        {timetableKinds.map((kind) => {
+          const list = (timetables.data ?? []).filter((tt) => tt.kind === kind);
+          if (list.length === 0) return null;
+          return (
+            <View key={kind} style={{ gap: spacing.lg }}>
+              <AppText variant="label" color="muted">
+                {t(`timetables.kinds.${kind}`).toLocaleUpperCase()}
+              </AppText>
+              {list.map((tt) => timetableSection(tt, active(kind)?.id === tt.id))}
+            </View>
+          );
+        })}
+
+        <Card>
+          <ListRow
+            title={t('offPeriods.title')}
+            subtitle={t('offPeriods.emptyHint')}
+            leading={<IconBadge icon="sun" color="warning" background="warningSoft" />}
+            onPress={() => router.push('/off-periods')}
           />
-          <Button label={t('timetables.new')} onPress={() => router.push('/timetables/form')} />
-        </>
-      ) : null}
+        </Card>
 
-      {timetableKinds.map((kind) => {
-        const list = (timetables.data ?? []).filter((tt) => tt.kind === kind);
-        if (list.length === 0) return null;
-        return (
-          <View key={kind} style={{ gap: spacing.lg }}>
-            <AppText variant="label" color="muted">
-              {t(`timetables.kinds.${kind}`).toLocaleUpperCase()}
-            </AppText>
-            {list.map((tt) => timetableSection(tt, active(kind)?.id === tt.id))}
+        {withoutTimetable.length > 0 ? (
+          <View style={{ gap: spacing.sm }}>
+            <SectionHeader title={t('timetables.otherCourses')} />
+            <Card>{withoutTimetable.map(courseRow)}</Card>
           </View>
-        );
-      })}
-      {(timetables.data ?? []).length > 0 ? (
-        <TextButton
-          label={`+ ${t('timetables.new')}`}
-          onPress={() => router.push('/timetables/form')}
-        />
-      ) : null}
-
-      <Card>
-        <ListRow
-          title={t('offPeriods.title')}
-          subtitle={t('offPeriods.emptyHint')}
-          leading={<IconBadge icon="sun" color="warning" background="warningSoft" />}
-          onPress={() => router.push('/off-periods')}
-        />
-      </Card>
-
-      {withoutTimetable.length > 0 ? (
-        <View style={{ gap: spacing.sm }}>
-          <SectionHeader title={t('timetables.otherCourses')} />
-          <Card>{withoutTimetable.map(courseRow)}</Card>
-        </View>
-      ) : null}
-    </ScrollView>
+        ) : null}
+      </ScrollView>
+      <Fab accessibilityLabel={t('timetables.new')} onPress={add} />
+    </View>
   );
 }

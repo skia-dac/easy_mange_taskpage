@@ -2,6 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitIcon } from '@/components/HabitIcon';
@@ -32,6 +33,7 @@ import {
   Chip,
   EmptyState,
   Fab,
+  FAB_CLEARANCE,
   ListRow,
   LoadingScreen,
   SectionHeader,
@@ -46,6 +48,7 @@ export default function HabitsScreen() {
   const labels = useLabels();
   const db = useDb();
   const { spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const weekStart = useWeekStart();
   const { habits, logs, loading, today } = useHabits();
   const [sheet, setSheet] = useState<Habit | null>(null);
@@ -77,7 +80,11 @@ export default function HabitsScreen() {
     <View style={{ flex: 1 }}>
       <Stack.Screen options={{ title: t('habits.title') }} />
       <ScrollView
-        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg, paddingBottom: 120 }}
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: FAB_CLEARANCE + insets.bottom,
+        }}
       >
         {habits.length === 0 ? (
           <EmptyState icon="target" title={t('habits.empty')} message={t('habits.emptyHint')} />

@@ -1,1 +1,1 @@
-export { PlusButton as Fab } from './PlusButton';
+export { FAB_CLEARANCE, PlusButton as Fab } from './PlusButton';

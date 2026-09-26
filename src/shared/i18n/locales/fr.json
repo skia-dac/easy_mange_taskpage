@@ -240,7 +240,9 @@
     "addAssignment": "Ajouter un devoir",
     "addExam": "Ajouter un examen",
     "nextOn": "Prochain : {{date}}",
-    "ended": "Terminé"
+    "ended": "Terminé",
+    "addToSubject": "Ajouter à cette matière",
+    "addForSubject": "Ajouter pour {{name}}"
   },
   "tasks": {
     "title": "Tâches",
@@ -1464,7 +1466,10 @@
     "archivedGoals_other": "{{count}} objectifs archivés",
     "showArchivedGoals": "Afficher les objectifs archivés",
     "hideArchivedGoals": "Masquer les objectifs archivés",
-    "endDate": "Jusqu’au (facultatif)"
+    "endDate": "Jusqu’au (facultatif)",
+    "addRecurringMenu": "Ajouter une charge fixe ou une tontine",
+    "chargeOption": "Charge fixe",
+    "tontineOption": "Tontine"
   },
   "glance": {
     "money": "Argent",
@@ -1572,7 +1577,9 @@
     "delete": "Supprimer la catégorie",
     "deleteTitle": "Supprimer « {{name}} » ?",
     "deleteMessage": "Tes notes sont gardées : elles passent simplement « sans catégorie ».",
-    "allSubjects": "Toutes les matières"
+    "allSubjects": "Toutes les matières",
+    "empty": "Aucune catégorie pour l’instant",
+    "emptyHint": "Crée une catégorie pour ranger tes notes (idées, courses, projets…)."
   },
   "progress": {
     "title": "Ma progression",
@@ -1638,7 +1645,12 @@
     "copyDone_other": "{{count}} rendez-vous ajoutés.",
     "copyNothing": "Rien à copier : la semaine dernière n’a pas de rendez-vous, ou ils sont déjà sur cette semaine.",
     "slotMoveTitle": "Créneau fixe",
-    "slotMoveMessage": "Il revient chaque semaine : change ses heures dans « Mon planning »."
+    "slotMoveMessage": "Il revient chaque semaine : change ses heures dans « Mon planning ».",
+    "addMenu": "Ajouter au planning",
+    "slotOption": "Créneau fixe",
+    "slotOptionHint": "Revient chaque semaine (ou semaine A / B)",
+    "eventOption": "Rendez-vous",
+    "eventOptionHint": "Une seule fois, à une date précise"
   },
   "bodyProgress": {
     "title": "Ma progression physique",
