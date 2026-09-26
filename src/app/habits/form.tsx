@@ -213,7 +213,7 @@ export default function HabitFormScreen() {
       {form.frequency === 'weekly' ? (
         <ChoiceChips
           label={t('habits.timesPerWeek')}
-          options={[1, 2, 3, 4, 5, 6].map((n) => ({ value: n, label: String(n) }))}
+          options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ value: n, label: String(n) }))}
           selected={[form.timesPerWeek ?? 1]}
           onToggle={(timesPerWeek) => set({ timesPerWeek })}
         />

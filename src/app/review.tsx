@@ -18,7 +18,8 @@ import { useWeekStart } from '@/hooks/useWeekStart';
 import {
   isScheduledOn,
   logOn,
-  rescheduleWorkItem,
+  rescheduleWorkItems,
+  restoreWorkDates,
   setRevisionStatus,
   type Habit,
   type WorkItem,
@@ -40,6 +41,7 @@ import {
   LoadingScreen,
   SectionHeader,
   showError,
+  showUndoToast,
   TextButton,
   confirmAction,
 } from '@/shared/ui';
@@ -108,9 +110,12 @@ export default function EveningReviewScreen() {
       t('review.postponeAllConfirm'),
     );
     if (!ok) return;
-    await Promise.all(
-      review.remaining.map((w) => rescheduleWorkItem(db, w.kind, w.id, review.tomorrow)),
-    ).catch(fail);
+    try {
+      const previous = await rescheduleWorkItems(db, review.remaining, review.tomorrow);
+      showUndoToast(t('review.postponeAllDone', { count }), () => restoreWorkDates(db, previous));
+    } catch (e) {
+      fail(e);
+    }
   };
 
   return (

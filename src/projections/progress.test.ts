@@ -56,6 +56,22 @@ describe('grille de progression (façon GitHub)', () => {
     expect(habitLevel(sport, logs, '2026-09-25', today)).toBeNull(); // à venir
   });
 
+  it('aujourd’hui pas encore fait : case vide, ni raté ni comptée (#7)', () => {
+    // Mercredi 23 : sport prévu, rien de noté → null (contour seul), pas 0.
+    expect(habitLevel(sport, logs, today, today)).toBeNull();
+    expect(habitLevel(water, logs, today, today)).toBeNull();
+    // Dès qu'on note quelque chose, la case se remplit.
+    expect(habitLevel(water, [...logs, log('water', today, 8)], today, today)).toBe(4);
+    // La série et le total de la semaine ne comptent pas la case du jour.
+    const week = heatWeeks('week', today, 1, (d) => habitLevel(sport, logs, d, today));
+    expect(progressStats(week)).toEqual({
+      doneDays: 1,
+      activeDays: 1,
+      expectedDays: 1,
+      bestRun: 1,
+    });
+  });
+
   it('toutes les habitudes : la part réussie du jour', () => {
     expect(overallLevel([sport, water], logs, '2026-09-21', today)).toBe(2);
     expect(overallLevel([sport, water], logs, '2026-09-22', today)).toBe(2);

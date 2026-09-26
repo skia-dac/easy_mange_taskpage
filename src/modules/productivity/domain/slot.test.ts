@@ -5,7 +5,10 @@ import type { PersonalEvent } from './personalEvent';
 import {
   copyWeekInputs,
   isOvernight,
+  isSlotEvent,
+  isSlotNextPart,
   rotationOf,
+  slotIdOf,
   slotMinutes,
   slotOccurrences,
   type Slot,
@@ -61,10 +64,30 @@ describe('planning : créneaux fixes', () => {
       endTime: '06:00',
     });
     const occ = slotOccurrences([nights], '2026-09-21', '2026-10-04', '2026-09-21', 1);
-    expect(occ.map((o) => o.date)).toEqual(['2026-09-28']);
+    // Séance de nuit : le soir du 28 jusqu'à minuit, puis le lendemain matin 00:00–06:00 (#11a).
+    expect(occ.map((o) => o.date)).toEqual(['2026-09-28', '2026-09-29']);
     expect(isOvernight(nights)).toBe(true);
     expect(slotMinutes(nights)).toBe(480);
     expect(occ[0]!.endTime).toBe('23:59');
+    expect(occ[1]).toMatchObject({
+      id: 'slot:n:2026-09-28:next',
+      startTime: '00:00',
+      endTime: '06:00',
+    });
+    expect(isSlotEvent(occ[1]!)).toBe(true);
+    expect(isSlotNextPart(occ[1]!)).toBe(true);
+    expect(isSlotNextPart(occ[0]!)).toBe(false);
+    expect(slotIdOf(occ[1]!)).toBe('n');
+  });
+
+  it('une séance de nuit commencée la veille apparaît le matin du premier jour demandé', () => {
+    const nights = slot({ id: 'n', weekdays: [7], startTime: '22:00', endTime: '06:00' });
+    // Dimanche 20 → la moitié du lundi 21 est incluse, pas la soirée du 20 (hors plage).
+    const occ = slotOccurrences([nights], '2026-09-21', '2026-09-27', '2026-09-21', 1);
+    expect(occ.map((o) => [o.id, o.date, o.startTime, o.endTime])).toEqual([
+      ['slot:n:2026-09-20:next', '2026-09-21', '00:00', '06:00'],
+      ['slot:n:2026-09-27', '2026-09-27', '22:00', '23:59'],
+    ]);
   });
 
   it('copier la semaine dernière : sans doublon, sans les créneaux fixes', () => {

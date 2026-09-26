@@ -1,6 +1,7 @@
 import { createTestDb } from '@/test/memoryDb';
 
-import { createWorkItem, setWorkStatus, updateWorkItem } from '../data/commands';
+import { createWorkItem, setWorkStatus, undoWorkDone, updateWorkItem } from '../data/commands';
+import { addSubtask, listSubtasks } from '../data/subtaskCommands';
 import { listWorkItems } from '../data/queries';
 import { nextDueDate } from './workItem';
 
@@ -55,6 +56,47 @@ describe('tâches récurrentes', () => {
     });
     await setWorkStatus(db, 'task', single, 'done');
     expect(await listWorkItems(db, 'task')).toHaveLength(3);
+    db.close();
+  });
+
+  it('décocher puis recocher ne crée pas de doublon de la suivante (#1)', async () => {
+    const db = await createTestDb();
+    const id = await createWorkItem(db, 'task', {
+      title: 'Sortir les poubelles',
+      dueDate: '2026-09-21',
+      priority: 'normal',
+      status: 'todo',
+      repeat: 'weekly',
+    });
+    const spawned = await setWorkStatus(db, 'task', id, 'done');
+    expect(spawned).not.toBeNull();
+    await setWorkStatus(db, 'task', id, 'todo');
+    expect(await setWorkStatus(db, 'task', id, 'done')).toBeNull();
+    const items = await listWorkItems(db, 'task');
+    expect(items).toHaveLength(2);
+    expect(items.filter((i) => i.dueDate === '2026-09-28')).toHaveLength(1);
+    db.close();
+  });
+
+  it('« Annuler » après terminé remet l’état d’avant et supprime la suivante (#1)', async () => {
+    const db = await createTestDb();
+    const id = await createWorkItem(db, 'task', {
+      title: 'Réviser',
+      dueDate: '2026-09-21',
+      priority: 'normal',
+      status: 'in_progress',
+      repeat: 'daily',
+    });
+    await addSubtask(db, 'task', id, 'Chapitre 1');
+    const spawned = await setWorkStatus(db, 'task', id, 'done');
+    expect(spawned).not.toBeNull();
+    await undoWorkDone(db, 'task', id, 'in_progress', spawned);
+    const items = await listWorkItems(db, 'task');
+    expect(items.map((i) => [i.id, i.status])).toEqual([[id, 'in_progress']]);
+    expect(await listSubtasks(db, 'task', spawned!)).toEqual([]);
+    // Terminer de nouveau recrée bien la suivante (la précédente est supprimée, pas vivante).
+    expect(await setWorkStatus(db, 'task', id, 'done')).not.toBeNull();
+    expect(await listWorkItems(db, 'task')).toHaveLength(2);
     db.close();
   });
 });

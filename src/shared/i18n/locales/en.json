@@ -1127,6 +1127,7 @@
     "postponeAllMessage_one": "{{count}} item will move to tomorrow.",
     "postponeAllMessage_other": "{{count}} items will move to tomorrow.",
     "postponeAllConfirm": "Postpone",
+    "postponeAllDone": "Postponed to tomorrow ({{count}})",
     "revisions": "Today’s revision",
     "habits": "Your habits",
     "mood": "Your day",

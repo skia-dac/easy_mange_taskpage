@@ -3,7 +3,7 @@ import { addDaysIso, startOfWeekOn, type IsoDate } from '@/shared/dates';
 
 /**
  * Grille de progression façon GitHub : une case par jour, de 0 (rien) à 4 (objectif atteint).
- * `null` = jour sans objectif (pas prévu, excusé) ou pas encore arrivé.
+ * `null` = jour sans objectif (pas prévu, excusé), pas encore arrivé, ou aujourd'hui pas encore fait.
  */
 export type HeatLevel = 0 | 1 | 2 | 3 | 4;
 export type HeatCell = {
@@ -40,7 +40,8 @@ export function habitLevel(
     case 'missed':
       return 0;
     case 'pending':
-      return day === today ? 0 : null;
+      // Aujourd'hui pas encore fait : case vide (contour), ni raté ni compté dans le total.
+      return null;
     default:
       return null;
   }

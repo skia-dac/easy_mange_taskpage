@@ -82,10 +82,19 @@ export function slotIdOf(e: Pick<PersonalEvent, 'id'>): string {
   return e.id.slice(SLOT_EVENT_PREFIX.length).split(':')[0] ?? '';
 }
 
+/** Suffixe de la seconde moitié d'une séance de nuit (`slot:<id>:<date>:next`, le lendemain 00:00–fin). */
+export const SLOT_NEXT_SUFFIX = ':next';
+
+/** Seconde moitié (lendemain matin) d'une séance de nuit ? */
+export function isSlotNextPart(e: Pick<PersonalEvent, 'id'>): boolean {
+  return isSlotEvent(e) && e.id.endsWith(SLOT_NEXT_SUFFIX);
+}
+
 /**
  * Les séances des créneaux entre `from` et `to`, sous forme d'événements (calculées, jamais
  * enregistrées) : elles apparaissent partout où les rendez-vous apparaissent. Une séance de nuit
- * est affichée le jour où elle commence, jusqu'à minuit.
+ * donne deux événements : le jour où elle commence (jusqu'à 23:59) et le lendemain
+ * (`00:00`–fin, id suffixé `:next`).
  */
 export function slotOccurrences(
   slots: readonly Slot[],
@@ -95,22 +104,37 @@ export function slotOccurrences(
   weekStart: number,
 ): PersonalEvent[] {
   const out: PersonalEvent[] = [];
-  for (let d = from; d <= to; d = addDaysIso(d, 1)) {
+  // On part de la veille : une séance de nuit commencée la veille déborde sur `from`.
+  for (let d = addDaysIso(from, -1); d <= to; d = addDaysIso(d, 1)) {
     const wd = isoWeekday(d);
     for (const s of slots) {
       if (!s.weekdays.includes(wd)) continue;
       if (d < s.validFrom || (s.validUntil && d > s.validUntil)) continue;
       if (s.rotation !== 'every' && rotationOf(d, anchor, weekStart) !== s.rotation) continue;
-      out.push({
-        id: `${SLOT_EVENT_PREFIX}${s.id}:${d}`,
-        title: s.title,
-        date: d,
-        startTime: s.startTime,
-        endTime: isOvernight(s) ? '23:59' : s.endTime,
-        description: s.location,
-        reminderAt: null,
-        space: s.space,
-      });
+      const overnight = isOvernight(s);
+      if (d >= from)
+        out.push({
+          id: `${SLOT_EVENT_PREFIX}${s.id}:${d}`,
+          title: s.title,
+          date: d,
+          startTime: s.startTime,
+          endTime: overnight ? '23:59' : s.endTime,
+          description: s.location,
+          reminderAt: null,
+          space: s.space,
+        });
+      const next = addDaysIso(d, 1);
+      if (overnight && next <= to)
+        out.push({
+          id: `${SLOT_EVENT_PREFIX}${s.id}:${d}${SLOT_NEXT_SUFFIX}`,
+          title: s.title,
+          date: next,
+          startTime: '00:00',
+          endTime: s.endTime,
+          description: s.location,
+          reminderAt: null,
+          space: s.space,
+        });
     }
   }
   return out;

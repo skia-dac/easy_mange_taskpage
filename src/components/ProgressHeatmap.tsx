@@ -62,8 +62,14 @@ export function ProgressHeatmap({
   const stats = progressStats(weeks);
 
   const cellColor = (c: HeatCell) =>
-    c.future || c.outside ? 'transparent' : colors[HEAT[c.level ?? 0]];
-  const border = (c: HeatCell) => (c.future && !c.outside ? colors.border : 'transparent');
+    c.future || c.outside || (c.date === today && c.level === null)
+      ? 'transparent'
+      : colors[HEAT[c.level ?? 0]];
+  // Contour seul : jour à venir, ou aujourd'hui tant que rien n'est fait (la journée n'est pas finie).
+  const border = (c: HeatCell) =>
+    (c.future || (c.date === today && c.level === null)) && !c.outside
+      ? colors.border
+      : 'transparent';
   const a11y = (c: HeatCell) =>
     `${c.date} : ${c.level === null ? t('progress.noGoal') : t(`progress.level${c.level}`)}`;
 

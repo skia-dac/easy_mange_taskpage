@@ -14,8 +14,8 @@ import {
 } from '@/modules/identity';
 import {
   copyWeekInputs,
-  createPersonalEvent,
-  deletePersonalEvent,
+  createPersonalEvents,
+  deletePersonalEvents,
   isOvernight,
   listPersonalEvents,
   listSlots,
@@ -97,11 +97,10 @@ export default function PlanningScreen() {
     if (!ok) return;
     setCopying(true);
     try {
-      const ids: string[] = [];
-      for (const input of inputs) ids.push(await createPersonalEvent(db, input));
-      showUndoToast(t('planning.copyDone', { count: inputs.length }), async () => {
-        for (const id of ids) await deletePersonalEvent(db, id);
-      });
+      const ids = await createPersonalEvents(db, inputs);
+      showUndoToast(t('planning.copyDone', { count: inputs.length }), () =>
+        deletePersonalEvents(db, ids),
+      );
     } catch (e) {
       showError(userMessageKey(e));
     } finally {

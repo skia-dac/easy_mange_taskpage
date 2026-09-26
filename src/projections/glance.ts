@@ -1,4 +1,4 @@
-import { workSpace, blockMinutes } from '@/modules/productivity';
+import { blockMinutes, isSlotEvent, isSlotNextPart, workSpace } from '@/modules/productivity';
 import { addDaysIso, timeToMinutes, toIsoDate, type IsoDate } from '@/shared/dates';
 import type { ActiveSpaces } from '@/shared/spaces';
 
@@ -44,14 +44,23 @@ export type WorkWeek = { plannedMinutes: number; targetMinutes: number; toPlanMi
 /**
  * Heures « Pro » de la semaine : rendez-vous Pro (durée, ou 1 h sans heure de fin) et durées
  * estimées des tâches Pro de la semaine. « À planifier » = objectif − déjà planifié.
+ * Une séance de nuit d'un créneau compte sa durée entière (22:00 → 06:00 = 480 min) sur le jour
+ * où elle commence ; sa seconde moitié (le lendemain, `:next`) n'est pas comptée une deuxième fois.
  */
 export function workWeek(data: TodayData, weekFrom: IsoDate, targetHours: number): WorkWeek {
   let planned = 0;
   for (const e of data.events) {
     if (e.space !== 'work' || !inWeek(e.date, weekFrom) || !e.startTime) continue;
-    planned += e.endTime
-      ? Math.max(0, timeToMinutes(e.endTime) - timeToMinutes(e.startTime))
-      : DEFAULT_EVENT_MINUTES;
+    if (isSlotNextPart(e)) continue;
+    if (!e.endTime) {
+      planned += DEFAULT_EVENT_MINUTES;
+      continue;
+    }
+    const nextPart = isSlotEvent(e) ? data.events.find((x) => x.id === `${e.id}:next`) : undefined;
+    planned += nextPart
+      ? // Séance de nuit : (début → minuit) + (minuit → fin) = durée du créneau.
+        24 * 60 - timeToMinutes(e.startTime) + timeToMinutes(nextPart.endTime ?? '00:00')
+      : Math.max(0, timeToMinutes(e.endTime) - timeToMinutes(e.startTime));
   }
   for (const w of data.work) {
     if (workSpace(w) !== 'work' || !inWeek(w.dueDate, weekFrom)) continue;

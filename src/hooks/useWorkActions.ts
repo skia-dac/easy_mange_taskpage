@@ -1,12 +1,17 @@
 import { useTranslation } from 'react-i18next';
 
 import { useLabels } from '@/hooks/useLabels';
-import { rescheduleWorkItem, setWorkStatus, type WorkItem } from '@/modules/productivity';
+import {
+  rescheduleWorkItem,
+  setWorkStatus,
+  undoWorkDone,
+  type WorkItem,
+} from '@/modules/productivity';
 import type { IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
-import { showError, showToast, showUndoToast } from '@/shared/ui';
+import { showError, showUndoToast } from '@/shared/ui';
 
 export type WorkTarget = Pick<
   WorkItem,
@@ -15,7 +20,7 @@ export type WorkTarget = Pick<
 
 /**
  * Terminer / rouvrir / reporter une tâche ou un devoir, avec un message discret et « Annuler ».
- * Une tâche répétée terminée crée déjà la suivante : pas d'annulation dans ce cas.
+ * Une tâche répétée terminée crée la suivante : « Annuler » la supprime aussi.
  */
 export function useWorkActions() {
   const { t } = useTranslation();
@@ -24,15 +29,13 @@ export function useWorkActions() {
   const fail = (e: unknown) => showError(userMessageKey(e));
 
   const setDone = (item: WorkTarget, done: boolean) =>
-    setWorkStatus(db, item.kind, item.id, done ? 'done' : 'todo').then(() => {
+    setWorkStatus(db, item.kind, item.id, done ? 'done' : 'todo').then((spawnedId) => {
       if (!done) return;
       const message = t('work.doneToast', { title: item.title });
-      if (item.repeat !== 'none') showToast(message);
-      else {
-        // On restaure l'état d'avant (« à faire » ou « en cours »), pas forcément « à faire ».
-        const previous = item.status === 'done' ? 'todo' : item.status;
-        showUndoToast(message, () => setWorkStatus(db, item.kind, item.id, previous));
-      }
+      // On restaure l'état d'avant (« à faire » ou « en cours »), pas forcément « à faire »,
+      // et on retire l'occurrence suivante créée pour une tâche répétée.
+      const previous = item.status === 'done' ? 'todo' : item.status;
+      showUndoToast(message, () => undoWorkDone(db, item.kind, item.id, previous, spawnedId));
     }, fail);
 
   const postpone = (item: WorkTarget, date: IsoDate) =>

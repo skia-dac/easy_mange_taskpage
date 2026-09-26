@@ -55,11 +55,13 @@ export const STUDY_HABIT_MIN_MINUTES = 5;
 export async function endStudySession(db: Db, id: string, endedAt = nowIso()): Promise<void> {
   await write(db, async (w) => {
     const row = await w.db.getFirstAsync<StudySessionRow>(
-      'SELECT * FROM study_sessions WHERE id = ?',
+      'SELECT * FROM study_sessions WHERE id = ? AND deleted_at IS NULL',
       [id],
     );
+    // Idempotente : une session déjà terminée garde sa fin (double appel minuteur + bouton).
+    if (!row || row.ended_at !== null) return;
     await w.update('study_sessions', id, { ended_at: endedAt });
-    if (!row || row.kind !== 'focus' || row.ended_at !== null) return;
+    if (row.kind !== 'focus') return;
     const minutes = (new Date(endedAt).getTime() - new Date(row.started_at).getTime()) / 60_000;
     if (minutes >= STUDY_HABIT_MIN_MINUTES) {
       await markStudyHabits(w, endedAt);

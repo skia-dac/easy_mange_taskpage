@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { addDaysIso, isoWeekday, startOfWeekOn, type IsoDate } from '@/shared/dates';
+import { addDaysIso, daysBetween, isoWeekday, startOfWeekOn, type IsoDate } from '@/shared/dates';
 import {
   isoDate as isoDateSchema,
   optionalText,
@@ -238,6 +238,26 @@ export function expectedPerWeek(habit: Habit): number {
 }
 
 /**
+ * « N fois / semaine », semaine en cours : on n'attend pas tout dès le lundi. Attendu =
+ * min(N, jours écoulés de la semaine), aujourd'hui compté seulement s'il est déjà fait.
+ * Une semaine finie (ou à venir) garde N.
+ */
+export function expectedInWeekSoFar(
+  habit: Habit,
+  logs: readonly HabitLog[],
+  weekFrom: IsoDate,
+  today: IsoDate,
+): number {
+  const n = expectedPerWeek(habit);
+  if (habit.frequency !== 'weekly') return n;
+  const weekTo = addDaysIso(weekFrom, 6);
+  if (today > weekTo || today < weekFrom) return n;
+  const elapsed =
+    daysBetween(weekFrom, today) + (isDone(habit, logOn(logs, habit.id, today)) ? 1 : 0);
+  return Math.min(n, elapsed);
+}
+
+/**
  * Série : jours prévus réussis d'affilée (jours excusés et non prévus ignorés).
  * Pour « N fois / semaine », la série compte les semaines où l'objectif est atteint.
  * Aujourd'hui ne casse pas la série tant qu'il n'est pas fini.
@@ -287,8 +307,9 @@ export function completionRate(
     let expected = 0;
     let done = 0;
     for (let w = startOfWeekOn(from, weekStart); w <= end; w = addDaysIso(w, 7)) {
-      expected += habit.timesPerWeek;
-      done += Math.min(habit.timesPerWeek, doneInWeek(habit, logs, w));
+      const e = expectedInWeekSoFar(habit, logs, w, today);
+      expected += e;
+      done += Math.min(e, doneInWeek(habit, logs, w));
     }
     return expected > 0 ? done / expected : null;
   }
@@ -333,7 +354,9 @@ export function weeklyReview(
     }
     const done = doneInWeek(h, logs, weekFrom);
     const expected = expectedPerWeek(h);
-    return { habitId: h.id, name: h.name, done, expected, respected: done >= expected, misses };
+    // Semaine en cours d'une habitude « N fois / semaine » : respectée tant qu'on est dans les temps.
+    const respected = done >= expectedInWeekSoFar(h, logs, weekFrom, today);
+    return { habitId: h.id, name: h.name, done, expected, respected, misses };
   });
 }
 

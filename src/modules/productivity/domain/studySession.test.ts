@@ -101,4 +101,18 @@ describe('sessions de révision', () => {
     expect(list.every((s) => s.endedAt !== null)).toBe(true);
     db.close();
   });
+
+  it('endStudySession est idempotente : une session déjà terminée garde sa fin (#11b)', async () => {
+    const db = await createTestDb();
+    const id = await startStudySession(db, {
+      startedAt: '2026-09-23T08:00:00.000Z',
+      plannedMinutes: 25,
+    });
+    await endStudySession(db, id, '2026-09-23T08:25:00.000Z');
+    // Second appel (minuteur + bouton « Arrêter ») : la fin ne bouge pas.
+    await endStudySession(db, id, '2026-09-23T08:40:00.000Z');
+    const [s] = await listStudySessions(db, '2026-09-23', '2026-09-23');
+    expect(s?.endedAt).toBe('2026-09-23T08:25:00.000Z');
+    db.close();
+  });
 });

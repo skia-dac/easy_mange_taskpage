@@ -119,6 +119,34 @@ describe('habitudes — calculs', () => {
     expect(completionRate(habit(), logs, '2026-09-28', '2026-10-04', today)).toBeNull();
   });
 
+  it('« N fois / semaine » en cours : on n’attend pas tout dès le lundi (#7)', () => {
+    const sport = habit({ frequency: 'weekly', timesPerWeek: 3 });
+    // Lundi 21 fait, lundi = aujourd'hui → attendu 1, fait 1 → 100 % (avant : 1/3 = 33 %).
+    const monday = '2026-09-21';
+    expect(completionRate(sport, [log(monday)], monday, '2026-09-27', monday)).toBe(1);
+    // Lundi, rien de fait : aujourd'hui ne compte pas encore → rien d'attendu.
+    expect(completionRate(sport, [], monday, '2026-09-27', monday)).toBeNull();
+    // Mercredi 23, fait lundi seulement : attendu min(3, 2 jours écoulés) = 2 → 50 %.
+    expect(completionRate(sport, [log(monday)], monday, '2026-09-27', today)).toBe(0.5);
+    // Samedi 26 : 5 jours écoulés, attendu plafonné à 3 ; 3 faits → 100 %.
+    const sat = '2026-09-26';
+    const three = [log(monday), log('2026-09-22'), log('2026-09-24')];
+    expect(completionRate(sport, three, monday, '2026-09-27', sat)).toBe(1);
+    // Semaine passée : on attend N entier.
+    expect(
+      completionRate(sport, [log('2026-09-15')], '2026-09-14', '2026-09-20', today),
+    ).toBeCloseTo(1 / 3);
+    // Bilan hebdo : mercredi avec 2 faits sur 3 = dans les temps (respecté), 1 fait = non.
+    expect(weeklyReview([sport], [log(monday), log('2026-09-22')], monday, today)[0]).toMatchObject(
+      {
+        done: 2,
+        expected: 3,
+        respected: true,
+      },
+    );
+    expect(weeklyReview([sport], [log(monday)], monday, today)[0]?.respected).toBe(false);
+  });
+
   it('fait le bilan de la semaine avec les raisons', () => {
     const sport = habit({ id: 'h', name: 'Sport' });
     const read = habit({ id: 'r', name: 'Lire' });

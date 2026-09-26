@@ -86,9 +86,10 @@ export async function deleteSubtask(db: Db, id: string) {
 /** Monte ou descend une sous-tâche d'un cran. */
 export async function moveSubtask(db: Db, id: string, direction: -1 | 1) {
   return write(db, async (w) => {
-    const row = await w.db.getFirstAsync<SubtaskRow>('SELECT * FROM work_subtasks WHERE id = ?', [
-      id,
-    ]);
+    const row = await w.db.getFirstAsync<SubtaskRow>(
+      'SELECT * FROM work_subtasks WHERE id = ? AND deleted_at IS NULL',
+      [id],
+    );
     if (!row) return;
     const list = await rowsOf(w.db, row.work_kind as WorkKind, row.work_id);
     const i = list.findIndex((r) => r.id === id);

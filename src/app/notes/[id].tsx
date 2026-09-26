@@ -81,7 +81,15 @@ export default function NoteScreen() {
   const isNew = params.id === 'new';
   const { subjects, byId } = useSubjects();
 
-  const [noteId, setNoteId] = useState<string | null>(isNew ? null : params.id);
+  const [noteId, setNoteIdState] = useState<string | null>(isNew ? null : params.id);
+  // Id lu de façon synchrone par l'autosave (l'état React arrive trop tard sous frappe rapide).
+  const noteIdRef = useRef<string | null>(isNew ? null : params.id);
+  const setNoteId = (id: string | null) => {
+    noteIdRef.current = id;
+    setNoteIdState(id);
+  };
+  /** Création en cours : les enregistrements suivants l'attendent au lieu de recréer une note. */
+  const creating = useRef<Promise<string> | null>(null);
   const [loaded, setLoaded] = useState(isNew);
   const [editing, setEditing] = useState(isNew);
   const [title, setTitle] = useState('');
@@ -148,29 +156,36 @@ export default function NoteScreen() {
 
   /** Enregistrement (crée la note au premier contenu). Retourne l'id de la note. */
   const persist = useCallback(async (): Promise<string | null> => {
-    const { title: tt, content: cc } = latest.current;
-    if (!noteId) {
+    if (!noteIdRef.current && !creating.current) {
+      const { title: tt, content: cc } = latest.current;
       if (tt.trim() === '' && cc.trim() === '') return null;
       setStatus('saving');
-      const id = await createNote(db, {
+      creating.current = createNote(db, {
         title: tt,
         content: cc,
         subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
         categoryId,
+      }).finally(() => {
+        creating.current = null;
       });
+      const id = await creating.current;
       setNoteId(id);
       setStatus('saved');
       setUpdatedAt(new Date().toISOString());
       return id;
     }
+    // Une création est en cours (frappe rapide) : on l'attend, puis on enregistre la dernière version.
+    const id = noteIdRef.current ?? (await creating.current!);
+    noteIdRef.current = id;
+    const { title: tt, content: cc } = latest.current;
     setStatus('saving');
-    await saveNoteContent(db, noteId, tt, cc);
+    await saveNoteContent(db, id, tt, cc);
     setStatus('saved');
     setUpdatedAt(new Date().toISOString());
-    return noteId;
-  }, [db, noteId, subjectId, categoryId, params.courseSeriesId, params.courseDate]);
+    return id;
+  }, [db, subjectId, categoryId, params.courseSeriesId, params.courseDate]);
 
   const scheduleSave = (next: { title?: string; content?: string }) => {
     if (next.title !== undefined) {

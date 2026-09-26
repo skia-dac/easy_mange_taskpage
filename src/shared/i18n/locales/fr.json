@@ -1127,6 +1127,7 @@
     "postponeAllMessage_one": "{{count}} élément passera à demain.",
     "postponeAllMessage_other": "{{count}} éléments passeront à demain.",
     "postponeAllConfirm": "Reporter",
+    "postponeAllDone": "Reporté à demain ({{count}})",
     "revisions": "Révisions d’aujourd’hui",
     "habits": "Tes habitudes",
     "mood": "Ta journée",
