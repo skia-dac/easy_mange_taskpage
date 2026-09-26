@@ -14,11 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { isOnboardingDone } from '@/modules/identity';
 import { useDb } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
-import { TabBarVisibility } from '@/shared/tabBarVisibility';
 import { fonts, useTheme } from '@/shared/theme';
 import { LoadingScreen } from '@/shared/ui';
-
-import { SlidingTabBar } from './SlidingTabBar';
 
 type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -70,47 +67,41 @@ export default function TabsLayout() {
   if (!onboarded) return <Redirect href="/onboarding" />;
 
   return (
-    <TabBarVisibility>
-      <Tabs
-        tabBar={(props) => <SlidingTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.muted,
-          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-          tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
-          animation: reduced ? 'none' : 'fade',
-          transitionSpec: reduced
-            ? undefined
-            : { animation: 'timing', config: { duration: 180, easing: Easing.out(Easing.cubic) } },
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
+        animation: reduced ? 'none' : 'fade',
+        transitionSpec: reduced
+          ? undefined
+          : { animation: 'timing', config: { duration: 180, easing: Easing.out(Easing.cubic) } },
+      }}
+    >
+      <Tabs.Screen name="index" options={{ title: t('tabs.today'), tabBarIcon: tabIcon('sun') }} />
+      <Tabs.Screen
+        name="calendar"
+        options={{ title: calendarTitle, tabBarIcon: tabIcon('calendar') }}
+      />
+      <Tabs.Screen
+        name="tasks"
+        options={{ title: t('tabs.tasks'), tabBarIcon: tabIcon('check-square') }}
+      />
+      <Tabs.Screen
+        name="notes"
+        options={{ title: t('tabs.notes'), tabBarIcon: tabIcon('file-text') }}
+      />
+      <Tabs.Screen
+        name="money"
+        options={{
+          title: t('tabs.money'),
+          tabBarIcon: tabIcon('credit-card'),
+          // L'argent fait partie de l'espace Perso : l'onglet est caché (les données restent).
+          href: spaces.has('personal') ? undefined : null,
         }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{ title: t('tabs.today'), tabBarIcon: tabIcon('sun') }}
-        />
-        <Tabs.Screen
-          name="calendar"
-          options={{ title: calendarTitle, tabBarIcon: tabIcon('calendar') }}
-        />
-        <Tabs.Screen
-          name="tasks"
-          options={{ title: t('tabs.tasks'), tabBarIcon: tabIcon('check-square') }}
-        />
-        <Tabs.Screen
-          name="notes"
-          options={{ title: t('tabs.notes'), tabBarIcon: tabIcon('file-text') }}
-        />
-        <Tabs.Screen
-          name="money"
-          options={{
-            title: t('tabs.money'),
-            tabBarIcon: tabIcon('credit-card'),
-            // L'argent fait partie de l'espace Perso : l'onglet est caché (les données restent).
-            href: spaces.has('personal') ? undefined : null,
-          }}
-        />
-      </Tabs>
-    </TabBarVisibility>
+      />
+    </Tabs>
   );
 }

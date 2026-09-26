@@ -1,7 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -13,7 +12,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 import { PressableScale } from './PressableScale';
 
@@ -33,10 +31,6 @@ export function Fab({
 }) {
   const { colors, radius, spacing } = useTheme();
   const reduced = useReducedMotion();
-  const tabBarInset = useTabBarInset();
-  const barHidden = useTabBarHidden();
-  const safeBottom = useSafeAreaInsets().bottom;
-  const dock = useSharedValue(0);
   const arrive = useSharedValue(reduced ? 1 : 0);
   const breathe = useSharedValue(1);
   const pop = useSharedValue(1);
@@ -47,11 +41,6 @@ export function Fab({
     if (reduced) return;
     arrive.value = withSpring(1, { damping: 12, stiffness: 170 });
   }, [arrive, reduced]);
-
-  useEffect(() => {
-    const drop = barHidden ? Math.max(0, tabBarInset - safeBottom) : 0;
-    dock.value = withTiming(drop, { duration: reduced ? 0 : barHidden ? 160 : 200 });
-  }, [barHidden, dock, reduced, safeBottom, tabBarInset]);
 
   useEffect(() => {
     if (reduced || open) {
@@ -73,7 +62,7 @@ export function Fab({
   }, [open, pop, reduced, turn]);
 
   const motion = useAnimatedStyle(() => ({
-    transform: [{ translateY: dock.value }, { scale: arrive.value * breathe.value * pop.value }],
+    transform: [{ scale: arrive.value * breathe.value * pop.value }],
   }));
   const body = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(turn.value, [0, 1], [colors.primary, colors.text]),
@@ -88,7 +77,7 @@ export function Fab({
       style={{
         position: 'absolute',
         right: spacing.xl,
-        bottom: spacing.xl + tabBarInset,
+        bottom: spacing.xl,
         zIndex: 2,
       }}
     >
