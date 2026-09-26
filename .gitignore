@@ -43,3 +43,6 @@ yarn-error.*
 # secrets (jamais commités)
 .env
 .env.local
+
+# Vérification d'assemblage (npm run check:bundle)
+.expo-export-check/

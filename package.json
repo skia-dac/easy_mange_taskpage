@@ -8,7 +8,6 @@
     "@expo/ui": "~57.0.20",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
-    "@react-navigation/elements": "^2.9.43",
     "@supabase/supabase-js": "^2.117.1",
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",
@@ -79,7 +78,8 @@
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "doctor": "expo-doctor",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run test:server",
-    "test:server": "node scripts/verify-server-sql.mjs"
+    "test:server": "node scripts/verify-server-sql.mjs",
+    "check:bundle": "expo export --platform ios --platform android --output-dir .expo-export-check"
   },
   "private": true,
   "jest": {

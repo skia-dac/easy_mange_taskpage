@@ -38,3 +38,5 @@ jobs:
         run: npm run audit:prod
       - name: Diagnostic Expo
         run: npx expo-doctor
+      - name: Bundle iOS et Android (ce qu'Expo Go charge)
+        run: npm run check:bundle

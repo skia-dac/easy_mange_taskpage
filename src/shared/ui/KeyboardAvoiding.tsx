@@ -1,4 +1,4 @@
-import { HeaderHeightContext } from '@react-navigation/elements';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useContext, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 

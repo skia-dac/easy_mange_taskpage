@@ -31,6 +31,11 @@ module.exports = defineConfig([
               group: ['@/modules/*/*'],
               message: "Importe un module par son point d'entrée : '@/modules/<nom>'.",
             },
+            {
+              group: ['@react-navigation/*'],
+              message:
+                "Depuis le SDK 56, expo-router refuse react-navigation : importe depuis 'expo-router/react-navigation' (ou 'expo-router/js-tabs').",
+            },
           ],
         },
       ],
