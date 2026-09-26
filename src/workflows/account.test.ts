@@ -16,6 +16,7 @@ import {
   fillProfileFromSignUp,
   replaceLocalDataWithAccount,
 } from './account';
+import * as wipeModule from './wipeAllData';
 
 jest.mock('@/modules/platform', () => ({
   ...jest.requireActual('@/modules/platform'),
@@ -142,6 +143,36 @@ describe('compte et données du téléphone', () => {
     await expect(deleteAccountEverywhere(db)).rejects.toBeInstanceOf(AccountError);
     const kept = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
     expect(kept?.n).toBe(1);
+    db.close();
+  });
+  it('suppression du compte : serveur en échec (401, réseau) → rien n’est effacé ni détaché', async () => {
+    const db = await createTestDb();
+    await createSubject(db, { name: 'Maths', colorId: 'blue' });
+    await claimLocalData(db, 'user-a');
+    mockRemote.signOut.mockReset();
+    for (const key of ['auth.sessionExpired', 'errors.network']) {
+      mockRemote.deleteRemoteAccount.mockRejectedValueOnce(new AccountError(key));
+      await expect(deleteAccountEverywhere(db)).rejects.toMatchObject({ message: key });
+    }
+    expect(mockRemote.signOut).not.toHaveBeenCalled();
+    expect(await getAccountOwner(db)).toBe('user-a');
+    const n = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
+    expect(n?.n).toBe(1);
+    db.close();
+  });
+
+  it('suppression du compte : le vidage du téléphone échoue → erreur claire, téléphone détaché', async () => {
+    const db = await createTestDb();
+    await claimLocalData(db, 'user-a');
+    mockRemote.deleteRemoteAccount.mockResolvedValue(undefined);
+    mockRemote.signOut.mockResolvedValue(undefined);
+    const wipe = jest.spyOn(wipeModule, 'wipeAllData').mockRejectedValueOnce(new Error('disk'));
+    await expect(deleteAccountEverywhere(db)).rejects.toMatchObject({
+      message: 'auth.error.localWipeFailed',
+    });
+    expect(mockRemote.signOut).toHaveBeenCalled();
+    expect(await getAccountOwner(db)).toBeNull();
+    wipe.mockRestore();
     db.close();
   });
 });

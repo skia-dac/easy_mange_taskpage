@@ -141,6 +141,17 @@ export async function deleteRemoteAccount(): Promise<void> {
   const { error } = await client.functions.invoke('delete-account', { method: 'POST' });
   if (error) {
     logger.error(error, { where: 'deleteRemoteAccount' });
-    throw new AccountError('auth.error.deleteFailed', error);
+    throw new AccountError(deleteErrorKey(error), error);
   }
+}
+
+/**
+ * 401 : la session a expiré (il faut se reconnecter, rien n'a été supprimé) ; requête non partie :
+ * pas de réseau ; tout le reste : échec de la suppression côté serveur.
+ */
+function deleteErrorKey(error: { name?: string; context?: unknown }): string {
+  const status = (error.context as { status?: unknown } | null | undefined)?.status;
+  if (status === 401) return 'auth.sessionExpired';
+  if (error.name === 'FunctionsFetchError') return 'errors.network';
+  return 'auth.error.deleteFailed';
 }
