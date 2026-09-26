@@ -120,88 +120,76 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
     router.push(href);
   };
 
-  if (!open) return <Fab accessibilityLabel={t('add.title')} onPress={() => setOpen(true)} />;
-
   return (
-    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <Animated.View
-        entering={FadeIn.duration(150)}
-        exiting={FadeOut.duration(150)}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-      >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('common.close')}
-          onPress={() => setOpen(false)}
-          style={{ flex: 1, backgroundColor: colors.scrim }}
-        />
-      </Animated.View>
-      <View
-        accessibilityRole="menu"
-        style={{
-          position: 'absolute',
-          right: spacing.xl,
-          bottom: spacing.xl + 58 + spacing.md,
-          alignItems: 'flex-end',
-          gap: spacing.sm,
-        }}
-      >
-        {shown.map((item, i) => (
+    <>
+      {open ? (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
           <Animated.View
-            key={item.key}
-            entering={FadeInDown.duration(160).delay((shown.length - 1 - i) * 25)}
+            entering={FadeIn.duration(150)}
+            exiting={FadeOut.duration(150)}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           >
             <Pressable
-              accessibilityRole="menuitem"
-              onPress={() => go(item.href)}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: spacing.sm,
-                minHeight: 48,
-                paddingLeft: spacing.sm,
-                paddingRight: spacing.lg,
-                borderRadius: radius.pill,
-                backgroundColor: colors.surface,
-                opacity: pressed ? 0.85 : 1,
-              })}
-            >
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: radius.sm,
-                  backgroundColor: colors[item.background],
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Feather name={item.icon} size={17} color={colors[item.color]} />
-              </View>
-              <AppText variant="bodyStrong">{item.label}</AppText>
-            </Pressable>
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              onPress={() => setOpen(false)}
+              style={{ flex: 1, backgroundColor: colors.scrim }}
+            />
           </Animated.View>
-        ))}
-      </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('common.close')}
-        onPress={() => setOpen(false)}
-        style={({ pressed }) => ({
-          position: 'absolute',
-          right: spacing.xl,
-          bottom: spacing.xl,
-          width: 58,
-          height: 58,
-          borderRadius: radius.lg,
-          backgroundColor: colors.text,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: pressed ? 0.85 : 1,
-        })}
-      >
-        <Feather name="x" size={26} color={colors.background} />
-      </Pressable>
-    </View>
+          <View
+            accessibilityRole="menu"
+            style={{
+              position: 'absolute',
+              right: spacing.xl,
+              bottom: spacing.xl + 58 + spacing.md,
+              alignItems: 'flex-end',
+              gap: spacing.sm,
+            }}
+          >
+            {shown.map((item, i) => (
+              <Animated.View
+                key={item.key}
+                entering={FadeInDown.duration(160).delay((shown.length - 1 - i) * 25)}
+              >
+                <Pressable
+                  accessibilityRole="menuitem"
+                  onPress={() => go(item.href)}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    minHeight: 48,
+                    paddingLeft: spacing.sm,
+                    paddingRight: spacing.lg,
+                    borderRadius: radius.pill,
+                    backgroundColor: colors.surface,
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: radius.sm,
+                      backgroundColor: colors[item.background],
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Feather name={item.icon} size={17} color={colors[item.color]} />
+                  </View>
+                  <AppText variant="bodyStrong">{item.label}</AppText>
+                </Pressable>
+              </Animated.View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+      <Fab
+        open={open}
+        accessibilityLabel={open ? t('common.close') : t('add.title')}
+        onPress={() => setOpen((value) => !value)}
+      />
+    </>
   );
 }
