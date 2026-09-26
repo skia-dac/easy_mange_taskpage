@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { Easing } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -12,11 +12,17 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useTabBarHidden } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 import { PressableScale } from './PressableScale';
 
 const TURN = { damping: 14, stiffness: 220 };
 const POP = { damping: 11, stiffness: 280 };
+const SIZE = 58;
+
+function slideY(shift: { value: number }, to: number, duration: number) {
+  shift.value = withTiming(to, { duration, easing: Easing.out(Easing.cubic) });
+}
 
 /** Bouton rond « + ». `open` le fait tourner d'un quart de tour pour fermer le menu. */
 export function PlusButton({
@@ -33,11 +39,19 @@ export function PlusButton({
 }) {
   const { colors, radius, spacing } = useTheme();
   const reduced = useReducedMotion();
+  const hidden = useTabBarHidden();
   const arrive = useSharedValue(reduced ? 1 : 0);
   const breathe = useSharedValue(1);
   const pop = useSharedValue(1);
   const turn = useSharedValue(open ? 1 : 0);
+  const shift = useSharedValue(0);
   const seen = useRef(false);
+  const away = hidden && !open;
+
+  useEffect(() => {
+    const travel = bottomInset + spacing.xl + SIZE;
+    slideY(shift, away ? travel : 0, reduced ? 0 : away ? 160 : 220);
+  }, [away, bottomInset, reduced, shift, spacing.xl]);
 
   useEffect(() => {
     if (reduced) return;
@@ -72,16 +86,24 @@ export function PlusButton({
   const spinStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${turn.value * 45}deg` }],
   }));
+  const slideStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: shift.value }],
+  }));
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={{
-        position: 'absolute',
-        right: spacing.xl,
-        bottom: spacing.xl + bottomInset,
-        zIndex: 2,
-      }}
+    <Animated.View
+      pointerEvents={away ? 'none' : 'box-none'}
+      accessibilityElementsHidden={away}
+      importantForAccessibility={away ? 'no-hide-descendants' : 'auto'}
+      style={[
+        {
+          position: 'absolute',
+          right: spacing.xl,
+          bottom: spacing.xl + bottomInset,
+          zIndex: 2,
+        },
+        slideStyle,
+      ]}
     >
       <Animated.View style={scaleStyle}>
         <PressableScale
@@ -90,8 +112,8 @@ export function PlusButton({
           accessibilityState={{ expanded: open }}
           onPress={onPress}
           style={{
-            width: 58,
-            height: 58,
+            width: SIZE,
+            height: SIZE,
             borderRadius: radius.lg,
             overflow: 'hidden',
             elevation: 4,
@@ -118,6 +140,6 @@ export function PlusButton({
           </Animated.View>
         </PressableScale>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }

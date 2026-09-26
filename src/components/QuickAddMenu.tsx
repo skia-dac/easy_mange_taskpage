@@ -143,7 +143,7 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
             style={{
               position: 'absolute',
               right: spacing.xl,
-              bottom: spacing.xl + 58 + spacing.md,
+              bottom: spacing.xl + tabBarInset + 58 + spacing.md,
               alignItems: 'flex-end',
               gap: spacing.sm,
             }}
