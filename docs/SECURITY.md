@@ -27,10 +27,11 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 ## 3. Données de l'utilisateur
 
 - **Serveur** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS. Le schéma est généré depuis celui du téléphone et vérifié sur un vrai Postgres (`npm run test:server`) : un utilisateur ne peut ni lire ni modifier les lignes d'un autre.
+- **Règle serveur (26 septembre 2026)** : les écritures passent **uniquement** par la fonction `mysky_push` (`security definer`) ; le rôle `authenticated` n'a que `grant select` sur les tables (plus d'`insert`, `update` ni `delete` directs), la lecture reste filtrée par RLS. Après une mise à jour du dépôt, rejouer `supabase/migrations/20260924000000_mysky.sql` sur le projet.
 - **Écritures serveur** : uniquement par la fonction `mysky_push` (liste blanche des tables, versions pour détecter les conflits, identifiant de modification pour ne jamais appliquer deux fois la même, purgé après 30 jours). Les utilisateurs n'ont que le droit de lecture sur les tables : la fonction est `security definer` et limite chaque lecture et écriture à `user_id = auth.uid()`. Une modification invalide est rejetée seule (`rejected`) sans bloquer les autres ; le téléphone la garde dans l'écran « Conflits de synchronisation », où l'utilisateur restaure sa version ou l'ignore.
 - **Fichiers** : bucket privé `mysky-files` (25 Mo max par fichier), chaque utilisateur limité à son dossier `<id>/`.
 - **Suppression du compte** : fonction serveur `delete-account` (clé service_role côté serveur uniquement) : fichiers puis compte, les lignes partent en cascade.
-- **Téléphone** : la session de connexion est stockée avec `expo-secure-store` (trousseau iOS / keystore Android, accessible après le premier déverrouillage, jamais copiée sur un autre appareil), découpée en morceaux, jamais en clair.
+- **Téléphone** : la session de connexion est stockée avec `expo-secure-store` (trousseau iOS / keystore Android, accessible après le premier déverrouillage, jamais copiée sur un autre appareil), découpée en morceaux, jamais en clair. Les morceaux d'une nouvelle session sont écrits avant le compteur (`.n`), écrit en dernier : une écriture interrompue garde l'ancienne session.
 - **Mots de passe** : 8 caractères minimum avec une lettre et un chiffre ; gérés par Supabase Auth, jamais stockés par l'app.
 - La sauvegarde automatique Android est désactivée (`allowBackup: false`) pour que la base locale ne soit pas copiée hors du téléphone.
 - **Requêtes SQL** : toujours avec des paramètres (`db.runAsync('… WHERE id = ?', [id])`), jamais en collant du texte (risque d'injection SQL).
@@ -117,11 +118,17 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 
 ## 6. Alertes de sécurité connues et acceptées
 
-`npm audit` signale 14 alertes de niveau **modéré** (aucune élevée ou critique) au 23 septembre 2026 :
+`npm audit --omit=dev` signale **17 alertes de niveau modéré** (aucune faible, élevée ou critique) au 26 septembre 2026. Elles viennent toutes de deux paquets, propagés par les outils d'Expo :
 
 | Paquet | Pourquoi c'est accepté |
 |---|---|
-| `uuid@7` (via `xcode`, `@expo/config-plugins`…) | Utilisé uniquement par les outils de **construction** de l'app, pas dans l'app installée. La faille concerne un usage (`buf` fourni à v3/v5/v6) que ces outils ne font pas. |
+| `uuid@7` (via `xcode`, `@expo/config-plugins`, `@expo/config`, `@expo/prebuild-config`…) | Utilisé uniquement par les outils de **construction** de l'app, pas dans l'app installée. La faille concerne un usage (`buf` fourni à v3/v5/v6) que ces outils ne font pas. |
 | `decode-uri-component@0.2` (via `expo-router` → `query-string`) | Risque de lenteur sur un lien mal formé. La correction (`0.5`) n'est pas compatible avec `query-string@7`. À revoir à chaque mise à jour d'Expo. |
 
-`npm audit fix --force` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `npx expo install --fix` à chaque nouveau SDK.
+`npm run audit:prod` (seuil `high`) reste vert. `npm audit fix --force` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `npx expo install --fix` à chaque nouveau SDK.
+
+## 7. Permissions du téléphone
+
+- Appareil photo et photos : pièces jointes, photo de profil et photos de progression, demandées au moment de l'usage.
+- **Micro retiré** : `expo-image-picker` est configuré avec `microphonePermission: false` (`app.json`) ; l'app n'enregistre jamais de son.
+- Notifications locales, biométrie (verrouillage facultatif). Aucune localisation, aucun contact, aucun SMS.

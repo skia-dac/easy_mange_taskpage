@@ -54,24 +54,26 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 
 ---
 
-## 3. Recommended stack
+## 3. Stack (as built, 26 Sep 2026)
+
+This table was the plan of 23 Sep; it now records what is actually used. No ORM, no state library: the in-house pieces below were enough and keep the bundle small.
 
 | Concern | Choice | Notes |
 |---|---|---|
 | App | **Expo (latest SDK) + TypeScript + Expo Router** | Dev builds (not Expo Go) are needed for Apple/Google sign-in and notifications. |
 | Build / release | **EAS Build + EAS Submit** | Builds iOS without a Mac. |
 | Backend | **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions) | Email, Google and Apple auth built in. Storage for attachments and import files. How the modular monolith maps onto it: section 4. |
-| Local DB | **expo-sqlite** + small in-house migration runner (`src/shared/db`) | The local DB is the source of truth for the UI. This gives offline mode directly. An ORM (Drizzle) can be added in phase 1 if queries become repetitive. |
+| Local DB | **expo-sqlite** + in-house migration runner (`src/shared/db/migrations.ts`, 16 migrations, never edited once published) | The local DB is the source of truth for the UI, which gives offline mode directly. Plain parameterised SQL in each module's `data/` folder; **no ORM** (Drizzle was not needed). Every write goes through `entityWriter` (`write()`): one transaction, sync columns, outbox. |
 | Sync | Custom sync engine: outbox push with a version check + pull by server cursor | Behaviour is defined in section 4.4. |
-| State / queries | TanStack Query or Drizzle live queries + Zustand for UI state | |
-| Forms | react-hook-form + zod | The same zod schemas validate forms and import rows. |
-| Dates | date-fns + date-fns-tz, rrule for recurrence | |
-| Calendar UI | `@howljs/calendar-kit` (day/week) + `react-native-calendars` (month/agenda) | |
+| State / queries | In-house **`useLiveQuery`** (one screen) and **`useSharedLiveQuery`** (one read shared by several screens: `AgendaProvider`, `MoneyProvider` at the root) | A query re-runs when `notifyChange` announces one of its tables (settings are announced per key, e.g. `app_settings:spaces`). UI state is React state and context. **No Zustand, no TanStack Query.** |
+| Forms | zod + `useSave` (`src/shared/ui`) | Screens keep their own state; the domain's zod schema validates on save and `ValidationError` puts each message under its field. No react-hook-form. |
+| Dates | date-fns + `src/shared/dates.ts` | Recurrence (weekly courses, A/B weeks, monthly charges, habit frequencies) is computed by pure, tested domain functions; no rrule. Times are local wall-clock times. |
+| Calendar UI | In-house: day / week / month lists and the hours grid (`WeekHoursGrid`, drag with react-native-gesture-handler + Reanimated) | No calendar library. |
 | Rich notes | Light markup (`# titre`, `**gras**`, `_italique_`, `- liste`, `1. liste`, `[ ] case`) + toolbar, rendered natively | Works in Expo Go (no native editor needed), plain text is searchable and syncs as text. 10tap-editor can replace it later if a dev build is adopted. |
 | Notifications | expo-notifications (local), with action buttons for end of course | Rolling scheduling window of about 60 notifications, refilled on app open and in background. |
 | Files | expo-document-picker, expo-image-picker, expo-file-system | |
 | Import analysis | `ai-import` Edge Function → vision LLM, returns strict JSON with per-field confidence | Produces an `ImportedTimetableDraft` only. It never creates `CourseSeries` (arch. §8). |
-| Search | SQLite FTS5 on the local DB | Works offline, covers all entity types. |
+| Search | Parameterised `LIKE` queries on the local DB (`src/workflows/search.ts`) | Works offline; subjects, courses, notes, homework, tasks, exams, events, and money entries when the Perso space is on. FTS5 can come later if volumes grow. |
 | i18n | **French + English** (i18next + expo-localization). Follows the device language, with an override in settings | All texts in translation files from Phase 0. Dates formatted by locale |
 
 ---
@@ -81,39 +83,47 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 ### 4.1 Mobile layers (arch. §3)
 
 ```
-UI (Expo Router screens, components)       → shows state, calls use cases, no business rules
-Application (use cases)                    → CreateCourse, UpdateCourseOccurrence, GetTodayDashboard, ValidateImportedTimetable…
-Domain (pure TypeScript, no Expo imports)  → entities, invariants, recurrence projection, "late" rule
-Repositories (interfaces in domain)        → CourseRepository.getCoursesByDate()…
-Infrastructure                             → SQLite/Drizzle implementation, sync engine, Supabase client, notification scheduler
+Screens (src/app, Expo Router)        → thin: read with useLiveQuery, call module commands or workflows; no SQL, no rules
+Components / hooks (src/components, src/hooks)
+Workflows (src/workflows)             → actions that span several modules (delete a subject, delete the account, search)
+Projections (src/projections)         → read-only aggregators: Today, calendar, hours grid, stats, progress, money overview, widgets
+Modules (src/modules/<domain>)        → domain/ (pure TypeScript + zod, no Expo imports) and data/ (SQLite commands and queries)
+Shared (src/shared)                   → db (migrations, entityWriter, live queries), theme, i18n, ui kit, errors, logger, dates
 ```
 
-The domain and use cases are plain TypeScript, so they can be unit-tested without a phone.
+The domain functions and projections are plain TypeScript, unit-tested without a phone; data and workflows are tested on a real SQLite database (better-sqlite3), and every screen is rendered once by `src/test/screens.smoke.test.tsx`. There are no repository interfaces: each module's `index.ts` is its public contract.
 
-### 4.2 Folder structure (the domains of arch. §4, plus `finance` since 25 Sep 2026)
+### 4.2 Folder structure (as built, 26 Sep 2026)
 
 ```
-app/                          # Expo Router routes only (thin; they call modules/*/ui)
-  (auth)/  (tabs)/today  (tabs)/calendar  (tabs)/notes  (tabs)/tasks  (tabs)/profile  subjects/  timetables/
-src/modules/
-  identity/      auth, profile, preferences
-  academic/      subjects, timetables, course-series, course-exceptions, exams, holidays
-  productivity/  notes, tasks, assignments, attachments
-  platform/      notifications, files, ai-import, sync, search
-    └─ each module: domain/ application/ infrastructure/ ui/ index.ts (public contract)
-src/projections/ today-dashboard, calendar   # read-only aggregators, own no data (arch. §6.3, §10)
-src/shared/      ui kit, db client, date utils, errors → user-friendly messages
+src/app/                      # Expo Router routes only (thin)
+  (tabs)/index               Aujourd'hui (home, model P)
+  (tabs)/calendar            Calendrier / Planning (day, week, month, hours)
+  (tabs)/tasks  (tabs)/notes  (tabs)/money   Tâches, Notes, Argent (Argent only with the Perso space)
+  account/ auth/ courses/ events/ exams/ habits/ money/ notes/ off-periods/ planning/ profile/
+  revision/ subjects/ timetables/ work/  + single screens (search, stats, study, review, mood, grades, settings, onboarding…)
+src/modules/                  # domains; import only through their index.ts (ESLint)
+  identity/      auth (Supabase, SecureStore session), profile, settings, spaces, appearance, language
+  academic/      subjects, timetables, course series and exceptions, off periods, exams and grades
+  productivity/  tasks, homework, subtasks, events, work slots, notes and attachments, habits, study sessions, revision blocks, mood
+  finance/       entries, categories, fixed costs and tontines, goals, loans, money prefs
+  platform/      sync, notifications, widgets, backup, export (.ics, PDF), files, app lock
+src/projections/              # computed, never stored: today, calendar, hourGrid, glance, stats, progress, review, revisionPlan, money, widget
+src/workflows/                # cross-module actions: account, deleteSubject / deleteCourse / deleteHabit, moveItem, search, wipeAllData
+src/hooks/                    # useLabels, useSubjects, useHabits, useProfile, useWeekStart, useWorkActions, useAfterSignIn
+src/components/               # shared rows, cards, sheets, gates (AccountGate, MoneyGate), money/, today/
+src/shared/                   # db, theme (colors.ts = every colour), i18n (fr/en), ui kit, errors, logger, validation, dates, spaces
 supabase/
-  migrations/    one schema per domain: identity, academic, productivity, platform
-  functions/     sync, ai-import, delete-account
+  migrations/20260924000000_mysky.sql   one file, generated from the phone's schema (`npm run test:server` checks it)
+  functions/delete-account
 ```
 
-Module rule: code imports another module only through its `index.ts`. A lint rule (eslint `no-restricted-imports` / boundaries) enforces this and blocks circular imports.
+Module rule: code imports another module only through its `index.ts`. ESLint (`no-restricted-imports`, `import/no-cycle`) enforces it.
 
 ### 4.3 Backend = modular monolith on Supabase
 
 - **One Supabase project = one deployable backend.** The four domains are separate Postgres schemas with RLS (`user_id = auth.uid()` on every table).
-- **The mobile app never writes tables directly.** All writes go through a single `sync` Edge Function, which applies mutations in a transaction and checks versions. Domain rules that must hold on the server (end time after start time, exam requires a subject and a date) are enforced there and by DB constraints.
+- **The mobile app never writes tables directly.** All writes go through the SQL function `mysky_push` (`security definer`, table whitelist, versions, idempotent by mutation id); users only have `select` grants on the tables. Pull reads the tables directly under RLS. (Built as a SQL function rather than the `sync` Edge Function first planned.)
 - `ai-import` and `delete-account` are separate functions. These are the first candidates to extract later (arch. §12).
 
 ### 4.4 Sync engine (arch. §7, §11.1)
@@ -184,7 +194,7 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 - Bottom sheet for quick add (+).
 
 **Patterns we avoid**
-- Charts, stats and progress dashboards (out of MVP scope).
+- ~~Charts, stats and progress dashboards (out of MVP scope).~~ Superseded: weekly statistics (`/stats`), grade history, mood chart, money report and the GitHub-style progress heatmap were requested by the product owner and are **delivered** (§5e, §5h, §5i). They stay simple: bars drawn with views, no chart library.
 - Avatars of team members (no collaboration in the MVP).
 - Glassmorphism and heavy gradients (hard to read, slow on low-end Android).
 
@@ -328,6 +338,18 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - Then « Mes habitudes du jour » and « À faire » lists (tick, swipe).
 - **+ menu** (`QuickAddMenu`): Dépense, Entrée d'argent, Tâche, Devoir, Note de cours (pre-filled with the next class), Révision (study timer), Autre (→ `/add`).
 - Sections stay movable / hideable (`/today-layout`); the older sections (prochain cours, argent du jour, cours, révisions, événements, examens) are hidden by default. The layout has a version: older saved layouts switch once to model P.
+
+## 5j. État au 26/09 (status on 26 Sep 2026)
+
+- **Spaces** Études · Pro · Perso live everywhere (home tiles, tabs, forms, search, widgets, reminders); notes common to all spaces with user categories.
+- **Planning**: courses (weekly / single, per-session edits, cancellations, off periods), Pro/Perso fixed slots with A/B weeks and overnight slots, hours grid with drag and drop, revision plan, evening review.
+- **Sport**: optional duration per habit day, check-ins with weight and private progress photos, heatmap (week / month / year) and Progression widget.
+- **Argent**: entries, custom categories (rename, delete → « Autre »), fixed costs and tontines (end date editable, overdue kept), goals (archive once reached), loans with currency and partial repayments, report, 3 widgets; money entries in global search when Perso is on.
+- **Accounts and sync** built and tested on Postgres (PGlite); writes only through `mysky_push`, rejected mutations isolated, conflicts screen, backoff retry. Goes live once a Supabase project is configured (`supabase/README.md`).
+- **Widgets**: 14 on iPhone (+ Live Activity « Révision ») and 15 on Android, with a 3-day timeline; background task refills the notification window.
+- **Audits**: 23 Sep completeness audit, lots A → C (audit v2, 26 Sep), module audit of 26 Sep (`docs/AUDIT-MODULES-2026-09-26.md`) and its lots **D, E, F all done**.
+- **Local schema**: migration **16** (loan currency, unique course exceptions). Server SQL regenerated: re-run `supabase/migrations/20260924000000_mysky.sql` on the project after pulling.
+- **Still open**: timetable import by AI (phase 6), store assets and TestFlight / Play testing (7b), first visual pass of widgets on a device.
 
 ## 6. Open questions for the product owner
 

@@ -108,3 +108,9 @@ Classés par impact utilisateur. Aucun n'est une faille de sécurité ni une per
 **Lot E — synchro et serveur (2 jours, une migration serveur)** : #3 (mutation rejetée isolée), #9 (fichiers après restauration), curseur robuste, `currency` sur les prêts (#6), index unique sur les exceptions, `grant` réduit, `microphonePermission: false`, `file_size_limit`, écran des conflits, backoff au retour du réseau.
 
 **Lot F — fraîcheur hors app et finition (2 jours)** : widgets Android/iOS (#8), tâche de fond notifications, agenda par clés de réglage et rechargement au changement de jour, zones tactiles 44 pt, `maxFontSizeMultiplier`, libellés VoiceOver, tests de l'auth, fonctions finance non branchées, documentation `PLANNING` / `SECURITY` / `README` remise à jour.
+
+**État au 26/09**
+
+- **Lot D — fait** : `ae869d4` (Productivity), `106c85e` (Finance), `65a1156` (Academic), `92a8a28` (Identity, profil dupliqué #5).
+- **Lot E — fait** : `9104ebd` (mutation rejetée isolée, curseur robuste, fichiers restaurés), `78ae19b` (migration 16, serveur durci, micro retiré, `.ics` en octets), `82b91c4` (backoff, écran des conflits).
+- **Lot F — fait** : `6ed2600` (widgets 3 jours, tâche de fond des rappels), `d9acedd` (agenda par clés, 44 pt, VoiceOver), `5157b9c` (tests de l'auth, session écrite de façon sûre), `b1860c4` (finance branchée, mineurs) et le commit de documentation qui suit.

@@ -1,7 +1,18 @@
 # MySky
 
 Application mobile d'organisation pour étudiants (Android et iOS), construite avec **Expo** et **TypeScript**.
-Statut : **phases 1, 2, 3, 4, 5, 7a et lot 2 terminés** : comptes facultatifs et synchronisation (e-mail, Apple, Google ; mise en service : `supabase/README.md`), suivi d'habitudes (« Mes habitudes » : quotidien ou hebdomadaire, séries, bilan de la semaine, raisons facultatives), notes d'examen et moyennes, minuteur de révision, tâches récurrentes, partage d'une note en PDF, export du calendrier (.ics), statistiques de la semaine, verrouillage Face ID, mode focus, widgets d'écran d'accueil (11 widgets + Live Activity de révision, iPhone et Android, dev build requis), recherche globale, introduction au premier lancement, notes (mise en forme légère, checklists, pièces jointes, favoris, recherche), rappels (cours, devoirs, tâches, examens), notification « Cours terminé : quelque chose à ajouter ? », réglages (son, vibration, premier jour de la semaine), sauvegarde locale automatique (export / restauration), suppression de toutes les données, matières, emplois du temps, cours (uniques ou hebdomadaires), modification d'une seule séance / des suivantes / de toute la série, cours annulés, vacances et jours sans cours, calendrier jour / semaine / mois, écran Aujourd'hui, tâches, devoirs, examens et événements. Tout fonctionne hors connexion, sur un seul téléphone (comptes et synchronisation : phase 2).
+Statut au **26 septembre 2026** : **MVP complet, audits A → F faits**, en attente de la mise en service du projet Supabase, de l'import par IA (phase 6) et des tests TestFlight / Play.
+
+- **Trois espaces** : Études, Pro et Perso, activés au choix (au moins un) ; rien n'est effacé quand on en coupe un.
+- **Études** : matières, emplois du temps, cours hebdomadaires ou uniques (une séance, les suivantes ou toute la série), cours annulés, vacances, devoirs, examens, notes et moyennes, plan de révision.
+- **Organisation** : Aujourd'hui (tuiles, fil du jour), calendrier jour / semaine / mois / heures avec glisser-déposer, planning Pro/Perso (semaines A / B, créneaux de nuit), tâches avec étapes, report et gestes, bilan du soir, minuteur de révision, mode focus, statistiques.
+- **Notes** : mise en forme légère, checklists, catégories, pièces jointes, favoris, PDF.
+- **Habitudes et sport** : quotidien ou hebdomadaire, durée, poids et photos de progression (privées), grille de progression, humeur.
+- **Argent** : dépenses et entrées, catégories perso, charges fixes et tontines, épargne, prêts, rapport, recherche.
+- **Compte facultatif** (e-mail, Apple, Google) et synchronisation ; sans compte, tout marche hors connexion sur un seul téléphone.
+- **Widgets** : 14 sur iPhone (+ Live Activity « Révision ») et 15 sur Android (dev build requis) ; rappels locaux, sauvegarde quotidienne, export `.ics`, verrouillage Face ID, français et anglais.
+
+**Après mise à jour du dépôt : rejouer `supabase/migrations/20260924000000_mysky.sql` sur le projet Supabase.**
 
 - Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
 - Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
@@ -23,7 +34,7 @@ Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et sca
 ## Avant chaque commit
 
 ```bash
-npm run check      # types + lint + formatage + tests
+npm run check      # types + lint + formatage + tests + schéma serveur
 ```
 
 | Commande | Rôle |
@@ -32,6 +43,7 @@ npm run check      # types + lint + formatage + tests
 | `npm run lint` | Règles de code (0 avertissement autorisé) |
 | `npm run format` | Formate le code automatiquement |
 | `npm test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |
+| `npm run test:server` | Vérifie le schéma serveur sur un vrai Postgres (PGlite) : RLS, `mysky_push`, isolation entre comptes |
 | `npm run audit:prod` | Cherche les failles connues dans les dépendances |
 | `npm run doctor` | Diagnostic Expo |
 
@@ -43,25 +55,27 @@ Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`)
 
 ```
 src/
-  app/                 Écrans (Expo Router) : un fichier = un écran
-    (tabs)/            Les 5 onglets : Aujourd'hui, Calendrier, Tâches, Notes, Argent
-  modules/             Les domaines de l'architecture
-    identity/          compte, profil, préférences
-    academic/          matières, emplois du temps, cours, examens, vacances
-    productivity/      notes, tâches (étapes, durée), devoirs, révisions, habitudes, humeur
-    finance/           argent : dépenses, entrées, charges fixes, tontines, épargne, prêts
-    platform/          notifications, fichiers, import, synchronisation, recherche, widgets
-  projections/         Aujourd'hui, Calendrier (vue heures), plan de révision, bilan du soir :
+  app/                 Écrans (Expo Router) : un fichier = un écran, sans règle métier ni SQL
+    (tabs)/            Les 5 onglets : index (Aujourd'hui), calendar, tasks, notes, money (Argent, espace Perso)
+  modules/             Les domaines, importés seulement par leur index.ts
+    identity/          compte (Supabase), profil, réglages, espaces, apparence, langue
+    academic/          matières, emplois du temps, cours et exceptions, vacances, examens et notes
+    productivity/      tâches, devoirs, étapes, événements, planning, notes, habitudes, révisions, humeur
+    finance/           argent : opérations, catégories, charges fixes, tontines, épargne, prêts
+    platform/          synchronisation, notifications, widgets, sauvegarde, export, fichiers, verrouillage
+  projections/         Aujourd'hui, calendrier, vue heures, stats, progression, argent, widgets :
                        calculés à partir des données, jamais stockés
-  workflows/           Actions qui touchent plusieurs modules (ex. supprimer une matière)
-  components/          Lignes réutilisables (cours, devoir, examen, événement)
+  workflows/           Actions qui touchent plusieurs modules (supprimer une matière, le compte, recherche)
+  hooks/               Hooks partagés par les écrans (libellés, matières, habitudes, profil)
+  components/          Lignes, cartes et feuilles réutilisables
   shared/
     theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières + couleurs principales)
     theme/tokens.ts    espacements, arrondis, typographie
     i18n/locales/      textes en français (fr.json) et en anglais (en.json)
-    db/                base de données locale (SQLite) et migrations
+    db/                base locale (SQLite), 16 migrations, écritures + file de synchronisation, requêtes vivantes
     errors/            erreurs et messages compréhensibles
-    ui/                composants de base (texte, écran, bouton, état vide)
+    ui/                composants de base (texte, écran, bouton, champs, état vide)
+supabase/              schéma serveur (généré, vérifié par `npm run test:server`) et fonction delete-account
 ```
 
 ## Changer une couleur
