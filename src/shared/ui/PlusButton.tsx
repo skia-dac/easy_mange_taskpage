@@ -1,8 +1,10 @@
-import Feather from '@expo/vector-icons/Feather';
 import { useContext, useEffect, useRef } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Svg, { G, Path } from 'react-native-svg';
 import Animated, {
   Easing,
   interpolateColor,
+  useAnimatedProps,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -10,12 +12,12 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
 import { useTheme } from '../theme';
-import { PressableScale } from './PressableScale';
 
 const TURN = { damping: 14, stiffness: 220 };
 const POP = { damping: 11, stiffness: 280 };
@@ -36,9 +38,35 @@ export function usePlusButtonInset(bottomInset?: number) {
 }
 
 const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
+const PRESS = { damping: 16, stiffness: 380 };
+
+const Mark = Animated.createAnimatedComponent(G);
+
+/** Croix dessinée en vecteur : elle tourne dans le dessin, le zoom ne la pixellise pas. */
+function PlusMark({ color, turn }: { color: string; turn: SharedValue<number> }) {
+  const spin = useAnimatedProps(() => ({
+    rotation: turn.value * 45,
+  }));
+  return (
+    <Svg width={28} height={28} viewBox="0 0 28 28">
+      <Mark animatedProps={spin} origin="14, 14">
+        <Path
+          d="M14 5.5 V22.5 M5.5 14 H22.5"
+          stroke={color}
+          strokeWidth={2.6}
+          strokeLinecap="round"
+        />
+      </Mark>
+    </Svg>
+  );
+}
 
 function slideY(shift: { value: number }, to: number, duration: number) {
   shift.value = withTiming(to, { duration, easing: SLIDE });
+}
+
+function pressTo(scale: { value: number }, to: number) {
+  scale.value = withSpring(to, PRESS);
 }
 
 /**
@@ -67,6 +95,7 @@ export function PlusButton({
   const arrive = useSharedValue(reduced ? 1 : 0);
   const breathe = useSharedValue(1);
   const pop = useSharedValue(1);
+  const press = useSharedValue(1);
   const turn = useSharedValue(open ? 1 : 0);
   const shift = useSharedValue(0);
   const seen = useRef(false);
@@ -102,13 +131,10 @@ export function PlusButton({
   }, [open, pop, reduced, turn]);
 
   const scaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: arrive.value * breathe.value * pop.value }],
+    transform: [{ scale: arrive.value * breathe.value * pop.value * press.value }],
   }));
   const colorStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(turn.value, [0, 1], [colors.primary, colors.text]),
-  }));
-  const spinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${turn.value * 45}deg` }],
   }));
   const slideStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: shift.value }],
@@ -129,41 +155,47 @@ export function PlusButton({
         slideStyle,
       ]}
     >
-      <Animated.View style={scaleStyle}>
-        <PressableScale
-          accessibilityRole="button"
-          accessibilityLabel={accessibilityLabel}
-          accessibilityState={{ expanded: open }}
-          onPress={onPress}
-          style={{
-            width: SIZE,
-            height: SIZE,
-            borderRadius: radius.lg,
-            overflow: 'hidden',
-            elevation: 4,
-            shadowColor: colors.text,
-            shadowOpacity: 0.2,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 6 },
-          }}
-        >
-          <Animated.View
-            style={[
-              {
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: radius.lg,
-              },
-              colorStyle,
-            ]}
-          >
-            <Animated.View style={spinStyle}>
-              <Feather name="plus" size={28} color={open ? colors.background : colors.onPrimary} />
-            </Animated.View>
-          </Animated.View>
-        </PressableScale>
-      </Animated.View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ expanded: open }}
+        onPress={onPress}
+        onPressIn={() => {
+          if (!reduced) pressTo(press, 0.96);
+        }}
+        onPressOut={() => pressTo(press, 1)}
+        style={{
+          width: SIZE,
+          height: SIZE,
+          elevation: 4,
+          shadowColor: colors.text,
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 6 },
+        }}
+      >
+        <Animated.View
+          style={[
+            {
+              ...StyleSheet.absoluteFill,
+              borderRadius: radius.lg,
+            },
+            colorStyle,
+            scaleStyle,
+          ]}
+        />
+        <View pointerEvents="none" style={styles.mark}>
+          <PlusMark color={open ? colors.background : colors.onPrimary} turn={turn} />
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  mark: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
