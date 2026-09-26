@@ -19,7 +19,7 @@ import { startOfWeekOn, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Checkbox, showError, showUndoToast } from '@/shared/ui';
+import { AppText, Checkbox, CheckPop, Settle, showError, showUndoToast } from '@/shared/ui';
 
 import { HabitIcon } from './HabitIcon';
 
@@ -69,100 +69,104 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
     .join(' · ');
 
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-        paddingVertical: spacing.sm,
-      }}
-    >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={habit.name}
-        onPress={() => router.push({ pathname: '/habits/[id]', params: { id: habit.id } })}
-        onLongPress={() => onMore(habit)}
-        style={({ pressed }) => ({
-          flex: 1,
+    <Settle done={done}>
+      <View
+        style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.md,
-          opacity: pressed ? 0.7 : 1,
-        })}
-      >
-        <HabitIcon icon={habit.icon} colorId={habit.colorId} />
-        <View style={{ flex: 1, gap: 2 }}>
-          <AppText
-            variant="bodyStrong"
-            numberOfLines={1}
-            style={done ? { textDecorationLine: 'line-through', color: colors.muted } : undefined}
-          >
-            {habit.name}
-          </AppText>
-          {subtitle ? (
-            <AppText
-              variant="caption"
-              color={state === 'missed' ? 'danger' : 'muted'}
-              numberOfLines={1}
-            >
-              {subtitle}
-            </AppText>
-          ) : null}
-        </View>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('habits.more', { name: habit.name })}
-        onPress={() => onMore(habit)}
-        style={{
-          width: minTouchSize - 8,
-          height: minTouchSize,
-          alignItems: 'center',
-          justifyContent: 'center',
+          paddingVertical: spacing.sm,
         }}
       >
-        <Feather name="more-horizontal" size={20} color={colors.muted} />
-      </Pressable>
-      {habit.target > 1 ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('habits.addOne', { name: habit.name })}
-          disabled={done}
-          onPress={() =>
-            addHabitCount(db, habit.id, day, 1).then(
-              () =>
-                showUndoToast(t('habits.addOneToast', { name: habit.name }), () =>
-                  addHabitCount(db, habit.id, day, -1),
-                ),
-              fail,
-            )
-          }
+          accessibilityLabel={habit.name}
+          onPress={() => router.push({ pathname: '/habits/[id]', params: { id: habit.id } })}
+          onLongPress={() => onMore(habit)}
           style={({ pressed }) => ({
-            minWidth: minTouchSize,
-            height: minTouchSize,
-            borderRadius: radius.md,
-            backgroundColor: done ? colors.successSoft : colors.primarySoft,
+            flex: 1,
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: spacing.sm,
+            gap: spacing.md,
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          {done ? (
-            <Feather name="check" size={20} color={colors.success} />
-          ) : (
-            <AppText variant="bodyStrong" color="primary">
-              +1
+          <HabitIcon icon={habit.icon} colorId={habit.colorId} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText
+              variant="bodyStrong"
+              numberOfLines={1}
+              style={done ? { textDecorationLine: 'line-through', color: colors.muted } : undefined}
+            >
+              {habit.name}
             </AppText>
-          )}
+            {subtitle ? (
+              <AppText
+                variant="caption"
+                color={state === 'missed' ? 'danger' : 'muted'}
+                numberOfLines={1}
+              >
+                {subtitle}
+              </AppText>
+            ) : null}
+          </View>
         </Pressable>
-      ) : (
-        <Checkbox
-          checked={done}
-          accessibilityLabel={habit.name}
-          onToggle={() => setHabitDone(db, habit.id, day, !done).catch(fail)}
-        />
-      )}
-    </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('habits.more', { name: habit.name })}
+          onPress={() => onMore(habit)}
+          style={{
+            width: minTouchSize - 8,
+            height: minTouchSize,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Feather name="more-horizontal" size={20} color={colors.muted} />
+        </Pressable>
+        {habit.target > 1 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('habits.addOne', { name: habit.name })}
+            disabled={done}
+            onPress={() =>
+              addHabitCount(db, habit.id, day, 1).then(
+                () =>
+                  showUndoToast(t('habits.addOneToast', { name: habit.name }), () =>
+                    addHabitCount(db, habit.id, day, -1),
+                  ),
+                fail,
+              )
+            }
+            style={({ pressed }) => ({
+              minWidth: minTouchSize,
+              height: minTouchSize,
+              borderRadius: radius.md,
+              backgroundColor: done ? colors.successSoft : colors.primarySoft,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: spacing.sm,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <CheckPop checked={done}>
+              {done ? (
+                <Feather name="check" size={20} color={colors.success} />
+              ) : (
+                <AppText variant="bodyStrong" color="primary">
+                  +1
+                </AppText>
+              )}
+            </CheckPop>
+          </Pressable>
+        ) : (
+          <Checkbox
+            checked={done}
+            accessibilityLabel={habit.name}
+            onToggle={() => setHabitDone(db, habit.id, day, !done).catch(fail)}
+          />
+        )}
+      </View>
+    </Settle>
   );
 }

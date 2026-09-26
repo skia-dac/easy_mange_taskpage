@@ -16,7 +16,16 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
-import { AppText, Checkbox, Chip, IconBadge, ListRow, SubjectBar, SwipeRow } from '@/shared/ui';
+import {
+  AppText,
+  Checkbox,
+  Chip,
+  IconBadge,
+  ListRow,
+  Settle,
+  SubjectBar,
+  SwipeRow,
+} from '@/shared/ui';
 
 type SubjectMap = ReadonlyMap<string, Subject>;
 
@@ -99,7 +108,7 @@ export function WorkRow({
     .join(' · ');
   const toggle = () => void actions.setDone(item, !done);
 
-  const row = (
+  const line = (
     <ListRow
       title={item.title}
       struck={done}
@@ -127,19 +136,22 @@ export function WorkRow({
       }
     />
   );
-  if (!onPostpone || done) return row;
+  if (!onPostpone) return <Settle done={done}>{line}</Settle>;
   return (
-    <SwipeRow
-      right={{ label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle }}
-      left={{
-        label: t('postpone.action'),
-        icon: 'clock',
-        color: 'warning',
-        onAction: () => onPostpone(item),
-      }}
-    >
-      {row}
-    </SwipeRow>
+    <Settle done={done}>
+      <SwipeRow
+        enabled={!done}
+        right={{ label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle }}
+        left={{
+          label: t('postpone.action'),
+          icon: 'clock',
+          color: 'warning',
+          onAction: () => onPostpone(item),
+        }}
+      >
+        {line}
+      </SwipeRow>
+    </Settle>
   );
 }
 

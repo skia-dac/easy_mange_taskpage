@@ -2,7 +2,13 @@ import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Tabs } from 'expo-router';
 import { useEffect, useState } from 'react';
 import type { ComponentProps } from 'react';
-import type { ColorValue } from 'react-native';
+import { Easing, type ColorValue } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { isOnboardingDone } from '@/modules/identity';
@@ -14,8 +20,26 @@ import { LoadingScreen } from '@/shared/ui';
 type IconName = ComponentProps<typeof Feather>['name'];
 
 function tabIcon(name: IconName) {
-  function TabIcon({ color, size }: { color: ColorValue; size: number }) {
-    return <Feather name={name} size={size} color={color} />;
+  function TabIcon({
+    color,
+    size,
+    focused,
+  }: {
+    color: ColorValue;
+    size: number;
+    focused: boolean;
+  }) {
+    const reduced = useReducedMotion();
+    const scale = useSharedValue(focused ? 1.12 : 1);
+    useEffect(() => {
+      scale.value = withSpring(reduced || !focused ? 1 : 1.12, { damping: 12, stiffness: 220 });
+    }, [focused, reduced, scale]);
+    const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+    return (
+      <Animated.View style={style}>
+        <Feather name={name} size={size} color={color} />
+      </Animated.View>
+    );
   }
   return TabIcon;
 }
@@ -27,6 +51,7 @@ function tabIcon(name: IconName) {
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const reduced = useReducedMotion();
   const db = useDb();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const spaces = useSpaces();
@@ -49,6 +74,10 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
         tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
+        animation: reduced ? 'none' : 'fade',
+        transitionSpec: reduced
+          ? undefined
+          : { animation: 'timing', config: { duration: 180, easing: Easing.out(Easing.cubic) } },
       }}
     >
       <Tabs.Screen name="index" options={{ title: t('tabs.today'), tabBarIcon: tabIcon('sun') }} />

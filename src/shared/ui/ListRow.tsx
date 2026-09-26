@@ -1,9 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { PressableScale } from './PressableScale';
 
 type Props = {
   title: string;
@@ -50,13 +51,12 @@ export function ListRow({ title, subtitle, leading, trailing, onPress, struck }:
   );
   if (!onPress) return content;
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={[title, subtitle].filter(Boolean).join(', ')}
       onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
       {content}
-    </Pressable>
+    </PressableScale>
   );
 }
