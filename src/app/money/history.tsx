@@ -42,6 +42,7 @@ export default function MoneyHistoryScreen() {
     return [...map.entries()];
   }, [data.data, filter]);
 
+  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const o = data.data.overview;
 

@@ -142,3 +142,17 @@ export function dueItems(
     (a, b) => a.date.localeCompare(b.date) || a.recurring.name.localeCompare(b.recurring.name),
   );
 }
+
+/**
+ * « Charges mensuelles » : total des charges fixes actives dans une devise (une charge
+ * hebdomadaire compte 52/12 mois). Les autres devises ne sont pas additionnées.
+ */
+export function monthlyChargesTotal(recurring: readonly Recurring[], currency: string): number {
+  return recurring
+    .filter((r) => r.kind === 'charge' && r.active && r.currency === currency)
+    .reduce(
+      (s, r) =>
+        s + (r.frequency === 'weekly' ? Math.round((r.amountMinor * 52) / 12) : r.amountMinor),
+      0,
+    );
+}

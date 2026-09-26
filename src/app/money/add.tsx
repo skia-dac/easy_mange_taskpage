@@ -32,6 +32,7 @@ import {
 import { fromIsoDate, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { isValidationError } from '@/shared/validation';
 import { formatLongDate } from '@/shared/format';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import {
@@ -39,6 +40,8 @@ import {
   Button,
   confirmDestructive,
   DateTimeField,
+  EmptyState,
+  LoadingScreen,
   Segmented,
   showError,
   TextButton,
@@ -91,6 +94,11 @@ export default function MoneyAddScreen() {
   const [note, setNote] = useState('');
   const [currency, setCurrency] = useState('XAF');
   const [existing, setExisting] = useState<Transaction | null>(null);
+  // Modification : 'loading' tant que l'opération n'est pas chargée (pas de bouton Enregistrer
+  // qui créerait un doublon), 'missing' si elle n'existe plus.
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>(
+    params.id ? 'loading' : 'ready',
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const custom = useLiveQuery(listCategories, ['money_categories'], []);
@@ -114,8 +122,12 @@ export default function MoneyAddScreen() {
         return;
       }
       const tx = await getTransaction(db, params.id);
-      if (!tx) return;
+      if (!tx) {
+        setLoadState('missing');
+        return;
+      }
       setExisting(tx);
+      setLoadState('ready');
       setKind(tx.kind);
       setCategoryId(tx.categoryId);
       setDigits(amountInput(tx.amountMinor, tx.currency));
@@ -171,7 +183,9 @@ export default function MoneyAddScreen() {
       close();
     } catch (e) {
       setSaving(false);
-      showError(userMessageKey(e));
+      // Remboursement au-delà du reste dû : message sous le pavé, pas une alerte.
+      if (isValidationError(e) && e.fields.amountMinor) setError(t(e.fields.amountMinor));
+      else showError(userMessageKey(e));
     }
   };
 
@@ -208,6 +222,10 @@ export default function MoneyAddScreen() {
     '0',
     'back',
   ];
+
+  if (loadState === 'missing')
+    return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
+  if (loadState === 'loading') return <LoadingScreen />;
 
   return (
     <KeyboardAvoiding>

@@ -14,14 +14,17 @@ import {
   listLoans,
   listRecurring,
   listTransactions,
+  monthlyChargesTotal,
   payDue,
   periodContaining,
   recordDuePayouts,
+  setLoanClosed,
   setMoneyPrefs,
   unpayDue,
   updateRecurring,
+  updateTransaction,
 } from '@/modules/finance';
-import { moneyOverview } from '@/projections';
+import { moneyOverview, openLoans } from '@/projections';
 import type { Db } from '@/shared/db';
 import { ValidationError } from '@/shared/validation';
 import { createTestDb } from '@/test/memoryDb';
@@ -78,7 +81,8 @@ describe('module Argent', () => {
       currency: XAF,
       frequency: 'monthly',
       dayOfMonth: 1,
-      startDate: '2026-09-01',
+      // Commence dans la période affichée : sans échéance antérieure restée impayée (voir #2).
+      startDate: '2026-09-20',
       reminders: [1440],
     });
     const o = await overview('2026-09-25');
@@ -197,5 +201,154 @@ describe('module Argent', () => {
       count: 3,
       averageMinor: 2000,
     });
+  });
+
+  it('une charge impayée d’une période précédente reste « en retard » (#2)', async () => {
+    await setMoneyPrefs(db, {
+      currency: XAF,
+      period: { kind: 'month', startDay: 1 },
+      hideWidgetAmounts: false,
+    });
+    await tx('income', 100000, '2026-09-02', 'family_in');
+    const rent = await createRecurring(db, {
+      kind: 'charge',
+      name: 'Loyer',
+      categoryId: 'home',
+      amountMinor: 35000,
+      currency: XAF,
+      frequency: 'monthly',
+      dayOfMonth: 5,
+      startDate: '2026-06-01',
+      reminders: [],
+    });
+    // Juillet payé ; juin, août et septembre impayés → en octobre : 3 en retard + celle d'octobre.
+    await payDue(db, rent, '2026-07-05');
+    const o = await overview('2026-10-10');
+    expect(o.range).toEqual({ from: '2026-10-01', to: '2026-10-31' });
+    expect(o.due.map((d) => [d.date, d.paid])).toEqual([
+      ['2026-08-05', false],
+      ['2026-09-05', false],
+      ['2026-10-05', false],
+    ]);
+    // Juin est au-delà des 3 périodes précédentes : oubliée.
+    expect(o.unpaidTotal).toBe(3 * 35000);
+    expect(o.afterCharges).toBe(o.balance - 3 * 35000);
+    // Payer septembre depuis octobre : elle disparaît des retards.
+    await payDue(db, rent, '2026-09-05', '2026-10-10');
+    const paid = await overview('2026-10-10');
+    expect(paid.due.filter((d) => !d.paid).map((d) => d.date)).toEqual([
+      '2026-08-05',
+      '2026-10-05',
+    ]);
+    // Une période passée (affichée pour consulter) ne remonte pas les retards des mois d'avant.
+    const prefs = await getMoneyPrefs(db);
+    const range = periodContaining('2026-09-10', prefs.period);
+    const past = moneyOverview({
+      today: '2026-10-10',
+      currency: XAF,
+      period: prefs.period,
+      range,
+      transactions: await listTransactions(db, { from: '2026-06-01', to: range.to }),
+      balanceBeforeRange: 0,
+      recurring: await listRecurring(db),
+      goals: [],
+      loans: [],
+      linked: [],
+      categories: [],
+    });
+    expect(past.due.map((d) => d.date)).toEqual(['2026-09-05']);
+  });
+
+  it('dé-payer puis « Annuler » recrée le paiement tel quel (#12)', async () => {
+    const rent = await createRecurring(db, {
+      kind: 'charge',
+      name: 'Loyer',
+      categoryId: 'home',
+      amountMinor: 35000,
+      currency: XAF,
+      frequency: 'monthly',
+      dayOfMonth: 1,
+      startDate: '2026-09-01',
+      reminders: [],
+    });
+    const id = await payDue(db, rent, '2026-10-01', '2026-09-28', 34000);
+    const before = (await listTransactions(db)).find((t) => t.id === id)!;
+    await unpayDue(db, rent, '2026-10-01');
+    expect((await overview('2026-10-02')).due.find((d) => d.date === '2026-10-01')?.paid).toBe(
+      false,
+    );
+    // Ce que fait le bouton « Annuler » de l'onglet Argent : même date, même montant.
+    await payDue(db, rent, '2026-10-01', before.date, before.amountMinor);
+    const again = (await listTransactions(db)).find((t) => t.recurringId === rent)!;
+    expect([again.date, again.amountMinor]).toEqual(['2026-09-28', 34000]);
+    expect((await overview('2026-10-02')).due.find((d) => d.date === '2026-10-01')?.paid).toBe(
+      true,
+    );
+  });
+
+  it('un remboursement ne peut pas dépasser le reste dû (#12)', async () => {
+    const loan = await createLoan(
+      db,
+      { direction: 'lent', person: 'Kevin' },
+      { amountMinor: 10000, currency: XAF, date: '2026-09-04' },
+    );
+    const back = (amountMinor: number) => ({
+      kind: 'lend_back' as const,
+      amountMinor,
+      currency: XAF,
+      date: '2026-09-10',
+      loanId: loan,
+    });
+    await expect(createTransaction(db, back(12000))).rejects.toMatchObject({
+      fields: { amountMinor: 'money.repayTooMuch' },
+    });
+    const id = await createTransaction(db, back(6000));
+    // Modifier ce remboursement : il n'est pas compté contre lui-même (10 000 max), 11 000 refusé.
+    await updateTransaction(db, id, back(10000));
+    await expect(updateTransaction(db, id, back(11000))).rejects.toBeInstanceOf(ValidationError);
+    expect((await overview('2026-09-15')).loans[0]?.outstandingMinor).toBe(0);
+  });
+
+  it('tuile « Prêts » et charges mensuelles : mêmes règles que leurs écrans (#12)', async () => {
+    const kevin = await createLoan(
+      db,
+      { direction: 'lent', person: 'Kevin' },
+      { amountMinor: 10000, currency: XAF, date: '2026-09-04' },
+    );
+    const closedLoan = await createLoan(
+      db,
+      { direction: 'lent', person: 'Awa' },
+      { amountMinor: 5000, currency: XAF, date: '2026-09-04' },
+    );
+    await createLoan(
+      db,
+      { direction: 'borrowed', person: 'Papa' },
+      { amountMinor: 7000, currency: XAF, date: '2026-09-04' },
+    );
+    await setLoanClosed(db, closedLoan, true);
+    const o = await overview('2026-09-15');
+    // Clôturé ou soldé : hors de la tuile, comme sur l'écran Prêts.
+    expect(openLoans(o.loans, 'lent').map((l) => l.loan.id)).toEqual([kevin]);
+    expect(openLoans(o.loans, 'borrowed').map((l) => l.loan.person)).toEqual(['Papa']);
+
+    const charge = (name: string, currency: string, amountMinor: number, weekly = false) =>
+      createRecurring(db, {
+        kind: 'charge',
+        name,
+        categoryId: 'home',
+        amountMinor,
+        currency,
+        ...(weekly
+          ? { frequency: 'weekly' as const, weekday: 1 }
+          : { frequency: 'monthly' as const, dayOfMonth: 1 }),
+        startDate: '2026-09-01',
+        reminders: [],
+      });
+    await charge('Loyer', XAF, 35000);
+    await charge('Internet', XAF, 1000, true);
+    await charge('Abonnement', 'EUR', 999);
+    const all = await listRecurring(db);
+    expect(monthlyChargesTotal(all, XAF)).toBe(35000 + Math.round((1000 * 52) / 12));
+    expect(monthlyChargesTotal(all, 'EUR')).toBe(999);
   });
 });

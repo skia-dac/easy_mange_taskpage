@@ -11,7 +11,7 @@ import { formatMoney } from '@/modules/finance';
 import { useMoneyData, type MoneyInsight } from '@/projections';
 import { formatShortDate, formatPercent } from '@/shared/format';
 import { subjectColors, useTheme } from '@/shared/theme';
-import { AppText, Card, LoadingScreen, SectionHeader, TextButton } from '@/shared/ui';
+import { AppText, Card, EmptyState, LoadingScreen, SectionHeader, TextButton } from '@/shared/ui';
 
 /** Bilan d'une période : entrées, dépenses, épargne, prêts ; où part l'argent ; quand ; conseils. */
 export default function MoneyReportScreen() {
@@ -22,6 +22,7 @@ export default function MoneyReportScreen() {
   const data = useMoneyData(offset);
   const money = useMoneyLabels(data.data?.input.categories ?? []);
 
+  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const o = data.data.overview;
   const cur = o.currency;

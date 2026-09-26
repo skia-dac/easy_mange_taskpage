@@ -10,7 +10,7 @@ import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { HeaderButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, payDue, unpayDue, type DueItem } from '@/modules/finance';
-import { useMoneyData } from '@/projections';
+import { openLoans, useMoneyData } from '@/projections';
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -29,6 +29,7 @@ import {
   Screen,
   SectionHeader,
   showError,
+  showUndoToast,
 } from '@/shared/ui';
 
 /** Onglet Argent : ce qu'il te reste, ce qui est à payer, tes dernières opérations. */
@@ -41,6 +42,7 @@ export default function MoneyScreen() {
   const data = useMoneyData(offset);
   const money = useMoneyLabels(data.data?.input.categories ?? []);
 
+  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const { overview: o, input } = data.data;
   const cur = o.currency;
@@ -54,10 +56,21 @@ export default function MoneyScreen() {
       : 0;
 
   const togglePaid = (d: DueItem) => {
-    const job = d.paid
-      ? unpayDue(db, d.recurring.id, d.date)
-      : payDue(db, d.recurring.id, d.date, current ? today : d.date);
-    job.catch((e: unknown) => showError(userMessageKey(e)));
+    if (!d.paid) {
+      payDue(db, d.recurring.id, d.date, current ? today : d.date).catch((e: unknown) =>
+        showError(userMessageKey(e)),
+      );
+      return;
+    }
+    // Décocher supprime la dépense : « Annuler » la recrée telle quelle (même date, même montant).
+    const paidTx = input.transactions.find((x) => x.id === d.transactionId);
+    unpayDue(db, d.recurring.id, d.date).then(
+      () =>
+        showUndoToast(t('money.unpaidToast', { name: d.recurring.name }), () =>
+          payDue(db, d.recurring.id, d.date, paidTx?.date ?? d.date, paidTx?.amountMinor),
+        ),
+      (e: unknown) => showError(userMessageKey(e)),
+    );
   };
 
   const nav = (icon: 'chevron-left' | 'chevron-right', dir: -1 | 1) => (
@@ -219,11 +232,7 @@ export default function MoneyScreen() {
           )}
           {tile(
             t('money.loans'),
-            fmt(
-              o.loans
-                .filter((l) => l.loan.direction === 'lent')
-                .reduce((s, l) => s + l.outstandingMinor, 0),
-            ),
+            fmt(openLoans(o.loans, 'lent').reduce((s, l) => s + l.outstandingMinor, 0)),
             'warning',
             () => router.push('/money/loans'),
           )}

@@ -14,7 +14,7 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useSharedLiveQuery, type Db } from '@/shared/db';
 
-import { moneyOverview, type MoneyInput, type MoneyOverview } from './money';
+import { LATE_PERIODS, moneyOverview, type MoneyInput, type MoneyOverview } from './money';
 
 const TABLES = [
   'money_transactions',
@@ -37,9 +37,11 @@ export async function loadMoney(
   let range = periodContaining(today, prefs.period);
   for (let i = 0; i < Math.abs(offset); i++)
     range = shiftPeriod(range, prefs.period, offset < 0 ? -1 : 1);
-  const previous = shiftPeriod(range, prefs.period, -1);
+  // Les périodes précédentes servent aux tendances et aux échéances restées impayées (en retard).
+  let earliest = range;
+  for (let i = 0; i < LATE_PERIODS; i++) earliest = shiftPeriod(earliest, prefs.period, -1);
   const [transactions, balance, recurring, goals, loans, linked, categories] = await Promise.all([
-    listTransactions(db, { from: previous.from, to: range.to }),
+    listTransactions(db, { from: earliest.from, to: range.to }),
     balanceBefore(db, range.from, prefs.currency),
     listRecurring(db),
     listGoals(db),

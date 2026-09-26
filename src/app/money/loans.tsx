@@ -4,7 +4,7 @@ import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, setLoanClosed } from '@/modules/finance';
-import { useMoneyData } from '@/projections';
+import { openLoans, useMoneyData } from '@/projections';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
@@ -28,13 +28,14 @@ export default function LoansScreen() {
   const db = useDb();
   const { spacing } = useTheme();
   const data = useMoneyData(0);
+  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const loans = data.data.overview.loans;
   const today = data.data.input.today;
 
   const section = (direction: 'lent' | 'borrowed') => {
     const list = loans.filter((l) => l.loan.direction === direction);
-    const open = list.filter((l) => !l.loan.closed && l.outstandingMinor > 0);
+    const open = openLoans(list, direction);
     const total = open.reduce((s, l) => s + l.outstandingMinor, 0);
     return (
       <View style={{ gap: spacing.sm }}>

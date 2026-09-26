@@ -1251,6 +1251,8 @@
     "deleteTitle": "Delete the entry?",
     "deleteMessage": "It will no longer count in your money.",
     "invalidAmount": "Enter an amount.",
+    "repayTooMuch": "The repayment exceeds what is still owed.",
+    "unpaidToast": "{{name}}: payment undone",
     "tooManyReminders": "3 reminders at most.",
     "kind": {
       "expense": "Expense",

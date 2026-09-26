@@ -15,6 +15,7 @@ export default function GoalsScreen() {
   const labels = useLabels();
   const { colors, spacing, radius } = useTheme();
   const data = useMoneyData(0);
+  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
   if (!data.data) return <LoadingScreen />;
   const goals = data.data.overview.goals;
 

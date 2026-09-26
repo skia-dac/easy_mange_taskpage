@@ -1,7 +1,7 @@
 import type { IsoDate } from '@/shared/dates';
 import { write, type Db, type EntityWriter, type Values } from '@/shared/db';
 import { AppError } from '@/shared/errors';
-import { parseInput } from '@/shared/validation';
+import { parseInput, ValidationError } from '@/shared/validation';
 
 import {
   categoryInputSchema,
@@ -34,14 +34,38 @@ function transactionValues(input: TransactionInput): Values {
   };
 }
 
+/**
+ * Un remboursement (`lend_back` / `borrow_back`) ne peut pas dépasser le reste dû du prêt
+ * (`exceptId` = l'opération en cours de modification, non comptée).
+ */
+async function assertRepaymentFits(w: EntityWriter, values: Values, exceptId: string | null) {
+  const kind = values.kind;
+  if ((kind !== 'lend_back' && kind !== 'borrow_back') || !values.loan_id) return;
+  const [out, back] = kind === 'lend_back' ? ['lend', 'lend_back'] : ['borrow', 'borrow_back'];
+  const row = await w.db.getFirstAsync<{ outstanding: number | null }>(
+    `SELECT SUM(CASE WHEN kind = ? THEN amount_minor WHEN kind = ? THEN -amount_minor ELSE 0 END)
+       AS outstanding
+     FROM money_transactions WHERE ${ALIVE} AND loan_id = ? AND id != ?`,
+    [out, back, values.loan_id, exceptId ?? ''],
+  );
+  if ((values.amount_minor as number) > (row?.outstanding ?? 0))
+    throw new ValidationError({ amountMinor: 'money.repayTooMuch' });
+}
+
 export async function createTransaction(db: Db, input: TransactionInput): Promise<string> {
   const values = transactionValues(input);
-  return write(db, (w) => w.insert('money_transactions', values));
+  return write(db, async (w) => {
+    await assertRepaymentFits(w, values, null);
+    return w.insert('money_transactions', values);
+  });
 }
 
 export async function updateTransaction(db: Db, id: string, input: TransactionInput) {
   const values = transactionValues(input);
-  return write(db, (w) => w.update('money_transactions', id, values));
+  return write(db, async (w) => {
+    await assertRepaymentFits(w, values, id);
+    await w.update('money_transactions', id, values);
+  });
 }
 
 export async function deleteTransaction(db: Db, id: string) {

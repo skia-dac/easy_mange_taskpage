@@ -1251,6 +1251,8 @@
     "deleteTitle": "Supprimer l’opération ?",
     "deleteMessage": "Elle ne comptera plus dans ton argent.",
     "invalidAmount": "Entre un montant.",
+    "repayTooMuch": "Le remboursement dépasse ce qui reste dû.",
+    "unpaidToast": "{{name}} : paiement annulé",
     "tooManyReminders": "3 rappels au maximum.",
     "kind": {
       "expense": "Dépense",

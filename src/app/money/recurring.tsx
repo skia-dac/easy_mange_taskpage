@@ -8,8 +8,10 @@ import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
 import {
   formatMoney,
+  getMoneyPrefs,
   listCategories,
   listRecurring,
+  monthlyChargesTotal,
   occurrencesBetween,
   type Recurring,
 } from '@/modules/finance';
@@ -26,6 +28,7 @@ export default function RecurringScreen() {
   const { spacing } = useTheme();
   const list = useLiveQuery(listRecurring, ['money_recurring'], []);
   const cats = useLiveQuery(listCategories, ['money_categories'], []);
+  const prefs = useLiveQuery(getMoneyPrefs, ['app_settings'], []);
   const money = useMoneyLabels(cats.data ?? []);
   const today = toIsoDate(new Date());
   const all = list.data ?? [];
@@ -63,13 +66,9 @@ export default function RecurringScreen() {
 
   const charges = all.filter((r) => r.kind === 'charge');
   const tontines = all.filter((r) => r.kind === 'tontine');
-  const monthly = charges
-    .filter((r) => r.active)
-    .reduce(
-      (s, r) =>
-        s + (r.frequency === 'weekly' ? Math.round((r.amountMinor * 52) / 12) : r.amountMinor),
-      0,
-    );
+  // Seulement la devise choisie : on n'additionne pas des francs et des euros.
+  const currency = prefs.data?.currency ?? charges[0]?.currency ?? 'XAF';
+  const monthly = monthlyChargesTotal(all, currency);
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
@@ -81,7 +80,7 @@ export default function RecurringScreen() {
           <Card>{charges.map(row)}</Card>
           <AppText color="muted">
             {t('money.monthlyCharges', {
-              amount: formatMoney(monthly, charges[0]?.currency ?? 'XAF'),
+              amount: formatMoney(monthly, currency),
             })}
           </AppText>
         </>

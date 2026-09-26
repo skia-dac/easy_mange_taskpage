@@ -21,7 +21,7 @@ export type MoneyInput = {
   currency: string;
   period: BudgetPeriod;
   range: PeriodRange;
-  /** Opérations de la période précédente ET de la période affichée. */
+  /** Opérations des périodes précédentes (jusqu'à `LATE_PERIODS`) ET de la période affichée. */
   transactions: readonly Transaction[];
   /** Solde (toutes opérations) avant le début de la période affichée. */
   balanceBeforeRange: number;
@@ -84,6 +84,19 @@ export type MoneyOverview = {
 
 const inRange = (t: { date: string }, r: PeriodRange) => t.date >= r.from && t.date <= r.to;
 
+/** Périodes précédentes dont les échéances impayées restent visibles « en retard ». */
+export const LATE_PERIODS = 3;
+
+/** Prêts encore ouverts d'un sens donné (même règle que l'écran Prêts : ni clôturé, ni soldé). */
+export function openLoans<T extends { loan: Loan; outstandingMinor: number }>(
+  loans: readonly T[],
+  direction: Loan['direction'],
+): T[] {
+  return loans.filter(
+    (l) => l.loan.direction === direction && !l.loan.closed && l.outstandingMinor > 0,
+  );
+}
+
 function totals(list: readonly Transaction[], cats: readonly MoneyCategory[]): CategoryTotal[] {
   const map = new Map<string, number>();
   for (const t of list) {
@@ -117,12 +130,18 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
   const expenses = items.filter((t) => t.kind === 'expense');
 
   const balance = input.balanceBeforeRange + items.reduce((s, t) => s + signedAmount(t), 0);
-  const due = dueItems(
-    input.recurring.filter((r) => r.currency === currency),
-    items,
-    range.from,
-    range.to,
-  );
+  const recurring = input.recurring.filter((r) => r.currency === currency);
+  // Période en cours : une échéance des périodes précédentes restée impayée ne disparaît pas,
+  // elle reste « en retard » dans « à payer » et dans « après tes charges ».
+  let lateFrom = range.from;
+  if (inRange({ date: today }, range))
+    for (let i = 0; i < LATE_PERIODS; i++)
+      lateFrom = shiftPeriod({ from: lateFrom, to: lateFrom }, input.period, -1).from;
+  const late =
+    lateFrom < range.from
+      ? dueItems(recurring, mine, lateFrom, addDaysIso(range.from, -1)).filter((d) => !d.paid)
+      : [];
+  const due = [...late, ...dueItems(recurring, mine, range.from, range.to)];
   const unpaidTotal = due.filter((d) => !d.paid).reduce((s, d) => s + d.amountMinor, 0);
   const afterCharges = balance - unpaidTotal;
   const left = daysLeft(range, today);
