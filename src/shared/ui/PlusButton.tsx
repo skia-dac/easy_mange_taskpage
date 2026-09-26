@@ -35,8 +35,10 @@ export function usePlusButtonInset(bottomInset?: number) {
   return onTabs ? 0 : homeIndicator;
 }
 
+const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
+
 function slideY(shift: { value: number }, to: number, duration: number) {
-  shift.value = withTiming(to, { duration, easing: Easing.out(Easing.cubic) });
+  shift.value = withTiming(to, { duration, easing: SLIDE });
 }
 
 /**

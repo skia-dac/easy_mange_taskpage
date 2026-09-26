@@ -13,8 +13,10 @@ import Animated, {
 
 import { useSetTabBarScrolling, useTabBarHidden } from '@/shared/tabBarVisibility';
 
+const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
+
 function slideTo(progress: { value: number }, to: number, duration: number) {
-  progress.value = withTiming(to, { duration, easing: Easing.out(Easing.cubic) });
+  progress.value = withTiming(to, { duration, easing: SLIDE });
 }
 
 function rememberHeight(distance: { value: number }, height: number) {
