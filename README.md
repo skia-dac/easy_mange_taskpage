@@ -57,7 +57,7 @@ Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`)
 ```
 src/
   app/                 Écrans (Expo Router) : un fichier = un écran, sans règle métier ni SQL
-    (tabs)/            Les 5 onglets : index (Aujourd'hui), calendar, tasks, notes, money (Argent, espace Perso)
+    (tabs)/            Les 4 onglets : index (Aujourd'hui), calendar, tasks (Carnet : à faire + notes), money (Argent, espace Perso) ; notes redirige vers le Carnet
   modules/             Les domaines, importés seulement par leur index.ts
     identity/          compte (Supabase), profil, réglages, espaces, apparence, langue
     academic/          matières, emplois du temps, cours et exceptions, vacances, examens et notes

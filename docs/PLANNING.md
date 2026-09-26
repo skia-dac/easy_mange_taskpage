@@ -32,6 +32,7 @@ Recommendation: build it in phases (section 5), with a usable app at the end of 
 
 1. **§4 Navigation — decided (product owner):**
    `Aujourd'hui` · `Calendrier` · `Notes` · `Tâches` · `Profil`
+   - **Update 26 Sep 2026:** 4 tabs — Aujourd'hui · Calendrier/Planning · **Carnet** · Argent (see §5l).
    - **Tâches** has three segments: Tâches · Devoirs · Examens.
    - **Matières** has no tab, but it stays central (spec §13, §101):
      - Every course, note, devoir and exam card opens its subject page.
@@ -302,7 +303,7 @@ Requested by the product owner (« Je veux tout ça »). Local migration **v10**
 
 Requested by the product owner, with the mock-ups validated on the canvas « MySky — module Argent ». New domain module `src/modules/finance` (fifth domain next to identity, academic, productivity, platform), local migration **v11**, server schema regenerated.
 
-- **Navigation**: tabs are now Aujourd'hui · Calendrier · Tâches · Notes · **Argent**. The Profil tab became the photo / initials button at the top right of Aujourd'hui (`/profile`), same page as before.
+- **Navigation**: tabs are now Aujourd'hui · Calendrier · Tâches · Notes · **Argent** (26 Sep 2026: Tâches and Notes merged into **Carnet**, §5l). The Profil tab became the photo / initials button at the top right of Aujourd'hui (`/profile`), same page as before.
 - **Principle**: the app is connected to no bank and no Mobile Money account. The student enters everything; « Il te reste » = what was carried over + income − everything that went out.
 - **Entries** (`money_transactions`, integer amounts in the currency's smallest unit): expense, income, put aside / taken back (savings goal), lent / paid back to me, borrowed / repaid. Quick entry `/money/add`: expense or income → category (16 + 7 built-in, tailored for students in Cameroon, plus the student's own) → amount on a keypad → save; today's date by default, shown, changeable.
 - **Currency**: FCFA (XAF) by default, 9 others selectable (Réglages de l'argent). Totals only add entries of the chosen currency.
@@ -339,6 +340,7 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **+ menu** (`QuickAddMenu`): Dépense, Entrée d'argent, Tâche, Devoir, Note de cours (pre-filled with the next class), Révision (study timer), Autre (→ `/add`).
 - Sections stay movable / hideable (`/today-layout`); the older sections (prochain cours, argent du jour, cours, révisions, événements, examens) are hidden by default. The layout has a version: older saved layouts switch once to model P.
 
+
 ## 5j. État au 26/09 (status on 26 Sep 2026)
 
 - **Spaces** Études · Pro · Perso live everywhere (home tiles, tabs, forms, search, widgets, reminders); notes common to all spaces with user categories.
@@ -359,8 +361,17 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **Sending**: right after saving, then at launch and on foreground (`FeedbackGate`), one run at a time. Server: RPC `mysky_submit_feedback` (security definer, validates everything, sets `user_id = auth.uid()` or null, 5 per hour per account or per random `device_ref`, idempotent by id); screenshot uploaded first to the private bucket `mysky-feedback/<uid>/<id>.<ext>` only when signed in. Offline → stays « En attente d'envoi » with a short error code, « Renvoyer maintenant » in the history. **No Supabase configured**: the button becomes « Envoyer par e-mail » (`mailto:` to the public contact address); marked sent once the mail app opens.
 - **Server**: `public.feedback` with RLS on and **no policy**, all grants revoked (write-only through the function, read by the team in the dashboard); `user_id … on delete set null` keeps feedback after account deletion. Checked by `npm run test:server` (anon can submit but not read, limit, short message refused, user_id set by the server, bucket policies).
 
+## 5l. Onglet Carnet (26 Sep 2026)
+
+Requested by the product owner: Tâches and Notes share one bottom tab.
+
+- **Bar**: 4 visible tabs — Aujourd'hui · Calendrier/Planning · **Carnet** (Feather `clipboard`, « Notebook » in English) · Argent (only with the Perso space).
+- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Devoirs · Examens segments) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task/assignment/exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
+- **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|assignment|exam` opens a segment of « À faire ».
+- **Old route** `(tabs)/notes`: hidden from the bar (`href: null`), redirects to `/(tabs)/tasks?view=notes`. Internal links and widgets to the task list use `view=todo`.
+
 ## 6. Open questions for the product owner
 
-**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Tâches · Notes · Argent (Profil via the photo at the top right, 25 Sep 2026) · import AI budget OK (a few cents per page).
+**Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Carnet (tâches + notes) · Argent (Profil via the photo at the top right, 25 Sep 2026; Carnet 26 Sep 2026) · import AI budget OK (a few cents per page).
 
 1. Design: direction set in section 5b, mock-ups done. Next step: mock-ups of the key screens (Aujourd'hui, Calendrier, Tâches) before coding.
