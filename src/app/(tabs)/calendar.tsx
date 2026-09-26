@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 import { eventHref } from '@/components/eventHref';
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
 import { ExportCalendarButton } from '@/components/ExportCalendarButton';
+import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
 import { WeekHoursGrid } from '@/components/WeekHoursGrid';
 import { useLabels } from '@/hooks/useLabels';
@@ -198,6 +199,7 @@ export default function CalendarScreen() {
           <>
             <ExportCalendarButton data={agenda.data} subjects={byId} />
             <SearchButton />
+            <ProfileButton />
           </>
         }
       >

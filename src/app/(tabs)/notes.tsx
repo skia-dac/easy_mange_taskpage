@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { listNoteCategories, listNotes, searchNotes } from '@/modules/productivity';
@@ -69,7 +70,7 @@ export default function NotesScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen stagger title={t('notes.title')}>
+      <Screen stagger title={t('notes.title')} actions={<ProfileButton />}>
         <RiseIn>
           <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
         </RiseIn>

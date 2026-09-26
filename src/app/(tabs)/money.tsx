@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { TransactionRow } from '@/components/money/TransactionRow';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
+import { ProfileButton } from '@/components/ProfileButton';
 import { HeaderButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, payDue, unpayDue, type DueItem } from '@/modules/finance';
@@ -106,6 +107,7 @@ export default function MoneyScreen() {
           <>
             <HeaderButton icon="bar-chart-2" label={t('money.report')} href="/money/report" />
             <HeaderButton icon="sliders" label={t('money.settings')} href="/money/settings" />
+            <ProfileButton />
           </>
         }
       >

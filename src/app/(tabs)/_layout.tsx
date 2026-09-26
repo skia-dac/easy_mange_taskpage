@@ -48,7 +48,7 @@ function tabIcon(name: IconName) {
 
 /**
  * Les 5 onglets : Aujourd'hui · Calendrier · Tâches · Notes · Argent.
- * Le Profil s'ouvre avec la photo en haut à droite d'Aujourd'hui.
+ * Le Profil s'ouvre avec la photo en haut à droite de chaque onglet.
  */
 export default function TabsLayout() {
   const { t } = useTranslation();

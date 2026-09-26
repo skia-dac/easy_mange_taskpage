@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
+import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
 import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -132,7 +133,16 @@ export default function TasksScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen stagger title={t('tasks.title')} actions={<SearchButton />}>
+      <Screen
+        stagger
+        title={t('tasks.title')}
+        actions={
+          <>
+            <SearchButton />
+            <ProfileButton />
+          </>
+        }
+      >
         {study ? (
           <RiseIn>
             <Segmented
