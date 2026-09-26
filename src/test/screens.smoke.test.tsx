@@ -50,6 +50,7 @@ jest.mock('expo-router', () => {
       replace: jest.fn(),
       back: jest.fn(),
       navigate: jest.fn(),
+      setParams: jest.fn(),
       dismissAll: jest.fn(),
       canGoBack: () => true,
       canDismiss: () => true,
@@ -62,7 +63,11 @@ jest.mock('expo-router', () => {
         React.createElement(React.Fragment, null, children),
       { Screen: () => null },
     ),
-    Redirect: () => null,
+    // Rend la cible, pour vérifier les redirections.
+    Redirect: ({ href }: { href: unknown }) => {
+      const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+      return React.createElement(Text, null, `redirection:${JSON.stringify(href)}`);
+    },
     Link: ({ children }: { children: React.ReactNode }) =>
       React.createElement(React.Fragment, null, children),
   };
@@ -314,14 +319,35 @@ const cases: Case[] = [
     expect: ['Septembre 2026', 'Marketing stratégique'],
   },
   {
-    name: 'Notes',
-    load: () => require('@/app/(tabs)/notes') as { default: ComponentType },
-    expect: ['Les 4P'],
+    name: 'Carnet (vue retenue par défaut : À faire)',
+    plus: 'Ajouter',
+    load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
+    expect: ['Carnet', 'À faire', 'Étude de cas Marketing', 'En retard'],
   },
   {
-    name: 'Tâches',
+    name: 'Carnet — À faire',
+    plus: 'Ajouter',
     load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
-    expect: ['Étude de cas Marketing', 'En retard'],
+    params: { view: 'todo' },
+    expect: ['Carnet', 'Étude de cas Marketing', 'En retard'],
+  },
+  {
+    name: 'Carnet — Notes',
+    plus: 'Nouvelle note',
+    load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
+    params: { view: 'notes' },
+    expect: ['Carnet', 'À faire', 'Les 4P'],
+  },
+  {
+    name: 'Carnet — examens (tab=exam)',
+    load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
+    params: { view: 'todo', tab: 'exam' },
+    expect: ['Carnet', 'Contrôle continu'],
+  },
+  {
+    name: 'Ancienne route Notes',
+    load: () => require('@/app/(tabs)/notes') as { default: ComponentType },
+    expect: ['redirection:"/(tabs)/tasks?view=notes"'],
   },
   {
     name: 'Profil',

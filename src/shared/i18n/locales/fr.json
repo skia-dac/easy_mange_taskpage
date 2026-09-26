@@ -33,11 +33,15 @@
   "tabs": {
     "today": "Aujourd’hui",
     "calendar": "Calendrier",
-    "notes": "Notes",
-    "tasks": "Tâches",
     "profile": "Profil",
     "money": "Argent",
-    "planning": "Planning"
+    "planning": "Planning",
+    "notebook": "Carnet"
+  },
+  "notebook": {
+    "todo": "À faire",
+    "notes": "Notes",
+    "views": "Vue du carnet"
   },
   "errors": {
     "title": "Oups",

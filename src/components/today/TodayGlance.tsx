@@ -116,7 +116,7 @@ export function TodayGlance({
     todo: () => (
       <Tile
         key="todo"
-        href="/(tabs)/tasks"
+        href="/(tabs)/tasks?view=todo"
         label={t('glance.todo')}
         labelColor="primary"
         a11y={t('glance.todoA11y', { count: todoCount, overdue: view.overdue.length })}
@@ -258,7 +258,7 @@ export function TodayGlance({
       return (
         <Tile
           key="doneWeek"
-          href="/(tabs)/tasks"
+          href="/(tabs)/tasks?view=todo"
           label={t('glance.doneWeek')}
           labelColor="success"
           a11y={`${t('glance.doneWeek')} : ${n}`}

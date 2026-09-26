@@ -33,11 +33,15 @@
   "tabs": {
     "today": "Today",
     "calendar": "Calendar",
-    "notes": "Notes",
-    "tasks": "Tasks",
     "profile": "Profile",
     "money": "Money",
-    "planning": "Planner"
+    "planning": "Planner",
+    "notebook": "Notebook"
+  },
+  "notebook": {
+    "todo": "To do",
+    "notes": "Notes",
+    "views": "Notebook view"
   },
   "errors": {
     "title": "Oops",
