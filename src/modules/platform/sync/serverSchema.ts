@@ -1,5 +1,13 @@
 import { SYNCED_TABLES, type Db } from '@/shared/db';
 
+import {
+  CONTACT_MAX,
+  FEEDBACK_AREAS,
+  FEEDBACK_KINDS,
+  MESSAGE_MAX,
+  MESSAGE_MIN,
+} from '../feedback/domain';
+
 /**
  * Génère le schéma Postgres (Supabase) à partir du schéma SQLite du téléphone :
  * mêmes tables, mêmes colonnes, mêmes valeurs par défaut, plus :
@@ -29,6 +37,20 @@ async function columnsOf(db: Db, table: string): Promise<Column[]> {
 export const FILES_BUCKET = 'mysky-files';
 /** Taille maximale d'un fichier dans le bucket (25 Mo, comme MAX_ATTACHMENT_MB). */
 export const FILE_SIZE_LIMIT = 25 * 1024 * 1024;
+
+/** Bucket privé des captures jointes aux retours (« Donner mon avis »), écriture seule. */
+export const FEEDBACK_BUCKET = 'mysky-feedback';
+/** 5 Mo : une capture d'écran suffit largement. */
+export const FEEDBACK_FILE_SIZE_LIMIT = 5 * 1024 * 1024;
+export const FEEDBACK_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+  'image/webp',
+];
+/** Retours acceptés par heure pour un compte (ou, sans compte, pour un téléphone). */
+export const FEEDBACK_PER_HOUR = 5;
 
 export async function generateServerSql(db: Db): Promise<string> {
   const out: string[] = [
@@ -125,6 +147,8 @@ export async function generateServerSql(db: Db): Promise<string> {
     'create policy "mysky own files" on storage.objects for all to authenticated',
     `  using (bucket_id = '${FILES_BUCKET}' and (storage.foldername(name))[1] = auth.uid()::text)`,
     `  with check (bucket_id = '${FILES_BUCKET}' and (storage.foldername(name))[1] = auth.uid()::text);`,
+    '',
+    FEEDBACK_SQL,
     '',
   );
   return out.join('\n');
@@ -237,3 +261,130 @@ begin
 end $$;
 revoke all on function public.mysky_push(jsonb) from public, anon;
 grant execute on function public.mysky_push(jsonb) to authenticated;`;
+
+const quoted = (values: readonly string[]) => values.map((v) => `'${v}'`).join(', ');
+
+/**
+ * Retours des utilisateurs : HORS des tables synchronisées. Écriture seule, par la fonction
+ * `mysky_submit_feedback` (comptes connectés ET visiteurs sans compte) ; aucune lecture pour
+ * anon / authenticated (RLS activée sans aucune policy, droits retirés). L'équipe les lit dans
+ * le tableau de bord Supabase. Suppression du compte : le retour reste, user_id passe à null.
+ */
+const FEEDBACK_SQL = `-- ─── Retours des utilisateurs (« Donner mon avis »), hors synchronisation ───
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid null references auth.users (id) on delete set null,
+  device_ref text check (device_ref is null or char_length(device_ref) between 8 and 64),
+  kind text not null check (kind in (${quoted(FEEDBACK_KINDS)})),
+  area text not null default 'other' check (area in (${quoted(FEEDBACK_AREAS)})),
+  message text not null check (char_length(message) between ${MESSAGE_MIN} and ${MESSAGE_MAX}),
+  blocking boolean not null default false,
+  contact_email text check (contact_email is null or char_length(contact_email) <= ${CONTACT_MAX}),
+  app_version text check (app_version is null or char_length(app_version) <= 40),
+  os text check (os is null or char_length(os) <= 60),
+  locale text check (locale is null or char_length(locale) <= 10),
+  error_name text check (error_name is null or char_length(error_name) <= 60),
+  screenshot_path text check (screenshot_path is null or char_length(screenshot_path) <= 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists feedback_created_idx on public.feedback (created_at);
+create index if not exists feedback_sender_idx on public.feedback ((coalesce(user_id::text, device_ref)), created_at);
+alter table public.feedback enable row level security;
+-- Aucune policy : personne ne lit ni n'écrit directement (hors service_role).
+revoke all on public.feedback from public, anon, authenticated;
+
+-- Valide et enregistre un retour. user_id est posé ici (auth.uid(), null sans compte), jamais
+-- par le téléphone. Limite : ${FEEDBACK_PER_HOUR} retours par heure par compte, ou par téléphone sans compte
+-- (device_ref : identifiant aléatoire créé par l'app, pas un identifiant matériel).
+create or replace function public.mysky_submit_feedback(p jsonb) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  v_user uuid := auth.uid();
+  v_device text;
+  v_key text;
+  v_id uuid;
+  v_kind text;
+  v_area text;
+  v_message text;
+  v_email text;
+  v_shot text;
+  v_error text;
+begin
+  if p is null or jsonb_typeof(p) <> 'object' then
+    raise exception 'invalid feedback' using errcode = '22023';
+  end if;
+  v_device := nullif(trim(coalesce(p->>'device_ref', '')), '');
+  v_kind := p->>'kind';
+  v_area := coalesce(nullif(p->>'area', ''), 'other');
+  v_message := trim(coalesce(p->>'message', ''));
+  v_email := nullif(lower(trim(coalesce(p->>'contact_email', ''))), '');
+  v_shot := nullif(p->>'screenshot_path', '');
+  v_error := nullif(p->>'error_name', '');
+
+  if v_device is not null and char_length(v_device) not between 8 and 64 then
+    raise exception 'invalid device_ref' using errcode = '22023';
+  end if;
+  if v_user is null and v_device is null then
+    raise exception 'device_ref required' using errcode = '22023';
+  end if;
+  if v_kind is null or v_kind not in (${quoted(FEEDBACK_KINDS)}) then
+    raise exception 'invalid kind' using errcode = '22023';
+  end if;
+  -- Partie inconnue (version plus récente de l'app) : rangée dans « Autre ».
+  if v_area not in (${quoted(FEEDBACK_AREAS)}) then
+    v_area := 'other';
+  end if;
+  if char_length(v_message) not between ${MESSAGE_MIN} and ${MESSAGE_MAX} then
+    raise exception 'invalid message' using errcode = '22023';
+  end if;
+  if v_email is not null and (char_length(v_email) > ${CONTACT_MAX} or v_email !~ '^[^@[:space:]]+@[^@[:space:]]+[.][^@[:space:]]+$') then
+    raise exception 'invalid contact_email' using errcode = '22023';
+  end if;
+  if v_error is not null and v_error !~ '^[A-Za-z][A-Za-z0-9_.]{0,59}$' then
+    v_error := null;
+  end if;
+  -- Capture : seulement pour un compte connecté, et seulement dans son propre dossier du bucket.
+  if v_shot is not null and (v_user is null
+      or v_shot !~ ('^' || v_user::text || '/[A-Za-z0-9-]{1,64}[.][a-z0-9]{1,5}$')) then
+    v_shot := null;
+  end if;
+
+  -- Même retour renvoyé après une réponse perdue : enregistré une seule fois.
+  if coalesce(p->>'id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    v_id := (p->>'id')::uuid;
+    if exists (select 1 from feedback where id = v_id) then
+      return v_id;
+    end if;
+  else
+    v_id := gen_random_uuid();
+  end if;
+
+  v_key := coalesce(v_user::text, v_device);
+  -- Deux envois simultanés du même expéditeur ne dépassent pas la limite.
+  perform pg_advisory_xact_lock(hashtext('mysky_feedback:' || v_key));
+  if (select count(*) from feedback
+       where coalesce(user_id::text, device_ref) = v_key
+         and created_at > now() - interval '1 hour') >= ${FEEDBACK_PER_HOUR} then
+    raise exception 'rate_limited' using errcode = 'MSK29';
+  end if;
+
+  insert into feedback (id, user_id, device_ref, kind, area, message, blocking, contact_email,
+                        app_version, os, locale, error_name, screenshot_path)
+  values (v_id, v_user, v_device, v_kind, v_area, v_message,
+          coalesce((p->>'blocking')::boolean, false) and v_kind = 'bug', v_email,
+          left(p->>'app_version', 40), left(p->>'os', 60), left(p->>'locale', 10), v_error, v_shot);
+  return v_id;
+end $$;
+revoke all on function public.mysky_submit_feedback(jsonb) from public, anon, authenticated;
+grant execute on function public.mysky_submit_feedback(jsonb) to anon, authenticated;
+
+-- Captures des retours : bucket privé, ${FEEDBACK_FILE_SIZE_LIMIT} octets = 5 Mo, images seulement.
+-- Un compte connecté dépose dans son dossier <uid>/ ; personne ne lit (hors service_role).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values ('${FEEDBACK_BUCKET}', '${FEEDBACK_BUCKET}', false, ${FEEDBACK_FILE_SIZE_LIMIT},
+          array[${quoted(FEEDBACK_IMAGE_TYPES)}])
+  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+drop policy if exists "mysky feedback upload" on storage.objects;
+create policy "mysky feedback upload" on storage.objects for insert to authenticated
+  with check (bucket_id = '${FEEDBACK_BUCKET}' and (storage.foldername(name))[1] = auth.uid()::text);`;

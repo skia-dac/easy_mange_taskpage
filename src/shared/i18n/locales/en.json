@@ -67,7 +67,9 @@
     "pickDay": "Pick at least one day.",
     "invalidWeight": "Invalid weight (between 20 and 400 kg).",
     "weightOrPhoto": "Add at least a photo or your weight.",
-    "invalid": "Invalid value."
+    "invalid": "Invalid value.",
+    "feedbackTooShort": "Write at least 10 characters.",
+    "invalidEmail": "Invalid email address."
   },
   "today": {
     "greeting": "Hello",
@@ -1703,6 +1705,87 @@
       "money_recurring": "Fixed charge or tontine",
       "money_transactions": "Money transaction",
       "work_slots": "Fixed slot"
+    }
+  },
+  "feedback": {
+    "title": "Give feedback",
+    "profileHint": "A bug, an idea? Tell us",
+    "historyTitle": "My feedback",
+    "historyCount_one": "{{count}} message",
+    "historyCount_other": "{{count}} messages",
+    "kindLabel": "It’s…",
+    "kind": {
+      "bug": {
+        "title": "A problem",
+        "hint": "Something doesn’t work"
+      },
+      "idea": {
+        "title": "An idea",
+        "hint": "Improve a feature or suggest one"
+      },
+      "other": {
+        "title": "Something else",
+        "hint": "A question, a compliment, a remark"
+      }
+    },
+    "areaLabel": "Part of the app",
+    "area": {
+      "today": "Today",
+      "calendar": "Calendar / Planning",
+      "tasks": "Tasks",
+      "notes": "Notes",
+      "habits": "Habits",
+      "revision": "Revision",
+      "money": "Money",
+      "account": "Account and sync",
+      "reminders": "Reminders and widgets",
+      "other": "Other"
+    },
+    "messageLabel": "Your message",
+    "placeholder": {
+      "bug": "What happened? What did you expect?",
+      "idea": "What would be useful to you?",
+      "other": "Write your message"
+    },
+    "counter": "{{count}} / {{max}}",
+    "blocking": "It stops me from using the app",
+    "screenshot": "Screenshot (optional)",
+    "addScreenshot": "Add a screenshot",
+    "removeScreenshot": "Remove the screenshot",
+    "screenshotPreview": "Screenshot preview",
+    "contactLabel": "Your email (optional)",
+    "contactHint": "Only if you want a reply",
+    "attachedTitle": "Attached automatically",
+    "attached": "MySky {{version}}, {{os}}, language {{locale}}",
+    "attachedError": "Error type: {{name}}",
+    "noPersonal": "Nothing else: not your notes, tasks or money.",
+    "screenshotNeedsAccount": "Without a signed-in account, the screenshot is not sent.",
+    "mailNote": "Your mail app will open with the message ready: you just need to send it. The screenshot is not attached.",
+    "send": "Send",
+    "sendByMail": "Send by email",
+    "thanks": "Thank you! Your feedback has been noted.",
+    "queued": "Thank you! Your feedback has been noted, it will be sent as soon as you’re online.",
+    "mailFailed": "No mail app could be opened. Your feedback is kept: try again from “My feedback”.",
+    "status": {
+      "sent": "Sent",
+      "pending": "Waiting to be sent"
+    },
+    "emptyTitle": "No feedback yet",
+    "emptyMessage": "A bug, an idea? Your messages will appear here.",
+    "write": "Give feedback",
+    "retry": "Send now",
+    "retrySent": "Done: your feedback has been sent.",
+    "retryStill": "Not sent yet. Try again when you’re online.",
+    "deleteTitle": "Delete this feedback?",
+    "deleteMessage": "It hasn’t been sent yet. It will be erased from this phone.",
+    "reportProblem": "Report this problem",
+    "mail": {
+      "subject": "MySky – {{kind}} ({{area}})",
+      "kind": "Type: {{value}}",
+      "area": "Part: {{value}}",
+      "blocking": "Blocking: yes",
+      "contact": "Contact: {{value}}",
+      "technical": "MySky {{version}} · {{os}} · language {{locale}} · error {{error}}"
     }
   }
 }

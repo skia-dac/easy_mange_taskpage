@@ -454,4 +454,28 @@ export const migrations: readonly Migration[] = [
         ON course_exceptions (series_id, date) WHERE deleted_at IS NULL;
     `,
   },
+  {
+    version: 17,
+    name: 'retours des utilisateurs (« Donner mon avis ») : table locale, hors synchronisation',
+    sql: `
+      CREATE TABLE feedback (
+        id TEXT PRIMARY KEY NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('bug', 'idea', 'other')),
+        area TEXT NOT NULL DEFAULT 'other',
+        message TEXT NOT NULL,
+        blocking INTEGER NOT NULL DEFAULT 0,
+        contact_email TEXT,
+        screenshot_path TEXT,
+        error_name TEXT,
+        app_version TEXT NOT NULL,
+        os TEXT NOT NULL,
+        locale TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent')),
+        sent_at TEXT,
+        created_at TEXT NOT NULL,
+        error_code TEXT
+      );
+      CREATE INDEX idx_feedback_status ON feedback (status, created_at);
+    `,
+  },
 ];

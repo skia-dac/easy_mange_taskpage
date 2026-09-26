@@ -71,3 +71,40 @@ export type { SyncConflict } from './sync/conflicts';
 export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';
 export { SyncGate } from './sync/SyncGate';
+export {
+  CONTACT_MAX,
+  FEEDBACK_AREAS,
+  FEEDBACK_KINDS,
+  feedbackInputSchema,
+  MESSAGE_MAX,
+  MESSAGE_MIN,
+  PREVIEW_LENGTH,
+  previewOf,
+  safeErrorName,
+} from './feedback/domain';
+export type {
+  Feedback,
+  FeedbackArea,
+  FeedbackContext,
+  FeedbackInput,
+  FeedbackKind,
+  FeedbackStatus,
+} from './feedback/domain';
+export {
+  createFeedback,
+  FEEDBACK_TABLE,
+  feedbackCounts,
+  getDeviceRef,
+  listFeedback,
+} from './feedback/data';
+export {
+  deleteFeedback,
+  FEEDBACK_FOLDER,
+  feedbackContext,
+  retryFeedback,
+  sendFeedbackByEmail,
+  sendPendingFeedback,
+  submitFeedback,
+} from './feedback/service';
+export type { FeedbackSendReport, SubmitOutcome } from './feedback/service';
+export { FeedbackGate } from './feedback/FeedbackGate';

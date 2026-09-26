@@ -67,7 +67,9 @@
     "pickDay": "Choisis au moins un jour.",
     "invalidWeight": "Poids non valide (entre 20 et 400 kg).",
     "weightOrPhoto": "Ajoute au moins une photo ou ton poids.",
-    "invalid": "Valeur non valide."
+    "invalid": "Valeur non valide.",
+    "feedbackTooShort": "Écris au moins 10 caractères.",
+    "invalidEmail": "Adresse e-mail non valide."
   },
   "today": {
     "greeting": "Bonjour",
@@ -1703,6 +1705,87 @@
       "money_recurring": "Charge fixe ou tontine",
       "money_transactions": "Opération d’argent",
       "work_slots": "Créneau fixe"
+    }
+  },
+  "feedback": {
+    "title": "Donner mon avis",
+    "profileHint": "Un bug, une idée ? Dis-le-nous",
+    "historyTitle": "Mes retours",
+    "historyCount_one": "{{count}} retour",
+    "historyCount_other": "{{count}} retours",
+    "kindLabel": "C’est…",
+    "kind": {
+      "bug": {
+        "title": "Un problème",
+        "hint": "Quelque chose ne marche pas"
+      },
+      "idea": {
+        "title": "Une idée",
+        "hint": "Améliorer une fonction ou en proposer une"
+      },
+      "other": {
+        "title": "Autre",
+        "hint": "Une question, un compliment, une remarque"
+      }
+    },
+    "areaLabel": "Partie de l’app",
+    "area": {
+      "today": "Aujourd’hui",
+      "calendar": "Calendrier / Planning",
+      "tasks": "Tâches",
+      "notes": "Notes",
+      "habits": "Habitudes",
+      "revision": "Révisions",
+      "money": "Argent",
+      "account": "Compte et synchro",
+      "reminders": "Rappels et widgets",
+      "other": "Autre"
+    },
+    "messageLabel": "Ton message",
+    "placeholder": {
+      "bug": "Qu’est-ce qui s’est passé ? Qu’attendais-tu ?",
+      "idea": "Qu’est-ce qui te serait utile ?",
+      "other": "Écris ton message"
+    },
+    "counter": "{{count}} / {{max}}",
+    "blocking": "Ça m’empêche d’utiliser l’app",
+    "screenshot": "Capture d’écran (facultatif)",
+    "addScreenshot": "Ajouter une capture",
+    "removeScreenshot": "Retirer la capture",
+    "screenshotPreview": "Aperçu de la capture",
+    "contactLabel": "Ton e-mail (facultatif)",
+    "contactHint": "Seulement si tu veux une réponse",
+    "attachedTitle": "Joint automatiquement",
+    "attached": "MySky {{version}}, {{os}}, langue {{locale}}",
+    "attachedError": "Type d’erreur : {{name}}",
+    "noPersonal": "Rien d’autre : ni tes notes, ni tes tâches, ni ton argent.",
+    "screenshotNeedsAccount": "Sans compte connecté, la capture n’est pas envoyée.",
+    "mailNote": "Ta messagerie va s’ouvrir avec le message prêt : il te restera à l’envoyer. La capture n’y est pas jointe.",
+    "send": "Envoyer",
+    "sendByMail": "Envoyer par e-mail",
+    "thanks": "Merci ! Ton retour est bien noté.",
+    "queued": "Merci ! Ton retour est bien noté, il partira dès que tu seras connecté.",
+    "mailFailed": "Aucune messagerie n’a pu s’ouvrir. Ton retour est gardé : réessaie depuis « Mes retours ».",
+    "status": {
+      "sent": "Envoyé",
+      "pending": "En attente d’envoi"
+    },
+    "emptyTitle": "Aucun retour pour l’instant",
+    "emptyMessage": "Un bug, une idée ? Tes retours apparaîtront ici.",
+    "write": "Donner mon avis",
+    "retry": "Renvoyer maintenant",
+    "retrySent": "C’est parti : tes retours sont envoyés.",
+    "retryStill": "Pas encore envoyé. Réessaie quand tu seras connecté.",
+    "deleteTitle": "Supprimer ce retour ?",
+    "deleteMessage": "Il n’a pas encore été envoyé. Il sera effacé de ce téléphone.",
+    "reportProblem": "Signaler ce problème",
+    "mail": {
+      "subject": "MySky – {{kind}} ({{area}})",
+      "kind": "Type : {{value}}",
+      "area": "Partie : {{value}}",
+      "blocking": "Bloquant : oui",
+      "contact": "Contact : {{value}}",
+      "technical": "MySky {{version}} · {{os}} · langue {{locale}} · erreur {{error}}"
     }
   }
 }

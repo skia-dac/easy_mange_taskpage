@@ -1280,3 +1280,122 @@ drop policy if exists "mysky own files" on storage.objects;
 create policy "mysky own files" on storage.objects for all to authenticated
   using (bucket_id = 'mysky-files' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'mysky-files' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ─── Retours des utilisateurs (« Donner mon avis »), hors synchronisation ───
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid null references auth.users (id) on delete set null,
+  device_ref text check (device_ref is null or char_length(device_ref) between 8 and 64),
+  kind text not null check (kind in ('bug', 'idea', 'other')),
+  area text not null default 'other' check (area in ('today', 'calendar', 'tasks', 'notes', 'habits', 'revision', 'money', 'account', 'reminders', 'other')),
+  message text not null check (char_length(message) between 10 and 2000),
+  blocking boolean not null default false,
+  contact_email text check (contact_email is null or char_length(contact_email) <= 200),
+  app_version text check (app_version is null or char_length(app_version) <= 40),
+  os text check (os is null or char_length(os) <= 60),
+  locale text check (locale is null or char_length(locale) <= 10),
+  error_name text check (error_name is null or char_length(error_name) <= 60),
+  screenshot_path text check (screenshot_path is null or char_length(screenshot_path) <= 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists feedback_created_idx on public.feedback (created_at);
+create index if not exists feedback_sender_idx on public.feedback ((coalesce(user_id::text, device_ref)), created_at);
+alter table public.feedback enable row level security;
+-- Aucune policy : personne ne lit ni n'écrit directement (hors service_role).
+revoke all on public.feedback from public, anon, authenticated;
+
+-- Valide et enregistre un retour. user_id est posé ici (auth.uid(), null sans compte), jamais
+-- par le téléphone. Limite : 5 retours par heure par compte, ou par téléphone sans compte
+-- (device_ref : identifiant aléatoire créé par l'app, pas un identifiant matériel).
+create or replace function public.mysky_submit_feedback(p jsonb) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  v_user uuid := auth.uid();
+  v_device text;
+  v_key text;
+  v_id uuid;
+  v_kind text;
+  v_area text;
+  v_message text;
+  v_email text;
+  v_shot text;
+  v_error text;
+begin
+  if p is null or jsonb_typeof(p) <> 'object' then
+    raise exception 'invalid feedback' using errcode = '22023';
+  end if;
+  v_device := nullif(trim(coalesce(p->>'device_ref', '')), '');
+  v_kind := p->>'kind';
+  v_area := coalesce(nullif(p->>'area', ''), 'other');
+  v_message := trim(coalesce(p->>'message', ''));
+  v_email := nullif(lower(trim(coalesce(p->>'contact_email', ''))), '');
+  v_shot := nullif(p->>'screenshot_path', '');
+  v_error := nullif(p->>'error_name', '');
+
+  if v_device is not null and char_length(v_device) not between 8 and 64 then
+    raise exception 'invalid device_ref' using errcode = '22023';
+  end if;
+  if v_user is null and v_device is null then
+    raise exception 'device_ref required' using errcode = '22023';
+  end if;
+  if v_kind is null or v_kind not in ('bug', 'idea', 'other') then
+    raise exception 'invalid kind' using errcode = '22023';
+  end if;
+  -- Partie inconnue (version plus récente de l'app) : rangée dans « Autre ».
+  if v_area not in ('today', 'calendar', 'tasks', 'notes', 'habits', 'revision', 'money', 'account', 'reminders', 'other') then
+    v_area := 'other';
+  end if;
+  if char_length(v_message) not between 10 and 2000 then
+    raise exception 'invalid message' using errcode = '22023';
+  end if;
+  if v_email is not null and (char_length(v_email) > 200 or v_email !~ '^[^@[:space:]]+@[^@[:space:]]+[.][^@[:space:]]+$') then
+    raise exception 'invalid contact_email' using errcode = '22023';
+  end if;
+  if v_error is not null and v_error !~ '^[A-Za-z][A-Za-z0-9_.]{0,59}$' then
+    v_error := null;
+  end if;
+  -- Capture : seulement pour un compte connecté, et seulement dans son propre dossier du bucket.
+  if v_shot is not null and (v_user is null
+      or v_shot !~ ('^' || v_user::text || '/[A-Za-z0-9-]{1,64}[.][a-z0-9]{1,5}$')) then
+    v_shot := null;
+  end if;
+
+  -- Même retour renvoyé après une réponse perdue : enregistré une seule fois.
+  if coalesce(p->>'id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    v_id := (p->>'id')::uuid;
+    if exists (select 1 from feedback where id = v_id) then
+      return v_id;
+    end if;
+  else
+    v_id := gen_random_uuid();
+  end if;
+
+  v_key := coalesce(v_user::text, v_device);
+  -- Deux envois simultanés du même expéditeur ne dépassent pas la limite.
+  perform pg_advisory_xact_lock(hashtext('mysky_feedback:' || v_key));
+  if (select count(*) from feedback
+       where coalesce(user_id::text, device_ref) = v_key
+         and created_at > now() - interval '1 hour') >= 5 then
+    raise exception 'rate_limited' using errcode = 'MSK29';
+  end if;
+
+  insert into feedback (id, user_id, device_ref, kind, area, message, blocking, contact_email,
+                        app_version, os, locale, error_name, screenshot_path)
+  values (v_id, v_user, v_device, v_kind, v_area, v_message,
+          coalesce((p->>'blocking')::boolean, false) and v_kind = 'bug', v_email,
+          left(p->>'app_version', 40), left(p->>'os', 60), left(p->>'locale', 10), v_error, v_shot);
+  return v_id;
+end $$;
+revoke all on function public.mysky_submit_feedback(jsonb) from public, anon, authenticated;
+grant execute on function public.mysky_submit_feedback(jsonb) to anon, authenticated;
+
+-- Captures des retours : bucket privé, 5242880 octets = 5 Mo, images seulement.
+-- Un compte connecté dépose dans son dossier <uid>/ ; personne ne lit (hors service_role).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values ('mysky-feedback', 'mysky-feedback', false, 5242880,
+          array['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'])
+  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+drop policy if exists "mysky feedback upload" on storage.objects;
+create policy "mysky feedback upload" on storage.objects for insert to authenticated
+  with check (bucket_id = 'mysky-feedback' and (storage.foldername(name))[1] = auth.uid()::text);

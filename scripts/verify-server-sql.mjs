@@ -20,8 +20,11 @@ await db.exec(`
   create role authenticated nologin;
   create role anon nologin;
   create schema storage;
-  create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint);
-  create table storage.objects (id serial primary key, bucket_id text, name text);
+  create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint,
+    allowed_mime_types text[]);
+  create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text);
+  alter table storage.objects enable row level security;
+  grant select, insert, update, delete on storage.objects to authenticated;
   create function storage.foldername(name text) returns text[] language sql immutable as $$
     select string_to_array(name, '/') $$;
   grant usage on schema public, auth, storage to authenticated, anon;
@@ -345,9 +348,193 @@ check(
   cursor,
 );
 
+// ─── Retours des utilisateurs (« Donner mon avis ») : écriture seule, hors synchronisation ───
+async function asAnon(fn) {
+  await db.exec("set role anon; select set_config('request.jwt.claim.sub', '', false);");
+  try {
+    return await fn();
+  } finally {
+    await db.exec('reset role;');
+  }
+}
+const feedback = (extra = {}) => ({
+  device_ref: 'device-ref-anon-1',
+  kind: 'bug',
+  area: 'tasks',
+  message: 'Le bouton Terminer ne répond pas.',
+  blocking: true,
+  app_version: '1.0.0',
+  os: 'iOS 18.1',
+  locale: 'fr',
+  ...extra,
+});
+const submitAs = (user, p) => {
+  const run = async () =>
+    (await db.query('select public.mysky_submit_feedback($1::jsonb) as id', [JSON.stringify(p)]))
+      .rows[0].id;
+  return user ? as(user, run) : asAnon(run);
+};
+const refusal = async (fn) => {
+  try {
+    await fn();
+    return null;
+  } catch (e) {
+    return String(e.message);
+  }
+};
+
+const anonId = await submitAs(null, feedback());
+const anonRow = (
+  await db.query('select user_id, device_ref, kind, blocking from public.feedback where id = $1', [
+    anonId,
+  ])
+).rows[0];
+check(
+  'retour : un visiteur sans compte peut envoyer (user_id null)',
+  anonRow?.user_id === null && anonRow?.device_ref === 'device-ref-anon-1' && anonRow?.blocking,
+  anonRow,
+);
+for (const [who, run] of [
+  ['anon', (q) => asAnon(() => db.query(q))],
+  ['authenticated', (q) => as(A, () => db.query(q))],
+]) {
+  const denied = await refusal(() => run('select id from public.feedback'));
+  check(
+    `retour : ${who} ne peut pas lire les retours`,
+    /permission denied/i.test(denied ?? ''),
+    denied,
+  );
+  const insert = await refusal(() =>
+    run("insert into public.feedback (kind, message) values ('bug', 'écriture directe ici')"),
+  );
+  check(
+    `retour : ${who} ne peut pas écrire directement`,
+    /permission denied/i.test(insert ?? ''),
+    insert,
+  );
+}
+
+const fbA = await submitAs(A, feedback({ user_id: B, device_ref: null, kind: 'idea' }));
+const rowA = (await db.query('select user_id, blocking from public.feedback where id = $1', [fbA]))
+  .rows[0];
+check(
+  'retour : user_id posé par le serveur (auth.uid()), pas par le téléphone',
+  rowA?.user_id === A && rowA?.blocking === false,
+  rowA,
+);
+
+const short = await refusal(() => submitAs(null, feedback({ message: 'court' })));
+check('retour : message trop court refusé', short !== null, short);
+const long = await refusal(() => submitAs(null, feedback({ message: 'x'.repeat(2001) })));
+check('retour : message trop long refusé', long !== null, long);
+const badKind = await refusal(() => submitAs(null, feedback({ kind: 'spam' })));
+check('retour : type inconnu refusé', badKind !== null, badKind);
+const badMail = await refusal(() => submitAs(null, feedback({ contact_email: 'pas-un-mail' })));
+check('retour : e-mail de contact invalide refusé', badMail !== null, badMail);
+const noRef = await refusal(() => submitAs(null, feedback({ device_ref: null })));
+check('retour : sans compte, device_ref obligatoire', noRef !== null, noRef);
+
+const fixedId = '33333333-3333-4333-8333-333333333333';
+await submitAs(null, feedback({ id: fixedId, device_ref: 'device-ref-replay' }));
+await submitAs(null, feedback({ id: fixedId, device_ref: 'device-ref-replay' }));
+const replayed = (
+  await db.query('select count(*)::int as n from public.feedback where id = $1', [fixedId])
+).rows[0].n;
+check('retour : renvoyé après une réponse perdue, enregistré une fois', replayed === 1, replayed);
+
+let limitError = null;
+for (let i = 0; i < 6; i++) {
+  limitError = await refusal(() => submitAs(null, feedback({ device_ref: 'device-ref-limit' })));
+  if (i < 5 && limitError) break;
+}
+const limited = (
+  await db.query(
+    "select count(*)::int as n from public.feedback where device_ref = 'device-ref-limit'",
+  )
+).rows[0].n;
+check(
+  'retour : 5 par heure au plus (le 6e est refusé)',
+  limited === 5 && /rate_limited/.test(limitError ?? ''),
+  { limited, limitError },
+);
+for (let i = 0; i < 4; i++) await submitAs(A, feedback({ device_ref: null }));
+const limitA = await refusal(() => submitAs(A, feedback({ device_ref: 'device-ref-other' })));
+check(
+  'retour : la limite suit le compte, même avec un autre device_ref',
+  /rate_limited/.test(limitA ?? ''),
+  limitA,
+);
+
+const shotOk = `${B}/44444444-4444-4444-8444-444444444444.jpg`;
+const fbShot = await submitAs(B, feedback({ device_ref: null, screenshot_path: shotOk }));
+const fbSpoof = await submitAs(
+  B,
+  feedback({ device_ref: null, screenshot_path: `${A}/55555555-5555-4555-8555-555555555555.jpg` }),
+);
+const fbAnonShot = await submitAs(
+  null,
+  feedback({ device_ref: 'device-ref-shot', screenshot_path: shotOk }),
+);
+const shots = (
+  await db.query('select id, screenshot_path from public.feedback where id = any($1::uuid[])', [
+    [fbShot, fbSpoof, fbAnonShot],
+  ])
+).rows;
+const shotOf = (id) => shots.find((r) => r.id === id)?.screenshot_path ?? null;
+check(
+  'retour : capture gardée seulement dans le dossier du compte (ni sans compte, ni chez un autre)',
+  shotOf(fbShot) === shotOk && shotOf(fbSpoof) === null && shotOf(fbAnonShot) === null,
+  shots,
+);
+
+const fbBucket = (
+  await db.query(
+    "select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'mysky-feedback'",
+  )
+).rows[0];
+check(
+  'bucket des captures : privé, 5 Mo, images seulement',
+  fbBucket?.public === false &&
+    Number(fbBucket?.file_size_limit) === 5242880 &&
+    fbBucket.allowed_mime_types.every((t) => t.startsWith('image/')),
+  fbBucket,
+);
+const ownUpload = await refusal(() =>
+  as(B, () =>
+    db.query("insert into storage.objects (bucket_id, name) values ('mysky-feedback', $1)", [
+      shotOk,
+    ]),
+  ),
+);
+check('bucket des captures : dépôt dans son dossier accepté', ownUpload === null, ownUpload);
+const otherUpload = await refusal(() =>
+  as(B, () =>
+    db.query("insert into storage.objects (bucket_id, name) values ('mysky-feedback', $1)", [
+      `${A}/x.jpg`,
+    ]),
+  ),
+);
+check(
+  'bucket des captures : dépôt chez un autre refusé',
+  /row-level security/i.test(otherUpload ?? ''),
+  otherUpload,
+);
+const readBack = await as(
+  B,
+  async () =>
+    (await db.query("select name from storage.objects where bucket_id = 'mysky-feedback'")).rows,
+);
+check(
+  'bucket des captures : aucune lecture, même de sa propre capture',
+  readBack.length === 0,
+  readBack,
+);
+
 await db.exec(`delete from auth.users where id = '${A}'`);
 const left = (await db.query('select count(*)::int as n from public.subjects')).rows[0].n;
 check('supprimer le compte supprime ses lignes', left === 0, left);
+const kept = (await db.query('select user_id from public.feedback where id = $1', [fbA])).rows[0];
+check('supprimer le compte garde ses retours, sans lien au compte', kept?.user_id === null, kept);
 
 await db.close();
 if (failures > 0) {

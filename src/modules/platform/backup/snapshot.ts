@@ -42,6 +42,13 @@ export const BACKUP_TABLES = [
   'sync_files',
 ] as const;
 
+/**
+ * Tables locales volontairement HORS de la sauvegarde : `feedback` (« Donner mon avis ») n'est pas
+ * une donnée de l'utilisateur à restaurer ailleurs ; un retour en attente reste sur ce téléphone.
+ * Elles sont quand même vidées par « Supprimer toutes mes données » (`clearDatabase`).
+ */
+export const LOCAL_ONLY_TABLES = ['feedback'] as const;
+
 export const BACKUP_FORMAT = 'mysky-backup';
 export const BACKUP_VERSION = 1;
 
@@ -137,9 +144,9 @@ export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise
 /** Vide toute la base (suppression de toutes les données, §« Supprimer mes données »). */
 export async function clearDatabase(db: Db): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
-    for (const table of [...BACKUP_TABLES].reverse()) {
+    for (const table of [...LOCAL_ONLY_TABLES, ...[...BACKUP_TABLES].reverse()]) {
       await txn.runAsync(`DELETE FROM ${table}`, []);
     }
   });
-  notifyChange(BACKUP_TABLES);
+  notifyChange([...BACKUP_TABLES, ...LOCAL_ONLY_TABLES]);
 }

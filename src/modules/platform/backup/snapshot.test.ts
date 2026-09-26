@@ -6,6 +6,7 @@ import { createTestDb } from '@/test/memoryDb';
 import {
   BACKUP_TABLES,
   clearDatabase,
+  LOCAL_ONLY_TABLES,
   createSnapshot,
   parseSnapshot,
   restoreSnapshot,
@@ -19,7 +20,8 @@ describe('sauvegarde locale', () => {
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
       [],
     );
-    expect([...BACKUP_TABLES].sort()).toEqual(rows.map((r) => r.name).sort());
+    // Toute table est soit sauvegardée, soit explicitement locale (retours « Donner mon avis »).
+    expect([...BACKUP_TABLES, ...LOCAL_ONLY_TABLES].sort()).toEqual(rows.map((r) => r.name).sort());
     db.close();
   });
 
