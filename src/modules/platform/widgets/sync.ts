@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
-import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import type { WidgetData, WidgetTimelineEntry } from '@/projections';
 import { logger } from '@/shared/logger';
 
+import { requestWidgetUpdate } from './android/widgetNative';
 import { ANDROID_WIDGETS, renderAndroidWidget } from './android/widgets';
 import ExamsWidget from './ios/ExamsWidget';
 import GradesWidget from './ios/GradesWidget';

@@ -1,4 +1,4 @@
-import { FlexWidget, TextWidget } from 'react-native-android-widget';
+import { FlexWidget, TextWidget } from './widgetNative';
 
 import type { WidgetData, WidgetTheme } from '@/projections';
 
