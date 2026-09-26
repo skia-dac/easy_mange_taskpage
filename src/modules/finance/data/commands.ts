@@ -149,14 +149,16 @@ export async function createRecurring(db: Db, input: RecurringInput): Promise<st
 export async function updateRecurring(db: Db, id: string, input: RecurringInput) {
   const values = recurringValues(input);
   return write(db, async (w) => {
-    const current = await w.db.getFirstAsync<{ payout_date: string | null }>(
-      'SELECT payout_date FROM money_recurring WHERE id = ?',
-      [id],
-    );
+    const current = await w.db.getFirstAsync<{
+      payout_date: string | null;
+      end_date: string | null;
+    }>(`SELECT payout_date, end_date FROM money_recurring WHERE id = ? AND ${ALIVE}`, [id]);
+    if (!current) throw new AppError('notFound');
     // Nouveau tour de tontine : il sera compté à sa nouvelle date.
-    const reset: Values =
-      current && current.payout_date !== values.payout_date ? { payout_recorded: 0 } : {};
-    await w.update('money_recurring', id, { ...values, ...reset });
+    const reset: Values = current.payout_date !== values.payout_date ? { payout_recorded: 0 } : {};
+    // Date de fin non fournie (`undefined`) : celle déjà enregistrée est gardée ; `null` l'efface.
+    const endDate: Values = input.endDate === undefined ? { end_date: current.end_date } : {};
+    await w.update('money_recurring', id, { ...values, ...reset, ...endDate });
   });
 }
 

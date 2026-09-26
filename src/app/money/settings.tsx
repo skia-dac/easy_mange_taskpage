@@ -17,7 +17,9 @@ import {
   getMoneyPrefs,
   listCategories,
   setMoneyPrefs,
+  updateCategory,
   type CategoryKind,
+  type MoneyCategory,
   type MoneyPrefs,
 } from '@/modules/finance';
 import { useDb, useLiveQuery } from '@/shared/db';
@@ -54,22 +56,41 @@ export default function MoneySettingsScreen() {
   const [icon, setIcon] = useState<string>('tag');
   const [colorId, setColorId] = useState('slate');
   const [nameError, setNameError] = useState<string | undefined>();
+  /** Catégorie en cours de modification (le formulaire du bas sert alors au renommage). */
+  const [editingId, setEditingId] = useState<string | null>(null);
   const fail = (e: unknown) => showError(userMessageKey(e));
 
   const save = (patch: Partial<MoneyPrefs>) =>
     setMoneyPrefs(db, { ...prefs, ...patch }).catch(fail);
   const period = prefs.period;
 
-  const add = () => {
+  const resetForm = () => {
+    setEditingId(null);
+    setName('');
+    setIcon('tag');
+    setColorId('slate');
+    setNameError(undefined);
+  };
+
+  const startEdit = (c: MoneyCategory) => {
+    setEditingId(c.id);
+    setKind(c.kind);
+    setName(c.name ?? '');
+    setIcon(c.icon);
+    setColorId(c.colorId);
+    setNameError(undefined);
+  };
+
+  const submit = () => {
+    setNameError(undefined);
     if (!name.trim()) {
       setNameError('validation.required');
       return;
     }
-    createCategory(db, { kind, name, icon, colorId }).then(
-      () => {
-        setName('');
-        setNameError(undefined);
-      },
+    const input = { kind, name, icon, colorId };
+    const saving = editingId ? updateCategory(db, editingId, input) : createCategory(db, input);
+    saving.then(
+      () => resetForm(),
       // Erreur de saisie (ex. nom trop long) sous le champ, le reste en message.
       (e: unknown) => (isValidationError(e) ? setNameError(e.fields.name) : fail(e)),
     );
@@ -81,7 +102,9 @@ export default function MoneySettingsScreen() {
       t('money.deleteCategoryMessage'),
       t('common.delete'),
     );
-    if (ok) deleteCategory(db, id).catch(fail);
+    if (!ok) return;
+    if (editingId === id) resetForm();
+    deleteCategory(db, id).catch(fail);
   };
 
   return (
@@ -173,6 +196,7 @@ export default function MoneySettingsScreen() {
                 title={money.categoryName(c)}
                 subtitle={c.kind === 'income' ? t('money.income') : t('money.expense')}
                 leading={<CategoryBadge category={c} />}
+                onPress={() => startEdit(c)}
                 trailing={
                   <Pressable
                     accessibilityRole="button"
@@ -191,16 +215,20 @@ export default function MoneySettingsScreen() {
         )}
         <Card>
           <View style={{ gap: spacing.md }}>
-            <AppText variant="bodyStrong">{t('money.newCategory')}</AppText>
-            <Segmented
-              accessibilityLabel={t('money.categoryKind')}
-              value={kind}
-              onChange={setKind}
-              options={[
-                { value: 'expense', label: t('money.expense') },
-                { value: 'income', label: t('money.income') },
-              ]}
-            />
+            <AppText variant="bodyStrong">
+              {editingId ? t('money.editCategory') : t('money.newCategory')}
+            </AppText>
+            {editingId ? null : (
+              <Segmented
+                accessibilityLabel={t('money.categoryKind')}
+                value={kind}
+                onChange={setKind}
+                options={[
+                  { value: 'expense', label: t('money.expense') },
+                  { value: 'income', label: t('money.income') },
+                ]}
+              />
+            )}
             <TextField
               label={t('money.categoryName')}
               required
@@ -255,7 +283,13 @@ export default function MoneySettingsScreen() {
                 />
               ))}
             </View>
-            <Button label={t('money.addCategory')} onPress={add} />
+            <Button
+              label={editingId ? t('money.saveCategory') : t('money.addCategory')}
+              onPress={submit}
+            />
+            {editingId ? (
+              <Button variant="secondary" label={t('common.cancel')} onPress={resetForm} />
+            ) : null}
           </View>
         </Card>
       </ScrollView>

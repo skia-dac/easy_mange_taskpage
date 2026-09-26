@@ -1,4 +1,6 @@
 import { createCourse, createExam, createSubject } from '@/modules/academic';
+import { createTransaction } from '@/modules/finance';
+import { setActiveSpaces } from '@/modules/identity';
 import { createNote, createWorkItem } from '@/modules/productivity';
 import type { Db } from '@/shared/db';
 import { createTestDb } from '@/test/memoryDb';
@@ -48,4 +50,24 @@ it('ignore les requêtes trop courtes et les jokers SQL', async () => {
   expect(countResults(await searchAll(db, 'f'))).toBe(0);
   expect(countResults(await searchAll(db, '%%'))).toBe(0);
   expect(countResults(await searchAll(db, 'fin'))).toBe(1);
+});
+
+it('trouve les opérations d’argent par leur note, seulement si l’espace Perso est actif', async () => {
+  await createTransaction(db, {
+    kind: 'expense',
+    amountMinor: 2500,
+    currency: 'XAF',
+    date: '2026-09-20',
+    categoryId: 'food',
+    note: 'Pizza anniversaire',
+  });
+  await setActiveSpaces(db, ['study', 'personal']);
+  const r = await searchAll(db, 'pizza');
+  expect(r.transactions.map((x) => x.note)).toEqual(['Pizza anniversaire']);
+  expect(countResults(r)).toBe(1);
+
+  await setActiveSpaces(db, ['study', 'work']);
+  const hidden = await searchAll(db, 'pizza');
+  expect(hidden.transactions).toEqual([]);
+  expect(countResults(hidden)).toBe(0);
 });

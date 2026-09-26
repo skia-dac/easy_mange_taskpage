@@ -20,6 +20,7 @@ import {
   linkStudySession,
   listMoodLogs,
   listRevisionBlocks,
+  listStudySessions,
   listSubtasks,
   listWorkItems,
   moodByHabit,
@@ -227,5 +228,35 @@ describe('enregistrer un plan de révision', () => {
       ['2026-10-03', timetables[0]?.id],
       ['2026-10-09', timetables[0]?.id],
     ]);
+  });
+});
+
+describe('finitions du lot F', () => {
+  it('humeur : deux entrées le même jour (deux appareils), la plus récente gagne', async () => {
+    const insert = (id: string, mood: number, updatedAt: string) =>
+      db.runAsync(
+        `INSERT INTO mood_logs (id, created_at, updated_at, version, sync_status, date, mood, energy)
+         VALUES (?, ?, ?, 1, 'synced', '2026-09-22', ?, 3)`,
+        [id, updatedAt, updatedAt, mood],
+      );
+    // La plus récente est insérée en premier : l'ordre d'insertion ne décide plus.
+    await insert('b', 5, '2026-09-22T20:00:00.000Z');
+    await insert('a', 1, '2026-09-22T08:00:00.000Z');
+    const logs = await listMoodLogs(db, '2026-09-21', '2026-09-27');
+    expect(logs.map((l) => l.mood)).toEqual([5]);
+    expect((await getMoodLog(db, '2026-09-22'))?.mood).toBe(5);
+  });
+
+  it('sessions : bornées par jour local (00:30 et 23:30 comptent), valeurs inconnues repliées', async () => {
+    const at = (d: number, h: number, m: number) => new Date(2026, 8, d, h, m).toISOString();
+    await startStudySession(db, { subjectId: null, startedAt: at(21, 0, 30), plannedMinutes: 25 });
+    await startStudySession(db, { subjectId: null, startedAt: at(27, 23, 30), plannedMinutes: 25 });
+    await startStudySession(db, { subjectId: null, startedAt: at(20, 23, 59), plannedMinutes: 25 });
+    await startStudySession(db, { subjectId: null, startedAt: at(28, 0, 1), plannedMinutes: 25 });
+    const list = await listStudySessions(db, '2026-09-21', '2026-09-27');
+    expect(list).toHaveLength(2);
+    await db.runAsync("UPDATE study_sessions SET kind = 'nap'", []);
+    const again = await listStudySessions(db, '2026-09-21', '2026-09-27');
+    expect(again.map((s) => s.kind)).toEqual(['focus', 'focus']);
   });
 });

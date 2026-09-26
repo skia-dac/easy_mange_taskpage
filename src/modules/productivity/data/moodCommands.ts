@@ -27,10 +27,11 @@ export async function getMoodLog(db: Db, date: IsoDate): Promise<MoodLog | null>
 /** Entrées d'humeur entre deux dates (incluses). */
 export async function listMoodLogs(db: Db, from: IsoDate, to: IsoDate): Promise<MoodLog[]> {
   const rows = await db.getAllAsync<MoodLogRow>(
-    `SELECT * FROM mood_logs WHERE ${ALIVE} AND date >= ? AND date <= ? ORDER BY date`,
+    `SELECT * FROM mood_logs WHERE ${ALIVE} AND date >= ? AND date <= ? ORDER BY date, updated_at`,
     [from, to],
   );
-  // Une seule entrée par jour, même si deux appareils en ont créé une chacun.
+  // Une seule entrée par jour, même si deux appareils en ont créé une chacun : la plus récente
+  // gagne (triée en dernier), comme dans getMoodLog.
   const byDate = new Map<string, MoodLog>();
   for (const r of rows) byDate.set(r.date, toMoodLog(r));
   return [...byDate.values()];
@@ -41,7 +42,7 @@ export async function saveMoodLog(db: Db, input: MoodLogInput): Promise<string> 
   const v = parseInput(moodLogInputSchema, input);
   return write(db, async (w) => {
     const current = await w.db.getFirstAsync<{ id: string }>(
-      `SELECT id FROM mood_logs WHERE ${ALIVE} AND date = ?`,
+      `SELECT id FROM mood_logs WHERE ${ALIVE} AND date = ? ORDER BY updated_at DESC`,
       [v.date],
     );
     const values = { date: v.date, mood: v.mood, energy: v.energy, note: v.note };

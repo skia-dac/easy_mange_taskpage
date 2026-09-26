@@ -1,4 +1,4 @@
-import { notifyChange, write, type Db, type EntityWriter } from '@/shared/db';
+import { write, type Db, type EntityWriter } from '@/shared/db';
 import { toIsoDate, type IsoDate } from '@/shared/dates';
 import { AppError } from '@/shared/errors';
 import { enumOr, parseInput } from '@/shared/validation';
@@ -278,7 +278,6 @@ export async function reorderHabits(db: Db, ids: readonly string[]): Promise<voi
   await write(db, async (w) => {
     for (const [i, id] of ids.entries()) await w.update('habits', id, { position: i });
   });
-  notifyChange(['habits']);
 }
 
 /**

@@ -1,3 +1,5 @@
+import { lightColors } from '@/shared/theme/colors';
+
 import { parseBlocks, type Inline } from './markup';
 
 function escapeHtml(text: string): string {
@@ -71,11 +73,11 @@ export function noteToHtml(content: string, meta: NoteHtmlMeta): string {
   close();
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(meta.title)}</title>
 <style>
-body{font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;padding:32px;color:#111}
-h1{font-size:26px;margin:0 0 4px} .sub{color:#666;margin:0 0 24px} h2{font-size:20px;margin:20px 0 6px}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;padding:32px;color:${lightColors.text}}
+h1{font-size:26px;margin:0 0 4px} .sub{color:${lightColors.muted};margin:0 0 24px} h2{font-size:20px;margin:20px 0 6px}
 h3{font-size:17px;margin:16px 0 4px} h4{font-size:15px;margin:12px 0 4px} p{margin:0 0 8px}
 ul,ol{margin:0 0 8px;padding-left:22px} li.check{list-style:none;margin-left:-18px}
-.footer{margin-top:32px;color:#999;font-size:11px}
+.footer{margin-top:32px;color:${lightColors.muted};font-size:11px}
 </style></head><body>
 <h1>${escapeHtml(meta.title)}</h1>
 ${meta.subtitle ? `<p class="sub">${escapeHtml(meta.subtitle)}</p>` : ''}

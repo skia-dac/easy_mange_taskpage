@@ -8,9 +8,12 @@ import { isoDate, optionalId, optionalText, requiredText } from '@/shared/valida
  * `# Titre`, `**gras**`, `_italique_`, `- liste`, `1. liste numérotée`, `[ ] / [x] checklist`.
  * Ce format reste lisible tel quel, se synchronise facilement et fonctionne dans Expo Go.
  */
+/** Longueur maximale d'une note (au-delà, l'enregistrement automatique coupe le texte). */
+export const NOTE_CONTENT_MAX = 100_000;
+
 export const noteInputSchema = z.object({
   title: optionalText(120),
-  content: z.string().max(100_000, { error: 'validation.tooLong' }).default(''),
+  content: z.string().max(NOTE_CONTENT_MAX, { error: 'validation.tooLong' }).default(''),
   subjectId: optionalId,
   courseSeriesId: optionalId,
   courseDate: isoDate.nullish().transform((v) => v ?? null),
@@ -46,7 +49,8 @@ export const noteCategoryInputSchema = z.object({
 export type NoteCategoryInput = z.input<typeof noteCategoryInputSchema>;
 export type NoteCategory = { id: string; name: string; colorId: string; position: number };
 
-export type AttachmentKind = 'image' | 'file';
+export const attachmentKinds = ['image', 'file'] as const;
+export type AttachmentKind = (typeof attachmentKinds)[number];
 export type Attachment = {
   id: string;
   noteId: string;

@@ -3,8 +3,10 @@ import { notifyChange } from './changes';
 import { newId, nowIso } from './ids';
 import type { Db, SqlValue } from './types';
 
-/** Tables métier synchronisées (toutes ont les colonnes SYNC_COLUMNS). */
-/** Tables synchronisées avec le compte, dans l'ordre des dépendances (parents d'abord). */
+/**
+ * Tables métier synchronisées avec le compte (toutes ont les colonnes SYNC_COLUMNS), dans l'ordre
+ * des dépendances (parents d'abord).
+ */
 export const SYNCED_TABLES = [
   'profiles',
   'subjects',
@@ -34,33 +36,8 @@ export const SYNCED_TABLES = [
   'work_slots',
 ] as const;
 
-export type EntityTable =
-  | 'subjects'
-  | 'timetables'
-  | 'course_series'
-  | 'exams'
-  | 'tasks'
-  | 'assignments'
-  | 'personal_events'
-  | 'course_exceptions'
-  | 'off_periods'
-  | 'notes'
-  | 'note_categories'
-  | 'attachments'
-  | 'profiles'
-  | 'study_sessions'
-  | 'habits'
-  | 'habit_logs'
-  | 'habit_checkpoints'
-  | 'work_subtasks'
-  | 'revision_blocks'
-  | 'mood_logs'
-  | 'money_categories'
-  | 'money_goals'
-  | 'money_loans'
-  | 'money_recurring'
-  | 'money_transactions'
-  | 'work_slots';
+/** Une table écrite par `EntityWriter` : toujours une table synchronisée. */
+export type EntityTable = (typeof SYNCED_TABLES)[number];
 
 export type Values = Record<string, SqlValue>;
 

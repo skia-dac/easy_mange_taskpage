@@ -74,6 +74,8 @@ export type MoneyOverview = {
   byWeekday: { weekday: number; total: number }[];
   largest: Transaction[];
   goals: { goal: Goal; savedMinor: number }[];
+  /** Objectifs archivés (atteints, rangés) : montrés à part, hors des totaux. */
+  archivedGoals: { goal: Goal; savedMinor: number }[];
   loans: { loan: Loan; outstandingMinor: number; totalMinor: number }[];
   /** Prochaine cotisation et prochain tour de chaque tontine. */
   tontines: { recurring: Recurring; next: IsoDate | null; payoutDate: IsoDate | null }[];
@@ -207,16 +209,16 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
   }
 
   const linked = input.linked.filter((t) => t.currency === currency);
-  const goals = input.goals
-    .filter((g) => !g.archived)
-    .map((goal) => ({
-      goal,
-      savedMinor: net(
-        linked.filter((t) => t.goalId === goal.id),
-        'saving',
-        'saving_back',
-      ),
-    }));
+  const withSaved = (goal: Goal) => ({
+    goal,
+    savedMinor: net(
+      linked.filter((t) => t.goalId === goal.id),
+      'saving',
+      'saving_back',
+    ),
+  });
+  const goals = input.goals.filter((g) => !g.archived).map(withSaved);
+  const archivedGoals = input.goals.filter((g) => g.archived).map(withSaved);
   // Un prêt a la devise de son premier mouvement : seuls ceux de la devise affichée comptent
   // (sinon un prêt en EUR paraît « réglé » quand on regarde les XAF).
   const loans = input.loans
@@ -263,6 +265,7 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
     byWeekday,
     largest: [...expenses].sort((a, b) => b.amountMinor - a.amountMinor).slice(0, 5),
     goals,
+    archivedGoals,
     loans,
     tontines,
     insights,

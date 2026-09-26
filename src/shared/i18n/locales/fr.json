@@ -612,7 +612,8 @@
     "assignments": "Devoirs",
     "tasks": "Tâches",
     "exams": "Examens",
-    "events": "Événements"
+    "events": "Événements",
+    "money": "Argent"
   },
   "onboarding": {
     "skip": "Passer",
@@ -1447,7 +1448,16 @@
     "deleteCategoryMessage": "Ses opérations restent, rangées dans « Autre ».",
     "filterLabel": "Filtrer les opérations",
     "loanDirection": "Sens du prêt",
-    "categoryKind": "Type de catégorie"
+    "categoryKind": "Type de catégorie",
+    "editCategory": "Modifier la catégorie",
+    "saveCategory": "Enregistrer la catégorie",
+    "archiveGoal": "Archiver l’objectif",
+    "unarchiveGoal": "Remettre dans mes objectifs",
+    "archivedGoals_one": "{{count}} objectif archivé",
+    "archivedGoals_other": "{{count}} objectifs archivés",
+    "showArchivedGoals": "Afficher les objectifs archivés",
+    "hideArchivedGoals": "Masquer les objectifs archivés",
+    "endDate": "Jusqu’au (facultatif)"
   },
   "glance": {
     "money": "Argent",

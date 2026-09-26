@@ -14,6 +14,7 @@ import {
 } from '@/modules/productivity';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { isValidationError } from '@/shared/validation';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { AppText, Card, Checkbox, confirmDestructive, showError } from '@/shared/ui';
 
@@ -28,6 +29,8 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
     [kind, workId],
   );
   const [draft, setDraft] = useState('');
+  /** Erreur de saisie de la nouvelle sous-tâche, affichée sous le champ. */
+  const [draftError, setDraftError] = useState<string | null>(null);
   const fail = (e: unknown) => showError(userMessageKey(e));
   const items = list.data ?? [];
   const progress = subtaskProgress(items);
@@ -35,7 +38,12 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
   const add = () => {
     const title = draft.trim();
     if (!title) return;
-    addSubtask(db, kind, workId, title).then(() => setDraft(''), fail);
+    setDraftError(null);
+    addSubtask(db, kind, workId, title).then(
+      () => setDraft(''),
+      (e: unknown) =>
+        isValidationError(e) ? setDraftError(Object.values(e.fields)[0] ?? null) : fail(e),
+    );
   };
 
   const remove = async (id: string, title: string) => {
@@ -94,7 +102,10 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
         <TextInput
           value={draft}
-          onChangeText={setDraft}
+          onChangeText={(v) => {
+            setDraft(v);
+            setDraftError(null);
+          }}
           onSubmitEditing={add}
           maxLength={120}
           placeholder={t('subtasks.placeholder')}
@@ -129,6 +140,11 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
           <Feather name="plus" size={20} color={colors.primary} />
         </Pressable>
       </View>
+      {draftError ? (
+        <AppText color="danger" accessibilityLiveRegion="polite">
+          {t(draftError)}
+        </AppText>
+      ) : null}
     </Card>
   );
 }

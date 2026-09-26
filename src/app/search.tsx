@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { EventRow, ExamRow, WorkRow } from '@/components/AgendaRows';
+import { TransactionRow } from '@/components/money/TransactionRow';
 import { NoteCard } from '@/components/NoteCard';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
+import { listCategories } from '@/modules/finance';
 import { useLiveQuery } from '@/shared/db';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
@@ -31,6 +33,7 @@ const TABLES = [
   'tasks',
   'exams',
   'personal_events',
+  'money_transactions',
 ];
 
 /** Recherche globale (§81–83) : résultats regroupés par type. */
@@ -51,6 +54,8 @@ export default function SearchScreen() {
     [trimmed],
   );
   const r = results.data ?? emptyResults;
+  // Catégories personnelles : pour nommer et colorer les opérations trouvées.
+  const categories = useLiveQuery(listCategories, ['money_categories'], []);
   const total = countResults(r);
 
   return (
@@ -176,6 +181,23 @@ export default function SearchScreen() {
             <Card>
               {r.events.map((e) => (
                 <EventRow key={e.id} event={e} />
+              ))}
+            </Card>
+          </>
+        ) : null}
+
+        {r.transactions.length > 0 ? (
+          <>
+            <SectionHeader title={t('search.money')} />
+            <Card>
+              {r.transactions.map((tx) => (
+                <TransactionRow
+                  key={tx.id}
+                  item={tx}
+                  categories={categories.data ?? []}
+                  lang={labels.lang}
+                  showDate
+                />
               ))}
             </Card>
           </>

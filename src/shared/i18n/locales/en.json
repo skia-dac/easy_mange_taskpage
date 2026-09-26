@@ -612,7 +612,8 @@
     "assignments": "Homework",
     "tasks": "Tasks",
     "exams": "Exams",
-    "events": "Events"
+    "events": "Events",
+    "money": "Money"
   },
   "onboarding": {
     "skip": "Skip",
@@ -1447,7 +1448,16 @@
     "deleteCategoryMessage": "Its entries stay, filed under “Other”.",
     "filterLabel": "Filter transactions",
     "loanDirection": "Loan direction",
-    "categoryKind": "Category type"
+    "categoryKind": "Category type",
+    "editCategory": "Edit category",
+    "saveCategory": "Save category",
+    "archiveGoal": "Archive goal",
+    "unarchiveGoal": "Move back to my goals",
+    "archivedGoals_one": "{{count}} archived goal",
+    "archivedGoals_other": "{{count}} archived goals",
+    "showArchivedGoals": "Show archived goals",
+    "hideArchivedGoals": "Hide archived goals",
+    "endDate": "Until (optional)"
   },
   "glance": {
     "money": "Money",

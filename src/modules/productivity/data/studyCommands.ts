@@ -1,7 +1,9 @@
+import { addDaysIso, toIsoDate, type IsoDate } from '@/shared/dates';
 import { nowIso, write, type Db, type EntityWriter } from '@/shared/db';
-import { parseInput } from '@/shared/validation';
+import { enumOr, parseInput } from '@/shared/validation';
 
 import {
+  studyKinds,
   studySessionInputSchema,
   type StudySession,
   type StudySessionInput,
@@ -26,7 +28,7 @@ export const toStudySession = (r: StudySessionRow): StudySession => ({
   startedAt: r.started_at,
   endedAt: r.ended_at,
   plannedMinutes: r.planned_minutes,
-  kind: r.kind as StudySession['kind'],
+  kind: enumOr(studyKinds, r.kind, 'focus'),
 });
 
 /** Démarre une session ; une seule session en cours à la fois (les autres sont clôturées). */
@@ -83,14 +85,25 @@ export async function getActiveStudySession(db: Db): Promise<StudySession | null
   return row ? toStudySession(row) : null;
 }
 
-/** Sessions commencées entre deux dates ISO (jours inclus). */
-export async function listStudySessions(db: Db, from: string, to: string): Promise<StudySession[]> {
+/**
+ * Sessions commencées entre deux dates (jours LOCAUX inclus). `started_at` est en UTC : la requête
+ * prend un jour de marge de chaque côté (une session à 00:30 à Douala est la veille en UTC), puis
+ * le tri se fait sur le jour local, comme `studyTotals`.
+ */
+export async function listStudySessions(
+  db: Db,
+  from: IsoDate,
+  to: IsoDate,
+): Promise<StudySession[]> {
   const rows = await db.getAllAsync<StudySessionRow>(
     `SELECT * FROM study_sessions WHERE ${ALIVE} AND started_at >= ? AND started_at < ?
      ORDER BY started_at DESC`,
-    [`${from}T00:00:00`, `${to}T23:59:59.999Z`],
+    [`${addDaysIso(from, -1)}T00:00:00`, `${addDaysIso(to, 2)}T00:00:00`],
   );
-  return rows.map(toStudySession);
+  return rows.map(toStudySession).filter((s) => {
+    const day = toIsoDate(new Date(s.startedAt));
+    return day >= from && day <= to;
+  });
 }
 
 /** Une matière supprimée : ses sessions de révision restent, sans matière. */

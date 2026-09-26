@@ -1,6 +1,7 @@
 import { normalizeSpaceValue } from '@/shared/spaces';
+import { enumOr } from '@/shared/validation';
 
-import type { Attachment, AttachmentKind, Note, NoteCategory } from '../domain/note';
+import { attachmentKinds, type Attachment, type Note, type NoteCategory } from '../domain/note';
 
 export type NoteRow = {
   id: string;
@@ -52,7 +53,7 @@ export type AttachmentRow = {
 export const toAttachment = (r: AttachmentRow): Attachment => ({
   id: r.id,
   noteId: r.note_id,
-  kind: r.kind as AttachmentKind,
+  kind: enumOr(attachmentKinds, r.kind, 'file'),
   name: r.name,
   mimeType: r.mime_type,
   size: r.size,

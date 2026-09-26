@@ -52,6 +52,7 @@ type Form = {
   time: string | null;
   reminders: number[];
   startDate: string;
+  endDate: string | null;
   active: boolean;
   payoutDate: string | null;
   payout: string;
@@ -85,6 +86,7 @@ export default function RecurringFormScreen() {
     time: params.kind === 'tontine' ? '15:00' : null,
     reminders: params.kind === 'tontine' ? [1440, 180] : [1440],
     startDate: today,
+    endDate: null,
     active: true,
     payoutDate: null,
     payout: '',
@@ -115,6 +117,7 @@ export default function RecurringFormScreen() {
         time: r.time,
         reminders: r.reminders,
         startDate: r.startDate,
+        endDate: r.endDate,
         active: r.active,
         payoutDate: r.payoutDate,
         payout: r.payoutMinor ? amountInput(r.payoutMinor, r.currency) : '',
@@ -138,6 +141,7 @@ export default function RecurringFormScreen() {
         time: form.time,
         reminders: form.reminders,
         startDate: form.startDate,
+        endDate: form.endDate,
         active: form.active,
         payoutDate: form.kind === 'tontine' ? form.payoutDate : null,
         payoutMinor:
@@ -305,6 +309,14 @@ export default function RecurringFormScreen() {
         required
         value={form.startDate}
         onChange={(v) => set({ startDate: v ?? today })}
+      />
+      <DateTimeField
+        label={t('money.endDate')}
+        mode="date"
+        clearable
+        value={form.endDate}
+        onChange={(endDate) => set({ endDate })}
+        error={errors.endDate}
       />
       {tontine ? (
         <>

@@ -100,6 +100,8 @@ export default function MoneyAddScreen() {
     params.id ? 'loading' : 'ready',
   );
   const [error, setError] = useState<string | null>(null);
+  /** Erreur de saisie de la note, sous son champ. */
+  const [noteError, setNoteError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
   const custom = useLiveQuery(listCategories, ['money_categories'], []);
   const money = useMoneyLabels(custom.data ?? []);
@@ -169,6 +171,7 @@ export default function MoneyAddScreen() {
       return;
     }
     setSaving(true);
+    setNoteError(undefined);
     const input = {
       kind,
       amountMinor: amount,
@@ -187,9 +190,14 @@ export default function MoneyAddScreen() {
       close();
     } catch (e) {
       setSaving(false);
-      // Remboursement au-delà du reste dû : message sous le pavé, pas une alerte.
-      if (isValidationError(e) && e.fields.amountMinor) setError(t(e.fields.amountMinor));
-      else showError(userMessageKey(e));
+      if (isValidationError(e)) {
+        // Erreurs de saisie à leur place : la note sous son champ ; le montant (ex. remboursement
+        // au-delà du reste dû) et le reste sous le pavé. Jamais de message générique.
+        const { note: noteKey, ...others } = e.fields;
+        setNoteError(noteKey);
+        const other = others.amountMinor ?? Object.values(others)[0];
+        setError(other ? t(other) : null);
+      } else showError(userMessageKey(e));
     }
   };
 
@@ -309,7 +317,11 @@ export default function MoneyAddScreen() {
         <TextField
           label={t('money.note')}
           value={note}
-          onChangeText={setNote}
+          onChangeText={(v) => {
+            setNote(v);
+            setNoteError(undefined);
+          }}
+          error={noteError}
           placeholder={t('common.optional')}
           maxLength={120}
         />

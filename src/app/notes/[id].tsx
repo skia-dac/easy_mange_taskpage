@@ -29,6 +29,7 @@ import {
   getNote,
   listAttachments,
   listNoteCategories,
+  NOTE_CONTENT_MAX,
   noteToHtml,
   removeAttachment,
   saveNoteContent,
@@ -193,8 +194,11 @@ export default function NoteScreen() {
       latest.current.title = next.title;
     }
     if (next.content !== undefined) {
-      setContent(next.content);
-      latest.current.content = next.content;
+      // Au-delà de la limite, l'enregistrement serait refusé à chaque frappe : le texte est coupé
+      // avant d'être enregistré (collage d'un très long texte).
+      const clipped = next.content.slice(0, NOTE_CONTENT_MAX);
+      setContent(clipped);
+      latest.current.content = clipped;
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => void persist().catch(fail), 600);

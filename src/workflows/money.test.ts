@@ -1,5 +1,6 @@
 import {
   getLoan,
+  getRecurring,
   balanceBefore,
   createCategory,
   createGoal,
@@ -19,6 +20,7 @@ import {
   payDue,
   periodContaining,
   recordDuePayouts,
+  setGoalArchived,
   setLoanClosed,
   setMoneyPrefs,
   unpayDue,
@@ -161,6 +163,13 @@ describe('module Argent', () => {
     expect(o.saved).toBe(20000);
     expect(o.lent).toBe(6000);
     expect(o.goals.map((g) => g.savedMinor)).toEqual([20000]);
+    // Archivé : rangé à part avec son épargne, hors de la liste active.
+    await setGoalArchived(db, goal, true);
+    const archived = await overview('2026-09-15');
+    expect(archived.goals).toEqual([]);
+    expect(archived.archivedGoals.map((g) => g.savedMinor)).toEqual([20000]);
+    await setGoalArchived(db, goal, false);
+    expect((await overview('2026-09-15')).goals).toHaveLength(1);
     expect(o.loans.map((l) => [l.loan.person, l.outstandingMinor, l.totalMinor])).toEqual([
       ['Kevin', 6000, 10000],
     ]);
@@ -369,5 +378,29 @@ describe('module Argent', () => {
     const all = await listRecurring(db);
     expect(monthlyChargesTotal(all, XAF)).toBe(35000 + Math.round((1000 * 52) / 12));
     expect(monthlyChargesTotal(all, 'EUR')).toBe(999);
+  });
+  it('modifier une charge garde sa date de fin, sauf si elle est effacée ou changée', async () => {
+    const base = {
+      kind: 'charge' as const,
+      name: 'Internet',
+      categoryId: 'internet',
+      amountMinor: 10000,
+      currency: XAF,
+      frequency: 'monthly' as const,
+      dayOfMonth: 5,
+      startDate: '2026-09-01',
+    };
+    const id = await createRecurring(db, { ...base, endDate: '2026-12-31' });
+    // Un appel qui ne parle pas de la date de fin ne l'efface plus.
+    await updateRecurring(db, id, { ...base, amountMinor: 12000 });
+    expect(await getRecurring(db, id)).toMatchObject({ amountMinor: 12000, endDate: '2026-12-31' });
+    await updateRecurring(db, id, { ...base, endDate: '2027-06-30' });
+    expect((await getRecurring(db, id))?.endDate).toBe('2027-06-30');
+    await updateRecurring(db, id, { ...base, endDate: null });
+    expect((await getRecurring(db, id))?.endDate).toBeNull();
+    // Fin avant le début : refusée, sous le champ.
+    await expect(
+      updateRecurring(db, id, { ...base, endDate: '2026-08-01' }),
+    ).rejects.toBeInstanceOf(ValidationError);
   });
 });

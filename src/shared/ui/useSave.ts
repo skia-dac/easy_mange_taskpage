@@ -18,10 +18,10 @@ export function useSave(messageKey: (error: unknown) => string = userMessageKey)
   async function run<T>(action: () => Promise<T>): Promise<T | undefined> {
     if (saving) return undefined;
     setSaving(true);
+    // Les erreurs d'un essai précédent disparaissent dès le nouvel essai.
+    setErrors({});
     try {
-      const result = await action();
-      setErrors({});
-      return result;
+      return await action();
     } catch (error) {
       if (isValidationError(error)) {
         setErrors(error.fields);

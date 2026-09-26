@@ -1,7 +1,7 @@
 import { write, type Db, type EntityWriter } from '@/shared/db';
-import { parseInput } from '@/shared/validation';
+import { enumOr, parseInput } from '@/shared/validation';
 
-import { subtaskTitleSchema, type Subtask, type WorkKind } from '../domain/workItem';
+import { subtaskTitleSchema, workKinds, type Subtask, type WorkKind } from '../domain/workItem';
 
 type SubtaskRow = {
   id: string;
@@ -16,7 +16,7 @@ const ALIVE = 'deleted_at IS NULL';
 
 const toSubtask = (r: SubtaskRow): Subtask => ({
   id: r.id,
-  workKind: r.work_kind as WorkKind,
+  workKind: enumOr(workKinds, r.work_kind, 'task'),
   workId: r.work_id,
   title: r.title,
   done: r.done === 1,
