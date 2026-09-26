@@ -17,6 +17,7 @@ import {
 } from '@/modules/academic';
 import { createGoal, createLoan, createRecurring, createTransaction } from '@/modules/finance';
 import { saveProfile } from '@/modules/identity';
+import { createFeedback } from '@/modules/platform';
 import {
   addHabitCount,
   addSubtask,
@@ -253,6 +254,11 @@ beforeAll(async () => {
     space: 'personal',
   });
   ids.noteCategory = await createNoteCategory(mockDb, { name: 'Idées', colorId: 'green' });
+  await createFeedback(
+    mockDb,
+    { kind: 'idea', area: 'tasks', message: 'Pouvoir trier les tâches par matière serait top.' },
+    { appVersion: '1.0.0', os: 'iOS 18.1', locale: 'fr' },
+  );
   // Un conflit de synchronisation gardé de côté (version locale d'une matière remplacée).
   await mockDb.runAsync(
     `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
@@ -318,7 +324,32 @@ const cases: Case[] = [
   {
     name: 'Profil',
     load: () => require('@/app/profile/index') as { default: ComponentType },
-    expect: ['Awa Diallo', 'Marketing stratégique', 'Réglages'],
+    expect: ['Awa Diallo', 'Marketing stratégique', 'Réglages', 'Donner mon avis', 'Mes retours'],
+  },
+  {
+    name: 'Donner mon avis',
+    load: () => require('@/app/feedback/index') as { default: ComponentType },
+    params: { kind: 'bug', area: 'tasks', error: 'TypeError' },
+    expect: [
+      'Un problème',
+      'Une idée',
+      'Partie de l’app',
+      'Ça m’empêche d’utiliser l’app',
+      'Ajouter une capture',
+      'Joint automatiquement',
+      'Type d’erreur : TypeError',
+      'Envoyer par e-mail',
+    ],
+  },
+  {
+    name: 'Mes retours',
+    load: () => require('@/app/feedback/history') as { default: ComponentType },
+    expect: [
+      'Une idée · Tâches',
+      'Pouvoir trier les tâches',
+      'En attente d’envoi',
+      'Renvoyer maintenant',
+    ],
   },
   {
     name: 'Matières',

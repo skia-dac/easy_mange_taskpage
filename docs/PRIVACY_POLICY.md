@@ -4,7 +4,7 @@
 
 ## Français
 
-_Dernière mise à jour : 25 septembre 2026_
+_Dernière mise à jour : 26 septembre 2026_
 
 Cette politique explique quelles données MySky utilise, où elles sont gardées et ce que tu peux en faire. Elle s'applique à l'application MySky sur iPhone et Android.
 
@@ -52,6 +52,7 @@ Tu peux retirer une autorisation à tout moment dans les réglages de ton télé
 Rien ne quitte ton téléphone sans une action de ta part :
 
 - Compte : si tu te connectes, tes données sont synchronisées avec le serveur de MySky (voir ci-dessous).
+- Donner mon avis : seulement ce que tu choisis d'envoyer (voir « Donner mon avis »).
 - Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.
 - Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky.
 
@@ -95,13 +96,29 @@ Le compte est facultatif. Tu peux le créer avec ton adresse e-mail et un mot de
 - Qui y a accès : toi seul depuis l'app. L'hébergeur agit pour notre compte et n'utilise pas tes données pour lui-même. Nous n'y accédons que si c'est nécessaire pour répondre à ta demande ou à une obligation légale.
 - Déconnexion : tu choisis de garder ou d'effacer la copie du téléphone ; les données restent sur ton compte.
 
+### Donner mon avis
+
+Quand tu envoies un retour (Profil › Donner mon avis), MySky transmet seulement :
+
+- Ce que tu écris : le type (problème, idée, autre), la partie de l'app, ton message, « bloquant » si tu le coches, et ton e-mail seulement si tu le donnes pour avoir une réponse.
+- Des informations techniques : la version de MySky, le système du téléphone et sa version, la langue de l'app et, depuis l'écran d'erreur, le type technique de l'erreur (jamais son contenu).
+- Un identifiant aléatoire créé par l'app, qui sert seulement à limiter les envois (5 par heure) ; ce n'est pas un identifiant de ton téléphone.
+- Une capture d'écran si tu en ajoutes une et que tu es connecté à ton compte. Sans compte, elle reste sur ton téléphone.
+
+Aucune autre donnée (notes, tâches, argent…) n'est jointe.
+
+Pourquoi : corriger les problèmes et améliorer l'app. Base légale : ton consentement, donné en envoyant le retour.
+
+Où : chez notre hébergeur Supabase (même région que les comptes), lisible seulement par l'équipe MySky. Si l'app n'est reliée à aucun serveur, le retour part depuis ta messagerie vers kamgayvanarmel@gmail.com.
+
+Durée : jusqu'à son traitement, 12 mois au plus. Si tu supprimes ton compte, tes retours sont gardés sans lien avec lui ; l'e-mail de contact que tu as donné y reste. Pour faire effacer un retour envoyé, écris-nous.
 ### Modifications de cette politique
 
 La date de dernière mise à jour est indiquée en haut. Si cette politique change de façon importante, tu en seras informé dans l'app.
 
 ## English
 
-_Last updated: 25 September 2026_
+_Last updated: 26 September 2026_
 
 This policy explains which data MySky uses, where it is kept and what you can do with it. It applies to the MySky app on iPhone and Android.
 
@@ -149,6 +166,7 @@ You can withdraw a permission at any time in your phone settings.
 Nothing leaves your phone unless you do it:
 
 - Account: if you sign in, your data is synced with the MySky server (see below).
+- Give feedback: only what you choose to send (see “Give feedback”).
 - Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.
 - Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky.
 
@@ -192,6 +210,22 @@ An account is optional. You can create it with your email address and a password
 - Who can access it: only you, from the app. The host acts on our behalf and does not use your data for itself. We only access it when needed to answer your request or a legal obligation.
 - Signing out: you choose to keep or erase the phone's copy; the data stays on your account.
 
+### Give feedback
+
+When you send feedback (Profile › Give feedback), MySky only sends:
+
+- What you write: the type (problem, idea, other), the part of the app, your message, “blocking” if you tick it, and your email only if you give it to get a reply.
+- Technical information: the MySky version, the phone's system and its version, the app language and, from the error screen, the technical type of the error (never its content).
+- A random identifier created by the app, used only to limit sending (5 per hour); it is not an identifier of your phone.
+- A screenshot if you add one and are signed in to your account. Without an account, it stays on your phone.
+
+No other data (notes, tasks, money…) is attached.
+
+Why: to fix problems and improve the app. Legal basis: your consent, given by sending the feedback.
+
+Where: with our host Supabase (same region as accounts), readable only by the MySky team. If the app is not linked to any server, the feedback is sent from your mail app to kamgayvanarmel@gmail.com.
+
+How long: until it is handled, 12 months at most. If you delete your account, your feedback is kept without any link to it; the contact email you gave stays with it. To have sent feedback erased, write to us.
 ### Changes to this policy
 
 The date of the last update is shown at the top. If this policy changes in an important way, you will be told in the app.
@@ -202,5 +236,6 @@ Avec les comptes, MySky **collecte** des données (seulement pour les utilisateu
 
 - **App Store Connect › App Privacy** : *Contact Info* → Email Address, Name ; *User Content* → Photos or Videos, Other User Content ; *Identifiers* → User ID. Pour chacune : liées à l’utilisateur, utilisées pour **App Functionality** uniquement, **pas de pistage** (App Tracking Transparency non requis).
 - **Google Play › Data safety** : collectées (pas partagées) : Email address, Name, User IDs, Photos, Files and docs, Other user-generated content. Chiffrées en transit : oui. L’utilisateur peut demander la suppression : oui (dans l’app, Compte › Supprimer mon compte). Collecte facultative : oui (compte facultatif).
+- **Retours (« Donner mon avis »)** : envoyés seulement à l’initiative de l’utilisateur, avec ou sans compte : *User Content* → Customer Support (message, capture facultative), *Contact Info* → Email Address (facultatif), *Diagnostics* → Other Diagnostic Data (version, système). Google Play : *App activity* → Other user-generated content, *App info and performance* → Diagnostics. Usage : App Functionality / support, pas de pistage.
 - **Suppression du compte** (exigée par les deux stores) : dans l’app, Compte › Supprimer mon compte ; ou par e-mail à l’adresse de contact.
 - **URL de la politique** : l’adresse publique de la page.

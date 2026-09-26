@@ -1020,7 +1020,7 @@
   },
   "privacy": {
     "title": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : 25 septembre 2026",
+    "updated": "Dernière mise à jour : 26 septembre 2026",
     "intro": "Cette politique explique quelles données MySky utilise, où elles sont gardées et ce que tu peux en faire. Elle s'applique à l'application MySky sur iPhone et Android.",
     "toFill": "[à compléter]",
     "open": "Politique de confidentialité",
@@ -1043,7 +1043,7 @@
     },
     "leaves": {
       "title": "Ce qui peut quitter ton téléphone",
-      "body": "Rien ne quitte ton téléphone sans une action de ta part :\n\n• Compte : si tu te connectes, tes données sont synchronisées avec le serveur de MySky (voir ci-dessous).\n• Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.\n• Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky."
+      "body": "Rien ne quitte ton téléphone sans une action de ta part :\n\n• Compte : si tu te connectes, tes données sont synchronisées avec le serveur de MySky (voir ci-dessous).\n• Donner mon avis : seulement ce que tu choisis d'envoyer (voir « Donner mon avis »).\n• Partage : quand tu partages une sauvegarde, une note en PDF ou ton calendrier (.ics), c'est toi qui choisis le destinataire (mail, messagerie, Fichiers…). Le service choisi applique alors ses propres règles. Une sauvegarde contient toutes tes données en clair : ne l'envoie qu'à un endroit de confiance.\n• Sauvegarde du téléphone : sur iPhone, si la sauvegarde iCloud est activée, Apple peut inclure les données de MySky dans la sauvegarde de ton appareil, liée à ton compte Apple. Sur Android, la sauvegarde automatique est désactivée pour MySky."
     },
     "visible": {
       "title": "Widgets, notifications et écran verrouillé",
@@ -1068,6 +1068,10 @@
     "account": {
       "title": "Compte et synchronisation",
       "body": "Le compte est facultatif. Tu peux le créer avec ton adresse e-mail et un mot de passe, ou avec Apple ou Google.\n\n• Données du compte : ton adresse e-mail, ton prénom et ton nom si tu les donnes, et, avec Apple ou Google, l'identifiant que ce service nous transmet. Apple et Google ne reçoivent aucune de tes données MySky.\n• Données synchronisées : tout ce que tu enregistres dans l'app (voir « Les données que tu enregistres »), y compris tes pièces jointes et ta photo de profil.\n• Pourquoi : uniquement pour te connecter et retrouver tes données sur tes appareils. Base légale : ton consentement, donné en créant le compte, et que tu peux retirer en supprimant le compte.\n• Où : chez notre hébergeur Supabase, dans la région {{region}}. Les données peuvent donc être hébergées hors du Cameroun ; ce transfert est fait dans le cadre prévu par la loi n° 2024/017.\n• Qui y a accès : toi seul depuis l'app. L'hébergeur agit pour notre compte et n'utilise pas tes données pour lui-même. Nous n'y accédons que si c'est nécessaire pour répondre à ta demande ou à une obligation légale.\n• Déconnexion : tu choisis de garder ou d'effacer la copie du téléphone ; les données restent sur ton compte."
+    },
+    "feedback": {
+      "title": "Donner mon avis",
+      "body": "Quand tu envoies un retour (Profil › Donner mon avis), MySky transmet seulement :\n\n• Ce que tu écris : le type (problème, idée, autre), la partie de l'app, ton message, « bloquant » si tu le coches, et ton e-mail seulement si tu le donnes pour avoir une réponse.\n• Des informations techniques : la version de MySky, le système du téléphone et sa version, la langue de l'app et, depuis l'écran d'erreur, le type technique de l'erreur (jamais son contenu).\n• Un identifiant aléatoire créé par l'app, qui sert seulement à limiter les envois (5 par heure) ; ce n'est pas un identifiant de ton téléphone.\n• Une capture d'écran si tu en ajoutes une et que tu es connecté à ton compte. Sans compte, elle reste sur ton téléphone.\n\nAucune autre donnée (notes, tâches, argent…) n'est jointe.\n\nPourquoi : corriger les problèmes et améliorer l'app. Base légale : ton consentement, donné en envoyant le retour.\n\nOù : chez notre hébergeur Supabase (même région que les comptes), lisible seulement par l'équipe MySky. Si l'app n'est reliée à aucun serveur, le retour part depuis ta messagerie vers {{email}}.\n\nDurée : jusqu'à son traitement, 12 mois au plus. Si tu supprimes ton compte, tes retours sont gardés sans lien avec lui ; l'e-mail de contact que tu as donné y reste. Pour faire effacer un retour envoyé, écris-nous."
     },
     "changes": {
       "title": "Modifications de cette politique",

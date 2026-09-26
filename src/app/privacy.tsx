@@ -19,6 +19,7 @@ const SECTIONS = [
   'minors',
   'rights',
   'account',
+  'feedback',
   'changes',
 ] as const;
 

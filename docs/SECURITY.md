@@ -111,10 +111,20 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - Les widgets et l'écran verrouillé peuvent montrer des montants : option « Masquer les montants dans les widgets » (•••). Les notifications montrent le nom de la charge et son montant, jamais les notes.
 - Supprimer une opération, une charge, un objectif, un prêt ou une catégorie demande confirmation ; supprimer une catégorie range ses opérations dans « Autre » ; supprimer une charge garde les paiements déjà notés.
 
+## 4l. Retours des utilisateurs (« Donner mon avis »)
+
+- **Téléphone** : table locale `feedback` (migration 17), **hors synchronisation** (ni `SYNCED_TABLES`, ni outbox) et **hors sauvegarde** (`LOCAL_ONLY_TABLES`, un retour n'est pas une donnée à restaurer ailleurs) ; vidée par « Supprimer toutes mes données ». Capture copiée dans `attachments/feedback/` (jamais envoyée par la synchronisation des fichiers), effacée une fois le retour envoyé ou supprimé.
+- **Contenu envoyé** : type, partie, message, « bloquant », e-mail de contact **seulement s'il est saisi**, version de l'app, système, langue, et depuis l'`ErrorBoundary` le **nom** de l'erreur (`TypeError`), jamais son message ni une donnée. `device_ref` = identifiant aléatoire créé une fois dans `app_settings`, jamais un identifiant matériel.
+- **Serveur** : `public.feedback` avec RLS activée **sans aucune policy** et tous les droits retirés à `anon` / `authenticated` : personne ne lit depuis l'app. Écriture seule par `mysky_submit_feedback` (`security definer`, `search_path = public`) qui revalide chaque champ, pose `user_id = auth.uid()` (null sans compte, jamais fourni par le téléphone), refuse au-delà de **5 retours par heure** par compte (ou par `device_ref` sans compte) et ignore un id déjà reçu (renvoi après coupure). Limite connue : sans compte, un `device_ref` peut être changé ; la fonction reste bornée (taille des champs) et ne donne accès à rien.
+- **Captures** : bucket privé `mysky-feedback` (5 Mo, images seulement), dépôt par un compte connecté dans son dossier `<uid>/` uniquement, **aucune lecture**. Sans compte, la capture n'est pas envoyée (dit à l'écran).
+- **Suppression du compte** : la ligne serveur reste, `user_id` passe à null (`on delete set null`) ; conservation jusqu'à traitement, 12 mois au plus (politique de confidentialité, section « Donner mon avis »).
+- **Sans serveur configuré** : repli `mailto:` vers l'adresse de contact publique ; rien n'est envoyé sans l'action de l'utilisateur dans sa messagerie.
+- **Erreurs** : codes courts gardés localement (`network`, `rate_limited`…), messages traduits à l'écran, jamais de message technique.
+
 ## 5. Erreurs
 
 - L'utilisateur ne voit jamais un message technique (« Error 500 »). `userMessageKey()` transforme toute erreur en message clair et traduit.
-- Si un écran plante, l'`ErrorBoundary` de `src/app/_layout.tsx` affiche un message et un bouton « Réessayer ».
+- Si un écran plante, l'`ErrorBoundary` de `src/app/_layout.tsx` affiche un message, un bouton « Réessayer » et « Signaler ce problème » (§4l).
 
 ## 6. Alertes de sécurité connues et acceptées
 

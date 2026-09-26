@@ -6,7 +6,8 @@ import { SpacesCard } from '@/components/SpacesCard';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
 import { fullName, initials, useAuth } from '@/modules/identity';
-import { attachmentUri } from '@/modules/platform';
+import { attachmentUri, FEEDBACK_TABLE, feedbackCounts } from '@/modules/platform';
+import { useLiveQuery } from '@/shared/db';
 import { Image } from 'expo-image';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSpaces } from '@/shared/SpacesContext';
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const name = fullName(profile);
   const auth = useAuth();
   const spaces = useSpaces();
+  const feedback = useLiveQuery(feedbackCounts, [FEEDBACK_TABLE], []);
   const details = [profile?.field, profile?.level, profile?.university, profile?.academicYear]
     .filter(Boolean)
     .join(' · ');
@@ -203,6 +205,22 @@ export default function ProfileScreen() {
           leading={<IconBadge icon="settings" />}
           onPress={() => router.push('/settings')}
         />
+      </Card>
+      <Card>
+        <ListRow
+          title={t('feedback.title')}
+          subtitle={t('feedback.profileHint')}
+          leading={<IconBadge icon="message-square" />}
+          onPress={() => router.push('/feedback')}
+        />
+        {(feedback.data?.total ?? 0) > 0 ? (
+          <ListRow
+            title={t('feedback.historyTitle')}
+            subtitle={t('feedback.historyCount', { count: feedback.data?.total ?? 0 })}
+            leading={<IconBadge icon="inbox" />}
+            onPress={() => router.push('/feedback/history')}
+          />
+        ) : null}
       </Card>
 
       <AppText variant="caption" color="muted" style={{ textAlign: 'center' }}>

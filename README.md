@@ -9,6 +9,7 @@ Statut au **26 septembre 2026** : **MVP complet, audits A → F faits**, en atte
 - **Notes** : mise en forme légère, checklists, catégories, pièces jointes, favoris, PDF.
 - **Habitudes et sport** : quotidien ou hebdomadaire, durée, poids et photos de progression (privées), grille de progression, humeur.
 - **Argent** : dépenses et entrées, catégories perso, charges fixes et tontines, épargne, prêts, rapport, recherche.
+- **Donner mon avis** (Profil) : bug, idée ou autre en un écran, envoyé au serveur (écriture seule, avec ou sans compte) ou par e-mail, gardé en file hors connexion ; « Mes retours » pour suivre l’envoi.
 - **Compte facultatif** (e-mail, Apple, Google) et synchronisation ; sans compte, tout marche hors connexion sur un seul téléphone.
 - **Widgets** : 14 sur iPhone (+ Live Activity « Révision ») et 15 sur Android (dev build requis) ; rappels locaux, sauvegarde quotidienne, export `.ics`, verrouillage Face ID, français et anglais.
 
@@ -62,7 +63,7 @@ src/
     academic/          matières, emplois du temps, cours et exceptions, vacances, examens et notes
     productivity/      tâches, devoirs, étapes, événements, planning, notes, habitudes, révisions, humeur
     finance/           argent : opérations, catégories, charges fixes, tontines, épargne, prêts
-    platform/          synchronisation, notifications, widgets, sauvegarde, export, fichiers, verrouillage
+    platform/          synchronisation, notifications, widgets, sauvegarde, export, fichiers, verrouillage, retours
   projections/         Aujourd'hui, calendrier, vue heures, stats, progression, argent, widgets :
                        calculés à partir des données, jamais stockés
   workflows/           Actions qui touchent plusieurs modules (supprimer une matière, le compte, recherche)
@@ -72,7 +73,7 @@ src/
     theme/colors.ts    ← TOUTES les couleurs de l'app (clair + sombre + matières + couleurs principales)
     theme/tokens.ts    espacements, arrondis, typographie
     i18n/locales/      textes en français (fr.json) et en anglais (en.json)
-    db/                base locale (SQLite), 16 migrations, écritures + file de synchronisation, requêtes vivantes
+    db/                base locale (SQLite), 17 migrations, écritures + file de synchronisation, requêtes vivantes
     errors/            erreurs et messages compréhensibles
     ui/                composants de base (texte, écran, bouton, champs, état vide)
 supabase/              schéma serveur (généré, vérifié par `npm run test:server`) et fonction delete-account

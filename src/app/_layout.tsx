@@ -8,7 +8,7 @@ import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-san
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { PlusJakartaSans_700Bold_Italic } from '@expo-google-fonts/plus-jakarta-sans/700Bold_Italic';
 import { useFonts } from 'expo-font';
-import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { router, Stack, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
@@ -21,7 +21,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AccountGate } from '@/components/AccountGate';
 import { MoneyGate } from '@/components/MoneyGate';
 import { AppearanceProvider, AuthProvider, LanguageGate, SpacesProvider } from '@/modules/identity';
-import { BackupGate, LockGate, NotificationsGate, WidgetsGate } from '@/modules/platform';
+import {
+  BackupGate,
+  FeedbackGate,
+  LockGate,
+  NotificationsGate,
+  safeErrorName,
+  WidgetsGate,
+} from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -63,6 +70,7 @@ export default function RootLayout() {
               <NotificationsGate />
               <AccountGate />
               <BackupGate />
+              <FeedbackGate />
               <MoneyGate />
               <WidgetsGate />
               <AppearanceProvider>
@@ -104,6 +112,19 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
         {t(userMessageKey(error))}
       </AppText>
       <Button label={t('errors.retry')} onPress={retry} />
+      <Button
+        variant="secondary"
+        label={t('feedback.reportProblem')}
+        onPress={() => {
+          // Seulement le nom technique de l'erreur (ex. « TypeError »), jamais son message.
+          const name = safeErrorName(error.name);
+          router.replace({
+            pathname: '/feedback',
+            params: { kind: 'bug', area: 'other', ...(name ? { error: name } : {}) },
+          });
+          void retry();
+        }}
+      />
     </View>
   );
 }
@@ -136,6 +157,8 @@ function ThemedStack() {
         <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
         <Stack.Screen name="account/index" options={{ title: t('account.title') }} />
         <Stack.Screen name="account/conflicts" options={{ title: t('conflicts.title') }} />
+        <Stack.Screen name="feedback/index" options={{ title: t('feedback.title') }} />
+        <Stack.Screen name="feedback/history" options={{ title: t('feedback.historyTitle') }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
     </>

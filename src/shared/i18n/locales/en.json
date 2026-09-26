@@ -1020,7 +1020,7 @@
   },
   "privacy": {
     "title": "Privacy policy",
-    "updated": "Last updated: 25 September 2026",
+    "updated": "Last updated: 26 September 2026",
     "intro": "This policy explains which data MySky uses, where it is kept and what you can do with it. It applies to the MySky app on iPhone and Android.",
     "toFill": "[to be completed]",
     "open": "Privacy policy",
@@ -1043,7 +1043,7 @@
     },
     "leaves": {
       "title": "What can leave your phone",
-      "body": "Nothing leaves your phone unless you do it:\n\n• Account: if you sign in, your data is synced with the MySky server (see below).\n• Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.\n• Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky."
+      "body": "Nothing leaves your phone unless you do it:\n\n• Account: if you sign in, your data is synced with the MySky server (see below).\n• Give feedback: only what you choose to send (see “Give feedback”).\n• Sharing: when you share a backup, a note as PDF or your calendar (.ics), you choose the recipient (email, messaging, Files…). That service then applies its own rules. A backup contains all your data in plain form: only send it somewhere you trust.\n• Phone backup: on iPhone, if iCloud backup is on, Apple may include MySky's data in your device backup, linked to your Apple account. On Android, automatic backup is turned off for MySky."
     },
     "visible": {
       "title": "Widgets, notifications and lock screen",
@@ -1068,6 +1068,10 @@
     "account": {
       "title": "Account and sync",
       "body": "An account is optional. You can create it with your email address and a password, or with Apple or Google.\n\n• Account data: your email address, your first and last name if you give them, and, with Apple or Google, the identifier that service sends us. Apple and Google receive none of your MySky data.\n• Synced data: everything you enter in the app (see “The data you enter”), including your attachments and profile photo.\n• Why: only to sign you in and let you find your data on your devices. Legal basis: your consent, given when you create the account, which you can withdraw by deleting the account.\n• Where: with our host Supabase, in the {{region}} region. Data may therefore be hosted outside Cameroon; this transfer is made within the framework of Law No. 2024/017.\n• Who can access it: only you, from the app. The host acts on our behalf and does not use your data for itself. We only access it when needed to answer your request or a legal obligation.\n• Signing out: you choose to keep or erase the phone's copy; the data stays on your account."
+    },
+    "feedback": {
+      "title": "Give feedback",
+      "body": "When you send feedback (Profile › Give feedback), MySky only sends:\n\n• What you write: the type (problem, idea, other), the part of the app, your message, “blocking” if you tick it, and your email only if you give it to get a reply.\n• Technical information: the MySky version, the phone's system and its version, the app language and, from the error screen, the technical type of the error (never its content).\n• A random identifier created by the app, used only to limit sending (5 per hour); it is not an identifier of your phone.\n• A screenshot if you add one and are signed in to your account. Without an account, it stays on your phone.\n\nNo other data (notes, tasks, money…) is attached.\n\nWhy: to fix problems and improve the app. Legal basis: your consent, given by sending the feedback.\n\nWhere: with our host Supabase (same region as accounts), readable only by the MySky team. If the app is not linked to any server, the feedback is sent from your mail app to {{email}}.\n\nHow long: until it is handled, 12 months at most. If you delete your account, your feedback is kept without any link to it; the contact email you gave stays with it. To have sent feedback erased, write to us."
     },
     "changes": {
       "title": "Changes to this policy",
