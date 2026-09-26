@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useRef } from 'react';
-import { Easing } from 'react-native';
 import Animated, {
+  Easing,
   interpolateColor,
   useAnimatedStyle,
   useReducedMotion,
