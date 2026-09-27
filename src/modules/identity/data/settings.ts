@@ -224,3 +224,21 @@ export async function setRotationAnchor(db: Db, weekStartDate: string): Promise<
   if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStartDate)) throw new AppError('validation');
   await writeSetting(db, 'rotation_anchor', weekStartDate);
 }
+
+/** Vue retenue de l'onglet Carnet : « À faire » (tâches) ou « Notes ». */
+export type NotebookView = 'todo' | 'notes';
+export const NOTEBOOK_VIEW_KEY = 'notebook_view';
+
+export function isNotebookView(value: unknown): value is NotebookView {
+  return value === 'todo' || value === 'notes';
+}
+
+export async function getNotebookView(db: Db): Promise<NotebookView> {
+  const v = await readSetting(db, NOTEBOOK_VIEW_KEY);
+  return isNotebookView(v) ? v : 'todo';
+}
+
+export async function setNotebookView(db: Db, view: NotebookView): Promise<void> {
+  if (!isNotebookView(view)) throw new AppError('validation');
+  await writeSetting(db, NOTEBOOK_VIEW_KEY, view);
+}

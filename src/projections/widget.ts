@@ -216,7 +216,7 @@ export const WIDGET_LINKS: WidgetLinks = {
   study: `${WIDGET_URL_BASE()}study`,
   grades: `${WIDGET_URL_BASE()}grades`,
   calendar: `${WIDGET_URL_BASE()}calendar`,
-  tasks: `${WIDGET_URL_BASE()}tasks`,
+  tasks: `${WIDGET_URL_BASE()}tasks?view=todo`,
   habits: `${WIDGET_URL_BASE()}habits`,
 };
 

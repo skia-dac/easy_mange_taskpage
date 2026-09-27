@@ -229,7 +229,7 @@ export default function TodayScreen() {
                 title={t('today.todoTitle')}
                 action={{
                   label: t('common.seeAll'),
-                  onPress: () => router.navigate('/(tabs)/tasks'),
+                  onPress: () => router.navigate('/(tabs)/tasks?view=todo'),
                 }}
               />
             </RiseIn>

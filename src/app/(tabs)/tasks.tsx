@@ -1,295 +1,64 @@
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 
-import { ExamRow, WorkRow } from '@/components/AgendaRows';
-import { useNotesDesk } from '@/components/NotesDesk';
-import { usePostpone } from '@/components/PostponeSheet';
-import { ProfileButton } from '@/components/ProfileButton';
-import { SearchButton } from '@/components/SearchButton';
-import { SpaceFilter } from '@/components/SpaceUi';
-import { useSubjects } from '@/hooks/useSubjects';
-import { colorOf, listExams } from '@/modules/academic';
+import { NotesPane } from '@/components/notebook/NotesPane';
+import { isTodoTab, TodoPane } from '@/components/notebook/TodoPane';
 import {
-  compareWorkItems,
-  isOverdue,
-  listWorkItems,
-  subtaskCounts,
-  workSpace,
-  type WorkItem,
-  type WorkKind,
-} from '@/modules/productivity';
-import { toIsoDate } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
-import { useSpaces } from '@/shared/SpacesContext';
-import type { SpaceId } from '@/shared/spaces';
-import { useNow } from '@/shared/useNow';
-import {
-  AppText,
-  Card,
-  ChoiceChips,
-  EmptyState,
-  Fab,
-  RiseIn,
-  Screen,
-  SectionHeader,
-  Segmented,
-  SubjectDot,
-  TextButton,
-} from '@/shared/ui';
+  getNotebookView,
+  isNotebookView,
+  NOTEBOOK_VIEW_KEY,
+  setNotebookView,
+  type NotebookView,
+} from '@/modules/identity';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
+import { userMessageKey } from '@/shared/errors';
+import { LoadingScreen, Segmented, showError } from '@/shared/ui';
 
-type Tab = 'task' | 'assignment' | 'exam';
-type Pane = 'tasks' | 'notes';
-
-export default function TasksScreen() {
+/**
+ * Onglet Carnet : « À faire » (tâches, devoirs, examens) et « Notes » dans le même onglet.
+ * `view=todo|notes` dans le lien l'emporte sur la dernière vue retenue.
+ */
+export default function NotebookScreen() {
   const { t } = useTranslation();
-  const [pane, setPane] = useState<Pane>('tasks');
-  const notes = useNotesDesk();
-  const now = useNow();
-  const today = toIsoDate(now);
-  const spaces = useSpaces();
-  const study = spaces.has('study');
-  // Sans l'espace Études, il n'y a que des tâches (pas de devoirs ni d'examens).
-  const [chosenTab, setTab] = useState<Tab>(study ? 'assignment' : 'task');
-  const tab: Tab = study ? chosenTab : 'task';
-  const [space, setSpace] = useState<SpaceId | null>(null);
-  const [subjectId, setSubjectId] = useState<string | null>(null);
-  const [showDone, setShowDone] = useState(false);
-  const { subjects, byId } = useSubjects();
-
-  const work = useLiveQuery(
-    (db) => (tab === 'exam' ? Promise.resolve([]) : listWorkItems(db, tab as WorkKind)),
-    ['tasks', 'assignments'],
-    [tab],
+  const db = useDb();
+  const params = useLocalSearchParams<{ view?: string; tab?: string }>();
+  const linked = isNotebookView(params.view) ? params.view : null;
+  const stored = useLiveQuery(getNotebookView, [settingTable(NOTEBOOK_VIEW_KEY)], []);
+  // Choix fait ici, valable tant que le lien ne demande pas une autre vue.
+  const [picked, setPicked] = useState<{ linked: NotebookView | null; view: NotebookView } | null>(
+    null,
   );
-  const exams = useLiveQuery(
-    (db) => (study ? listExams(db) : Promise.resolve([])),
-    ['exams'],
-    [study],
+  const view = picked && picked.linked === linked ? picked.view : (linked ?? stored.data ?? null);
+
+  if (!view) return <LoadingScreen />;
+
+  const choose = (next: NotebookView) => {
+    setPicked({ linked, view: next });
+    router.setParams({ view: next });
+    void setNotebookView(db, next).catch((e: unknown) => showError(userMessageKey(e)));
+  };
+
+  const switcher = (
+    <Segmented
+      value={view}
+      onChange={choose}
+      accessibilityLabel={t('notebook.views')}
+      options={[
+        { value: 'todo', label: t('notebook.todo') },
+        { value: 'notes', label: t('notebook.notes') },
+      ]}
+    />
   );
-  const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
-  const postpone = usePostpone();
+  const title = t('tabs.notebook');
 
-  const filtered = useMemo(
-    () =>
-      (work.data ?? []).filter((w) => {
-        const s = workSpace(w);
-        // Éléments des espaces désactivés : cachés, jamais effacés.
-        if (!spaces.has(s)) return false;
-        if (tab === 'task' && space && s !== space) return false;
-        return !subjectId || w.subjectId === subjectId;
-      }),
-    [work.data, subjectId, space, spaces, tab],
-  );
-  const groups = useMemo(() => {
-    const open = filtered.filter((w) => w.status !== 'done').sort(compareWorkItems);
-    return {
-      overdue: open.filter((w) => isOverdue(w, now)),
-      today: open.filter((w) => !isOverdue(w, now) && w.dueDate === today),
-      upcoming: open.filter((w) => !isOverdue(w, now) && w.dueDate > today),
-      done: filtered
-        .filter((w) => w.status === 'done')
-        .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '')),
-    };
-  }, [filtered, now, today]);
-
-  const examList = (exams.data ?? []).filter((e) => !subjectId || e.subjectId === subjectId);
-  const upcomingExams = examList.filter((e) => e.date >= today);
-  const pastExams = examList.filter((e) => e.date < today).reverse();
-
-  const section = (title: string, items: WorkItem[]) =>
-    items.length === 0 ? null : (
-      <View key={title} style={{ gap: 8 }}>
-        <RiseIn>
-          <SectionHeader title={title} />
-        </RiseIn>
-        <Card>
-          {items.map((w) => (
-            <RiseIn key={w.id}>
-              <WorkRow
-                item={w}
-                subjects={byId}
-                now={now}
-                showDate
-                onPostpone={postpone.open}
-                progress={counts.data?.get(`${w.kind}:${w.id}`)}
-              />
-            </RiseIn>
-          ))}
-        </Card>
-      </View>
-    );
-
-  const add = () =>
-    tab === 'exam'
-      ? router.push({ pathname: '/exams/form', params: subjectId ? { subjectId } : {} })
-      : router.push({
-          pathname: '/work/form',
-          params: {
-            kind: tab,
-            ...(subjectId ? { subjectId } : {}),
-            ...(tab === 'task' && space ? { space } : {}),
-          },
-        });
-
-  const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
-
-  return (
-    <View style={{ flex: 1 }}>
-      <Screen
-        stagger
-        title={pane === 'notes' ? t('notes.title') : t('tasks.title')}
-        actions={
-          <>
-            {pane === 'tasks' ? <SearchButton /> : null}
-            <ProfileButton />
-          </>
-        }
-      >
-        <RiseIn>
-          <Segmented
-            value={pane}
-            onChange={setPane}
-            accessibilityLabel={t('tabs.notebook')}
-            options={[
-              { value: 'tasks', label: t('tabs.tasks') },
-              { value: 'notes', label: t('tabs.notes') },
-            ]}
-          />
-        </RiseIn>
-        {pane === 'notes' ? (
-          notes.body
-        ) : (
-          <>
-            {study ? (
-              <RiseIn>
-                <Segmented
-                  value={tab}
-                  onChange={setTab}
-                  options={[
-                    { value: 'task', label: t('tasks.segTasks') },
-                    { value: 'assignment', label: t('tasks.segAssignments') },
-                    { value: 'exam', label: t('tasks.segExams') },
-                  ]}
-                />
-              </RiseIn>
-            ) : null}
-            {tab === 'task' ? (
-              <RiseIn>
-                <SpaceFilter
-                  value={space}
-                  onChange={(v) => {
-                    setSpace(v);
-                    if (v !== 'study') setSubjectId(null);
-                  }}
-                />
-              </RiseIn>
-            ) : null}
-            {subjects.length > 0 &&
-            study &&
-            (tab !== 'task' || space === null || space === 'study') ? (
-              <RiseIn>
-                <ChoiceChips
-                  scroll
-                  options={[
-                    { value: null, label: t('tasks.allSubjects') },
-                    ...subjects.map((s) => ({
-                      value: s.id as string | null,
-                      label: s.name,
-                      leading: <SubjectDot color={colorOf(s)} size={10} />,
-                    })),
-                  ]}
-                  selected={[subjectId]}
-                  onToggle={setSubjectId}
-                />
-              </RiseIn>
-            ) : null}
-
-            {tab === 'exam' ? (
-              examList.length === 0 ? (
-                <EmptyState
-                  icon="award"
-                  title={t('tasks.noExams')}
-                  message={t('tasks.noExamsHint')}
-                />
-              ) : (
-                <>
-                  {upcomingExams.length > 0 ? (
-                    <>
-                      <RiseIn>
-                        <SectionHeader title={t('tasks.groupUpcoming')} />
-                      </RiseIn>
-                      <Card>
-                        {upcomingExams.map((e) => (
-                          <RiseIn key={e.id}>
-                            <ExamRow exam={e} subjects={byId} now={now} />
-                          </RiseIn>
-                        ))}
-                      </Card>
-                    </>
-                  ) : null}
-                  {pastExams.length > 0 ? (
-                    <>
-                      <RiseIn>
-                        <SectionHeader title={t('tasks.groupPast')} />
-                      </RiseIn>
-                      <Card>
-                        {pastExams.map((e) => (
-                          <RiseIn key={e.id}>
-                            <ExamRow exam={e} subjects={byId} now={now} />
-                          </RiseIn>
-                        ))}
-                      </Card>
-                    </>
-                  ) : null}
-                </>
-              )
-            ) : (
-              <>
-                {openCount > 0 ? (
-                  <RiseIn>
-                    <AppText variant="caption" color="muted">
-                      {t('tasks.swipeHint')}
-                    </AppText>
-                  </RiseIn>
-                ) : null}
-                {!work.loading && openCount === 0 ? (
-                  <EmptyState
-                    icon="check-circle"
-                    title={t('tasks.empty')}
-                    message={
-                      tab === 'task' ? t('tasks.emptyHint') : t('tasks.emptyAssignmentsHint')
-                    }
-                  />
-                ) : null}
-                {section(t('tasks.groupOverdue'), groups.overdue)}
-                {section(t('tasks.groupToday'), groups.today)}
-                {section(t('tasks.groupUpcoming'), groups.upcoming)}
-                {groups.done.length > 0 ? (
-                  <>
-                    <TextButton
-                      label={
-                        showDone
-                          ? t('tasks.hideDone')
-                          : t('tasks.showDone', { count: groups.done.length })
-                      }
-                      onPress={() => setShowDone(!showDone)}
-                    />
-                    {showDone ? section(t('tasks.groupDone'), groups.done) : null}
-                  </>
-                ) : null}
-              </>
-            )}
-          </>
-        )}
-        <View style={{ height: 80 }} />
-      </Screen>
-      <Fab
-        accessibilityLabel={pane === 'notes' ? t('notes.new') : t('add.title')}
-        onPress={pane === 'notes' ? notes.add : add}
-      />
-      {postpone.sheet}
-    </View>
+  return view === 'notes' ? (
+    <NotesPane title={title} switcher={switcher} />
+  ) : (
+    <TodoPane
+      title={title}
+      switcher={switcher}
+      initialTab={isTodoTab(params.tab) ? params.tab : undefined}
+    />
   );
 }
