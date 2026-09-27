@@ -39,7 +39,7 @@ describe('placement du bouton +', () => {
         <PlusButton accessibilityLabel="Ajouter" onPress={() => {}} />
       </BottomTabBarHeightContext.Provider>,
     );
-    expect(bottomOf('Ajouter')).toBe(spacing.xl);
+    expect(bottomOf('Ajouter')).toBe(spacing.xl + 80);
   });
 
   it('un espace demandé l’emporte', async () => {
