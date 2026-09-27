@@ -7,8 +7,8 @@ import {
   getWorkItem,
   listWorkItems,
   updatePersonalEvent,
+  isWorkVisible,
   updateWorkItem,
-  workSpace,
 } from '@/modules/productivity';
 import { defaultSpace, normalizeSpaces, toggleSpace } from '@/shared/spaces';
 import { createTestDb } from '@/test/memoryDb';
@@ -74,7 +74,7 @@ describe('espaces : aucune donnée perdue ni écrasée', () => {
     db.close();
   });
 
-  it('un devoir ou un élément lié à une matière est rangé dans Études', async () => {
+  it('un devoir appartient à Études ; une tâche avec une matière reste commune', async () => {
     const db = await createTestDb();
     await db.runAsync(
       "INSERT INTO subjects (id, created_at, updated_at, name, color_id) VALUES ('mkt', '', '', 'Marketing', 'violet')",
@@ -85,7 +85,11 @@ describe('espaces : aucune donnée perdue ni écrasée', () => {
     expect((await getWorkItem(db, 'assignment', a))?.space).toBe('study');
     const saved = await getWorkItem(db, 'task', t);
     expect(saved?.space).toBe('study');
-    expect(saved && workSpace(saved)).toBe('study');
+    const assignment = await getWorkItem(db, 'assignment', a);
+    // Études coupé : le devoir disparaît, la tâche reste (sa matière est seulement cachée).
+    expect(assignment && isWorkVisible(assignment, ['work'])).toBe(false);
+    expect(saved && isWorkVisible(saved, ['work'])).toBe(true);
+    expect(assignment && isWorkVisible(assignment, ['study'])).toBe(true);
     db.close();
   });
 
@@ -143,9 +147,10 @@ describe('espaces : aucune donnée perdue ni écrasée', () => {
       money: { recurring: [], payments: [] },
     };
     const hidden = filterBySpaces(data, ['work']);
-    expect(hidden.events.map((e) => e.id)).toEqual(['w']);
+    // Les rendez-vous sont communs : aucun n'est caché par l'espace.
+    expect(hidden.events.map((e) => e.id)).toEqual(['w', 'p']);
     expect(hidden.money).toBeUndefined();
     expect(data.events).toHaveLength(2);
-    expect(filterBySpaces(data, ['work', 'personal']).events).toHaveLength(2);
+    expect(filterBySpaces(data, ['personal']).money).toBeDefined();
   });
 });

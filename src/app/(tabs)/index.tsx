@@ -13,7 +13,6 @@ import { HabitRow } from '@/components/HabitRow';
 import { TodayMoneyCard } from '@/components/money/TodayMoneyCard';
 import { ProfileButton } from '@/components/ProfileButton';
 import { QuickAddMenu } from '@/components/QuickAddMenu';
-import { SpaceFilter } from '@/components/SpaceUi';
 import { DayLineCard } from '@/components/today/DayLineCard';
 import { TodayGlance } from '@/components/today/TodayGlance';
 import { useProfile } from '@/hooks/useProfile';
@@ -26,17 +25,10 @@ import {
 } from '@/modules/identity';
 import { isScheduledOn, logOn, subtaskCounts, type Habit } from '@/modules/productivity';
 import { useSubjects } from '@/hooks/useSubjects';
-import {
-  buildDayLine,
-  buildToday,
-  filterBySpaces,
-  useAgendaData,
-  type NextCourse,
-} from '@/projections';
+import { buildDayLine, buildToday, useAgendaData, type NextCourse } from '@/projections';
 import { timeToMinutes } from '@/shared/dates';
 import { settingTable, useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
-import type { SpaceId } from '@/shared/spaces';
 import { formatDuration, formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
@@ -63,31 +55,15 @@ export default function TodayScreen() {
     ? t('today.greetingName', { name: profile.firstName })
     : t('today.greeting');
   const spaces = useSpaces();
-  // Filtre « Tout / Études / Pro / Perso » (quand plusieurs espaces sont actifs) : il limite le
-  // fil de la journée et les listes ; les tuiles gardent la vue d'ensemble.
-  const [spaceFilter, setSpaceFilter] = useState<SpaceId | null>(null);
-  const filter = spaceFilter && spaces.has(spaceFilter) ? spaceFilter : null;
-  const data = useMemo(
-    () => (agenda.data && filter ? filterBySpaces(agenda.data, [filter]) : agenda.data),
-    [agenda.data, filter],
-  );
-  const fullView = useMemo(
-    () => (agenda.data ? buildToday(agenda.data, now) : null),
-    [agenda.data, now],
-  );
-  const view = useMemo(
-    () => (data ? (data === agenda.data ? fullView : buildToday(data, now)) : null),
-    [data, agenda.data, fullView, now],
-  );
+  // Les données sont déjà limitées aux espaces actifs ; il n'y a pas de filtre par espace ici.
+  const data = agenda.data;
+  const view = useMemo(() => (data ? buildToday(data, now) : null), [data, now]);
 
   const todo = view ? [...view.overdue, ...view.dueToday] : [];
   const weekStart = useWeekStart();
   const [habitSheet, setHabitSheet] = useState<Habit | null>(null);
   const habits = (data?.habits ?? []).filter((h) => view && isScheduledOn(h, view.today));
   const habitLogs = data?.habitLogs ?? [];
-  const allHabits = (agenda.data?.habits ?? []).filter(
-    (h) => fullView && isScheduledOn(h, fullView.today),
-  );
   const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
   const layoutQuery = useLiveQuery(getTodayLayout, [settingTable('today_layout')], []);
   const layout = layoutQuery.data ?? normalizeTodayLayout(null);
@@ -111,12 +87,12 @@ export default function TodayScreen() {
   const sections: Record<TodaySectionId, ReactNode> = view
     ? {
         glance:
-          agenda.data && fullView ? (
+          agenda.data && view ? (
             <RiseIn>
               <TodayGlance
-                view={fullView}
+                view={view}
                 data={agenda.data}
-                habits={allHabits}
+                habits={habits}
                 habitLogs={agenda.data.habitLogs ?? []}
                 subjects={byId}
               />
@@ -179,49 +155,48 @@ export default function TodayScreen() {
               </Card>
             </>
           ) : null,
-        habits:
-          !personal || (filter && filter !== 'personal') ? null : (
-            <>
+        habits: !personal ? null : (
+          <>
+            <RiseIn>
+              <SectionHeader
+                title={t('habits.todayTitle')}
+                action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
+              />
+            </RiseIn>
+            {habits.length > 0 ? (
+              <Card>
+                {habits.map((h) => (
+                  <RiseIn key={h.id}>
+                    <HabitRow
+                      habit={h}
+                      logs={habitLogs}
+                      day={view.today}
+                      today={view.today}
+                      weekStart={weekStart}
+                      onMore={setHabitSheet}
+                    />
+                  </RiseIn>
+                ))}
+              </Card>
+            ) : (
               <RiseIn>
-                <SectionHeader
-                  title={t('habits.todayTitle')}
-                  action={{ label: t('common.seeAll'), onPress: () => router.push('/habits') }}
-                />
-              </RiseIn>
-              {habits.length > 0 ? (
-                <Card>
-                  {habits.map((h) => (
-                    <RiseIn key={h.id}>
-                      <HabitRow
-                        habit={h}
-                        logs={habitLogs}
-                        day={view.today}
-                        today={view.today}
-                        weekStart={weekStart}
-                        onMore={setHabitSheet}
-                      />
-                    </RiseIn>
-                  ))}
-                </Card>
-              ) : (
-                <RiseIn>
-                  <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
-                    <Card>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                        <IconBadge icon="target" />
-                        <View style={{ flex: 1 }}>
-                          <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
-                          <AppText variant="caption" color="muted">
-                            {t('habits.startHint')}
-                          </AppText>
-                        </View>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+                  <Card>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                      <IconBadge icon="target" />
+                      <View style={{ flex: 1 }}>
+                        <AppText variant="bodyStrong">{t('habits.startTitle')}</AppText>
+                        <AppText variant="caption" color="muted">
+                          {t('habits.startHint')}
+                        </AppText>
                       </View>
-                    </Card>
-                  </Pressable>
-                </RiseIn>
-              )}
-            </>
-          ),
+                    </View>
+                  </Card>
+                </Pressable>
+              </RiseIn>
+            )}
+          </>
+        ),
         todo: (
           <>
             <RiseIn>
@@ -318,10 +293,6 @@ export default function TodayScreen() {
           </>
         }
       >
-        <RiseIn>
-          <SpaceFilter value={filter} onChange={setSpaceFilter} />
-        </RiseIn>
-
         {study && !loading && subjects.length === 0 ? (
           <RiseIn>
             <Card>

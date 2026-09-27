@@ -9,7 +9,7 @@ import {
   type IsoDate,
 } from '@/shared/dates';
 import { fieldLimits, SUBTASK_MAX } from '@/shared/fieldLimits';
-import { spaceSchema, type SpaceId } from '@/shared/spaces';
+import { spaceSchema, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
 
 /** Une tâche (académique ou perso) et un devoir ont la même forme mais restent des entités séparées. */
@@ -49,8 +49,8 @@ export const workItemInputSchema = z.object({
     .nullish()
     .transform((v) => v ?? null),
   /**
-   * Espace (Études / Pro / Perso). Absent à la modification = on garde celui enregistré
-   * (jamais écrasé par défaut). Un devoir ou une tâche liée à une matière est toujours Études.
+   * Ancien champ « espace », plus demandé : une tâche est commune aux trois espaces.
+   * Absent à la modification = on garde la valeur enregistrée (jamais écrasée).
    */
   space: spaceSchema.optional(),
 });
@@ -63,10 +63,12 @@ export type WorkItem = z.output<typeof workItemInputSchema> & {
   space: SpaceId;
 };
 
-/** Espace réel d'un élément : un devoir ou un élément lié à une matière est toujours Études. */
-export function workSpace(item: Pick<WorkItem, 'kind' | 'subjectId' | 'space'>): SpaceId {
-  if (item.kind === 'assignment' || item.subjectId) return 'study';
-  return item.space;
+/**
+ * Un devoir appartient à Études : il n'existe que si Études est actif. Une tâche est commune
+ * aux trois espaces et reste toujours visible (sa matière se cache seulement sans Études).
+ */
+export function isWorkVisible(item: Pick<WorkItem, 'kind'>, active: ActiveSpaces): boolean {
+  return item.kind === 'task' || active.includes('study');
 }
 
 /** Moment où l'élément devient « en retard » : l'heure limite, sinon la fin de la journée. */

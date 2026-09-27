@@ -64,12 +64,8 @@ export default function PlanningScreen() {
   const spaces = useSpaces();
   const today = toIsoDate(new Date());
   const thisWeek = startOfWeekOn(today, weekStart);
-  const allSlots = useLiveQuery(listSlots, ['work_slots'], []);
-  // Seulement les créneaux des espaces actifs (un espace coupé ne montre rien).
-  const slots = {
-    ...allSlots,
-    data: allSlots.data?.filter((s) => spaces.has(s.space)),
-  };
+  // Les créneaux sont communs à Pro et Perso : on les montre tous, sans choisir d'espace.
+  const slots = useLiveQuery(listSlots, ['work_slots'], []);
   const anchor = useLiveQuery(getRotationAnchor, ['app_settings'], []);
   const hours = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
   const agenda = useAgendaData();
@@ -79,25 +75,19 @@ export default function PlanningScreen() {
 
   const current = anchor.data ? rotationOf(today, anchor.data, weekStart) : 'A';
   const hasRotation = (slots.data ?? []).some((s) => s.rotation !== 'every');
-  const week = agenda.data
-    ? workWeek(agenda.data, thisWeek, hours.data ?? DEFAULT_WORK_WEEK_HOURS)
-    : null;
-  const copySpace = spaces.has('work') ? 'work' : 'personal';
-  // Un rendez-vous va dans l'espace du planning, seulement s'il est actif.
-  const eventSpace = spaces.has(copySpace) ? copySpace : null;
+  // L'objectif d'heures de travail appartient à Pro.
+  const week =
+    agenda.data && spaces.has('work')
+      ? workWeek(agenda.data, thisWeek, hours.data ?? DEFAULT_WORK_WEEK_HOURS)
+      : null;
   const addSlot = () => router.push('/planning/slot-form');
   const addOptions: ChoiceOption[] = [
     { label: t('planning.slotOption'), hint: t('planning.slotOptionHint'), onPress: addSlot },
-    ...(eventSpace
-      ? [
-          {
-            label: t('planning.eventOption'),
-            hint: t('planning.eventOptionHint'),
-            onPress: () =>
-              router.push({ pathname: '/events/form', params: { space: eventSpace, date: today } }),
-          },
-        ]
-      : []),
+    {
+      label: t('planning.eventOption'),
+      hint: t('planning.eventOptionHint'),
+      onPress: () => router.push({ pathname: '/events/form', params: { date: today } }),
+    },
   ];
 
   const setCurrent = (value: 'A' | 'B') =>
@@ -107,7 +97,7 @@ export default function PlanningScreen() {
 
   const copyLastWeek = async () => {
     const events = await listPersonalEvents(db);
-    const inputs = copyWeekInputs(events, addDaysIso(thisWeek, -7), copySpace);
+    const inputs = copyWeekInputs(events, addDaysIso(thisWeek, -7));
     if (inputs.length === 0) {
       showToast(t('planning.copyNothing'));
       return;

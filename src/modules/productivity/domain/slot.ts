@@ -145,7 +145,6 @@ export function slotOccurrences(
 export function copyWeekInputs(
   events: readonly PersonalEvent[],
   lastWeekFrom: IsoDate,
-  space: SpaceId,
 ): {
   title: string;
   date: IsoDate;
@@ -161,9 +160,7 @@ export function copyWeekInputs(
       .map((e) => `${e.date}|${e.startTime ?? ''}|${e.title}`),
   );
   return events
-    .filter(
-      (e) => !isSlotEvent(e) && e.space === space && e.date >= lastWeekFrom && e.date <= lastWeekTo,
-    )
+    .filter((e) => !isSlotEvent(e) && e.date >= lastWeekFrom && e.date <= lastWeekTo)
     .map((e) => ({
       title: e.title,
       date: addDaysIso(e.date, 7),

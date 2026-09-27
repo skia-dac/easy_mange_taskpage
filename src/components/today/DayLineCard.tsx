@@ -17,12 +17,10 @@ import Animated, {
 import { useLabels } from '@/hooks/useLabels';
 import { colorOf, type Subject } from '@/modules/academic';
 import { eventHref } from '@/components/eventHref';
-import { SpaceTag } from '@/components/SpaceUi';
-import { blockMinutes, isSlotEvent, workSpace } from '@/modules/productivity';
+import { blockMinutes, isSlotEvent } from '@/modules/productivity';
 import type { DayEntry, DayLine, NextCourse } from '@/projections';
 import { toTime } from '@/shared/dates';
 import { formatDuration } from '@/shared/format';
-import type { SpaceId } from '@/shared/spaces';
 import { minTouchSize, useTheme, fonts } from '@/shared/theme';
 import { AppText, SectionHeader } from '@/shared/ui';
 
@@ -290,24 +288,8 @@ function Row({
           </AppText>
         ) : null}
       </View>
-      <View style={{ paddingTop: spacing.sm }}>
-        <SpaceTag space={entrySpace(entry)} />
-      </View>
     </Pressable>
   );
-}
-
-/** Espace d'un moment de la journée (étiquette quand plusieurs espaces sont actifs). */
-function entrySpace(entry: DayEntry): SpaceId {
-  switch (entry.kind) {
-    case 'course':
-    case 'revision':
-      return 'study';
-    case 'event':
-      return entry.event.space;
-    case 'work':
-      return workSpace(entry.item);
-  }
 }
 
 /** Le prochain cours (ou celui en cours) : une carte colorée, avec « Prendre des notes ». */
