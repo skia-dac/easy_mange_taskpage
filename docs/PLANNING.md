@@ -366,8 +366,8 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 Requested by the product owner: Tâches and Notes share one bottom tab.
 
 - **Bar**: 4 visible tabs — Aujourd'hui · Calendrier/Planning · **Carnet** (Feather `clipboard`, « Notebook » in English) · Argent (only with the Perso space).
-- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Devoirs · Examens segments) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task/assignment/exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
-- **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|assignment|exam` opens a segment of « À faire ».
+- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Examens segments; « Tâches » lists tasks and homework together) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task or exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
+- **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|exam` opens a segment of « À faire » (an old `tab=assignment` opens « Tâches »).
 - **Old route** `(tabs)/notes`: hidden from the bar (`href: null`), redirects to `/(tabs)/tasks?view=notes`. Internal links and widgets to the task list use `view=todo`.
 
 ## 5m. Règle des modes (27 Sep 2026)
@@ -387,6 +387,7 @@ Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is ch
 
 - **Code**: `filterBySpaces()` (`projections/spaces.ts`) is the only place that hides by mode. `isWorkVisible()`: homework needs Études, a task is always visible. `useSubjects()` returns no subject without Études, so a task or note linked to a subject stays visible and only its subject is hidden.
 - **Decisions (27 Sep 2026)**: the home « Tout / Études / Pro / Perso » filter and the space tags are removed; homework stays a separate table and is decided at creation (a subject makes it homework; the subject can be changed, not added or removed later).
+- **One task form** (27 Sep 2026): « + Tâche » opens `/work/form`; choosing a subject (Études only) saves it as homework, otherwise as a task. The separate « Devoir » entries of the + menu and of the Ajouter screen, and the « Devoirs » segment of the Carnet, are removed. Editing keeps the saved type.
 
 ## 6. Open questions for the product owner
 

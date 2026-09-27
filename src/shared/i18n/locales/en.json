@@ -251,7 +251,6 @@
   "tasks": {
     "title": "Tasks",
     "segTasks": "Tasks",
-    "segAssignments": "Homework",
     "segExams": "Exams",
     "allSubjects": "All",
     "groupOverdue": "Overdue",
@@ -263,7 +262,6 @@
     "hideDone": "Hide completed",
     "empty": "Nothing to do right now.",
     "emptyHint": "Tap + to add a task.",
-    "emptyAssignmentsHint": "Tap + to add homework.",
     "noExams": "No exams scheduled.",
     "noExamsHint": "Tap + to add an exam.",
     "swipeHint": "Swipe right to complete, left to postpone."
@@ -366,7 +364,6 @@
   },
   "work": {
     "newTask": "New task",
-    "newAssignment": "New homework",
     "editTask": "Edit task",
     "editAssignment": "Edit homework",
     "title": "Title",
@@ -374,6 +371,7 @@
     "titlePlaceholderAssignment": "e.g. Case study",
     "subject": "Subject",
     "subjectOptional": "Subject (optional)",
+    "subjectMakesAssignment": "With a subject, the task becomes homework.",
     "noSubject": "None",
     "description": "Description",
     "dueDate": "Date",

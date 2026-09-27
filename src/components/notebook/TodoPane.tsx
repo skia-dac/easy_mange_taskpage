@@ -16,7 +16,6 @@ import {
   listWorkItems,
   subtaskCounts,
   type WorkItem,
-  type WorkKind,
 } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
@@ -36,11 +35,13 @@ import {
   TextButton,
 } from '@/shared/ui';
 
-export type TodoTab = 'task' | 'assignment' | 'exam';
+export type TodoTab = 'task' | 'exam';
 type Tab = TodoTab;
 
-export function isTodoTab(value: unknown): value is TodoTab {
-  return value === 'task' || value === 'assignment' || value === 'exam';
+/** Sous-onglet d'un lien `tab=` ; l'ancien `assignment` ouvre les tâches (devoirs compris). */
+export function todoTabOf(value: unknown): TodoTab | undefined {
+  if (value === 'exam') return 'exam';
+  return value === 'task' || value === 'assignment' ? 'task' : undefined;
 }
 
 type Props = {
@@ -52,7 +53,10 @@ type Props = {
   initialTab?: TodoTab;
 };
 
-/** Vue « À faire » du Carnet : tâches, devoirs et examens (selon les espaces). */
+/**
+ * Vue « À faire » du Carnet. « Tâches » réunit les tâches et, avec Études, les devoirs
+ * (une tâche avec une matière) ; « Examens » n'existe qu'avec Études.
+ */
 export function TodoPane({ title, switcher, initialTab }: Props) {
   const { t } = useTranslation();
   const now = useNow();
@@ -60,16 +64,23 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
   const spaces = useSpaces();
   const study = spaces.has('study');
   // Sans l'espace Études, il n'y a que des tâches (pas de devoirs ni d'examens).
-  const [chosenTab, setTab] = useState<Tab>(initialTab ?? (study ? 'assignment' : 'task'));
+  const [chosenTab, setTab] = useState<Tab>(initialTab ?? 'task');
   const tab: Tab = study ? chosenTab : 'task';
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
   const { subjects, byId } = useSubjects();
 
   const work = useLiveQuery(
-    (db) => (tab === 'exam' ? Promise.resolve([]) : listWorkItems(db, tab as WorkKind)),
+    async (db) => {
+      if (tab === 'exam') return [];
+      const [tasks, assignments] = await Promise.all([
+        listWorkItems(db, 'task'),
+        study ? listWorkItems(db, 'assignment') : Promise.resolve([]),
+      ]);
+      return [...tasks, ...assignments];
+    },
     ['tasks', 'assignments'],
-    [tab],
+    [tab, study],
   );
   const exams = useLiveQuery(
     (db) => (study ? listExams(db) : Promise.resolve([])),
@@ -132,10 +143,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
       ? router.push({ pathname: '/exams/form', params: subjectId ? { subjectId } : {} })
       : router.push({
           pathname: '/work/form',
-          params: {
-            kind: tab,
-            ...(study && subjectId ? { subjectId } : {}),
-          },
+          params: study && subjectId ? { subjectId } : {},
         });
 
   const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
@@ -160,7 +168,6 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
               onChange={setTab}
               options={[
                 { value: 'task', label: t('tasks.segTasks') },
-                { value: 'assignment', label: t('tasks.segAssignments') },
                 { value: 'exam', label: t('tasks.segExams') },
               ]}
             />
@@ -232,7 +239,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
               <EmptyState
                 icon="check-circle"
                 title={t('tasks.empty')}
-                message={tab === 'task' ? t('tasks.emptyHint') : t('tasks.emptyAssignmentsHint')}
+                message={t('tasks.emptyHint')}
               />
             ) : null}
             {section(t('tasks.groupOverdue'), groups.overdue)}

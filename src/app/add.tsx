@@ -35,19 +35,11 @@ export default function AddScreen() {
       href: { pathname: '/notes/[id]', params: { id: 'new' } },
     },
     {
-      label: t('add.assignment'),
-      study: true,
-      icon: 'book',
-      color: 'primary',
-      background: 'primarySoft',
-      href: { pathname: '/work/form', params: { kind: 'assignment', ...withDate } },
-    },
-    {
       label: t('add.task'),
       icon: 'check-square',
       color: 'success',
       background: 'successSoft',
-      href: { pathname: '/work/form', params: { kind: 'task', ...withDate } },
+      href: { pathname: '/work/form', params: withDate },
     },
     {
       label: t('add.exam'),

@@ -67,16 +67,8 @@ export function QuickAddMenu({ note }: { note?: Record<string, string> }) {
       icon: 'check',
       color: 'primary',
       background: 'primarySoft',
-      href: { pathname: '/work/form', params: { kind: 'task' } },
-    },
-    {
-      key: 'assignment',
-      needs: 'study',
-      label: t('add.assignment'),
-      icon: 'book',
-      color: 'primary',
-      background: 'primarySoft',
-      href: { pathname: '/work/form', params: { kind: 'assignment' } },
+      // Une seule fiche : avec une matière, la tâche devient un devoir.
+      href: { pathname: '/work/form' },
     },
     {
       key: 'note',

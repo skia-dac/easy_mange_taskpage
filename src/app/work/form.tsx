@@ -52,13 +52,15 @@ export default function WorkFormScreen() {
     fromCourse?: string;
   }>();
   const spaces = useSpaces();
-  const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
-  const isTask = kind === 'task';
+  const study = spaces.has('study');
+  const editing = !!params.id;
+  // Le type enregistré (tâche ou devoir) ne change jamais à la modification.
+  const savedKind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
     title: '',
     description: '',
-    subjectId: params.subjectId ?? null,
+    subjectId: study ? (params.subjectId ?? null) : null,
     dueDate: params.date ?? toIsoDate(new Date()),
     dueTime: null,
     priority: 'normal',
@@ -67,15 +69,18 @@ export default function WorkFormScreen() {
     repeat: 'none',
     estimatedMinutes: null,
   });
+  // Une seule fiche : à la création, une matière (Études) fait de la tâche un devoir.
+  const kind: WorkKind = editing ? savedKind : study && form.subjectId ? 'assignment' : 'task';
+  const isTask = kind === 'task';
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
 
   useEffect(() => {
     if (!params.id) return;
-    void getWorkItem(db, kind, params.id)
+    void getWorkItem(db, savedKind, params.id)
       .then((w) => w && setForm(w))
       .catch(reportLoadError);
-  }, [db, kind, params.id]);
+  }, [db, savedKind, params.id]);
 
   const submit = () =>
     run(async () => {
@@ -101,13 +106,11 @@ export default function WorkFormScreen() {
     }
   };
 
-  const title = params.id
+  const title = editing
     ? isTask
       ? t('work.editTask')
       : t('work.editAssignment')
-    : isTask
-      ? t('work.newTask')
-      : t('work.newAssignment');
+    : t('work.newTask');
 
   return (
     <FormScreen
@@ -137,14 +140,23 @@ export default function WorkFormScreen() {
         autoFocus={!params.id}
       />
       {/* La matière appartient à Études : sans Études, le champ n'existe pas. */}
-      {spaces.has('study') ? (
-        <SelectField
-          label={t('work.subjectOptional')}
-          value={form.subjectId ?? null}
-          noneLabel={t('work.noSubject')}
-          options={subjectOptions(subjects)}
-          onChange={(subjectId) => set({ subjectId })}
-        />
+      {/* À la modification, un devoir garde une matière et une tâche sans matière n'en reçoit pas. */}
+      {study && (!editing || form.subjectId) ? (
+        <>
+          <SelectField
+            label={isTask ? t('work.subjectOptional') : t('work.subject')}
+            required={!isTask}
+            value={form.subjectId ?? null}
+            noneLabel={isTask ? t('work.noSubject') : undefined}
+            options={subjectOptions(subjects)}
+            onChange={(subjectId) => set({ subjectId })}
+          />
+          {!editing ? (
+            <AppText variant="caption" color="muted">
+              {t('work.subjectMakesAssignment')}
+            </AppText>
+          ) : null}
+        </>
       ) : null}
       <DateTimeField
         label={isTask ? t('work.dueDate') : t('work.dueDateAssignment')}

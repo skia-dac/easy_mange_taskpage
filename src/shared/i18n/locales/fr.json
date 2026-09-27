@@ -251,7 +251,6 @@
   "tasks": {
     "title": "Tâches",
     "segTasks": "Tâches",
-    "segAssignments": "Devoirs",
     "segExams": "Examens",
     "allSubjects": "Toutes",
     "groupOverdue": "En retard",
@@ -263,7 +262,6 @@
     "hideDone": "Masquer les terminés",
     "empty": "Rien à faire pour le moment.",
     "emptyHint": "Appuie sur + pour ajouter une tâche.",
-    "emptyAssignmentsHint": "Appuie sur + pour ajouter un devoir.",
     "noExams": "Aucun examen programmé.",
     "noExamsHint": "Appuie sur + pour ajouter un examen.",
     "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter."
@@ -366,7 +364,6 @@
   },
   "work": {
     "newTask": "Nouvelle tâche",
-    "newAssignment": "Nouveau devoir",
     "editTask": "Modifier la tâche",
     "editAssignment": "Modifier le devoir",
     "title": "Titre",
@@ -374,6 +371,7 @@
     "titlePlaceholderAssignment": "Ex. Étude de cas",
     "subject": "Matière",
     "subjectOptional": "Matière (facultatif)",
+    "subjectMakesAssignment": "Avec une matière, la tâche devient un devoir.",
     "noSubject": "Aucune",
     "description": "Description",
     "dueDate": "Date",
