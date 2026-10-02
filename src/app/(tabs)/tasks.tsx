@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { NotesPane } from '@/components/notebook/NotesPane';
-import { isTodoTab, TodoPane } from '@/components/notebook/TodoPane';
+import { todoTabOf, TodoPane } from '@/components/notebook/TodoPane';
 import {
   getNotebookView,
   isNotebookView,
@@ -55,10 +55,6 @@ export default function NotebookScreen() {
   return view === 'notes' ? (
     <NotesPane title={title} switcher={switcher} />
   ) : (
-    <TodoPane
-      title={title}
-      switcher={switcher}
-      initialTab={isTodoTab(params.tab) ? params.tab : undefined}
-    />
+    <TodoPane title={title} switcher={switcher} initialTab={todoTabOf(params.tab)} />
   );
 }

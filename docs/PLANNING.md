@@ -322,12 +322,12 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **Always there**: Aujourd'hui, Tâches, Notes, Calendrier / Planning, rappels, recherche, bilan du soir, concentration timer, stats.
 - **Études**: subjects, courses and timetables, homework, exams and grades, revision plan, school holidays, school profile fields, course / exam / revision reminders.
 - **Perso**: Argent tab (hidden otherwise), habits, mood.
-- **Every task, event and note has a space** (`space` column, migration 12; homework and anything linked to a subject is always Études — `workSpace()`, `noteSpace()`). Forms show a space picker among the active spaces (hidden if only one). The space is written only when given: an edit without it keeps the saved one.
+- ~~Every task, event and note has a space~~ — replaced on 27 Sep 2026 by the mode rule (§5m): tasks, appointments, slots and notes are shared and never ask for a space. The `space` columns (migration 12, 14) stay in the database, unused and never overwritten.
 - **Filtering** is done in one place: `filterBySpaces()` in `projections/spaces.ts`, applied by `loadAgenda()` (Today, calendar, review, notifications, widgets) and by search, tasks and notes lists.
-- **Home**: the 4 tiles depend on the spaces (`glanceTiles()`): Études seul — cours du jour, examen, à faire, révision · Pro seul — à faire, à planifier, réunions, terminées · Perso seul — argent, habitudes, à faire, à payer · Études + Perso — argent, habitudes, à faire, examen · Pro + Perso — argent, habitudes, à faire, à planifier · Études + Pro — à faire, examen, à planifier, cours · all three — argent, habitudes, à faire, examen. « À planifier » = weekly work-hours goal (Profil, default 40 h) − Pro appointments and Pro task estimates of the week. With 2+ spaces: « Tout / Études / Pro / Perso » filter and a space tag on each moment of « Ta journée ». The + menu and the Ajouter screen only offer what the active spaces use.
+- **Home**: the 4 tiles depend on the spaces (`glanceTiles()`): Études seul — cours du jour, examen, à faire, révision · Pro seul — à faire, à planifier, réunions, terminées · Perso seul — argent, habitudes, à faire, à payer · Études + Perso — argent, habitudes, à faire, examen · Pro + Perso — argent, habitudes, à faire, à planifier · Études + Pro — à faire, examen, à planifier, cours · all three — argent, habitudes, à faire, examen. « À planifier » = weekly work-hours goal (Profil, default 40 h, Pro only) − all appointments, slots and task estimates of the week. No space filter and no space tag on home (removed 27 Sep 2026, §5m). The + menu and the Ajouter screen only offer what the active spaces use.
 - Tab 2 is « Calendrier » in Études alone, « Planning » otherwise.
 - **Notes are common to all spaces** (validated 25 Sep 2026): no space on notes; user-created **note categories** (migration 13, `note_categories`, `notes.category_id`): filter chips in Notes, picker in the editor, `/notes/categories` and `/notes/category-form`. Deleting a category keeps its notes (uncategorised).
-- **Mon planning** (`/planning`, migration 14 `work_slots`): fixed slots (days, start / end, overnight = ends next day, place, colour, validity dates, space Pro or Perso) repeating every week or on **A / B weeks** (setting « Cette semaine est une semaine A / B », anchor in `rotation_anchor`). Slot sessions are computed (`slotOccurrences`), never stored, and shown as appointments everywhere (Aujourd'hui, planning, hours grid, « À planifier » hours); tapping one opens its slot, dragging is refused with an explanation. « Copier la semaine dernière » copies last week's appointments of the space to this week (no duplicates, slots excluded).
+- **Mon planning** (`/planning`, migration 14 `work_slots`): fixed slots (days, start / end, overnight = ends next day, place, colour, validity dates; shown with Pro or Perso, no space asked) repeating every week or on **A / B weeks** (setting « Cette semaine est une semaine A / B », anchor in `rotation_anchor`). Slot sessions are computed (`slotOccurrences`), never stored, and shown as appointments everywhere (Aujourd'hui, planning, hours grid, « À planifier » hours); tapping one opens its slot, dragging is refused with an explanation. « Copier la semaine dernière » copies last week's appointments to this week (no duplicates, slots excluded).
 - **Sport: duration and body tracking** (migration 15): each habit day can carry an **optional duration** (day sheet: 15 min … 2 h, « Pas noté »; noting a duration also ticks the day), shown on the habit row and as « Temps noté ce mois ». A habit with **« Suivi physique : photo et poids »** (on by default for the Sport suggestion and existing `activity` habits) gets **check-ins** (`habit_checkpoints`: date, weight kg, photo, note; photo or weight required). Creating such a habit opens « Point de départ » (camera or gallery + weight). The habit page shows Départ / Maintenant photos, weights and the difference. **Progress photos never leave the phone** (stored in the app's private folder, excluded from file sync; weights sync); deleting a check-in or the habit deletes the photo files.
 - **Progress, GitHub style**: `projections/progress.ts` (levels 0–4 per day for one habit or all), `ProgressHeatmap` with Semaine / Mois / Année on a habit's page and on « Mes habitudes »; home-screen widget **Progression** (iPhone: small = month, medium / large = 26 weeks; Android: 20 weeks), following the habit chosen on its page (else all habits). Colours `heat0`–`heat4` in the theme.
 
@@ -366,9 +366,28 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 Requested by the product owner: Tâches and Notes share one bottom tab.
 
 - **Bar**: 4 visible tabs — Aujourd'hui · Calendrier/Planning · **Carnet** (Feather `clipboard`, « Notebook » in English) · Argent (only with the Perso space).
-- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Devoirs · Examens segments) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task/assignment/exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
-- **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|assignment|exam` opens a segment of « À faire ».
+- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Examens segments; « Tâches » lists tasks and homework together) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task or exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
+- **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|exam` opens a segment of « À faire » (an old `tab=assignment` opens « Tâches »).
 - **Old route** `(tabs)/notes`: hidden from the bar (`href: null`), redirects to `/(tabs)/tasks?view=notes`. Internal links and widgets to the task list use `view=todo`.
+
+## 5m. Règle des modes (27 Sep 2026)
+
+Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is chosen once, in the profile, never inside an item.
+
+- **A feature that belongs to one mode exists only when that mode is on.** Off means no trace: no greyed button, no empty filter, no field. Data is hidden, never deleted.
+- **A feature shared by several modes is identical in each** and never asks « which mode? »: no space picker in forms, no space filter in lists, no space tag on items.
+
+| Belongs to | Features |
+|---|---|
+| Études only | subjects, courses, timetables, exams, grades, holidays, revision, homework, the subject field on a task or a note |
+| Pro only | weekly work-hours goal and « À planifier » |
+| Perso only | Argent, habits, mood, body tracking |
+| Pro or Perso | repeating slots, A / B weeks, Mon planning |
+| All three | Today, calendar, tasks, notes, appointments, focus timer, search |
+
+- **Code**: `filterBySpaces()` (`projections/spaces.ts`) is the only place that hides by mode. `isWorkVisible()`: homework needs Études, a task is always visible. `useSubjects()` returns no subject without Études, so a task or note linked to a subject stays visible and only its subject is hidden.
+- **Decisions (27 Sep 2026)**: the home « Tout / Études / Pro / Perso » filter and the space tags are removed; homework stays a separate table and is decided at creation (a subject makes it homework; the subject can be changed, not added or removed later).
+- **One task form** (27 Sep 2026): « + Tâche » opens `/work/form`; choosing a subject (Études only) saves it as homework, otherwise as a task. The separate « Devoir » entries of the + menu and of the Ajouter screen, and the « Devoirs » segment of the Carnet, are removed. Editing keeps the saved type.
 
 ## 6. Open questions for the product owner
 

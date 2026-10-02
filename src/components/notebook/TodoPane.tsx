@@ -7,22 +7,19 @@ import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
 import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
-import { SpaceFilter } from '@/components/SpaceUi';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf, listExams } from '@/modules/academic';
 import {
   compareWorkItems,
   isOverdue,
+  isWorkVisible,
   listWorkItems,
   subtaskCounts,
-  workSpace,
   type WorkItem,
-  type WorkKind,
 } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
-import type { SpaceId } from '@/shared/spaces';
 import { useNow } from '@/shared/useNow';
 import {
   AppText,
@@ -38,11 +35,13 @@ import {
   TextButton,
 } from '@/shared/ui';
 
-export type TodoTab = 'task' | 'assignment' | 'exam';
+export type TodoTab = 'task' | 'exam';
 type Tab = TodoTab;
 
-export function isTodoTab(value: unknown): value is TodoTab {
-  return value === 'task' || value === 'assignment' || value === 'exam';
+/** Sous-onglet d'un lien `tab=` ; l'ancien `assignment` ouvre les tâches (devoirs compris). */
+export function todoTabOf(value: unknown): TodoTab | undefined {
+  if (value === 'exam') return 'exam';
+  return value === 'task' || value === 'assignment' ? 'task' : undefined;
 }
 
 type Props = {
@@ -54,7 +53,10 @@ type Props = {
   initialTab?: TodoTab;
 };
 
-/** Vue « À faire » du Carnet : tâches, devoirs et examens (selon les espaces). */
+/**
+ * Vue « À faire » du Carnet. « Tâches » réunit les tâches et, avec Études, les devoirs
+ * (une tâche avec une matière) ; « Examens » n'existe qu'avec Études.
+ */
 export function TodoPane({ title, switcher, initialTab }: Props) {
   const { t } = useTranslation();
   const now = useNow();
@@ -62,17 +64,23 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
   const spaces = useSpaces();
   const study = spaces.has('study');
   // Sans l'espace Études, il n'y a que des tâches (pas de devoirs ni d'examens).
-  const [chosenTab, setTab] = useState<Tab>(initialTab ?? (study ? 'assignment' : 'task'));
+  const [chosenTab, setTab] = useState<Tab>(initialTab ?? 'task');
   const tab: Tab = study ? chosenTab : 'task';
-  const [space, setSpace] = useState<SpaceId | null>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
   const { subjects, byId } = useSubjects();
 
   const work = useLiveQuery(
-    (db) => (tab === 'exam' ? Promise.resolve([]) : listWorkItems(db, tab as WorkKind)),
+    async (db) => {
+      if (tab === 'exam') return [];
+      const [tasks, assignments] = await Promise.all([
+        listWorkItems(db, 'task'),
+        study ? listWorkItems(db, 'assignment') : Promise.resolve([]),
+      ]);
+      return [...tasks, ...assignments];
+    },
     ['tasks', 'assignments'],
-    [tab],
+    [tab, study],
   );
   const exams = useLiveQuery(
     (db) => (study ? listExams(db) : Promise.resolve([])),
@@ -85,13 +93,11 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
   const filtered = useMemo(
     () =>
       (work.data ?? []).filter((w) => {
-        const s = workSpace(w);
-        // Éléments des espaces désactivés : cachés, jamais effacés.
-        if (!spaces.has(s)) return false;
-        if (tab === 'task' && space && s !== space) return false;
-        return !subjectId || w.subjectId === subjectId;
+        // Un devoir n'existe qu'avec Études ; une tâche est commune aux trois espaces.
+        if (!isWorkVisible(w, spaces.active)) return false;
+        return !study || !subjectId || w.subjectId === subjectId;
       }),
-    [work.data, subjectId, space, spaces, tab],
+    [work.data, subjectId, spaces, study],
   );
   const groups = useMemo(() => {
     const open = filtered.filter((w) => w.status !== 'done').sort(compareWorkItems);
@@ -137,11 +143,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
       ? router.push({ pathname: '/exams/form', params: subjectId ? { subjectId } : {} })
       : router.push({
           pathname: '/work/form',
-          params: {
-            kind: tab,
-            ...(subjectId ? { subjectId } : {}),
-            ...(tab === 'task' && space ? { space } : {}),
-          },
+          params: study && subjectId ? { subjectId } : {},
         });
 
   const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
@@ -166,24 +168,12 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
               onChange={setTab}
               options={[
                 { value: 'task', label: t('tasks.segTasks') },
-                { value: 'assignment', label: t('tasks.segAssignments') },
                 { value: 'exam', label: t('tasks.segExams') },
               ]}
             />
           </RiseIn>
         ) : null}
-        {tab === 'task' ? (
-          <RiseIn>
-            <SpaceFilter
-              value={space}
-              onChange={(v) => {
-                setSpace(v);
-                if (v !== 'study') setSubjectId(null);
-              }}
-            />
-          </RiseIn>
-        ) : null}
-        {subjects.length > 0 && study && (tab !== 'task' || space === null || space === 'study') ? (
+        {subjects.length > 0 && study ? (
           <RiseIn>
             <ChoiceChips
               scroll
@@ -249,7 +239,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
               <EmptyState
                 icon="check-circle"
                 title={t('tasks.empty')}
-                message={tab === 'task' ? t('tasks.emptyHint') : t('tasks.emptyAssignmentsHint')}
+                message={t('tasks.emptyHint')}
               />
             ) : null}
             {section(t('tasks.groupOverdue'), groups.overdue)}

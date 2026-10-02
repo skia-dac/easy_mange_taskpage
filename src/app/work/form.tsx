@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ReminderField } from '@/components/ReminderField';
-import { SpacePicker } from '@/components/SpaceUi';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -25,7 +24,6 @@ import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useSpaces } from '@/shared/SpacesContext';
-import { defaultSpace, spaceIds, type SpaceId } from '@/shared/spaces';
 import {
   AppText,
   ChoiceChips,
@@ -52,16 +50,17 @@ export default function WorkFormScreen() {
     subjectId?: string;
     date?: string;
     fromCourse?: string;
-    space?: string;
   }>();
   const spaces = useSpaces();
-  const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
-  const isTask = kind === 'task';
+  const study = spaces.has('study');
+  const editing = !!params.id;
+  // Le type enregistré (tâche ou devoir) ne change jamais à la modification.
+  const savedKind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
     title: '',
     description: '',
-    subjectId: params.subjectId ?? null,
+    subjectId: study ? (params.subjectId ?? null) : null,
     dueDate: params.date ?? toIsoDate(new Date()),
     dueTime: null,
     priority: 'normal',
@@ -69,19 +68,19 @@ export default function WorkFormScreen() {
     reminderAt: null,
     repeat: 'none',
     estimatedMinutes: null,
-    space: spaceIds.includes(params.space as SpaceId)
-      ? (params.space as SpaceId)
-      : defaultSpace(spaces.active),
   });
+  // Une seule fiche : à la création, une matière (Études) fait de la tâche un devoir.
+  const kind: WorkKind = editing ? savedKind : study && form.subjectId ? 'assignment' : 'task';
+  const isTask = kind === 'task';
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
 
   useEffect(() => {
     if (!params.id) return;
-    void getWorkItem(db, kind, params.id)
+    void getWorkItem(db, savedKind, params.id)
       .then((w) => w && setForm(w))
       .catch(reportLoadError);
-  }, [db, kind, params.id]);
+  }, [db, savedKind, params.id]);
 
   const submit = () =>
     run(async () => {
@@ -107,13 +106,11 @@ export default function WorkFormScreen() {
     }
   };
 
-  const title = params.id
+  const title = editing
     ? isTask
       ? t('work.editTask')
       : t('work.editAssignment')
-    : isTask
-      ? t('work.newTask')
-      : t('work.newAssignment');
+    : t('work.newTask');
 
   return (
     <FormScreen
@@ -142,21 +139,24 @@ export default function WorkFormScreen() {
         placeholder={isTask ? t('work.titlePlaceholderTask') : t('work.titlePlaceholderAssignment')}
         autoFocus={!params.id}
       />
-      {isTask ? (
-        <SpacePicker
-          value={form.space ?? defaultSpace(spaces.active)}
-          onChange={(space) => set({ space })}
-          lockedToStudy={!!form.subjectId}
-        />
-      ) : null}
-      {!isTask || spaces.has('study') || form.subjectId ? (
-        <SelectField
-          label={t('work.subjectOptional')}
-          value={form.subjectId ?? null}
-          noneLabel={t('work.noSubject')}
-          options={subjectOptions(subjects)}
-          onChange={(subjectId) => set({ subjectId })}
-        />
+      {/* La matière appartient à Études : sans Études, le champ n'existe pas. */}
+      {/* À la modification, un devoir garde une matière et une tâche sans matière n'en reçoit pas. */}
+      {study && (!editing || form.subjectId) ? (
+        <>
+          <SelectField
+            label={isTask ? t('work.subjectOptional') : t('work.subject')}
+            required={!isTask}
+            value={form.subjectId ?? null}
+            noneLabel={isTask ? t('work.noSubject') : undefined}
+            options={subjectOptions(subjects)}
+            onChange={(subjectId) => set({ subjectId })}
+          />
+          {!editing ? (
+            <AppText variant="caption" color="muted">
+              {t('work.subjectMakesAssignment')}
+            </AppText>
+          ) : null}
+        </>
       ) : null}
       <DateTimeField
         label={isTask ? t('work.dueDate') : t('work.dueDateAssignment')}

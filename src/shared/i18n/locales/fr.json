@@ -251,7 +251,6 @@
   "tasks": {
     "title": "Tâches",
     "segTasks": "Tâches",
-    "segAssignments": "Devoirs",
     "segExams": "Examens",
     "allSubjects": "Toutes",
     "groupOverdue": "En retard",
@@ -263,7 +262,6 @@
     "hideDone": "Masquer les terminés",
     "empty": "Rien à faire pour le moment.",
     "emptyHint": "Appuie sur + pour ajouter une tâche.",
-    "emptyAssignmentsHint": "Appuie sur + pour ajouter un devoir.",
     "noExams": "Aucun examen programmé.",
     "noExamsHint": "Appuie sur + pour ajouter un examen.",
     "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter."
@@ -366,7 +364,6 @@
   },
   "work": {
     "newTask": "Nouvelle tâche",
-    "newAssignment": "Nouveau devoir",
     "editTask": "Modifier la tâche",
     "editAssignment": "Modifier le devoir",
     "title": "Titre",
@@ -374,6 +371,7 @@
     "titlePlaceholderAssignment": "Ex. Étude de cas",
     "subject": "Matière",
     "subjectOptional": "Matière (facultatif)",
+    "subjectMakesAssignment": "Avec une matière, la tâche devient un devoir.",
     "noSubject": "Aucune",
     "description": "Description",
     "dueDate": "Date",
@@ -1541,19 +1539,16 @@
     },
     "hint": {
       "study": "Cours, emploi du temps, devoirs, examens, moyennes, révisions",
-      "work": "Rendez-vous, réunions, tâches pro, heures à planifier",
+      "work": "Créneaux qui se répètent, semaines A / B, heures de travail à planifier",
       "personal": "Argent, tontines, habitudes, humeur, sport, famille"
     },
-    "all": "Tout",
-    "field": "Espace",
-    "lockedStudy": "Lié à une matière : rangé dans Études.",
     "lastOne": "Au moins un espace doit rester actif.",
     "changeLater": "Tu pourras changer à tout moment dans ton profil.",
     "offTitle": "Désactiver « {{name}} » ?",
     "offMessage": {
       "study": "Tes matières, cours, devoirs, examens et révisions sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
-      "work": "Tes tâches et rendez-vous pro sont gardés, juste cachés. Leurs rappels sont mis en pause. Tes notes restent visibles. Réactive l’espace quand tu veux : tout revient.",
-      "personal": "Ton argent, tes habitudes, ton humeur et tes éléments perso sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient."
+      "work": "Ton objectif d’heures de travail est caché. Tes tâches, rendez-vous et notes restent visibles : ils sont communs à tous tes espaces. Tes créneaux restent visibles si Perso est actif. Réactive l’espace quand tu veux : tout revient.",
+      "personal": "Ton argent, tes habitudes et ton humeur sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Tes tâches, rendez-vous et notes restent visibles. Réactive l’espace quand tu veux : tout revient."
     },
     "offConfirm": "Désactiver",
     "onboardingTitle": "Tu utilises MySky pour…",

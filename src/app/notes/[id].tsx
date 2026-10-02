@@ -405,7 +405,7 @@ export default function NoteScreen() {
               v === '__new' ? router.push('/notes/category-form') : void changeCategory(v)
             }
           />
-          {spaces.has('study') || subjectId ? (
+          {spaces.has('study') ? (
             <SelectField
               label={t('notes.subject')}
               value={subjectId}

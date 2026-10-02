@@ -12,7 +12,6 @@ import {
   searchNotes,
   searchPersonalEvents,
   searchWorkItems,
-  workSpace,
   type Note,
   type PersonalEvent,
   type WorkItem,
@@ -65,12 +64,12 @@ export async function searchAll(db: Db, query: string): Promise<SearchResults> {
   return {
     subjects: study ? subjects : [],
     courses: study ? courses : [],
-    // Les notes sont communes aux trois espaces.
+    // Notes, tâches et rendez-vous sont communs aux trois espaces.
     notes,
     assignments: study ? assignments : [],
-    tasks: tasks.filter((w) => spaces.includes(workSpace(w))),
+    tasks,
     exams: study ? exams : [],
-    events: events.filter((e) => spaces.includes(e.space)),
+    events,
     // L'argent vit dans l'espace Perso.
     transactions,
   };

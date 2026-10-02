@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ReminderField } from '@/components/ReminderField';
-import { SpacePicker } from '@/components/SpaceUi';
 import {
   createPersonalEvent,
   deletePersonalEvent,
@@ -17,8 +16,6 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { useSpaces } from '@/shared/SpacesContext';
-import { defaultSpace, spaceIds, type SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
 import {
   confirmDestructive,
@@ -36,8 +33,7 @@ export default function EventFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
   const { spacing } = useTheme();
-  const params = useLocalSearchParams<{ id?: string; date?: string; space?: string }>();
-  const spaces = useSpaces();
+  const params = useLocalSearchParams<{ id?: string; date?: string }>();
   const [form, setForm] = useState<PersonalEventInput>({
     title: '',
     date: params.date ?? toIsoDate(new Date()),
@@ -45,9 +41,6 @@ export default function EventFormScreen() {
     endTime: null,
     description: '',
     reminderAt: null,
-    space: spaceIds.includes(params.space as SpaceId)
-      ? (params.space as SpaceId)
-      : defaultSpace(spaces.active),
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<PersonalEventInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -103,10 +96,6 @@ export default function EventFormScreen() {
         limit={fieldLimits.title120}
         placeholder={t('events.titlePlaceholder')}
         autoFocus={!params.id}
-      />
-      <SpacePicker
-        value={form.space ?? defaultSpace(spaces.active)}
-        onChange={(space) => set({ space })}
       />
       <DateTimeField
         label={t('events.date')}

@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { SpacePicker } from '@/components/SpaceUi';
 import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import {
@@ -20,7 +19,6 @@ import {
 import { toIsoDate, weekdayOrder } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { useSpaces } from '@/shared/SpacesContext';
 import { subjectColors, useTheme } from '@/shared/theme';
 import {
   AppText,
@@ -44,7 +42,6 @@ export default function SlotFormScreen() {
   const db = useDb();
   const { colors, scheme } = useTheme();
   const weekStart = useWeekStart();
-  const spaces = useSpaces();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [form, setForm] = useState<SlotInput>({
     title: '',
@@ -57,7 +54,6 @@ export default function SlotFormScreen() {
     validFrom: toIsoDate(new Date()),
     validUntil: null,
     colorId: 'blue',
-    space: spaces.has('work') ? 'work' : 'personal',
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<SlotInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -117,11 +113,6 @@ export default function SlotFormScreen() {
         limit={fieldLimits.title80}
         placeholder={t('planning.slotTitlePlaceholder')}
         autoFocus={!id}
-      />
-      <SpacePicker
-        value={form.space ?? 'work'}
-        onChange={(space) => set({ space })}
-        allowStudy={false}
       />
       <ChoiceChips
         label={t('planning.days')}

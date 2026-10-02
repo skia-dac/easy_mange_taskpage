@@ -619,7 +619,7 @@ const cases: Case[] = [
   {
     name: 'Ajout rapide',
     load: () => require('@/app/add') as { default: ComponentType },
-    expect: ['Devoir', 'Examen', 'Note', 'Cours'],
+    expect: ['Tâche', 'Examen', 'Note', 'Cours'],
   },
   {
     name: 'Recherche',

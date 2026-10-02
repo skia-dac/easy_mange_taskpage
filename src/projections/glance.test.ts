@@ -26,7 +26,7 @@ const data = (events: TodayData['events']): TodayData => ({
   events,
 });
 
-describe('heures Pro de la semaine', () => {
+describe('heures planifiées de la semaine', () => {
   it('un créneau de nuit compte sa durée entière, une seule fois (#11a)', () => {
     // Lundi 21 : 22:00 → mardi 06:00 = 480 min, réparties sur deux événements.
     const events = slotOccurrences([nights], '2026-09-21', '2026-09-27', '2026-09-21', 1);
@@ -38,7 +38,7 @@ describe('heures Pro de la semaine', () => {
     });
   });
 
-  it('rendez-vous Pro : durée, ou 1 h sans heure de fin', () => {
+  it('tous les rendez-vous : durée, ou 1 h sans heure de fin (pas de filtre par espace)', () => {
     const events: TodayData['events'] = [
       {
         id: 'e1',
@@ -71,7 +71,7 @@ describe('heures Pro de la semaine', () => {
         space: 'personal',
       },
     ];
-    expect(workWeek(data(events), '2026-09-21', 2).plannedMinutes).toBe(150);
+    expect(workWeek(data(events), '2026-09-21', 2).plannedMinutes).toBe(270);
   });
 });
 
@@ -95,21 +95,21 @@ describe('tuiles Pro et Études', () => {
     ...over,
   });
 
-  it('workWeek : ajoute les durées estimées des tâches Pro de la semaine', () => {
+  it('workWeek : ajoute les durées estimées de toutes les tâches de la semaine', () => {
     const work = [
       workItem({ id: 'a', estimatedMinutes: 90 }),
       workItem({ id: 'b', estimatedMinutes: 30, dueDate: '2026-09-28' }), // semaine suivante
       workItem({ id: 'c', estimatedMinutes: 45, space: 'personal' }),
-      workItem({ id: 'd', estimatedMinutes: 20, kind: 'assignment', subjectId: 's' }), // Études
+      workItem({ id: 'd', estimatedMinutes: 20, kind: 'assignment', subjectId: 's' }),
     ];
     expect(workWeek({ ...data([]), work }, '2026-09-21', 1)).toEqual({
-      plannedMinutes: 90,
+      plannedMinutes: 155,
       targetMinutes: 60,
       toPlanMinutes: 0,
     });
   });
 
-  it('meetingsToday : rendez-vous Pro avec une heure, 1 h sans heure de fin', () => {
+  it('meetingsToday : rendez-vous avec une heure, 1 h sans heure de fin', () => {
     const events: TodayView['events'] = [
       {
         id: 'm1',
@@ -152,11 +152,11 @@ describe('tuiles Pro et Études', () => {
         space: 'personal',
       },
     ];
-    expect(meetingsToday({ events })).toEqual({ count: 2, minutes: 105 });
+    expect(meetingsToday({ events })).toEqual({ count: 3, minutes: 165 });
     expect(meetingsToday({ events: [] })).toEqual({ count: 0, minutes: 0 });
   });
 
-  it('doneThisWeek : tâches Pro terminées dans la semaine seulement', () => {
+  it('doneThisWeek : tâches terminées dans la semaine seulement', () => {
     const work = [
       workItem({ id: 'a', status: 'done', completedAt: at(10) }),
       workItem({ id: 'b', status: 'done', completedAt: new Date(2026, 8, 20, 10).toISOString() }),
@@ -165,7 +165,7 @@ describe('tuiles Pro et Études', () => {
       workItem({ id: 'e', status: 'done', completedAt: at(11), space: 'personal' }),
       workItem({ id: 'f', status: 'done', completedAt: at(12), subjectId: 's' }),
     ];
-    expect(doneThisWeek({ ...data([]), work }, '2026-09-21')).toBe(1);
+    expect(doneThisWeek({ ...data([]), work }, '2026-09-21')).toBe(3);
   });
 
   it('coursesToday : nombre, minutes et fin du dernier cours, sans les séances annulées', () => {

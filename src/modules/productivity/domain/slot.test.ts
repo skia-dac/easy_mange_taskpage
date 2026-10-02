@@ -107,7 +107,7 @@ describe('planning : créneaux fixes', () => {
       ev('c', '2026-09-24', 'Client'), // déjà copié
       ev('slot:s:2026-09-16', '2026-09-16', 'Travail'),
     ];
-    expect(copyWeekInputs(events, '2026-09-14', 'work').map((e) => [e.date, e.title])).toEqual([
+    expect(copyWeekInputs(events, '2026-09-14').map((e) => [e.date, e.title])).toEqual([
       ['2026-09-22', 'Réunion'],
     ]);
   });

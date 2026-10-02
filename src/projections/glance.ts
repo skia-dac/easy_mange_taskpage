@@ -1,4 +1,4 @@
-import { blockMinutes, isSlotEvent, isSlotNextPart, workSpace } from '@/modules/productivity';
+import { blockMinutes, isSlotEvent, isSlotNextPart } from '@/modules/productivity';
 import { addDaysIso, timeToMinutes, toIsoDate, type IsoDate } from '@/shared/dates';
 import type { ActiveSpaces } from '@/shared/spaces';
 
@@ -42,15 +42,16 @@ const inWeek = (day: IsoDate, weekFrom: IsoDate) =>
 export type WorkWeek = { plannedMinutes: number; targetMinutes: number; toPlanMinutes: number };
 
 /**
- * Heures « Pro » de la semaine : rendez-vous Pro (durée, ou 1 h sans heure de fin) et durées
- * estimées des tâches Pro de la semaine. « À planifier » = objectif − déjà planifié.
+ * Heures planifiées de la semaine : rendez-vous et créneaux (durée, ou 1 h sans heure de fin)
+ * et durées estimées des tâches de la semaine. « À planifier » = objectif − déjà planifié.
+ * La tuile n'existe qu'avec Pro : l'objectif d'heures de travail appartient à Pro.
  * Une séance de nuit d'un créneau compte sa durée entière (22:00 → 06:00 = 480 min) sur le jour
  * où elle commence ; sa seconde moitié (le lendemain, `:next`) n'est pas comptée une deuxième fois.
  */
 export function workWeek(data: TodayData, weekFrom: IsoDate, targetHours: number): WorkWeek {
   let planned = 0;
   for (const e of data.events) {
-    if (e.space !== 'work' || !inWeek(e.date, weekFrom) || !e.startTime) continue;
+    if (!inWeek(e.date, weekFrom) || !e.startTime) continue;
     if (isSlotNextPart(e)) continue;
     if (!e.endTime) {
       planned += DEFAULT_EVENT_MINUTES;
@@ -63,7 +64,7 @@ export function workWeek(data: TodayData, weekFrom: IsoDate, targetHours: number
       : Math.max(0, timeToMinutes(e.endTime) - timeToMinutes(e.startTime));
   }
   for (const w of data.work) {
-    if (workSpace(w) !== 'work' || !inWeek(w.dueDate, weekFrom)) continue;
+    if (!inWeek(w.dueDate, weekFrom)) continue;
     planned += w.estimatedMinutes ?? 0;
   }
   const target = Math.round(targetHours * 60);
@@ -74,9 +75,9 @@ export function workWeek(data: TodayData, weekFrom: IsoDate, targetHours: number
   };
 }
 
-/** Rendez-vous Pro du jour (avec une heure) et leur durée totale. */
+/** Rendez-vous du jour (avec une heure) et leur durée totale. */
 export function meetingsToday(view: Pick<TodayView, 'events'>): { count: number; minutes: number } {
-  const list = view.events.filter((e) => e.space === 'work' && e.startTime);
+  const list = view.events.filter((e) => e.startTime);
   const minutes = list.reduce(
     (sum, e) =>
       sum +
@@ -88,11 +89,10 @@ export function meetingsToday(view: Pick<TodayView, 'events'>): { count: number;
   return { count: list.length, minutes };
 }
 
-/** Tâches Pro terminées cette semaine. */
+/** Tâches terminées cette semaine. */
 export function doneThisWeek(data: TodayData, weekFrom: IsoDate): number {
   return data.work.filter(
     (w) =>
-      workSpace(w) === 'work' &&
       w.status === 'done' &&
       w.completedAt !== null &&
       inWeek(toIsoDate(new Date(w.completedAt)), weekFrom),

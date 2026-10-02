@@ -251,7 +251,6 @@
   "tasks": {
     "title": "Tasks",
     "segTasks": "Tasks",
-    "segAssignments": "Homework",
     "segExams": "Exams",
     "allSubjects": "All",
     "groupOverdue": "Overdue",
@@ -263,7 +262,6 @@
     "hideDone": "Hide completed",
     "empty": "Nothing to do right now.",
     "emptyHint": "Tap + to add a task.",
-    "emptyAssignmentsHint": "Tap + to add homework.",
     "noExams": "No exams scheduled.",
     "noExamsHint": "Tap + to add an exam.",
     "swipeHint": "Swipe right to complete, left to postpone."
@@ -366,7 +364,6 @@
   },
   "work": {
     "newTask": "New task",
-    "newAssignment": "New homework",
     "editTask": "Edit task",
     "editAssignment": "Edit homework",
     "title": "Title",
@@ -374,6 +371,7 @@
     "titlePlaceholderAssignment": "e.g. Case study",
     "subject": "Subject",
     "subjectOptional": "Subject (optional)",
+    "subjectMakesAssignment": "With a subject, the task becomes homework.",
     "noSubject": "None",
     "description": "Description",
     "dueDate": "Date",
@@ -1541,19 +1539,16 @@
     },
     "hint": {
       "study": "Classes, timetable, homework, exams, grades, revision",
-      "work": "Appointments, meetings, work tasks, hours to plan",
+      "work": "Repeating slots, A / B weeks, work hours to plan",
       "personal": "Money, tontines, habits, mood, sport, family"
     },
-    "all": "All",
-    "field": "Space",
-    "lockedStudy": "Linked to a subject: filed under Studies.",
     "lastOne": "At least one space must stay on.",
     "changeLater": "You can change this at any time in your profile.",
     "offTitle": "Turn off “{{name}}”?",
     "offMessage": {
       "study": "Your subjects, classes, homework, exams and revision are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
-      "work": "Your work tasks and appointments are kept, just hidden. Their reminders are paused. Your notes stay visible. Turn the space back on whenever you like: everything comes back.",
-      "personal": "Your money, habits, mood and personal items are kept, just hidden. Tontines keep being counted; reminders are paused. Turn the space back on whenever you like: everything comes back."
+      "work": "Your work-hours goal is hidden. Your tasks, appointments and notes stay visible: they are shared by all your spaces. Your slots stay visible if Personal is on. Turn the space back on whenever you like: everything comes back.",
+      "personal": "Your money, habits and mood are kept, just hidden. Tontines keep being counted; reminders are paused. Your tasks, appointments and notes stay visible. Turn the space back on whenever you like: everything comes back."
     },
     "offConfirm": "Turn off",
     "onboardingTitle": "You use MySky for…",
