@@ -310,7 +310,7 @@ const cases: Case[] = [
       'Chapitres 1 à 3',
       'Personnaliser cet écran',
       'ARGENT',
-      '1 en retard',
+      'TERMINÉES',
     ],
   },
   {
@@ -320,13 +320,13 @@ const cases: Case[] = [
   },
   {
     name: 'Carnet (vue retenue par défaut : À faire)',
-    plus: 'Ajouter',
+    plus: 'Nouvelle tâche',
     load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
     expect: ['Carnet', 'À faire', 'Étude de cas Marketing', 'En retard'],
   },
   {
     name: 'Carnet — À faire',
-    plus: 'Ajouter',
+    plus: 'Nouvelle tâche',
     load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
     params: { view: 'todo' },
     expect: ['Carnet', 'Étude de cas Marketing', 'En retard'],
@@ -374,7 +374,7 @@ const cases: Case[] = [
     plus: 'Donner mon avis',
     load: () => require('@/app/feedback/history') as { default: ComponentType },
     expect: [
-      'Une idée · Tâches',
+      'Une idée · Carnet – À faire',
       'Pouvoir trier les tâches',
       'En attente d’envoi',
       'Renvoyer maintenant',
@@ -439,7 +439,7 @@ const cases: Case[] = [
     name: 'Calendrier heures',
     load: () => require('@/app/(tabs)/calendar') as { default: ComponentType },
     params: { mode: 'hours' },
-    expect: ['Heures', 'Appui long sur un élément', 'Tâches et devoirs'],
+    expect: ['Heures', 'Appui long sur un élément', 'Tâches'],
   },
   {
     name: 'Argent',
@@ -576,8 +576,8 @@ const cases: Case[] = [
     // À la modification, la matière se rattache ou se retire (« Aucune »).
     expect: [
       'Enregistrer la tâche',
-      'Rappel',
-      'Durée estimée',
+      'Plus d’options',
+      'Statut',
       'Matière (facultatif)',
       'Marketing stratégique',
     ],
@@ -586,13 +586,13 @@ const cases: Case[] = [
     name: 'Formulaire devoir (matière modifiable)',
     load: () => require('@/app/work/form') as { default: ComponentType },
     params: { id: 'assignment', kind: 'assignment' },
-    expect: ['Enregistrer le devoir', 'Matière (facultatif)', 'Marketing stratégique'],
+    expect: ['Enregistrer la tâche', 'Matière (facultatif)', 'Marketing stratégique'],
   },
   {
     name: 'Nouvelle tâche (matière facultative)',
     load: () => require('@/app/work/form') as { default: ComponentType },
     params: { subjectId: 'subject' },
-    expect: ['Matière (facultatif)', 'Marketing stratégique', 'Enregistrer le devoir'],
+    expect: ['Matière (facultatif)', 'Marketing stratégique', 'Enregistrer la tâche'],
   },
   {
     name: 'Détail tâche avec étapes',
@@ -616,7 +616,7 @@ const cases: Case[] = [
     name: 'Formulaire événement',
     load: () => require('@/app/events/form') as { default: ComponentType },
     params: { id: 'event' },
-    expect: ['Réunion asso', 'Enregistrer l’événement'],
+    expect: ['Réunion asso', 'Enregistrer le rendez-vous'],
   },
   {
     name: 'Note',

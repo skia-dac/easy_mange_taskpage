@@ -22,6 +22,24 @@ export function confirmDestructive(
   });
 }
 
+/**
+ * Quitter un formulaire modifié : « Abandonner les modifications ? ». Résout `true` pour
+ * abandonner, `false` pour continuer la saisie (choix par défaut, bouton d'annulation).
+ */
+export function confirmDiscard(): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(
+      i18n.t('unsaved.title'),
+      i18n.t('unsaved.message'),
+      [
+        { text: i18n.t('unsaved.keepEditing'), style: 'cancel', onPress: () => resolve(false) },
+        { text: i18n.t('unsaved.discard'), style: 'destructive', onPress: () => resolve(true) },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
+}
+
 /** Message d'erreur simple, compréhensible (jamais technique). */
 export function showError(messageKey: string): void {
   Alert.alert(i18n.t('errors.title'), i18n.t(messageKey));

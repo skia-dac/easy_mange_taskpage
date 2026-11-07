@@ -19,6 +19,7 @@ import {
 
 export const END_OF_COURSE_CATEGORY = 'endofcourse';
 export const ACTIONS = {
+  /** Ancien bouton « Ajouter un devoir » : plus proposé, gardé pour les notifications déjà reçues. */
   addAssignment: 'add_assignment',
   addNote: 'add_note',
   addTask: 'add_task',
@@ -90,11 +91,6 @@ export async function configureNotifications(): Promise<void> {
   });
   if (Platform.OS === 'android') await createChannels();
   await Notifications.setNotificationCategoryAsync(END_OF_COURSE_CATEGORY, [
-    {
-      identifier: ACTIONS.addAssignment,
-      buttonTitle: i18n.t('notif.actionAssignment'),
-      options: { opensAppToForeground: true },
-    },
     {
       identifier: ACTIONS.addNote,
       buttonTitle: i18n.t('notif.actionNote'),

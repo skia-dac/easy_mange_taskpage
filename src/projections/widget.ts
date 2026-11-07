@@ -134,7 +134,6 @@ export type WidgetLabels = {
   noExam: string;
   quickNote: string;
   quickTask: string;
-  quickAssignment: string;
   grades: string;
   noGrade: string;
   lastGrade: string;
@@ -152,7 +151,6 @@ export type WidgetLinks = {
   app: string;
   note: string;
   task: string;
-  assignment: string;
   study: string;
   grades: string;
   calendar: string;
@@ -211,8 +209,8 @@ export type WidgetExtras = {
 export const WIDGET_LINKS: WidgetLinks = {
   app: WIDGET_URL_BASE(),
   note: `${WIDGET_URL_BASE()}notes/new`,
-  task: `${WIDGET_URL_BASE()}work/form?kind=task`,
-  assignment: `${WIDGET_URL_BASE()}work/form?kind=assignment`,
+  // Une seule fiche de tâche : la matière (Études) se choisit dans la fiche.
+  task: `${WIDGET_URL_BASE()}work/form`,
   study: `${WIDGET_URL_BASE()}study`,
   grades: `${WIDGET_URL_BASE()}grades`,
   calendar: `${WIDGET_URL_BASE()}calendar`,
@@ -611,7 +609,6 @@ export function buildWidgetData(
       noExam: texts.t('widget.noExam'),
       quickNote: texts.t('widget.quickNote'),
       quickTask: texts.t('widget.quickTask'),
-      quickAssignment: texts.t('widget.quickAssignment'),
       grades: texts.t('widget.grades'),
       noGrade: texts.t('widget.noGrade'),
       lastGrade: texts.t('widget.lastGrade'),

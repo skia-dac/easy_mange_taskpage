@@ -271,7 +271,7 @@ export default function CourseDetailScreen() {
         onPress={() =>
           router.push({
             pathname: '/work/form',
-            params: { kind: 'assignment', subjectId: c.subjectId, fromCourse: '1' },
+            params: { subjectId: c.subjectId, fromCourse: '1' },
           })
         }
       />

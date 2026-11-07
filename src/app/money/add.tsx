@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
@@ -105,6 +106,8 @@ export default function MoneyAddScreen() {
   /** Erreur de saisie de la note, sous son champ. */
   const [noteError, setNoteError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
+  const { dirty } = useDirty({ kind, categoryId, digits, date, note }, loadState === 'ready');
+  const leave = useUnsavedGuard(dirty);
   const custom = useLiveQuery(listCategories, ['money_categories'], []);
   const money = useMoneyLabels(custom.data ?? []);
   const goalId = existing?.goalId ?? params.goalId ?? null;
@@ -190,7 +193,7 @@ export default function MoneyAddScreen() {
     try {
       if (existing) await updateTransaction(db, existing.id, input);
       else await createTransaction(db, input);
-      close();
+      leave(close);
     } catch (e) {
       setSaving(false);
       if (isValidationError(e)) {
@@ -212,7 +215,10 @@ export default function MoneyAddScreen() {
       t('common.delete'),
     );
     if (ok)
-      deleteTransaction(db, existing.id).then(close, (e: unknown) => showError(userMessageKey(e)));
+      deleteTransaction(db, existing.id).then(
+        () => leave(close),
+        (e: unknown) => showError(userMessageKey(e)),
+      );
   };
 
   const title = existing

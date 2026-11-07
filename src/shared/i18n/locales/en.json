@@ -35,7 +35,6 @@
     "calendar": "Calendar",
     "profile": "Profile",
     "money": "Money",
-    "planning": "Planner",
     "notebook": "Notebook"
   },
   "notebook": {
@@ -85,7 +84,7 @@
     "coursesTitle": "Today’s classes",
     "todoTitle": "To do",
     "examsTitle": "Upcoming exams",
-    "eventsTitle": "Events",
+    "eventsTitle": "Appointments",
     "emptyCourses": "No classes today.",
     "emptyCoursesHint": "Your classes for the day will show up here.",
     "coursesDone": "Your classes are over for today.",
@@ -95,7 +94,13 @@
     "firstSubjectHint": "Then add your classes: they will show up here and in the calendar.",
     "dayOff": "{{name}}: no classes today.",
     "greetingName": "Hello {{name}}",
-    "revisionTitle": "Today’s revision"
+    "revisionTitle": "Today’s revision",
+    "firstStep": {
+      "workTitle": "Start your work week",
+      "workHint": "Add your first task or an appointment: your day will show up here.",
+      "personalTitle": "Organise your personal life",
+      "personalHint": "Add a first task, or create a habit to follow every day."
+    }
   },
   "countdown": {
     "today": "Today",
@@ -135,7 +140,7 @@
     "week": "Week",
     "month": "Month",
     "empty": "Nothing planned for this day.",
-    "emptyHint": "Your classes, homework and exams will show up here.",
+    "emptyHint": "Your classes, tasks and exams will show up here.",
     "timetables": "Timetables",
     "previous": "Previous",
     "next": "Next",
@@ -149,21 +154,22 @@
     "filter": {
       "course": "Classes",
       "exam": "Exams",
-      "work": "Tasks & homework",
+      "work": "Tasks",
       "revision": "Revision",
-      "event": "Events"
+      "event": "Appointments"
     },
     "hoursHint": "Long-press an item, then drag it to change its day or time.",
     "moveHint": "Long-press then drag to move",
     "moveCourseTitle": "Move this class?",
     "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
-    "moveConfirm": "Move"
+    "moveConfirm": "Move",
+    "viewMode": "Calendar view"
   },
   "calendarItem": {
     "exam": "Exam",
-    "assignment": "Homework",
+    "assignment": "Task",
     "task": "Task",
-    "event": "Event",
+    "event": "Appointment",
     "due": "due",
     "allDay": "All day",
     "revision": "Revision"
@@ -232,16 +238,16 @@
     "delete": "Delete subject",
     "deleteTitle": "Delete “{{name}}”?",
     "deleteNothing": "This subject has no linked content.",
-    "deleteUsage": "It contains: {{courses}} class(es), {{exams}} exam(s), {{notes}} note(s), {{assignments}} homework item(s) and {{tasks}} task(s).\n\nIts classes and exams will be deleted. What should happen to its notes, homework and tasks?",
+    "deleteUsage": "It contains: {{courses}} class(es), {{exams}} exam(s), {{notes}} note(s) and {{tasks}} task(s).\n\nIts classes and exams will be deleted. What should happen to its notes and tasks?",
     "keepWork": "Keep them (no subject)",
     "deleteAll": "Delete everything",
     "courses": "Classes",
-    "work": "Homework and tasks",
+    "work": "Tasks",
     "exams": "Exams",
     "noCourses": "No classes for this subject.",
     "nothing": "Nothing yet.",
     "addCourse": "Add a class",
-    "addAssignment": "Add homework",
+    "addAssignment": "Add a task",
     "addExam": "Add an exam",
     "nextOn": "Next: {{date}}",
     "ended": "Ended",
@@ -264,7 +270,11 @@
     "emptyHint": "Tap + to add a task.",
     "noExams": "No exams scheduled.",
     "noExamsHint": "Tap + to add an exam.",
-    "swipeHint": "Swipe right to complete, left to postpone."
+    "swipeHint": "Swipe right to complete, left to postpone.",
+    "kindFilter": "Type",
+    "subjectChip": "Subject: {{name}}",
+    "subjectAll": "Subject: all",
+    "subjectPick": "Filter by subject"
   },
   "profile": {
     "title": "Profile",
@@ -365,13 +375,13 @@
   "work": {
     "newTask": "New task",
     "editTask": "Edit task",
-    "editAssignment": "Edit homework",
+    "editAssignment": "Edit task",
     "title": "Title",
     "titlePlaceholderTask": "e.g. Buy the book",
     "titlePlaceholderAssignment": "e.g. Case study",
     "subject": "Subject",
     "subjectOptional": "Subject (optional)",
-    "subjectMakesAssignment": "With a subject, the task becomes homework.",
+    "subjectMakesAssignment": "With a subject, the task is filed under your studies.",
     "noSubject": "None",
     "description": "Description",
     "dueDate": "Date",
@@ -381,9 +391,9 @@
     "priority": "Priority",
     "status": "Status",
     "saveTask": "Save task",
-    "saveAssignment": "Save homework",
+    "saveAssignment": "Save task",
     "deleteTask": "Delete task",
-    "deleteAssignment": "Delete homework",
+    "deleteAssignment": "Delete task",
     "deleteTitle": "Delete “{{title}}”?",
     "deleteMessage": "This can’t be undone.",
     "due": "Due",
@@ -395,7 +405,9 @@
     "repeat": "Repeat",
     "estimate": "Estimated time",
     "noEstimate": "None",
-    "startStudy": "Start the study timer"
+    "startStudy": "Start the study timer",
+    "moreOptions": "More options",
+    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description"
   },
   "exams": {
     "new": "New exam",
@@ -418,26 +430,25 @@
     "timetable": "Exam session"
   },
   "events": {
-    "new": "New event",
-    "edit": "Edit event",
+    "new": "New appointment",
+    "edit": "Edit appointment",
     "title": "Title",
     "titlePlaceholder": "e.g. Club meeting",
     "date": "Date",
     "start": "Start (optional)",
     "end": "End (optional)",
     "description": "Description",
-    "save": "Save event",
-    "delete": "Delete event",
-    "deleteTitle": "Delete this event?",
+    "save": "Save appointment",
+    "delete": "Delete appointment",
+    "deleteTitle": "Delete this appointment?",
     "deleteMessage": "This can’t be undone."
   },
   "add": {
     "title": "Add",
     "note": "Note",
     "task": "Task",
-    "assignment": "Homework",
     "exam": "Exam",
-    "event": "Event",
+    "event": "Appointment",
     "course": "Class",
     "subject": "Subject"
   },
@@ -497,18 +508,17 @@
     "courseBody": "In {{minutes}} min · {{time}} {{room}}",
     "endTitle": "Class over: {{subject}}",
     "endBody": "Anything to add?",
-    "actionAssignment": "Add homework",
     "actionNote": "Add a note",
     "actionTask": "Add a task",
     "actionNothing": "Nothing to add",
     "taskTitle": "Task reminder",
-    "assignmentTitle": "Homework reminder",
+    "assignmentTitle": "Task reminder",
     "workBody": "{{title}} · due {{date}} {{time}}",
     "examTitle": "Exam: {{subject}}",
     "examBody_one": "In {{count}} day · {{time}}",
     "examBody_other": "In {{count}} days · {{time}}",
     "examToday": "Today · {{time}}",
-    "eventTitle": "Event: {{title}}",
+    "eventTitle": "Appointment: {{title}}",
     "eventBody": "{{date}} {{time}}",
     "studyEndTitle": "Session complete",
     "studyEndBody": "{{minutes}} min of study, well done. Break time?",
@@ -537,7 +547,7 @@
     "allow": "Allow notifications",
     "courses": "Class reminders",
     "courseMinutes": "Before each class",
-    "assignments": "Homework reminders",
+    "assignments": "Reminders for subject tasks",
     "tasks": "Task reminders",
     "exams": "Exam reminders",
     "endOfCourse": "End of class",
@@ -552,7 +562,7 @@
     "appAuto": "Automatic",
     "appLight": "Light",
     "appDark": "Dark",
-    "events": "Event reminders",
+    "events": "Appointment reminders",
     "sound": "Sound",
     "soundHint": "Plays a sound with each reminder",
     "vibrate": "Vibration",
@@ -610,16 +620,15 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Subject, class, note, homework, exam…",
+    "placeholder": "Subject, class, note, task, exam…",
     "hint": "Type at least 2 characters.",
     "noResults": "No results for “{{query}}”.",
     "subjects": "Subjects",
     "courses": "Classes",
     "notes": "Notes",
-    "assignments": "Homework",
     "tasks": "Tasks",
     "exams": "Exams",
-    "events": "Events",
+    "events": "Appointments",
     "money": "Money"
   },
   "onboarding": {
@@ -636,18 +645,18 @@
     "howHint": "You can change your mind later.",
     "manual": "Create my timetable",
     "manualHint": "Add your subjects and classes one by one.",
-    "later": "Later",
     "laterHint": "Explore the app first.",
     "progress": "Step {{step}} of {{total}}",
     "account": "I already have an account",
     "accountHint": "Get your data back from another phone",
-    "startNow": "Get started"
+    "welcome": "Welcome to MySky",
+    "previous": "Back"
   },
   "notifications": {
     "title": "Notifications",
     "upcoming": "Upcoming reminders",
     "empty": "No reminder scheduled.",
-    "emptyHint": "Add classes, homework or exams with a reminder: they will show up here.",
+    "emptyHint": "Add classes, tasks or exams with a reminder: they will show up here.",
     "off": "Notifications are turned off on this phone.",
     "settings": "Reminder settings",
     "count_one": "{{count}} reminder in the next {{days}} days",
@@ -799,7 +808,6 @@
     "noExam": "No exam in the next 60 days",
     "quickNote": "Note",
     "quickTask": "Task",
-    "quickAssignment": "Homework",
     "grades": "My grades",
     "noGrade": "No grade yet",
     "lastGrade": "Latest",
@@ -1089,7 +1097,7 @@
     "replan": "Redo the revision plan",
     "planTitle": "Revision plan",
     "planFor": "{{subject}} · exam on {{date}}",
-    "planHint": "MySky suggests sessions in your free slots, without overlapping your classes or events. Remove the ones that don’t suit you, then confirm.",
+    "planHint": "MySky suggests sessions in your free slots, without overlapping your classes or appointments. Remove the ones that don’t suit you, then confirm.",
     "tooLate": "The exam is today or already over.",
     "tooLateHint": "A revision plan is made before the exam date.",
     "timetableName": "Revision",
@@ -1219,7 +1227,7 @@
       "revision": "Today’s revision",
       "habits": "My habits",
       "todo": "To do",
-      "events": "Events",
+      "events": "Appointments",
       "exams": "Upcoming exams",
       "money": "Today’s money",
       "glance": "At a glance (tiles)",
@@ -1472,7 +1480,9 @@
     "addRecurringMenu": "Add a fixed cost or a tontine",
     "chargeOption": "Fixed cost",
     "tontineOption": "Tontine",
-    "paidToast": "{{name}}: paid"
+    "paidToast": "{{name}}: paid",
+    "recurringKindLabel": "Fixed cost or tontine",
+    "frequency": "Frequency"
   },
   "glance": {
     "money": "Money",
@@ -1514,7 +1524,7 @@
     "nowA11y": "Now, {{time}}",
     "revision": "Revision {{name}}",
     "done": "Done",
-    "event": "Event",
+    "event": "Appointment",
     "allDay": "All day"
   },
   "quickAdd": {
@@ -1522,7 +1532,7 @@
     "income": "Money in",
     "note": "Class note",
     "revision": "Revision",
-    "other": "Other (exam, event…)",
+    "other": "More (exam, class…)",
     "event": "Appointment"
   },
   "spaces": {
@@ -1539,7 +1549,7 @@
       "personal": "Personal"
     },
     "hint": {
-      "study": "Classes, timetable, homework, exams, grades, revision",
+      "study": "Subjects, classes, timetable, exams, grades, revision",
       "work": "Repeating slots, A / B weeks, work hours to plan",
       "personal": "Money, tontines, habits, mood, sport, family"
     },
@@ -1547,7 +1557,7 @@
     "changeLater": "You can change this at any time in your profile.",
     "offTitle": "Turn off “{{name}}”?",
     "offMessage": {
-      "study": "Your subjects, classes, homework, exams and revision are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
+      "study": "Your subjects, classes, exams, revision and subject tasks are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
       "work": "Your work-hours goal is hidden. Your tasks, appointments and notes stay visible: they are shared by all your spaces. Your slots stay visible if Personal is on. Turn the space back on whenever you like: everything comes back.",
       "personal": "Your money, habits and mood are kept, just hidden. Tontines keep being counted; reminders are paused. Your tasks, appointments and notes stay visible. Turn the space back on whenever you like: everything comes back."
     },
@@ -1704,8 +1714,8 @@
       "off_periods": "Break",
       "exams": "Exam",
       "tasks": "Task",
-      "assignments": "Assignment",
-      "personal_events": "Event",
+      "assignments": "Subject task",
+      "personal_events": "Appointment",
       "note_categories": "Note category",
       "notes": "Note",
       "attachments": "Attachment",
@@ -1757,9 +1767,9 @@
     "areaLabel": "Part of the app",
     "area": {
       "today": "Today",
-      "calendar": "Calendar / Planning",
-      "tasks": "Tasks",
-      "notes": "Notes",
+      "calendar": "Calendar",
+      "tasks": "Notebook – To do",
+      "notes": "Notebook – Notes",
       "habits": "Habits",
       "revision": "Revision",
       "money": "Money",
@@ -1813,5 +1823,15 @@
       "contact": "Contact: {{value}}",
       "technical": "MySky {{version}} · {{os}} · language {{locale}} · error {{error}}"
     }
+  },
+  "unsaved": {
+    "title": "Discard changes?",
+    "message": "What you entered won’t be saved.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "state": {
+    "errorTitle": "Couldn’t show this list",
+    "loading": "Loading…"
   }
 }

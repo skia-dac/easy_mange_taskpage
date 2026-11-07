@@ -7,7 +7,8 @@ type Props<T extends string> = {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
-  accessibilityLabel?: string;
+  /** Ce que le choix règle (« Vue du carnet », « Affichage »…) : annoncé par le lecteur d'écran. */
+  accessibilityLabel: string;
 };
 
 /** Choix exclusif sur une ligne (ex. Jour / Semaine / Mois). */
@@ -35,6 +36,7 @@ export function Segmented<T extends string>({
           <Pressable
             key={o.value}
             accessibilityRole="tab"
+            accessibilityLabel={o.label}
             accessibilityState={{ selected }}
             onPress={() => onChange(o.value)}
             style={{

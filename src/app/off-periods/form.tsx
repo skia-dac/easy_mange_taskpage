@@ -113,6 +113,7 @@ export default function OffPeriodFormScreen() {
           {t('offPeriods.kind')}
         </AppText>
         <Segmented
+          accessibilityLabel={t('offPeriods.kind')}
           value={form.kind}
           onChange={(kind) =>
             set(kind === 'day_off' ? { kind, endDate: form.startDate } : { kind })

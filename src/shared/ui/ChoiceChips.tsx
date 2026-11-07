@@ -13,10 +13,19 @@ type Props<T> = {
   onToggle: (value: T) => void;
   /** Sur une seule ligne qui défile (filtres), sinon sur plusieurs lignes. */
   scroll?: boolean;
+  /** Nom du groupe pour le lecteur d'écran quand il n'a pas de `label` visible (filtres). */
+  accessibilityLabel?: string;
 };
 
 /** Pastilles à choisir (une ou plusieurs). */
-export function ChoiceChips<T>({ label, options, selected, onToggle, scroll }: Props<T>) {
+export function ChoiceChips<T>({
+  label,
+  options,
+  selected,
+  onToggle,
+  scroll,
+  accessibilityLabel,
+}: Props<T>) {
   const { colors, radius, spacing } = useTheme();
   const chips = options.map((o, i) => {
     const on = selected.includes(o.value);
@@ -46,7 +55,7 @@ export function ChoiceChips<T>({ label, options, selected, onToggle, scroll }: P
     );
   });
   return (
-    <View style={{ gap: spacing.sm }}>
+    <View accessibilityLabel={accessibilityLabel ?? label} style={{ gap: spacing.sm }}>
       {label ? (
         <AppText variant="caption" color="muted">
           {label}

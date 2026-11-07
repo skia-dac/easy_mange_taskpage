@@ -3,23 +3,28 @@ import { routeForResponse } from './route';
 const end = { kind: 'endOfCourse' as const, seriesId: 's', date: '2026-09-23', subjectId: 'mkt' };
 
 describe('réponse à une notification de fin de cours (§76–79)', () => {
-  it('« Ajouter un devoir » ouvre le devoir avec la matière pré-remplie', () => {
-    expect(routeForResponse({ actionIdentifier: 'add_assignment', action: end })).toEqual({
+  it('« Ajouter une tâche » ouvre la fiche unique de tâche, matière pré-remplie', () => {
+    expect(routeForResponse({ actionIdentifier: 'add_task', action: end })).toEqual({
       pathname: '/work/form',
-      params: { kind: 'assignment', subjectId: 'mkt', fromCourse: '1' },
+      params: { subjectId: 'mkt', fromCourse: '1' },
     });
+  });
+
+  it('l’ancien bouton « Ajouter un devoir » et la notification touchée ouvrent la même fiche', () => {
+    const unified = { pathname: '/work/form', params: { subjectId: 'mkt', fromCourse: '1' } };
+    expect(routeForResponse({ actionIdentifier: 'add_assignment', action: end })).toEqual(unified);
+    expect(
+      routeForResponse({
+        actionIdentifier: 'expo.modules.notifications.actions.DEFAULT',
+        action: end,
+      }),
+    ).toEqual(unified);
   });
 
   it('« Ajouter une note » ouvre une note pré-remplie (§78)', () => {
     expect(routeForResponse({ actionIdentifier: 'add_note', action: end })).toEqual({
       pathname: '/notes/[id]',
       params: { id: 'new', subjectId: 'mkt', courseSeriesId: 's', courseDate: '2026-09-23' },
-    });
-  });
-
-  it('« Ajouter une tâche » ouvre la tâche', () => {
-    expect(routeForResponse({ actionIdentifier: 'add_task', action: end })).toMatchObject({
-      params: { kind: 'task' },
     });
   });
 

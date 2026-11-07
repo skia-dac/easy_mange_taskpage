@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
+import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
@@ -105,6 +106,9 @@ export default function NoteScreen() {
   const [favorite, setFavorite] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  // L'enregistrement automatique a échoué : le texte affiché n'est pas enregistré.
+  const [unsaved, setUnsaved] = useState(false);
+  const leave = useUnsavedGuard(unsaved);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title: '', content: '' });
   const attachments = useLiveQuery(
@@ -203,7 +207,17 @@ export default function NoteScreen() {
       latest.current.content = clipped;
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => void persist().catch(fail), 600);
+    saveTimer.current = setTimeout(
+      () =>
+        void persist().then(
+          () => setUnsaved(false),
+          (e: unknown) => {
+            setUnsaved(true);
+            fail(e);
+          },
+        ),
+      600,
+    );
   };
 
   // Enregistre immédiatement quand on quitte l'écran (dernière version de persist, sans relancer l'effet).
@@ -302,7 +316,7 @@ export default function NoteScreen() {
 
   const remove = async () => {
     if (!noteId) {
-      goBack();
+      leave(goBack);
       return;
     }
     const ok = await confirmDestructive(
@@ -317,7 +331,7 @@ export default function NoteScreen() {
       await deleteNote(db, noteId);
       files.forEach((a) => deleteLocalFile(a.localPath));
       setNoteId(null);
-      goBack();
+      leave(goBack);
     } catch (e) {
       fail(e);
     }

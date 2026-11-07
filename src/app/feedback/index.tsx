@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Switch, View } from 'react-native';
 
 import { goBack } from '@/components/navigation';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { getSupabase, useAuth } from '@/modules/identity';
 import {
   attachmentUri,
@@ -67,6 +68,8 @@ export default function FeedbackScreen() {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const errorName = safeErrorName(params.error);
   const { errors, saving, run } = useSave();
+  const { dirty } = useDirty({ kind, area, message, blocking, typedEmail, screenshot });
+  const leave = useUnsavedGuard(dirty);
   const context = useMemo(() => feedbackContext(), []);
   const server = getSupabase();
 
@@ -110,10 +113,10 @@ export default function FeedbackScreen() {
       pending.current = null; // la capture appartient maintenant au retour enregistré
       if (outcome === 'mailFailed') {
         showError('feedback.mailFailed');
-        return goBack();
+        return leave(goBack);
       }
       showToast(t(outcome === 'queued' ? 'feedback.queued' : 'feedback.thanks'));
-      goBack();
+      leave(goBack);
     });
 
   const placeholder = t(`feedback.placeholder.${kind ?? 'other'}`);

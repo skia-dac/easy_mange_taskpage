@@ -35,7 +35,6 @@
     "calendar": "Calendrier",
     "profile": "Profil",
     "money": "Argent",
-    "planning": "Planning",
     "notebook": "Carnet"
   },
   "notebook": {
@@ -85,7 +84,7 @@
     "coursesTitle": "Cours du jour",
     "todoTitle": "À faire",
     "examsTitle": "Examens à venir",
-    "eventsTitle": "Événements",
+    "eventsTitle": "Rendez-vous",
     "emptyCourses": "Aucun cours prévu aujourd’hui.",
     "emptyCoursesHint": "Tes cours du jour apparaîtront ici.",
     "coursesDone": "Tes cours du jour sont terminés.",
@@ -95,7 +94,13 @@
     "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier.",
     "dayOff": "{{name}} : pas de cours aujourd’hui.",
     "greetingName": "Bonjour {{name}}",
-    "revisionTitle": "Révisions du jour"
+    "revisionTitle": "Révisions du jour",
+    "firstStep": {
+      "workTitle": "Commence ta semaine de travail",
+      "workHint": "Ajoute ta première tâche ou un rendez-vous : ta journée s’affichera ici.",
+      "personalTitle": "Organise ta vie perso",
+      "personalHint": "Note une première tâche, ou crée une habitude à suivre chaque jour."
+    }
   },
   "countdown": {
     "today": "Aujourd’hui",
@@ -135,7 +140,7 @@
     "week": "Semaine",
     "month": "Mois",
     "empty": "Rien de prévu pour ce jour.",
-    "emptyHint": "Tes cours, devoirs et examens apparaîtront ici.",
+    "emptyHint": "Tes cours, tâches et examens apparaîtront ici.",
     "timetables": "Emplois du temps",
     "previous": "Précédent",
     "next": "Suivant",
@@ -149,21 +154,22 @@
     "filter": {
       "course": "Cours",
       "exam": "Examens",
-      "work": "Tâches et devoirs",
+      "work": "Tâches",
       "revision": "Révisions",
-      "event": "Événements"
+      "event": "Rendez-vous"
     },
     "hoursHint": "Appui long sur un élément puis glisse-le pour changer son jour ou son heure.",
     "moveHint": "Appui long puis glisser pour déplacer",
     "moveCourseTitle": "Déplacer ce cours ?",
     "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
-    "moveConfirm": "Déplacer"
+    "moveConfirm": "Déplacer",
+    "viewMode": "Affichage du calendrier"
   },
   "calendarItem": {
     "exam": "Examen",
-    "assignment": "Devoir",
+    "assignment": "Tâche",
     "task": "Tâche",
-    "event": "Événement",
+    "event": "Rendez-vous",
     "due": "à rendre",
     "allDay": "Toute la journée",
     "revision": "Révision"
@@ -232,16 +238,16 @@
     "delete": "Supprimer la matière",
     "deleteTitle": "Supprimer « {{name}} » ?",
     "deleteNothing": "Cette matière n’a aucun contenu lié.",
-    "deleteUsage": "Elle contient : {{courses}} cours, {{exams}} examen(s), {{notes}} note(s), {{assignments}} devoir(s) et {{tasks}} tâche(s).\n\nSes cours et ses examens seront supprimés. Que faire de ses notes, devoirs et tâches ?",
+    "deleteUsage": "Elle contient : {{courses}} cours, {{exams}} examen(s), {{notes}} note(s) et {{tasks}} tâche(s).\n\nSes cours et ses examens seront supprimés. Que faire de ses notes et de ses tâches ?",
     "keepWork": "Les garder (sans matière)",
     "deleteAll": "Tout supprimer",
     "courses": "Cours",
-    "work": "Devoirs et tâches",
+    "work": "Tâches",
     "exams": "Examens",
     "noCourses": "Aucun cours pour cette matière.",
     "nothing": "Rien pour le moment.",
     "addCourse": "Ajouter un cours",
-    "addAssignment": "Ajouter un devoir",
+    "addAssignment": "Ajouter une tâche",
     "addExam": "Ajouter un examen",
     "nextOn": "Prochain : {{date}}",
     "ended": "Terminé",
@@ -256,15 +262,19 @@
     "groupOverdue": "En retard",
     "groupToday": "Aujourd’hui",
     "groupUpcoming": "À venir",
-    "groupDone": "Terminés",
+    "groupDone": "Terminées",
     "groupPast": "Passés",
-    "showDone": "Afficher les terminés ({{count}})",
-    "hideDone": "Masquer les terminés",
+    "showDone": "Afficher les terminées ({{count}})",
+    "hideDone": "Masquer les terminées",
     "empty": "Rien à faire pour le moment.",
     "emptyHint": "Appuie sur + pour ajouter une tâche.",
     "noExams": "Aucun examen programmé.",
     "noExamsHint": "Appuie sur + pour ajouter un examen.",
-    "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter."
+    "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter.",
+    "kindFilter": "Type",
+    "subjectChip": "Matière : {{name}}",
+    "subjectAll": "Matière : toutes",
+    "subjectPick": "Filtrer par matière"
   },
   "profile": {
     "title": "Profil",
@@ -365,13 +375,13 @@
   "work": {
     "newTask": "Nouvelle tâche",
     "editTask": "Modifier la tâche",
-    "editAssignment": "Modifier le devoir",
+    "editAssignment": "Modifier la tâche",
     "title": "Titre",
     "titlePlaceholderTask": "Ex. Acheter le livre",
     "titlePlaceholderAssignment": "Ex. Étude de cas",
     "subject": "Matière",
     "subjectOptional": "Matière (facultatif)",
-    "subjectMakesAssignment": "Avec une matière, la tâche devient un devoir.",
+    "subjectMakesAssignment": "Avec une matière, la tâche est rangée dans tes études.",
     "noSubject": "Aucune",
     "description": "Description",
     "dueDate": "Date",
@@ -381,21 +391,23 @@
     "priority": "Priorité",
     "status": "Statut",
     "saveTask": "Enregistrer la tâche",
-    "saveAssignment": "Enregistrer le devoir",
+    "saveAssignment": "Enregistrer la tâche",
     "deleteTask": "Supprimer la tâche",
-    "deleteAssignment": "Supprimer le devoir",
+    "deleteAssignment": "Supprimer la tâche",
     "deleteTitle": "Supprimer « {{title}} » ?",
     "deleteMessage": "Cette action est définitive.",
     "due": "Échéance",
-    "completedOn": "Terminé le {{date}}",
+    "completedOn": "Terminée le {{date}}",
     "markDone": "Marquer comme terminé",
     "reopen": "Remettre à faire",
-    "doneToast": "Terminé : {{title}}",
+    "doneToast": "Terminée : {{title}}",
     "prefilled": "Matière reprise de ton cours.",
     "repeat": "Répéter",
     "estimate": "Durée estimée",
     "noEstimate": "Aucune",
-    "startStudy": "Lancer le minuteur de révision"
+    "startStudy": "Lancer le minuteur de révision",
+    "moreOptions": "Plus d’options",
+    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description"
   },
   "exams": {
     "new": "Nouvel examen",
@@ -418,26 +430,25 @@
     "timetable": "Session d’examens"
   },
   "events": {
-    "new": "Nouvel événement",
-    "edit": "Modifier l’événement",
+    "new": "Nouveau rendez-vous",
+    "edit": "Modifier le rendez-vous",
     "title": "Titre",
     "titlePlaceholder": "Ex. Réunion de l’association",
     "date": "Date",
     "start": "Début (facultatif)",
     "end": "Fin (facultatif)",
     "description": "Description",
-    "save": "Enregistrer l’événement",
-    "delete": "Supprimer l’événement",
-    "deleteTitle": "Supprimer cet événement ?",
+    "save": "Enregistrer le rendez-vous",
+    "delete": "Supprimer le rendez-vous",
+    "deleteTitle": "Supprimer ce rendez-vous ?",
     "deleteMessage": "Cette action est définitive."
   },
   "add": {
     "title": "Ajouter",
     "note": "Note",
     "task": "Tâche",
-    "assignment": "Devoir",
     "exam": "Examen",
-    "event": "Événement",
+    "event": "Rendez-vous",
     "course": "Cours",
     "subject": "Matière"
   },
@@ -497,18 +508,17 @@
     "courseBody": "Dans {{minutes}} min · {{time}} {{room}}",
     "endTitle": "Cours terminé : {{subject}}",
     "endBody": "Quelque chose à ajouter ?",
-    "actionAssignment": "Ajouter un devoir",
     "actionNote": "Ajouter une note",
     "actionTask": "Ajouter une tâche",
     "actionNothing": "Rien à ajouter",
     "taskTitle": "Rappel de tâche",
-    "assignmentTitle": "Rappel de devoir",
+    "assignmentTitle": "Rappel de tâche",
     "workBody": "{{title}} · pour le {{date}} {{time}}",
     "examTitle": "Examen : {{subject}}",
     "examBody_one": "Dans {{count}} jour · {{time}}",
     "examBody_other": "Dans {{count}} jours · {{time}}",
     "examToday": "Aujourd’hui · {{time}}",
-    "eventTitle": "Événement : {{title}}",
+    "eventTitle": "Rendez-vous : {{title}}",
     "eventBody": "{{date}} {{time}}",
     "studyEndTitle": "Session terminée",
     "studyEndBody": "{{minutes}} min de révision, bravo. Une pause ?",
@@ -537,7 +547,7 @@
     "allow": "Autoriser les notifications",
     "courses": "Rappels de cours",
     "courseMinutes": "Avant chaque cours",
-    "assignments": "Rappels de devoirs",
+    "assignments": "Rappels des tâches d’une matière",
     "tasks": "Rappels de tâches",
     "exams": "Rappels d’examens",
     "endOfCourse": "Fin de cours",
@@ -552,7 +562,7 @@
     "appAuto": "Automatique",
     "appLight": "Clair",
     "appDark": "Sombre",
-    "events": "Rappels d’événements",
+    "events": "Rappels de rendez-vous",
     "sound": "Son",
     "soundHint": "Joue un son à chaque rappel",
     "vibrate": "Vibration",
@@ -610,16 +620,15 @@
   },
   "search": {
     "title": "Recherche",
-    "placeholder": "Matière, cours, note, devoir, examen…",
+    "placeholder": "Matière, cours, note, tâche, examen…",
     "hint": "Tape au moins 2 caractères.",
     "noResults": "Aucun résultat pour « {{query}} ».",
     "subjects": "Matières",
     "courses": "Cours",
     "notes": "Notes",
-    "assignments": "Devoirs",
     "tasks": "Tâches",
     "exams": "Examens",
-    "events": "Événements",
+    "events": "Rendez-vous",
     "money": "Argent"
   },
   "onboarding": {
@@ -636,18 +645,18 @@
     "howHint": "Tu pourras changer d’avis plus tard.",
     "manual": "Créer mon emploi du temps",
     "manualHint": "Ajoute tes matières et tes cours un par un.",
-    "later": "Plus tard",
     "laterHint": "Découvre d’abord l’application.",
     "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
-    "startNow": "Commencer"
+    "welcome": "Bienvenue dans MySky",
+    "previous": "Précédent"
   },
   "notifications": {
     "title": "Notifications",
     "upcoming": "Rappels à venir",
     "empty": "Aucun rappel programmé.",
-    "emptyHint": "Ajoute des cours, devoirs ou examens avec un rappel : ils apparaîtront ici.",
+    "emptyHint": "Ajoute des cours, tâches ou examens avec un rappel : ils apparaîtront ici.",
     "off": "Les notifications sont désactivées sur ce téléphone.",
     "settings": "Réglages des rappels",
     "count_one": "{{count}} rappel dans les {{days}} prochains jours",
@@ -799,7 +808,6 @@
     "noExam": "Aucun examen dans les 60 prochains jours",
     "quickNote": "Note",
     "quickTask": "Tâche",
-    "quickAssignment": "Devoir",
     "grades": "Mes notes",
     "noGrade": "Aucune note pour le moment",
     "lastGrade": "Dernière",
@@ -1089,7 +1097,7 @@
     "replan": "Refaire le plan de révision",
     "planTitle": "Plan de révision",
     "planFor": "{{subject}} · examen le {{date}}",
-    "planHint": "MySky propose des séances dans tes créneaux libres, sans chevaucher tes cours ni tes événements. Retire celles qui ne te vont pas, puis valide.",
+    "planHint": "MySky propose des séances dans tes créneaux libres, sans chevaucher tes cours ni tes rendez-vous. Retire celles qui ne te vont pas, puis valide.",
     "tooLate": "L’examen est aujourd’hui ou déjà passé.",
     "tooLateHint": "Le plan de révision se prépare avant la date de l’examen.",
     "timetableName": "Révisions",
@@ -1219,7 +1227,7 @@
       "revision": "Révisions du jour",
       "habits": "Mes habitudes",
       "todo": "À faire",
-      "events": "Événements",
+      "events": "Rendez-vous",
       "exams": "Examens à venir",
       "money": "Argent du jour",
       "glance": "Coup d’œil (tuiles)",
@@ -1472,7 +1480,9 @@
     "addRecurringMenu": "Ajouter une charge fixe ou une tontine",
     "chargeOption": "Charge fixe",
     "tontineOption": "Tontine",
-    "paidToast": "{{name}} : payé"
+    "paidToast": "{{name}} : payé",
+    "recurringKindLabel": "Charge fixe ou tontine",
+    "frequency": "Fréquence"
   },
   "glance": {
     "money": "Argent",
@@ -1514,7 +1524,7 @@
     "nowA11y": "Maintenant, {{time}}",
     "revision": "Révision {{name}}",
     "done": "Faite",
-    "event": "Événement",
+    "event": "Rendez-vous",
     "allDay": "Toute la journée"
   },
   "quickAdd": {
@@ -1522,7 +1532,7 @@
     "income": "Entrée d’argent",
     "note": "Note de cours",
     "revision": "Révision",
-    "other": "Autre (examen, événement…)",
+    "other": "Autre (examen, cours…)",
     "event": "Rendez-vous"
   },
   "spaces": {
@@ -1539,7 +1549,7 @@
       "personal": "Perso"
     },
     "hint": {
-      "study": "Cours, emploi du temps, devoirs, examens, moyennes, révisions",
+      "study": "Matières, cours, emploi du temps, examens, moyennes, révisions",
       "work": "Créneaux qui se répètent, semaines A / B, heures de travail à planifier",
       "personal": "Argent, tontines, habitudes, humeur, sport, famille"
     },
@@ -1547,7 +1557,7 @@
     "changeLater": "Tu pourras changer à tout moment dans ton profil.",
     "offTitle": "Désactiver « {{name}} » ?",
     "offMessage": {
-      "study": "Tes matières, cours, devoirs, examens et révisions sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
+      "study": "Tes matières, cours, examens, révisions et les tâches liées à une matière sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
       "work": "Ton objectif d’heures de travail est caché. Tes tâches, rendez-vous et notes restent visibles : ils sont communs à tous tes espaces. Tes créneaux restent visibles si Perso est actif. Réactive l’espace quand tu veux : tout revient.",
       "personal": "Ton argent, tes habitudes et ton humeur sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Tes tâches, rendez-vous et notes restent visibles. Réactive l’espace quand tu veux : tout revient."
     },
@@ -1704,8 +1714,8 @@
       "off_periods": "Période sans cours",
       "exams": "Examen",
       "tasks": "Tâche",
-      "assignments": "Devoir",
-      "personal_events": "Événement",
+      "assignments": "Tâche d’une matière",
+      "personal_events": "Rendez-vous",
       "note_categories": "Catégorie de notes",
       "notes": "Note",
       "attachments": "Pièce jointe",
@@ -1757,9 +1767,9 @@
     "areaLabel": "Partie de l’app",
     "area": {
       "today": "Aujourd’hui",
-      "calendar": "Calendrier / Planning",
-      "tasks": "Tâches",
-      "notes": "Notes",
+      "calendar": "Calendrier",
+      "tasks": "Carnet – À faire",
+      "notes": "Carnet – Notes",
       "habits": "Habitudes",
       "revision": "Révisions",
       "money": "Argent",
@@ -1813,5 +1823,15 @@
       "contact": "Contact : {{value}}",
       "technical": "MySky {{version}} · {{os}} · langue {{locale}} · erreur {{error}}"
     }
+  },
+  "unsaved": {
+    "title": "Abandonner les modifications ?",
+    "message": "Ce que tu as saisi ne sera pas enregistré.",
+    "discard": "Abandonner",
+    "keepEditing": "Continuer la saisie"
+  },
+  "state": {
+    "errorTitle": "Impossible d’afficher cette liste",
+    "loading": "Chargement…"
   }
 }

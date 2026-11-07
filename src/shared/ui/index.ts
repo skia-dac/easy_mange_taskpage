@@ -10,7 +10,15 @@ export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
 export { ChoiceChips } from './ChoiceChips';
 export { DateTimeField } from './DateTimeField';
-export { confirmAction, confirmDestructive, reportLoadError, showError, showInfo } from './dialogs';
+export { Disclosure } from './Disclosure';
+export {
+  confirmAction,
+  confirmDestructive,
+  confirmDiscard,
+  reportLoadError,
+  showError,
+  showInfo,
+} from './dialogs';
 export { EmptyState } from './EmptyState';
 export { FAB_CLEARANCE, Fab } from './Fab';
 export { FieldShell } from './FieldShell';
@@ -22,6 +30,8 @@ export { LoadingScreen } from './LoadingScreen';
 export { RiseIn } from './RiseIn';
 export { Screen } from './Screen';
 export { SearchInput } from './SearchInput';
+export { loadStateOf, StateView } from './StateView';
+export type { LoadState } from './StateView';
 export { Segmented } from './Segmented';
 export { SectionHeader } from './SectionHeader';
 export { SelectField } from './SelectField';

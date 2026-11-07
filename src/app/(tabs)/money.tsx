@@ -27,12 +27,13 @@ import {
   IconBadge,
   CountUpText,
   ListRow,
-  LoadingScreen,
+  loadStateOf,
   RiseIn,
   Screen,
   SectionHeader,
   showError,
   showUndoToast,
+  StateView,
 } from '@/shared/ui';
 
 /** Onglet Argent : ce qu'il te reste, ce qui est à payer, tes dernières opérations. */
@@ -45,8 +46,17 @@ export default function MoneyScreen() {
   const data = useMoneyData(offset);
   const money = useMoneyLabels(data.data?.input.categories ?? []);
 
-  if (data.error) return <EmptyState icon="alert-circle" title={t('errors.loadFailed')} />;
-  if (!data.data) return <LoadingScreen />;
+  const state = loadStateOf(data);
+  if (state !== 'ready' || !data.data) {
+    // Chargement (lignes fantômes) ou échec (message et « Réessayer ») sous le titre de l'onglet.
+    return (
+      <View style={{ flex: 1 }}>
+        <Screen title={t('money.title')} actions={<ProfileButton />}>
+          <StateView state={state === 'error' ? 'error' : 'loading'} onRetry={data.retry} />
+        </Screen>
+      </View>
+    );
+  }
   const { overview: o, input } = data.data;
   const cur = o.currency;
   const fmt = (v: number) => formatMoney(v, cur);

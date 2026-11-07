@@ -138,9 +138,8 @@ export default function SubjectDetailScreen() {
       onPress: () => router.push({ pathname: '/exams/form', params: { subjectId: s.id } }),
     },
     {
-      label: t('add.assignment'),
-      onPress: () =>
-        router.push({ pathname: '/work/form', params: { kind: 'assignment', subjectId: s.id } }),
+      label: t('add.task'),
+      onPress: () => router.push({ pathname: '/work/form', params: { subjectId: s.id } }),
     },
     {
       label: t('add.note'),
@@ -267,11 +266,7 @@ export default function SubjectDetailScreen() {
           title={t('subjects.work')}
           action={{
             label: t('common.add'),
-            onPress: () =>
-              router.push({
-                pathname: '/work/form',
-                params: { kind: 'assignment', subjectId: s.id },
-              }),
+            onPress: () => router.push({ pathname: '/work/form', params: { subjectId: s.id } }),
           }}
         />
         <Card>
@@ -319,7 +314,15 @@ export default function SubjectDetailScreen() {
       <ChoiceSheet
         visible={deleteSheet !== null}
         title={t('subjects.deleteTitle', { name: s.name })}
-        message={deleteSheet ? t('subjects.deleteUsage', deleteSheet) : undefined}
+        message={
+          deleteSheet
+            ? // Un devoir est une tâche avec une matière : un seul compte de tâches.
+              t('subjects.deleteUsage', {
+                ...deleteSheet,
+                tasks: deleteSheet.tasks + deleteSheet.assignments,
+              })
+            : undefined
+        }
         options={deleteOptions}
         onClose={() => setDeleteSheet(null)}
       />

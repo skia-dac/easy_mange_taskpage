@@ -57,9 +57,9 @@ export default function TabsLayout() {
   const db = useDb();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const spaces = useSpaces();
-  // Études seul : « Calendrier » ; dès qu'il y a Pro ou Perso : « Planning ».
-  const calendarTitle =
-    spaces.active.length === 1 && spaces.has('study') ? t('tabs.calendar') : t('tabs.planning');
+  // Un seul nom, quels que soient les espaces : « Calendrier » (onglet et titre de l'écran).
+  // « Mon planning » reste le nom des créneaux fixes (/planning), ouvert depuis le calendrier.
+  const calendarTitle = t('tabs.calendar');
 
   useEffect(() => {
     void isOnboardingDone(db).then(setOnboarded, () => setOnboarded(true));

@@ -99,7 +99,7 @@ The domain functions and projections are plain TypeScript, unit-tested without a
 ```
 src/app/                      # Expo Router routes only (thin)
   (tabs)/index               Aujourd'hui (home, model P)
-  (tabs)/calendar            Calendrier / Planning (day, week, month, hours)
+  (tabs)/calendar            Calendrier (day, week, month, hours)
   (tabs)/tasks  (tabs)/notes  (tabs)/money   Tâches, Notes, Argent (Argent only with the Perso space)
   account/ auth/ courses/ events/ exams/ habits/ money/ notes/ off-periods/ planning/ profile/
   revision/ subjects/ timetables/ work/  + single screens (search, stats, study, review, mood, grades, settings, onboarding…)
@@ -207,7 +207,7 @@ Reviewed the popular shots of the search (Ronas IT, Pixelean, Orenji Studio, Kei
 - Accessibility: contrast AA, touch targets ≥ 44 pt, dynamic font size respected.
 
 **Mock-ups (validated direction):** https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
-- Discovery flow (implemented without the account steps, which come with phase 2): Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?"
+- Discovery flow (implemented without the account steps, which come with phase 2): Splash → 3 intro screens (what MySky does, photo import, reminders) → sign-up (Apple / Google / email) → "Comment veux-tu commencer ?". Superseded on 7 Nov 2026 (§5n): 3 steps at most.
 - 38 screens covering every screen of spec §98: account (sign-in, forgotten password), 5 tabs + empty state, subjects (list, detail, form, delete with the choice of keeping linked content), timetable (list, course form, edit a repeated course with 3 options, holidays with course suspension), import (choose file → analysis → review), notes editor, forms and details for tâche/devoir/examen/événement, quick add, end of course, search, notifications (with sync retry), settings, colour sheet.
 
 **Rule: all colours are editable in ONE place.** `src/shared/theme/colors.ts` holds named tokens (`primary`, `primarySoft`, `background`, `surface`, `text`, `muted`, `warning`, `danger`, `success`, plus a light and a dark set, and the subject palette). Screens and components never contain a hex code: they read `theme.colors.*`. A lint rule (no colour literals outside `theme/`) enforces it.
@@ -325,7 +325,7 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - ~~Every task, event and note has a space~~ — replaced on 27 Sep 2026 by the mode rule (§5m): tasks, appointments, slots and notes are shared and never ask for a space. The `space` columns (migration 12, 14) stay in the database, unused and never overwritten.
 - **Filtering** is done in one place: `filterBySpaces()` in `projections/spaces.ts`, applied by `loadAgenda()` (Today, calendar, review, notifications, widgets) and by search, tasks and notes lists.
 - **Home**: the 4 tiles depend on the spaces (`glanceTiles()`): Études seul — cours du jour, examen, à faire, révision · Pro seul — à faire, à planifier, réunions, terminées · Perso seul — argent, habitudes, à faire, à payer · Études + Perso — argent, habitudes, à faire, examen · Pro + Perso — argent, habitudes, à faire, à planifier · Études + Pro — à faire, examen, à planifier, cours · all three — argent, habitudes, à faire, examen. « À planifier » = weekly work-hours goal (Profil, default 40 h, Pro only) − all appointments, slots and task estimates of the week. No space filter and no space tag on home (removed 27 Sep 2026, §5m). The + menu and the Ajouter screen only offer what the active spaces use.
-- Tab 2 is « Calendrier » in Études alone, « Planning » otherwise.
+- Tab 2 is always « Calendrier » (tab and screen title, 7 Nov 2026); « Mon planning » is the fixed-slots screen.
 - **Notes are common to all spaces** (validated 25 Sep 2026): no space on notes; user-created **note categories** (migration 13, `note_categories`, `notes.category_id`): filter chips in Notes, picker in the editor, `/notes/categories` and `/notes/category-form`. Deleting a category keeps its notes (uncategorised).
 - **Mon planning** (`/planning`, migration 14 `work_slots`): fixed slots (days, start / end, overnight = ends next day, place, colour, validity dates; shown with Pro or Perso, no space asked) repeating every week or on **A / B weeks** (setting « Cette semaine est une semaine A / B », anchor in `rotation_anchor`). Slot sessions are computed (`slotOccurrences`), never stored, and shown as appointments everywhere (Aujourd'hui, planning, hours grid, « À planifier » hours); tapping one opens its slot, dragging is refused with an explanation. « Copier la semaine dernière » copies last week's appointments to this week (no duplicates, slots excluded).
 - **Sport: duration and body tracking** (migration 15): each habit day can carry an **optional duration** (day sheet: 15 min … 2 h, « Pas noté »; noting a duration also ticks the day), shown on the habit row and as « Temps noté ce mois ». A habit with **« Suivi physique : photo et poids »** (on by default for the Sport suggestion and existing `activity` habits) gets **check-ins** (`habit_checkpoints`: date, weight kg, photo, note; photo or weight required). Creating such a habit opens « Point de départ » (camera or gallery + weight). The habit page shows Départ / Maintenant photos, weights and the difference. **Progress photos never leave the phone** (stored in the app's private folder, excluded from file sync; weights sync); deleting a check-in or the habit deletes the photo files.
@@ -337,7 +337,7 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 - **Coup d'œil** (`TodayGlance`): 4 tiles — Argent (« Il te reste » + per day), Habitudes du jour (progress ring), À faire (count + overdue), next Examen (days left). Each tile opens its module.
 - **Ta journée** (`DayLineCard`, pure `buildDayLine` in `projections/today.ts`): classes (cancelled ones left out), planned revisions, timed events and tasks due today at a set time, on one timeline with the red « maintenant » line; past items dimmed; the next / ongoing class is the blue card (tap = course, pencil = take notes). All-day events above.
 - Then « Mes habitudes du jour » and « À faire » lists (tick, swipe).
-- **+ menu** (`QuickAddMenu`): Dépense, Entrée d'argent, Tâche, Devoir, Note de cours (pre-filled with the next class), Révision (study timer), Autre (→ `/add`).
+- **+ menu** (`QuickAddMenu`, Aujourd'hui and Calendrier): Dépense, Entrée d'argent, Tâche, Note (« Note de cours » pre-filled with the next class), Rendez-vous, Révision (study timer), Autre (→ `/add`, Études only).
 - Sections stay movable / hideable (`/today-layout`); the older sections (prochain cours, argent du jour, cours, révisions, événements, examens) are hidden by default. The layout has a version: older saved layouts switch once to model P.
 
 
@@ -366,7 +366,7 @@ Requested by the product owner, with the mock-ups validated on the canvas « MyS
 Requested by the product owner: Tâches and Notes share one bottom tab.
 
 - **Bar**: 4 visible tabs — Aujourd'hui · Calendrier/Planning · **Carnet** (Feather `clipboard`, « Notebook » in English) · Argent (only with the Perso space).
-- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études the Tâches · Examens segments; « Tâches » lists tasks and homework together) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task or exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
+- **Carnet** keeps the route `(tabs)/tasks`. A `Segmented` at the top switches between « À faire » (tasks, and with Études one chip row Tâches · Examens · Matière (menu); « Tâches » lists tasks and homework together) and « Notes » (notes, common to the three spaces). Each view keeps its own header actions and its « + » (new task or exam, or new note). Content lives in `src/components/notebook/` (`TodoPane`, `NotesPane`).
 - **Remembered view**: `app_settings.notebook_view` (`todo` by default; an unreadable value falls back to `todo`). A link's `view=todo|notes` wins; `tab=task|exam` opens a segment of « À faire » (an old `tab=assignment` opens « Tâches »).
 - **Old route** `(tabs)/notes`: hidden from the bar (`href: null`), redirects to `/(tabs)/tasks?view=notes`. Internal links and widgets to the task list use `view=todo`.
 
@@ -388,6 +388,15 @@ Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is ch
 - **Code**: `filterBySpaces()` (`projections/spaces.ts`) is the only place that hides by mode. `isWorkVisible()`: homework needs Études, a task is always visible. `useSubjects()` returns no subject without Études, so a task or note linked to a subject stays visible and only its subject is hidden.
 - **Decisions (27 Sep 2026)**: the home « Tout / Études / Pro / Perso » filter and the space tags are removed; homework stays a separate table and is decided at creation (a subject makes it homework; the subject can be changed, not added or removed later).
 - **One task form** (27 Sep 2026): « + Tâche » opens `/work/form`; choosing a subject (Études only) saves it as homework, otherwise as a task. The separate « Devoir » entries of the + menu and of the Ajouter screen, and the « Devoirs » segment of the Carnet, are removed. Editing keeps the saved type.
+
+## 5n. Refonte UX iOS / Android (7 Nov 2026)
+
+- **Tâche = devoir avec une matière**, partout : la notification de fin de cours (« Ajouter une tâche », la notification touchée et l'ancien bouton « Ajouter un devoir ») ouvre `/work/form` avec la matière ; le widget « Notes rapides » n'a plus de bouton « Devoir » ; la recherche a une seule section « Tâches » ; plus de « devoir » visible. « Rendez-vous » remplace « Événement ».
+- **Bouton +** : menu sur Aujourd'hui et le Calendrier (le Calendrier pré-remplit le jour choisi), modal pour le lecteur d'écran, fermeture par « échap » ; ailleurs il crée directement avec un libellé précis (« Nouvelle tâche », « Nouvelle note »…). « Autre (examen, cours…) » n'existe qu'avec Études.
+- **Formulaires** : `useUnsavedGuard` / `useDirty` (`src/hooks/useUnsavedGuard.ts`, `usePreventRemove` de `expo-router/react-navigation`) demandent « Abandonner les modifications ? » avant de quitter une fiche modifiée (tâche, cours, opération, avis ; note seulement si l'enregistrement automatique a échoué). Fiche de tâche courte : titre, matière, date ; le reste derrière « Plus d'options » ; statut seulement à la modification.
+- **États** : `StateView` (lignes fantômes, erreur avec « Réessayer ») sur Aujourd'hui, Calendrier, Carnet et Argent ; `useLiveQuery` / `useSharedLiveQuery` exposent `retry`.
+- **Aujourd'hui** : la tuile « À faire » cède sa place à « Terminées » quand la liste « À faire » est affichée ; Pro / Perso sans rien noté ont une première action guidée.
+- **Premier lancement** : 3 étapes (présentation, espaces, « Comment veux-tu commencer ? »), qui défilent, avec « Précédent » ; le bouton principal dit « Suivant » puis « Commencer ».
 
 ## 6. Open questions for the product owner
 
