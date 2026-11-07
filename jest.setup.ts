@@ -14,3 +14,25 @@ jest.mock('expo-router/react-navigation', () => {
   const navigation = { dispatch: jest.fn() };
   return { ...actual, usePreventRemove: jest.fn(), useNavigation: () => navigation };
 });
+
+// Retours tactiles : aucun moteur en test. Chaque test peut vérifier les appels (`haptic`).
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  performAndroidHapticsAsync: jest.fn(() => Promise.resolve()),
+  ImpactFeedbackStyle: {
+    Light: 'light',
+    Medium: 'medium',
+    Heavy: 'heavy',
+    Soft: 'soft',
+    Rigid: 'rigid',
+  },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
+  AndroidHaptics: {
+    Clock_Tick: 'clock-tick',
+    Context_Click: 'context-click',
+    Confirm: 'confirm',
+    Reject: 'reject',
+  },
+}));
