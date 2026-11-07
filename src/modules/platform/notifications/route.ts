@@ -22,16 +22,12 @@ export function routeForResponse(r: NotificationResponse): Href | null {
           },
         };
       }
-      if (r.actionIdentifier === ACTIONS.addTask) {
-        return {
-          pathname: '/work/form',
-          params: { kind: 'task', subjectId: a.subjectId, fromCourse: '1' },
-        };
-      }
-      // Notification touchée ou bouton « Ajouter un devoir » : le devoir, pré-rempli avec la matière.
+      // « Ajouter une tâche », l'ancien bouton « Ajouter un devoir » (notifications déjà
+      // programmées) ou la notification touchée : la fiche unique de tâche, avec la matière du
+      // cours pré-remplie (une tâche avec une matière est un devoir).
       return {
         pathname: '/work/form',
-        params: { kind: 'assignment', subjectId: a.subjectId, fromCourse: '1' },
+        params: { subjectId: a.subjectId, fromCourse: '1' },
       };
     case 'work':
       return { pathname: '/work/[id]', params: { id: a.id, kind: a.workKind } };

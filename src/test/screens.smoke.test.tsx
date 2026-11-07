@@ -439,7 +439,7 @@ const cases: Case[] = [
     name: 'Calendrier heures',
     load: () => require('@/app/(tabs)/calendar') as { default: ComponentType },
     params: { mode: 'hours' },
-    expect: ['Heures', 'Appui long sur un élément', 'Tâches et devoirs'],
+    expect: ['Heures', 'Appui long sur un élément', 'Tâches'],
   },
   {
     name: 'Argent',

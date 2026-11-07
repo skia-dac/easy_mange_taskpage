@@ -249,7 +249,7 @@ function Row({
       const s = w.subjectId ? subjects.get(w.subjectId) : undefined;
       title = w.title;
       detail = [
-        w.kind === 'task' ? t('add.task') : t('add.assignment'),
+        t('add.task'),
         s?.name,
         w.estimatedMinutes ? formatDuration(w.estimatedMinutes) : null,
       ]

@@ -12,14 +12,13 @@ import { createWidget, type WidgetEnvironment } from 'expo-widgets';
 
 import type { WidgetData } from '@/projections';
 
-/** Widget « Notes rapides » (moyen) : trois boutons qui ouvrent directement une nouvelle note, tâche ou devoir. */
+/** Widget « Notes rapides » (moyen) : deux boutons qui ouvrent directement une nouvelle note ou une nouvelle tâche. */
 const QuickAddWidget = (props: WidgetData, environment: WidgetEnvironment) => {
   'widget';
   const theme = environment.colorScheme === 'dark' ? props.dark : props.light;
   const buttons = [
     { label: props.labels.quickNote, icon: 'square.and.pencil' as const, url: props.links.note },
     { label: props.labels.quickTask, icon: 'checkmark.circle' as const, url: props.links.task },
-    { label: props.labels.quickAssignment, icon: 'book' as const, url: props.links.assignment },
   ];
 
   return (

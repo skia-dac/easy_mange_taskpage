@@ -1,5 +1,5 @@
 import { router, Stack } from 'expo-router';
-import { useDeferredValue, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -10,6 +10,7 @@ import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { listCategories } from '@/modules/finance';
+import { compareWorkItems } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
@@ -57,6 +58,11 @@ export default function SearchScreen() {
   // Catégories personnelles : pour nommer et colorer les opérations trouvées.
   const categories = useLiveQuery(listCategories, ['money_categories'], []);
   const total = countResults(r);
+  // Un devoir est une tâche avec une matière : une seule section « Tâches ».
+  const work = useMemo(
+    () => [...r.assignments, ...r.tasks].sort(compareWorkItems),
+    [r.assignments, r.tasks],
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -143,23 +149,12 @@ export default function SearchScreen() {
           </>
         ) : null}
 
-        {r.assignments.length > 0 ? (
-          <>
-            <SectionHeader title={t('search.assignments')} />
-            <Card>
-              {r.assignments.map((w) => (
-                <WorkRow key={w.id} item={w} subjects={byId} now={now} showDate />
-              ))}
-            </Card>
-          </>
-        ) : null}
-
-        {r.tasks.length > 0 ? (
+        {work.length > 0 ? (
           <>
             <SectionHeader title={t('search.tasks')} />
             <Card>
-              {r.tasks.map((w) => (
-                <WorkRow key={w.id} item={w} subjects={byId} now={now} showDate />
+              {work.map((w) => (
+                <WorkRow key={`${w.kind}-${w.id}`} item={w} subjects={byId} now={now} showDate />
               ))}
             </Card>
           </>

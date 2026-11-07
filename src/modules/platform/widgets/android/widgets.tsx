@@ -376,7 +376,6 @@ export function QuickAddWidget({ data, theme }: Props) {
   const buttons = [
     { label: data.labels.quickNote, icon: '✎', url: data.links.note },
     { label: data.labels.quickTask, icon: '✓', url: data.links.task },
-    { label: data.labels.quickAssignment, icon: '▤', url: data.links.assignment },
   ];
   return (
     <FlexWidget
