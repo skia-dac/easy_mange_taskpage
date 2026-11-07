@@ -478,4 +478,14 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX idx_feedback_status ON feedback (status, created_at);
     `,
   },
+  {
+    version: 18,
+    name: 'tâches répétées : lien vers l’occurrence qui a créé la suivante',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN repeat_parent_id TEXT;
+      ALTER TABLE assignments ADD COLUMN repeat_parent_id TEXT;
+      CREATE INDEX idx_tasks_repeat_parent ON tasks (repeat_parent_id);
+      CREATE INDEX idx_assignments_repeat_parent ON assignments (repeat_parent_id);
+    `,
+  },
 ];

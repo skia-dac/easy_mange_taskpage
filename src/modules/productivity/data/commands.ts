@@ -38,8 +38,9 @@ function workValues(input: WorkItemInput, kind: WorkKind) {
 
 /**
  * Tâche répétée qui vient d'être terminée : crée la suivante (une seule fois par passage
- * à « terminé »). Si une occurrence vivante de même titre et même répétition existe déjà à
- * l'échéance suivante (décocher puis recocher), rien n'est créé. Retourne l'id créé, ou null.
+ * à « terminé »). La suivante garde l'id de celle qui l'a créée (`repeat_parent_id`) : si elle
+ * existe encore (décocher puis recocher), rien n'est créé. Deux tâches de même titre (par
+ * exemple dans deux matières) ont chacune leur suivante. Retourne l'id créé, ou null.
  */
 async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<string | null> {
   const row = await w.db.getFirstAsync<WorkItemRow>(
@@ -50,13 +51,11 @@ async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<s
   const next = nextOccurrenceInput(toWorkItem(kind)(row));
   if (!next) return null;
   const existing = await w.db.getFirstAsync<{ id: string }>(
-    `SELECT id FROM ${tableOf(kind)}
-     WHERE id != ? AND title = ? AND repeat_rule = ? AND due_date = ? AND deleted_at IS NULL
-     LIMIT 1`,
-    [id, row.title, row.repeat_rule, next.dueDate],
+    `SELECT id FROM ${tableOf(kind)} WHERE repeat_parent_id = ? AND deleted_at IS NULL LIMIT 1`,
+    [id],
   );
   if (existing) return null;
-  const newId = await w.insert(tableOf(kind), workValues(next, kind));
+  const newId = await w.insert(tableOf(kind), { ...workValues(next, kind), repeat_parent_id: id });
   await copySubtasks(w, kind, id, newId);
   return newId;
 }

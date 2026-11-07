@@ -335,6 +335,7 @@ create table if not exists public.tasks (
   repeat_rule text not null default 'none',
   estimated_minutes bigint,
   space text not null default 'personal',
+  repeat_parent_id text,
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.tasks
@@ -355,6 +356,7 @@ alter table public.tasks
   add column if not exists repeat_rule text not null default 'none',
   add column if not exists estimated_minutes bigint,
   add column if not exists space text not null default 'personal',
+  add column if not exists repeat_parent_id text,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists tasks_sync_idx on public.tasks (user_id, server_updated_at);
 alter table public.tasks enable row level security;
@@ -386,6 +388,7 @@ create table if not exists public.assignments (
   repeat_rule text not null default 'none',
   estimated_minutes bigint,
   space text not null default 'study',
+  repeat_parent_id text,
   server_updated_at timestamptz not null default clock_timestamp()
 );
 alter table public.assignments
@@ -406,6 +409,7 @@ alter table public.assignments
   add column if not exists repeat_rule text not null default 'none',
   add column if not exists estimated_minutes bigint,
   add column if not exists space text not null default 'study',
+  add column if not exists repeat_parent_id text,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
 create index if not exists assignments_sync_idx on public.assignments (user_id, server_updated_at);
 alter table public.assignments enable row level security;
