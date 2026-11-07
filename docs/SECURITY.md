@@ -128,14 +128,18 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 
 ## 6. Alertes de sécurité connues et acceptées
 
-`npm audit --omit=dev` signale **17 alertes de niveau modéré** (aucune faible, élevée ou critique) au 26 septembre 2026. Elles viennent toutes de deux paquets, propagés par les outils d'Expo :
+Au 7 novembre 2026 (Expo SDK 57.0.32, après `npx expo install --fix` et `npm audit fix` sans `--force`), `npm audit --omit=dev` ne signale plus que des alertes faibles et modérées, **plus une seule chaîne de niveau élevé** acceptée temporairement :
 
 | Paquet | Pourquoi c'est accepté |
 |---|---|
-| `uuid@7` (via `xcode`, `@expo/config-plugins`, `@expo/config`, `@expo/prebuild-config`…) | Utilisé uniquement par les outils de **construction** de l'app, pas dans l'app installée. La faille concerne un usage (`buf` fourni à v3/v5/v6) que ces outils ne font pas. |
-| `decode-uri-component@0.2` (via `expo-router` → `query-string`) | Risque de lenteur sur un lien mal formé. La correction (`0.5`) n'est pas compatible avec `query-string@7`. À revoir à chaque mise à jour d'Expo. |
+| `decode-uri-component@0.2` (via `expo-router@57` → `query-string@7`) — advisories **GHSA-vcc3-ghjq-m6fr** et **GHSA-qr28-fpjm-wq7f** (élevé) | Risque de lenteur (déni de service) sur un lien profond mal formé, sur le seul téléphone qui l'ouvre ; aucune donnée exposée. La version corrigée (`0.5.1`) est un module ESM que `query-string@7` charge avec `require` : un `overrides` a été essayé et casse Node et Jest (`decodeComponent is not a function`, `Unexpected token 'export'`). La correction arrive avec `expo-router` 58. |
+| `glob`, `minimatch` (via `@expo/fingerprint`, outils Expo) ; `deepmerge` (via Jest) | Modérés ou faibles, utilisés uniquement par les outils de construction ou de test, pas dans l'app installée. |
 
-`npm run audit:prod` (seuil `high`) reste vert. `npm audit fix --force` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `npx expo install --fix` à chaque nouveau SDK.
+`npm run audit:prod` lance `scripts/audit-prod.mjs` : il lit `npm audit --omit=dev --json`, ignore **uniquement** les deux advisories ci-dessus et les alertes qui n'existent qu'à cause d'elles (`query-string`, `expo-router`), et **échoue sur toute autre faille élevée ou critique**. La CI reste donc bloquante au niveau élevé.
+
+**À retirer au passage au SDK 58** : supprimer les deux identifiants de `IGNORED` dans `scripts/audit-prod.mjs` (ou revenir à `npm audit --omit=dev --audit-level=high`) et mettre à jour ce tableau.
+
+`npm audit fix --force` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `npx expo install --fix` à chaque nouveau SDK.
 
 ## 7. Permissions du téléphone
 
