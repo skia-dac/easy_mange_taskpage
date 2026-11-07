@@ -4,6 +4,21 @@ import { addDaysIso, type IsoDate } from '@/shared/dates';
 
 import type { TodayData } from './today';
 
+export type CalendarViewMode = 'day' | 'week' | 'hours' | 'month';
+
+/**
+ * Jour choisi après une flèche ‹ › du calendrier : un jour en vue Jour, une semaine en vue
+ * Semaine ou Heures, un mois en vue Mois (au 1er du mois, pour ne pas sauter février).
+ */
+export function calendarStep(mode: CalendarViewMode, selected: IsoDate, dir: 1 | -1): IsoDate {
+  if (mode === 'day') return addDaysIso(selected, dir);
+  if (mode === 'month') {
+    const d = new Date(Number(selected.slice(0, 4)), Number(selected.slice(5, 7)) - 1 + dir, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  }
+  return addDaysIso(selected, dir * 7);
+}
+
 export type CalendarItem =
   | { kind: 'course'; sortTime: string; occurrence: Occurrence }
   | { kind: 'exam'; sortTime: string; exam: Exam }

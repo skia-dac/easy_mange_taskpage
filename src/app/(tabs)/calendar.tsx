@@ -17,10 +17,12 @@ import { useWeekStart } from '@/hooks/useWeekStart';
 import {
   calendarDays,
   calendarFilters,
+  calendarStep,
   filterItems,
   useAgendaData,
   type CalendarFilter,
   type CalendarItem,
+  type CalendarViewMode,
   type MoveTarget,
 } from '@/projections';
 import {
@@ -44,6 +46,7 @@ import {
   ChoiceChips,
   confirmAction,
   EmptyState,
+  FAB_CLEARANCE,
   loadStateOf,
   Screen,
   Segmented,
@@ -55,7 +58,7 @@ import {
 } from '@/shared/ui';
 import { moveCalendarItem } from '@/workflows';
 
-type ViewMode = 'day' | 'week' | 'hours' | 'month';
+type ViewMode = CalendarViewMode;
 const viewModes: readonly ViewMode[] = ['day', 'week', 'hours', 'month'];
 
 function monthGrid(anyDay: IsoDate, weekStartDay: number): IsoDate[] {
@@ -77,9 +80,6 @@ export default function CalendarScreen() {
   );
   const [shown, setShown] = useState<ReadonlySet<CalendarFilter>>(new Set(calendarFilters));
   const [selected, setSelected] = useState<IsoDate>(today);
-  const agenda = useAgendaData();
-  // Ni données ni erreur : chargement ; échec : un vrai message et « Réessayer », jamais « Rien ».
-  const agendaState = loadStateOf(agenda);
   const spaces = useSpaces();
   const study = spaces.has('study');
   // Sans Études : ni cours, ni examens, ni révisions à filtrer.
@@ -95,6 +95,10 @@ export default function CalendarScreen() {
     }
     return { from: weekStart, to: addDaysIso(weekStart, 6) };
   }, [mode, selected, weekStart, weekStartDay]);
+  // La période lue couvre les jours affichés, même loin dans le passé ou l'avenir.
+  const agenda = useAgendaData({ range });
+  // Ni données ni erreur : chargement ; échec : un vrai message et « Réessayer », jamais « Rien ».
+  const agendaState = loadStateOf(agenda);
 
   const days = useMemo(() => {
     if (!agenda.data) return new Map<IsoDate, CalendarItem[]>();
@@ -155,14 +159,7 @@ export default function CalendarScreen() {
     await moveCalendarItem(db, item, to).catch((e: unknown) => showError(userMessageKey(e)));
   };
 
-  const step = (dir: 1 | -1) => {
-    if (mode === 'month') {
-      const d = fromIsoDate(selected);
-      d.setDate(1);
-      d.setMonth(d.getMonth() + dir);
-      setSelected(toIsoDate(d));
-    } else setSelected(addDaysIso(selected, dir * 7));
-  };
+  const step = (dir: 1 | -1) => setSelected(calendarStep(mode, selected, dir));
 
   const dayList = (day: IsoDate) => {
     const items = days.get(day) ?? [];
@@ -326,7 +323,7 @@ export default function CalendarScreen() {
             {dayList(selected)}
           </>
         )}
-        <View style={{ height: 80 }} />
+        <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
       {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi. */}
       <QuickAddMenu date={selected} />
