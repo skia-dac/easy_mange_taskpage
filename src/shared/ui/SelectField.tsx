@@ -1,12 +1,13 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState, type ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { Modal, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { FieldShell } from './FieldShell';
+import { Tappable } from './Tappable';
 
 export type SelectOption = { value: string; label: string; leading?: ReactNode };
 
@@ -50,7 +51,7 @@ export function SelectField({
 
   return (
     <FieldShell label={label} required={required} error={error}>
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={`${label} : ${current?.label ?? placeholder ?? ''}`}
         onPress={() => setOpen(true)}
@@ -58,21 +59,22 @@ export function SelectField({
           minHeight: minTouchSize + 6,
           borderRadius: radius.md,
           borderWidth: 1.5,
-          borderColor: error ? colors.danger : colors.border,
+          borderColor: error ? colors.danger : colors.outline,
           backgroundColor: colors.surface,
-          paddingHorizontal: spacing.md + 2,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.sm,
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.sm,
         }}
       >
         {current?.leading}
-        <AppText color={current ? 'text' : 'muted'} style={{ flex: 1 }} numberOfLines={1}>
+        <AppText color={current ? 'text' : 'muted'} style={{ flex: 1 }}>
           {current?.label ??
             (value === null && noneLabel ? noneLabel : (placeholder ?? t('common.choose')))}
         </AppText>
         <Feather name="chevron-down" size={18} color={colors.muted} />
-      </Pressable>
+      </Tappable>
 
       <Modal
         visible={open}
@@ -85,11 +87,11 @@ export function SelectField({
             <AppText variant="heading" style={{ flex: 1 }}>
               {label}
             </AppText>
-            <Pressable accessibilityRole="button" onPress={() => setOpen(false)} hitSlop={12}>
+            <Tappable accessibilityRole="button" onPress={() => setOpen(false)} hitSlop={12}>
               <AppText variant="bodyStrong" color="primary">
                 {t('common.close')}
               </AppText>
-            </Pressable>
+            </Tappable>
           </View>
           <ScrollView
             contentContainerStyle={{
@@ -101,7 +103,7 @@ export function SelectField({
             {all.map((o) => {
               const selected = o.value === value;
               return (
-                <Pressable
+                <Tappable
                   key={o.value ?? '__none'}
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
@@ -121,11 +123,11 @@ export function SelectField({
                     {o.label}
                   </AppText>
                   {selected ? <Feather name="check" size={20} color={colors.primary} /> : null}
-                </Pressable>
+                </Tappable>
               );
             })}
             {footer ? (
-              <Pressable
+              <Tappable
                 accessibilityRole="button"
                 onPress={() => {
                   setOpen(false);
@@ -143,7 +145,7 @@ export function SelectField({
                 <AppText variant="bodyStrong" color="primary">
                   {footer.label}
                 </AppText>
-              </Pressable>
+              </Tappable>
             ) : null}
           </ScrollView>
         </SafeAreaView>

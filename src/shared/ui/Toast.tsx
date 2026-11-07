@@ -1,6 +1,6 @@
 import { useSegments } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Pressable, View } from 'react-native';
+import { AccessibilityInfo, Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { userMessageKey } from '../errors';
@@ -9,6 +9,7 @@ import { logger } from '../logger';
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { showError } from './dialogs';
+import { Tappable } from './Tappable';
 
 export type ToastAction = { label: string; onPress: () => void };
 type Entry = { id: number; message: string; action?: ToastAction };
@@ -114,7 +115,7 @@ export function ToastHost() {
           paddingRight: entry.action ? spacing.xs : spacing.lg,
           paddingVertical: entry.action ? 0 : spacing.md,
           minHeight: minTouchSize,
-          shadowColor: colors.text,
+          shadowColor: colors.shadow,
           shadowOpacity: 0.2,
           shadowRadius: 8,
           shadowOffset: { width: 0, height: 4 },
@@ -125,21 +126,20 @@ export function ToastHost() {
           {entry.message}
         </AppText>
         {entry.action ? (
-          <Pressable
+          <Tappable
             accessibilityRole="button"
             onPress={act}
             hitSlop={6}
-            style={({ pressed }) => ({
+            style={() => ({
               minHeight: minTouchSize,
               justifyContent: 'center',
               paddingHorizontal: spacing.md,
-              opacity: pressed ? 0.6 : 1,
             })}
           >
             <AppText variant="bodyStrong" style={{ color: colors.primarySoft }}>
               {entry.action.label}
             </AppText>
-          </Pressable>
+          </Tappable>
         ) : null}
       </Animated.View>
     </View>

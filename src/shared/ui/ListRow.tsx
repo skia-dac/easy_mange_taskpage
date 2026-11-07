@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { PressableScale } from './PressableScale';
+import { useLargeText } from './useLargeText';
 
 type Props = {
   title: string;
@@ -19,6 +20,9 @@ type Props = {
 /** Ligne de liste : [icône] titre / sous-titre [étiquette] ›. */
 export function ListRow({ title, subtitle, leading, trailing, onPress, struck }: Props) {
   const { colors, spacing } = useTheme();
+  // Très grand texte : rien n'est coupé, et l'étiquette de droite passe sous le titre.
+  const large = useLargeText();
+  const lines = large ? undefined : 2;
   const content = (
     <View
       style={{
@@ -30,22 +34,25 @@ export function ListRow({ title, subtitle, leading, trailing, onPress, struck }:
       }}
     >
       {leading}
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: spacing.xxs }}>
         <AppText
           variant="bodyStrong"
           color={struck ? 'muted' : 'text'}
           style={struck ? { textDecorationLine: 'line-through' } : undefined}
-          numberOfLines={2}
+          numberOfLines={lines}
         >
           {title}
         </AppText>
         {subtitle ? (
-          <AppText variant="caption" color="muted" numberOfLines={2}>
+          <AppText variant="caption" color="muted" numberOfLines={lines}>
             {subtitle}
           </AppText>
         ) : null}
+        {large && trailing ? (
+          <View style={{ flexDirection: 'row', marginTop: spacing.xs }}>{trailing}</View>
+        ) : null}
       </View>
-      {trailing}
+      {large ? null : trailing}
       {onPress ? <Feather name="chevron-right" size={18} color={colors.muted} /> : null}
     </View>
   );

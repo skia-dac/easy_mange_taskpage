@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
+import { haptic } from '../haptics';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
 type Option<T> = { value: T; label: string; leading?: ReactNode };
 
@@ -30,11 +32,14 @@ export function ChoiceChips<T>({
   const chips = options.map((o, i) => {
     const on = selected.includes(o.value);
     return (
-      <Pressable
+      <Tappable
         key={i}
         accessibilityRole="button"
         accessibilityState={{ selected: on }}
-        onPress={() => onToggle(o.value)}
+        onPress={() => {
+          haptic('selection');
+          onToggle(o.value);
+        }}
         style={{
           minHeight: minTouchSize,
           paddingHorizontal: spacing.lg,
@@ -51,7 +56,7 @@ export function ChoiceChips<T>({
         <AppText variant="bodyStrong" color={on ? 'onPrimary' : 'text'}>
           {o.label}
         </AppText>
-      </Pressable>
+      </Tappable>
     );
   });
   return (

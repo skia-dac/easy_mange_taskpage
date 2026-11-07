@@ -1,26 +1,33 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
+import { haptic } from '../haptics';
 import { CheckPop } from './checkMotion';
+import { Tappable } from './Tappable';
 
 type Props = { checked: boolean; onToggle: () => void; accessibilityLabel: string };
 
 /** Case à cocher ronde, zone touchable de 44 pt. */
 export function Checkbox({ checked, onToggle, accessibilityLabel }: Props) {
-  const { colors } = useTheme();
+  const { colors, spacing } = useTheme();
   return (
-    <Pressable
+    <Tappable
+      borderless
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
       accessibilityLabel={accessibilityLabel}
-      onPress={onToggle}
+      onPress={() => {
+        // Cocher (terminer) se sent sous le doigt ; décocher reste discret.
+        if (!checked) haptic('complete');
+        onToggle();
+      }}
       style={{
         width: minTouchSize,
         height: minTouchSize,
         alignItems: 'center',
         justifyContent: 'center',
-        marginLeft: -8,
+        marginLeft: -spacing.sm,
       }}
     >
       <CheckPop checked={checked}>
@@ -39,6 +46,6 @@ export function Checkbox({ checked, onToggle, accessibilityLabel }: Props) {
           {checked ? <Feather name="check" size={16} color={colors.surface} /> : null}
         </View>
       </CheckPop>
-    </Pressable>
+    </Tappable>
   );
 }

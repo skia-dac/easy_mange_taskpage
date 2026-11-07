@@ -7,6 +7,7 @@ import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
+import { haptic } from '../haptics';
 import { useTheme, type ColorTokens } from '../theme';
 import { AppText } from './AppText';
 
@@ -47,7 +48,7 @@ export function SwipeRow({ children, right, left, enabled = true }: Props) {
         paddingHorizontal: spacing.xl,
       }}
     >
-      <View style={{ alignItems: 'center', gap: 2 }}>
+      <View style={{ alignItems: 'center', gap: spacing.xxs }}>
         <Feather name={a.icon} size={22} color={colors.onPrimary} />
         <AppText variant="caption" color="onPrimary">
           {a.label}
@@ -69,7 +70,10 @@ export function SwipeRow({ children, right, left, enabled = true }: Props) {
       renderRightActions={left ? () => panel(left, 'flex-end') : undefined}
       onSwipeableOpen={(direction) => {
         // RIGHT : le contenu est parti vers la droite (panneau de gauche visible).
-        const action = direction === SwipeDirection.RIGHT ? right : left;
+        const primary = direction === SwipeDirection.RIGHT;
+        const action = primary ? right : left;
+        // L'action principale (terminer) se sent comme cocher la case ; l'autre, plus légère.
+        if (action) haptic(primary ? 'complete' : 'selection');
         ref.current?.close();
         action?.onAction();
       }}

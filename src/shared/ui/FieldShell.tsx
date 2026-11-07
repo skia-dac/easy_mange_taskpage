@@ -29,7 +29,7 @@ export function FieldShell({ label, required, error, hint, children }: Props) {
   }, [error, attempt, reveal]);
 
   return (
-    <View ref={box} collapsable={false} style={{ gap: spacing.xs + 2 }}>
+    <View ref={box} collapsable={false} style={{ gap: spacing.sm }}>
       <AppText variant="caption" color="muted">
         {label}
         {required ? (

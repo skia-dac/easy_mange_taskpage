@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
 
 import { checkInput, limitInput, maxLengthOf, type InputLimit } from '../fieldLimits';
-import { fonts, maxFontSizeMultiplier, minTouchSize, useTheme } from '../theme';
+import { minTouchSize, useTheme } from '../theme';
 import { FieldShell } from './FieldShell';
+import { useInputProps } from './inputProps';
 
 type Props = Omit<TextInputProps, 'value' | 'onChangeText' | 'maxLength'> & {
   label: string;
@@ -57,6 +58,7 @@ export function TextField({
   ...rest
 }: Props) {
   const { colors, radius, spacing, text } = useTheme();
+  const inputProps = useInputProps();
   const [touched, setTouched] = useState(false);
   const shown = limitInput(value, limit);
   const localError = touched ? checkInput(shown, limit) : null;
@@ -74,21 +76,24 @@ export function TextField({
     >
       <TextInput
         accessibilityLabel={label}
-        maxFontSizeMultiplier={maxFontSizeMultiplier}
-        placeholderTextColor={colors.muted}
+        {...inputProps}
         multiline={multiline}
         style={[
           {
             minHeight: multiline ? 96 : minTouchSize + 6,
             borderRadius: radius.md,
             borderWidth: 1.5,
-            borderColor: error || localError ? colors.danger : colors.border,
+            borderColor: error || localError ? colors.danger : colors.outline,
             backgroundColor: colors.surface,
-            paddingHorizontal: spacing.md + 2,
-            paddingTop: multiline ? spacing.md : 0,
+            paddingHorizontal: spacing.lg,
+            paddingTop: multiline ? spacing.md : undefined,
             color: colors.text,
-            fontFamily: fonts.body,
-            fontSize: text.body.fontSize + 1,
+            fontFamily: text.input.fontFamily,
+            fontSize: text.input.fontSize,
+            // Pas d'interligne sur une seule ligne : iOS décalerait le texte vers le bas.
+            lineHeight: multiline ? text.input.lineHeight : undefined,
+            // Une ligne : le champ grandit avec le texte au lieu de le couper.
+            paddingVertical: multiline ? undefined : spacing.sm,
             textAlignVertical: multiline ? 'top' : 'center',
           },
           style,

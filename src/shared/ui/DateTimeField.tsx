@@ -8,6 +8,7 @@ import { formatShortDate } from '../format';
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { FieldShell } from './FieldShell';
+import { Tappable } from './Tappable';
 
 type Props = {
   label: string;
@@ -61,7 +62,7 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
   return (
     <FieldShell label={label} required={required} error={error}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={`${label} : ${display}`}
           onPress={openPicker}
@@ -70,20 +71,21 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
             minHeight: minTouchSize + 6,
             borderRadius: radius.md,
             borderWidth: 1.5,
-            borderColor: error ? colors.danger : colors.border,
+            borderColor: error ? colors.danger : colors.outline,
             backgroundColor: colors.surface,
-            paddingHorizontal: spacing.md + 2,
+            paddingHorizontal: spacing.lg,
+            paddingVertical: spacing.sm,
             justifyContent: 'center',
           }}
         >
           <AppText color={value ? 'text' : 'muted'}>{display}</AppText>
-        </Pressable>
+        </Tappable>
         {clearable && value ? (
-          <Pressable accessibilityRole="button" onPress={() => onChange(null)} hitSlop={12}>
+          <Tappable accessibilityRole="button" onPress={() => onChange(null)} hitSlop={12}>
             <AppText variant="bodyStrong" color="primary">
               {t('common.clear')}
             </AppText>
-          </Pressable>
+          </Tappable>
         ) : null}
       </View>
 
@@ -116,13 +118,13 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
                   alignItems: 'center',
                 }}
               >
-                <Pressable accessibilityRole="button" onPress={() => setOpen(false)} hitSlop={10}>
+                <Tappable accessibilityRole="button" onPress={() => setOpen(false)} hitSlop={10}>
                   <AppText variant="bodyStrong" color="muted">
                     {t('common.cancel')}
                   </AppText>
-                </Pressable>
+                </Tappable>
                 <AppText variant="bodyStrong">{label}</AppText>
-                <Pressable
+                <Tappable
                   accessibilityRole="button"
                   onPress={() => {
                     onChange(toValue(draft));
@@ -133,7 +135,7 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
                   <AppText variant="bodyStrong" color="primary">
                     {t('common.ok')}
                   </AppText>
-                </Pressable>
+                </Tappable>
               </View>
               <DateTimePicker
                 value={draft}

@@ -1,9 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
 type Props = {
   label: string;
@@ -19,21 +20,20 @@ export function Disclosure({ label, hint, open, onToggle, children }: Props) {
   const { colors, spacing } = useTheme();
   return (
     <>
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityHint={open ? undefined : hint}
         accessibilityState={{ expanded: open }}
         onPress={() => onToggle(!open)}
-        style={({ pressed }) => ({
+        style={() => ({
           minHeight: minTouchSize,
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.sm,
-          opacity: pressed ? 0.6 : 1,
         })}
       >
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="bodyStrong" color="primary">
             {label}
           </AppText>
@@ -44,7 +44,7 @@ export function Disclosure({ label, hint, open, onToggle, children }: Props) {
           ) : null}
         </View>
         <Feather name={open ? 'chevron-up' : 'chevron-down'} size={20} color={colors.primary} />
-      </Pressable>
+      </Tappable>
       {open ? children : null}
     </>
   );

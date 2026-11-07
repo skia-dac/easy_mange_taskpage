@@ -1,9 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
+import { TextInput, View, type TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SEARCH_MAX } from '../fieldLimits';
-import { fonts, maxFontSizeMultiplier, minTouchSize, useTheme } from '../theme';
+import { minTouchSize, useTheme } from '../theme';
+import { useInputProps } from './inputProps';
+import { Tappable } from './Tappable';
 
 type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
   value: string;
@@ -17,6 +19,7 @@ type Props = Omit<TextInputProps, 'value' | 'onChangeText'> & {
 export function SearchInput({ value, onChangeText, placeholder, emphasized, ...rest }: Props) {
   const { t } = useTranslation();
   const { colors, radius, spacing, text } = useTheme();
+  const inputProps = useInputProps();
   return (
     <View
       style={{
@@ -34,25 +37,24 @@ export function SearchInput({ value, onChangeText, placeholder, emphasized, ...r
       <Feather name="search" size={18} color={colors.muted} />
       <TextInput
         accessibilityLabel={placeholder}
-        maxFontSizeMultiplier={maxFontSizeMultiplier}
+        {...inputProps}
         value={value}
         onChangeText={(next) => onChangeText(next.slice(0, SEARCH_MAX))}
         maxLength={SEARCH_MAX}
         placeholder={placeholder}
-        placeholderTextColor={colors.muted}
         returnKeyType="search"
         autoCorrect={false}
         style={{
           flex: 1,
           color: colors.text,
-          fontFamily: fonts.body,
-          fontSize: text.body.fontSize + 1,
+          fontFamily: text.input.fontFamily,
+          fontSize: text.input.fontSize,
           minHeight: minTouchSize,
         }}
         {...rest}
       />
       {value ? (
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('common.clearSearch')}
           onPress={() => onChangeText('')}
@@ -66,7 +68,7 @@ export function SearchInput({ value, onChangeText, placeholder, emphasized, ...r
           }}
         >
           <Feather name="x-circle" size={18} color={colors.muted} />
-        </Pressable>
+        </Tappable>
       ) : null}
     </View>
   );

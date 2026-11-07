@@ -1,5 +1,6 @@
 import { Alert } from 'react-native';
 
+import { haptic } from '../haptics';
 import { i18n } from '../i18n';
 import { logger } from '../logger';
 
@@ -9,6 +10,8 @@ export function confirmDestructive(
   message: string,
   confirmLabel: string,
 ): Promise<boolean> {
+  // Un avertissement tactile annonce la question avant qu'elle s'affiche.
+  haptic('warning');
   return new Promise((resolve) => {
     Alert.alert(
       title,

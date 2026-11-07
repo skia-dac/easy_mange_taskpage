@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
 export type ChoiceOption = {
   label: string;
@@ -52,21 +53,20 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
           {message ? <AppText color="muted">{message}</AppText> : null}
           <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
             {options.map((o) => (
-              <Pressable
+              <Tappable
                 key={o.label}
                 accessibilityRole="button"
                 onPress={() => {
                   onClose();
                   o.onPress();
                 }}
-                style={({ pressed }) => ({
+                style={() => ({
                   minHeight: minTouchSize + 8,
                   borderRadius: radius.md,
                   paddingHorizontal: spacing.lg,
                   paddingVertical: spacing.sm,
                   justifyContent: 'center',
                   backgroundColor: o.destructive ? colors.dangerSoft : colors.background,
-                  opacity: pressed ? 0.8 : 1,
                 })}
               >
                 <AppText variant="bodyStrong" color={o.destructive ? 'danger' : 'text'}>
@@ -77,9 +77,9 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
                     {o.hint}
                   </AppText>
                 ) : null}
-              </Pressable>
+              </Tappable>
             ))}
-            <Pressable
+            <Tappable
               accessibilityRole="button"
               onPress={onClose}
               style={{ minHeight: minTouchSize, alignItems: 'center', justifyContent: 'center' }}
@@ -87,7 +87,7 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
               <AppText variant="bodyStrong" color="primary">
                 {t('common.cancel')}
               </AppText>
-            </Pressable>
+            </Tappable>
           </View>
         </Pressable>
       </Pressable>

@@ -1,7 +1,8 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
 type Props = { title: string; action?: { label: string; onPress: () => void } };
 
@@ -13,14 +14,17 @@ export function SectionHeader({ title, action }: Props) {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        // Grand texte : l'action passe sous le titre plutôt que de l'écraser.
+        flexWrap: 'wrap',
+        columnGap: spacing.md,
         marginTop: spacing.sm,
       }}
     >
-      <AppText variant="heading" accessibilityRole="header">
+      <AppText variant="heading" accessibilityRole="header" style={{ flexShrink: 1 }}>
         {title}
       </AppText>
       {action ? (
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           onPress={action.onPress}
           hitSlop={12}
@@ -29,7 +33,7 @@ export function SectionHeader({ title, action }: Props) {
           <AppText variant="bodyStrong" color="primary">
             {action.label}
           </AppText>
-        </Pressable>
+        </Tappable>
       ) : null}
     </View>
   );

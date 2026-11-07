@@ -41,8 +41,11 @@ export function EmptyState({
     <RiseIn>
       <View
         style={{
+          // Même carte que les listes (fond, coins, bordure) : l'état vide prend leur place.
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
           padding: spacing.xxl,
           alignItems: 'center',
           gap: spacing.sm,

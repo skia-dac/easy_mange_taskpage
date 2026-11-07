@@ -1,7 +1,6 @@
-import { Pressable } from 'react-native';
-
 import { minTouchSize, type ColorTokens } from '../theme';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
 type Props = {
   label: string;
@@ -21,22 +20,22 @@ export function TextButton({
   accessibilityLabel,
 }: Props) {
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => ({
+      style={() => ({
         minHeight: minTouchSize,
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: disabled ? 0.4 : pressed ? 0.6 : 1,
+        opacity: disabled ? 0.4 : 1,
       })}
     >
-      <AppText variant="bodyStrong" color={color}>
+      <AppText variant="bodyStrong" color={color} style={{ textAlign: 'center' }}>
         {label}
       </AppText>
-    </Pressable>
+    </Tappable>
   );
 }

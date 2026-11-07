@@ -23,6 +23,8 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
           minHeight: minTouchSize + 8,
           borderRadius: radius.md,
           paddingHorizontal: spacing.xl,
+          // Grand texte : le libellé passe à la ligne et le bouton grandit avec lui.
+          paddingVertical: spacing.sm,
           backgroundColor: secondary ? colors.surface : colors.primary,
           borderWidth: secondary ? 1.5 : 0,
           borderColor: colors.border,
@@ -33,7 +35,11 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
       ]}
       {...rest}
     >
-      <AppText variant="bodyStrong" color={secondary ? 'text' : 'onPrimary'}>
+      <AppText
+        variant="bodyStrong"
+        color={secondary ? 'text' : 'onPrimary'}
+        style={{ textAlign: 'center' }}
+      >
         {label}
       </AppText>
     </PressableScale>

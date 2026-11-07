@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 import Animated, {
   Easing,
@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
+import { haptic } from '../haptics';
 import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 
@@ -38,7 +39,12 @@ export function usePlusButtonInset(bottomInset?: number) {
 }
 
 const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
-const PRESS = { damping: 16, stiffness: 380 };
+/** Sous le doigt : le bouton s'enfonce vite, puis rebondit un peu en revenant. */
+const PRESS_IN = { damping: 20, stiffness: 520 };
+const PRESS_OUT = { damping: 11, stiffness: 300 };
+const PRESSED_SCALE = 0.9;
+/** Le bouton « respire » quelques fois à l'arrivée pour se faire voir, puis se tient tranquille. */
+const BREATHS = 3;
 
 const Mark = Animated.createAnimatedComponent(G);
 
@@ -65,8 +71,13 @@ function slideY(shift: { value: number }, to: number, duration: number) {
   shift.value = withTiming(to, { duration, easing: SLIDE });
 }
 
+/** Arrête la respiration : sous le doigt, seul l'enfoncement compte. */
+function rest(breathe: { value: number }) {
+  breathe.value = withTiming(1, { duration: 120 });
+}
+
 function pressTo(scale: { value: number }, to: number) {
-  scale.value = withSpring(to, PRESS);
+  scale.value = withSpring(to, to < 1 ? PRESS_IN : PRESS_OUT);
 }
 
 /**
@@ -88,7 +99,7 @@ export function PlusButton({
    */
   bottomInset?: number;
 }) {
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, scheme } = useTheme();
   const reduced = useReducedMotion();
   const hidden = useTabBarHidden();
   const bottomInset = usePlusButtonInset(requestedInset);
@@ -116,7 +127,8 @@ export function PlusButton({
       breathe.value = withTiming(1, { duration: 180 });
       return;
     }
-    breathe.value = withRepeat(withTiming(1.06, { duration: 1400 }), -1, true);
+    // Un nombre pair d'allers-retours : il finit à sa taille normale.
+    breathe.value = withRepeat(withTiming(1.06, { duration: 1400 }), BREATHS * 2, true);
   }, [breathe, open, reduced]);
 
   useEffect(() => {
@@ -159,26 +171,36 @@ export function PlusButton({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={{ expanded: open }}
-        onPress={onPress}
+        onPress={() => {
+          haptic('selection');
+          onPress();
+        }}
         onPressIn={() => {
-          if (!reduced) pressTo(press, 0.96);
+          if (!reduced) {
+            rest(breathe);
+            pressTo(press, PRESSED_SCALE);
+          }
         }}
         onPressOut={() => pressTo(press, 1)}
-        style={{
+        style={({ pressed }) => ({
           width: SIZE,
           height: SIZE,
-          elevation: 4,
-          shadowColor: colors.text,
-          shadowOpacity: 0.2,
-          shadowRadius: 10,
+          // Animations coupées : il s'assombrit un peu au lieu de s'enfoncer.
+          opacity: reduced && pressed ? 0.85 : 1,
+          // Ombre (iOS) : noire en mode sombre, jamais un halo clair.
+          shadowColor: colors.shadow,
+          shadowOpacity: scheme === 'dark' ? 0.5 : 0.22,
+          shadowRadius: 12,
           shadowOffset: { width: 0, height: 6 },
-        }}
+        })}
       >
         <Animated.View
           style={[
             {
               ...StyleSheet.absoluteFill,
               borderRadius: radius.lg,
+              // Android : l'élévation suit la forme colorée (une vue sans fond n'a pas d'ombre).
+              elevation: Platform.OS === 'android' ? 6 : 0,
             },
             colorStyle,
             scaleStyle,

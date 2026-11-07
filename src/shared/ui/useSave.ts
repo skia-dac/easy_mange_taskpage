@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { userMessageKey } from '../errors';
+import { haptic } from '../haptics';
 import { logger } from '../logger';
 import { isValidationError, type FieldErrors } from '../validation';
 import { showError } from './dialogs';
@@ -8,7 +9,8 @@ import { showError } from './dialogs';
 /**
  * Gère l'enregistrement d'un formulaire :
  * - erreurs de saisie → affichées sous chaque champ ;
- * - autre erreur → message clair, les données saisies restent à l'écran.
+ * - autre erreur → message clair, les données saisies restent à l'écran ;
+ * - réussite → un léger retour tactile « enregistré ».
  */
 /** `messageKey` : traduction d'une erreur non liée à un champ (par défaut `userMessageKey`). */
 export function useSave(messageKey: (error: unknown) => string = userMessageKey) {
@@ -21,7 +23,9 @@ export function useSave(messageKey: (error: unknown) => string = userMessageKey)
     // Les erreurs d'un essai précédent disparaissent dès le nouvel essai.
     setErrors({});
     try {
-      return await action();
+      const result = await action();
+      haptic('success');
+      return result;
     } catch (error) {
       if (isValidationError(error)) {
         setErrors(error.fields);

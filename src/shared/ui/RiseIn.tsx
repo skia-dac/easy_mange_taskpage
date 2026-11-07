@@ -1,6 +1,11 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  FadeOut,
+  LinearTransition,
+  useReducedMotion,
+} from 'react-native-reanimated';
 
 /** Écart entre deux lignes, et plafond pour qu'une longue liste ne dure pas des secondes. */
 const STAGGER_STEP_MS = 40;
@@ -31,10 +36,19 @@ type Props = {
   /** Décalage en millisecondes. Sans valeur, le groupe autour en donne un. */
   delay?: number;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Ligne d'une liste : elle s'efface quand elle part (tâche terminée, supprimée) et les
+   * suivantes glissent à sa place au lieu de sauter.
+   */
+  row?: boolean;
 };
 
+/** Sortie et déplacement des lignes : courts, pour ne jamais retarder la lecture. */
+const rowExit = FadeOut.duration(140);
+const rowLayout = LinearTransition.duration(200);
+
 /** Apparition courte : le contenu monte un peu et devient net. Rien si les animations sont coupées. */
-export function RiseIn({ children, delay, style }: Props) {
+export function RiseIn({ children, delay, style, row = false }: Props) {
   const reduced = useReducedMotion();
   const take = useContext(StaggerContext);
   const ms = delay ?? take?.() ?? 0;
@@ -42,6 +56,8 @@ export function RiseIn({ children, delay, style }: Props) {
   return (
     <Animated.View
       entering={FadeInDown.duration(380).delay(ms).springify().damping(18).stiffness(170)}
+      exiting={row ? rowExit : undefined}
+      layout={row ? rowLayout : undefined}
       style={style}
     >
       {children}
