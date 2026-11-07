@@ -6,7 +6,7 @@ import { goBack } from '@/components/navigation';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Linking, ScrollView, TextInput, View } from 'react-native';
 
 import { NOTE_TITLE_MAX } from '@/shared/fieldLimits';
 
@@ -47,7 +47,7 @@ import { useDb, useLiveQuery } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
 import { useSpaces } from '@/shared/SpacesContext';
 import { formatDate, formatShortDate } from '@/shared/format';
-import { fonts, minTouchSize, useTheme } from '@/shared/theme';
+import { minTouchSize, useTheme, variantMaxFontSizeMultiplier } from '@/shared/theme';
 import {
   AppText,
   Card,
@@ -62,6 +62,8 @@ import {
   TextButton,
   reportLoadError,
   LoadingScreen,
+  useInputProps,
+  Tappable,
 } from '@/shared/ui';
 
 type Params = {
@@ -81,6 +83,7 @@ export default function NoteScreen() {
   const labels = useLabels();
   const db = useDb();
   const { colors, radius, spacing, text } = useTheme();
+  const inputProps = useInputProps();
   const params = useLocalSearchParams<Params>();
   const isNew = params.id === 'new';
   const { subjects, byId } = useSubjects();
@@ -344,7 +347,7 @@ export default function NoteScreen() {
   const category = (categories.data ?? []).find((c) => c.id === categoryId);
   const headerRight = () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={favorite ? t('notes.unfavorite') : t('notes.favorite')}
         onPress={() => void toggleFavorite()}
@@ -356,9 +359,9 @@ export default function NoteScreen() {
         }}
       >
         <Feather name="star" size={22} color={favorite ? colors.warning : colors.muted} />
-      </Pressable>
+      </Tappable>
       {noteId && !editing ? (
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('notes.sharePdf')}
           onPress={() => void sharePdfFile()}
@@ -370,7 +373,7 @@ export default function NoteScreen() {
           }}
         >
           <Feather name="share" size={22} color={colors.muted} />
-        </Pressable>
+        </Tappable>
       ) : null}
       <TextButton
         label={editing ? t('notes.done') : t('notes.edit')}
@@ -454,12 +457,11 @@ export default function NoteScreen() {
           onChangeText={(v) => scheduleSave({ title: v })}
           maxLength={NOTE_TITLE_MAX}
           placeholder={t('notes.titlePlaceholder')}
-          placeholderTextColor={colors.muted}
+          {...inputProps}
+          maxFontSizeMultiplier={variantMaxFontSizeMultiplier.headline}
           style={{
             flex: 1,
-            fontFamily: fonts.display,
-            fontSize: text.heading.fontSize + 5,
-            lineHeight: text.heading.lineHeight + 6,
+            ...text.headline,
             color: colors.text,
             paddingVertical: spacing.xs,
           }}
@@ -532,7 +534,7 @@ function AttachmentTile({
   };
   return (
     <View style={{ width: 132, gap: spacing.xs }}>
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={a.name}
         onPress={open}
@@ -555,7 +557,7 @@ function AttachmentTile({
         ) : (
           <Feather name={exists ? 'file' : 'alert-circle'} size={30} color={colors.primary} />
         )}
-      </Pressable>
+      </Tappable>
       <AppText variant="caption" numberOfLines={1}>
         {a.name}
       </AppText>
@@ -564,7 +566,7 @@ function AttachmentTile({
           {formatSize(a.size)}
         </AppText>
         {onRemove ? (
-          <Pressable
+          <Tappable
             accessibilityRole="button"
             accessibilityLabel={`${t('notes.removeAttachment')} ${a.name}`}
             onPress={onRemove}
@@ -573,7 +575,7 @@ function AttachmentTile({
             <AppText variant="caption" color="danger">
               {t('notes.removeAttachment')}
             </AppText>
-          </Pressable>
+          </Tappable>
         ) : null}
       </View>
     </View>

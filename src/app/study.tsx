@@ -141,7 +141,7 @@ export default function StudyScreen() {
               : t('study.focusRunning')
             ).toLocaleUpperCase()}
           </AppText>
-          <AppText variant="title" style={{ fontSize: 64, lineHeight: 72 }}>
+          <AppText variant="numeral" style={{ fontVariant: ['tabular-nums'] }}>
             {clock(remaining)}
           </AppText>
           {subject ? (

@@ -1,14 +1,13 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable } from 'react-native';
 
 import type { Subject } from '@/modules/academic';
 import { buildIcs, shareIcs } from '@/modules/platform';
 import type { TodayData } from '@/projections';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { showError } from '@/shared/ui';
+import { showError, Tappable } from '@/shared/ui';
 
 type Props = { data: TodayData | undefined; subjects: Map<string, Subject> };
 
@@ -38,12 +37,12 @@ export function ExportCalendarButton({ data, subjects }: Props) {
   };
 
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={t('calendar.export')}
       onPress={() => void share()}
       disabled={busy || !data}
-      style={({ pressed }) => ({
+      style={() => ({
         width: minTouchSize,
         height: minTouchSize,
         borderRadius: radius.md,
@@ -52,10 +51,10 @@ export function ExportCalendarButton({ data, subjects }: Props) {
         borderColor: colors.border,
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: pressed || busy ? 0.7 : 1,
+        opacity: busy ? 0.7 : 1,
       })}
     >
       <Feather name="share" size={20} color={colors.text} />
-    </Pressable>
+    </Tappable>
   );
 }

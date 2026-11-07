@@ -31,7 +31,7 @@ function Body({ text }: { text: string }) {
       {text.split('\n\n').map((para, i) => {
         const lines = para.split('\n');
         return (
-          <View key={i} style={{ gap: 6 }}>
+          <View key={i} style={{ gap: spacing.sm }}>
             {lines.map((line, j) =>
               line.startsWith('• ') ? (
                 <View key={j} style={{ flexDirection: 'row', gap: spacing.sm }}>

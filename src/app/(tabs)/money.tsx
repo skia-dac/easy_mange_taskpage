@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { TransactionRow } from '@/components/money/TransactionRow';
@@ -34,6 +34,7 @@ import {
   showError,
   showUndoToast,
   StateView,
+  Tappable,
 } from '@/shared/ui';
 
 /** Onglet Argent : ce qu'il te reste, ce qui est à payer, tes dernières opérations. */
@@ -97,7 +98,7 @@ export default function MoneyScreen() {
   };
 
   const nav = (icon: 'chevron-left' | 'chevron-right', dir: -1 | 1) => (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={dir === -1 ? t('money.previous') : t('money.next')}
       onPress={() => setOffset(offset + dir)}
@@ -109,11 +110,11 @@ export default function MoneyScreen() {
       }}
     >
       <Feather name={icon} size={24} color={colors.primary} />
-    </Pressable>
+    </Tappable>
   );
 
   const tile = (label: string, value: ReactNode, onPress?: () => void) => (
-    <Pressable
+    <Tappable
       accessibilityRole={onPress ? 'button' : undefined}
       onPress={onPress}
       disabled={!onPress}
@@ -125,7 +126,7 @@ export default function MoneyScreen() {
         </AppText>
         {value}
       </Card>
-    </Pressable>
+    </Tappable>
   );
 
   const unpaid = o.due.filter((d) => !d.paid);
@@ -149,14 +150,14 @@ export default function MoneyScreen() {
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
             {nav('chevron-left', -1)}
-            <Pressable accessibilityRole="button" onPress={() => setOffset(0)} hitSlop={8}>
+            <Tappable accessibilityRole="button" onPress={() => setOffset(0)} hitSlop={8}>
               <AppText variant="bodyStrong">
                 {t('money.periodRange', {
                   from: formatShortDate(o.range.from, labels.lang),
                   to: formatShortDate(o.range.to, labels.lang),
                 })}
               </AppText>
-            </Pressable>
+            </Tappable>
             {nav('chevron-right', 1)}
           </View>
         </RiseIn>
@@ -174,9 +175,8 @@ export default function MoneyScreen() {
               {(current ? t('money.left') : t('money.leftAtEnd')).toLocaleUpperCase()}
             </AppText>
             <CountUpText
-              variant="title"
+              variant="display"
               color="onPrimary"
-              style={{ fontSize: 36, lineHeight: 42 }}
               value={o.balance}
               format={(n) => formatMoney(n, cur)}
             />
@@ -323,7 +323,7 @@ export default function MoneyScreen() {
         ) : (
           <Card>
             {shownDue.map((d) => (
-              <RiseIn key={`${d.recurring.id}-${d.date}`}>
+              <RiseIn row key={`${d.recurring.id}-${d.date}`}>
                 <ListRow
                   title={d.recurring.name}
                   struck={d.paid}
@@ -364,7 +364,7 @@ export default function MoneyScreen() {
             {o.tontines
               .filter((x) => x.payoutDate)
               .map((x) => (
-                <RiseIn key={x.recurring.id}>
+                <RiseIn row key={x.recurring.id}>
                   <ListRow
                     title={t('money.myTurn', { name: x.recurring.name })}
                     subtitle={t('money.myTurnHint', {
@@ -408,7 +408,7 @@ export default function MoneyScreen() {
         ) : (
           <Card>
             {o.items.slice(0, 8).map((item) => (
-              <RiseIn key={item.id}>
+              <RiseIn row key={item.id}>
                 <TransactionRow
                   item={item}
                   categories={input.categories}

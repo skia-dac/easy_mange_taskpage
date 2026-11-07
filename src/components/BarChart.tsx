@@ -31,7 +31,7 @@ export function BarChart({ bars, max, height = 120, valueLabel, accessibilityLab
       {bars.map((b, i) => {
         const h = Math.max(4, Math.round((Math.min(b.value, safeMax) / safeMax) * height));
         return (
-          <View key={i} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <View key={i} style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
             {valueLabel ? (
               <AppText variant="caption" color="muted">
                 {valueLabel(b.value)}

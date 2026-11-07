@@ -88,9 +88,7 @@ export default function ExamDetailScreen() {
         <AppText variant="title" style={{ color: strong }}>
           {subject?.name ?? ''}
         </AppText>
-        <AppText variant="title" style={{ fontSize: 34, lineHeight: 40 }}>
-          {labels.countdown(c)}
-        </AppText>
+        <AppText variant="display">{labels.countdown(c)}</AppText>
       </View>
       <Card>
         <ListRow

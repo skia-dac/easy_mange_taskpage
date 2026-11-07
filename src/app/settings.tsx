@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, ScrollView, Switch, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 
 import { AccentPicker } from '@/components/AccentPicker';
 import { useLabels } from '@/hooks/useLabels';
@@ -70,6 +70,7 @@ import {
   TextButton,
   showToast,
   reportLoadError,
+  Toggle,
 } from '@/shared/ui';
 import { wipeAllData } from '@/workflows';
 
@@ -88,7 +89,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
   const [appearance, setAppearance] = useState<AppearancePreference>('auto');
@@ -252,18 +253,13 @@ export default function SettingsScreen() {
         paddingVertical: spacing.sm,
       }}
     >
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: spacing.xxs }}>
         <AppText variant="bodyStrong">{label}</AppText>
         <AppText variant="caption" color="muted">
           {hint}
         </AppText>
       </View>
-      <Switch
-        accessibilityLabel={label}
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ true: colors.success, false: colors.border }}
-      />
+      <Toggle accessibilityLabel={label} value={value} onValueChange={onChange} />
     </View>
   );
 
@@ -276,7 +272,7 @@ export default function SettingsScreen() {
         paddingVertical: spacing.sm,
       }}
     >
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: spacing.xxs }}>
         <AppText variant="bodyStrong">{label}</AppText>
         {hint ? (
           <AppText variant="caption" color="muted">
@@ -284,11 +280,10 @@ export default function SettingsScreen() {
           </AppText>
         ) : null}
       </View>
-      <Switch
+      <Toggle
         accessibilityLabel={label}
         value={prefs?.[key] === true}
         onValueChange={(v) => update({ [key]: v })}
-        trackColor={{ true: colors.success, false: colors.border }}
       />
     </View>
   );
@@ -464,7 +459,7 @@ export default function SettingsScreen() {
       <SectionHeader title={t('data.title')} />
       <Card>
         <View style={{ gap: spacing.md }}>
-          <View style={{ gap: 2 }}>
+          <View style={{ gap: spacing.xxs }}>
             <AppText variant="bodyStrong">{t('backup.title')}</AppText>
             <AppText variant="caption" color="muted">
               {lastBackup

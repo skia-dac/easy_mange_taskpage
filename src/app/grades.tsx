@@ -48,7 +48,7 @@ export default function GradesScreen() {
           <AppText variant="label" color="primary" style={{ letterSpacing: 1 }}>
             {t('grades.overall').toLocaleUpperCase()}
           </AppText>
-          <AppText variant="title" style={{ fontSize: 40, lineHeight: 46 }}>
+          <AppText variant="display">
             {t('grades.on20', { value: formatGrade(overall, labels.lang) })}
           </AppText>
           <AppText variant="caption" color="muted">

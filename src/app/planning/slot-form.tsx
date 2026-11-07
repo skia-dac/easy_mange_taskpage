@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useWeekStart } from '@/hooks/useWeekStart';
@@ -19,7 +19,7 @@ import {
 import { toIsoDate, weekdayOrder } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { subjectColors, useTheme } from '@/shared/theme';
+import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
 import {
   AppText,
   ChoiceChips,
@@ -33,6 +33,7 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Tappable,
 } from '@/shared/ui';
 
 /** Créneau fixe du planning : jours, heures, rotation A / B, période de validité. */
@@ -40,7 +41,7 @@ export default function SlotFormScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { colors, scheme } = useTheme();
+  const { colors, radius, scheme, spacing } = useTheme();
   const weekStart = useWeekStart();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [form, setForm] = useState<SlotInput>({
@@ -128,7 +129,7 @@ export default function SlotFormScreen() {
           {t(errors.weekdays)}
         </AppText>
       ) : null}
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
         <View style={{ flex: 1 }}>
           <DateTimeField
             label={t('planning.start')}
@@ -169,7 +170,7 @@ export default function SlotFormScreen() {
         limit={fieldLimits.location}
         placeholder={t('common.optional')}
       />
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
         <View style={{ flex: 1 }}>
           <DateTimeField
             label={t('planning.from')}
@@ -192,20 +193,20 @@ export default function SlotFormScreen() {
         </View>
       </View>
       <FieldShell label={t('subjects.color')}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
           {subjectColors.map((c, i) => {
             const selected = form.colorId === c.id;
             return (
-              <Pressable
+              <Tappable
                 key={c.id}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 accessibilityLabel={t('subjects.colorName', { n: i + 1 })}
                 onPress={() => set({ colorId: c.id })}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: minTouchSize,
+                  height: minTouchSize,
+                  borderRadius: radius.pill,
                   backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
                   borderWidth: selected ? 3 : 0,
                   borderColor: colors.text,

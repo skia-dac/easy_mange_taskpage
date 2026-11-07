@@ -5,7 +5,7 @@ import { backToList, goBack } from '@/components/navigation';
 import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Switch, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import {
@@ -33,6 +33,8 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Tappable,
+  Toggle,
 } from '@/shared/ui';
 import { deleteHabitEverywhere } from '@/workflows';
 
@@ -140,7 +142,7 @@ export default function HabitFormScreen() {
           {habitIcons.map((icon) => {
             const on = form.icon === icon;
             return (
-              <Pressable
+              <Tappable
                 key={icon}
                 accessibilityRole="radio"
                 accessibilityLabel={t(`habits.iconName.${icon}`)}
@@ -162,7 +164,7 @@ export default function HabitFormScreen() {
                   size={20}
                   color={on ? colors.primary : colors.text}
                 />
-              </Pressable>
+              </Tappable>
             );
           })}
         </View>
@@ -172,7 +174,7 @@ export default function HabitFormScreen() {
           {subjectColors.map((c, i) => {
             const on = form.colorId === c.id;
             return (
-              <Pressable
+              <Tappable
                 key={c.id}
                 accessibilityRole="radio"
                 accessibilityLabel={t('subjects.colorName', { n: i + 1 })}
@@ -252,31 +254,29 @@ export default function HabitFormScreen() {
         onChange={(reminderTime) => set({ reminderTime })}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="bodyStrong">{t('habits.autoStudy')}</AppText>
           <AppText variant="caption" color="muted">
             {t('habits.autoStudyHint')}
           </AppText>
         </View>
-        <Switch
+        <Toggle
           accessibilityLabel={t('habits.autoStudy')}
           value={form.autoStudy ?? false}
           onValueChange={(autoStudy) => set({ autoStudy })}
-          trackColor={{ true: colors.success, false: colors.border }}
         />
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="bodyStrong">{t('bodyProgress.toggle')}</AppText>
           <AppText variant="caption" color="muted">
             {t('bodyProgress.toggleHint')}
           </AppText>
         </View>
-        <Switch
+        <Toggle
           accessibilityLabel={t('bodyProgress.toggle')}
           value={form.tracksBody ?? false}
           onValueChange={(tracksBody) => set({ tracksBody })}
-          trackColor={{ true: colors.success, false: colors.border }}
         />
       </View>
     </FormScreen>

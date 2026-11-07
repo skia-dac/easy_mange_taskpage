@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { SUBTASK_MAX } from '@/shared/fieldLimits';
 import {
@@ -17,13 +17,22 @@ import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { isValidationError } from '@/shared/validation';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, Checkbox, confirmDestructive, showError } from '@/shared/ui';
+import {
+  AppText,
+  Card,
+  Checkbox,
+  confirmDestructive,
+  showError,
+  useInputProps,
+  Tappable,
+} from '@/shared/ui';
 
 /** Checklist d'une tâche ou d'un devoir : cocher, ajouter, monter / descendre, retirer. */
 export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }) {
   const { t } = useTranslation();
   const db = useDb();
   const { colors, spacing, radius, text } = useTheme();
+  const inputProps = useInputProps();
   const list = useLiveQuery(
     (d) => listSubtasks(d, kind, workId),
     ['work_subtasks'],
@@ -57,7 +66,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
   };
 
   const icon = (name: 'arrow-up' | 'arrow-down' | 'x', label: string, onPress: () => void) => (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={6}
@@ -65,7 +74,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
       style={{ width: 32, height: minTouchSize, alignItems: 'center', justifyContent: 'center' }}
     >
       <Feather name={name} size={18} color={colors.muted} />
-    </Pressable>
+    </Tappable>
   );
 
   return (
@@ -110,7 +119,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
           onSubmitEditing={add}
           maxLength={SUBTASK_MAX}
           placeholder={t('subtasks.placeholder')}
-          placeholderTextColor={colors.muted}
+          {...inputProps}
           returnKeyType="done"
           accessibilityLabel={t('subtasks.add')}
           style={{
@@ -119,13 +128,13 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
             paddingHorizontal: spacing.md,
             borderRadius: radius.md,
             borderWidth: 1,
-            borderColor: colors.border,
+            borderColor: colors.outline,
             color: colors.text,
-            fontFamily: text.body.fontFamily,
-            fontSize: text.body.fontSize + 1,
+            fontFamily: text.input.fontFamily,
+            fontSize: text.input.fontSize,
           }}
         />
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('subtasks.add')}
           onPress={add}
@@ -139,7 +148,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
           }}
         >
           <Feather name="plus" size={20} color={colors.primary} />
-        </Pressable>
+        </Tappable>
       </View>
       {draftError ? (
         <AppText color="danger" accessibilityLiveRegion="polite">

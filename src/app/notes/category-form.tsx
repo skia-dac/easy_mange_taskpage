@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   createNoteCategory,
@@ -14,7 +14,7 @@ import {
 } from '@/modules/productivity';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { subjectColors, useTheme } from '@/shared/theme';
+import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
 import {
   confirmDestructive,
   FieldShell,
@@ -25,13 +25,14 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Tappable,
 } from '@/shared/ui';
 
 /** Créer, renommer ou supprimer une catégorie de notes (ses notes sont gardées). */
 export default function NoteCategoryFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
-  const { colors, scheme } = useTheme();
+  const { colors, radius, scheme, spacing } = useTheme();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [form, setForm] = useState<NoteCategoryInput>({ name: '', colorId: 'blue' });
   const { errors, saving, run } = useSave();
@@ -93,20 +94,20 @@ export default function NoteCategoryFormScreen() {
         autoFocus={!id}
       />
       <FieldShell label={t('subjects.color')}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
           {subjectColors.map((c, i) => {
             const selected = form.colorId === c.id;
             return (
-              <Pressable
+              <Tappable
                 key={c.id}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 accessibilityLabel={t('subjects.colorName', { n: i + 1 })}
                 onPress={() => setForm((f) => ({ ...f, colorId: c.id }))}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: minTouchSize,
+                  height: minTouchSize,
+                  borderRadius: radius.pill,
                   backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
                   borderWidth: selected ? 3 : 0,
                   borderColor: colors.text,

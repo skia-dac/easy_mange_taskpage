@@ -142,7 +142,7 @@ export default function OnboardingScreen() {
     const point = (icon: Icon, title: string, body: string) => (
       <View accessible style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
         <IconBadge icon={icon} size={44} />
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="bodyStrong">{title}</AppText>
           <AppText color="muted">{body}</AppText>
         </View>
@@ -221,7 +221,7 @@ export default function OnboardingScreen() {
                     color={scheme === 'dark' ? c.strongDark : c.strong}
                   />
                 </View>
-                <View style={{ flex: 1, gap: 2 }}>
+                <View style={{ flex: 1, gap: spacing.xxs }}>
                   <AppText variant="bodyStrong">{t(`spaces.name.${id}`)}</AppText>
                   <AppText variant="caption" color="muted">
                     {t(`spaces.hint.${id}`)}
@@ -247,7 +247,7 @@ export default function OnboardingScreen() {
     <Card onPress={onPress} accessibilityLabel={title}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <IconBadge icon={icon} size={48} />
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="bodyStrong">{title}</AppText>
           <AppText variant="caption" color="muted">
             {hint}

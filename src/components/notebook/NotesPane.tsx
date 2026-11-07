@@ -23,6 +23,7 @@ import {
   SectionHeader,
   StateView,
   SubjectDot,
+  useLargeText,
 } from '@/shared/ui';
 
 type Props = {
@@ -69,10 +70,12 @@ export function NotesPane({ title, switcher }: Props) {
   const favorites = list.filter((n) => n.isFavorite);
   const recent = trimmed ? list : list.filter((n) => !n.isFavorite);
 
+  // Très grand texte : une note par ligne, pour que le titre et l'aperçu restent lisibles.
+  const large = useLargeText();
   const grid = (items: typeof list) => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
       {items.map((n) => (
-        <RiseIn key={n.id} style={{ width: '48%', flexGrow: 1 }}>
+        <RiseIn row key={n.id} style={{ width: large ? '100%' : '48%', flexGrow: 1 }}>
           <NoteCard
             note={n}
             subject={n.subjectId ? byId.get(n.subjectId) : undefined}

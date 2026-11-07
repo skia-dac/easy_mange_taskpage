@@ -137,7 +137,7 @@ export default function HabitsScreen() {
                 {review.map((r) => {
                   const h = habits.find((x) => x.id === r.habitId);
                   return (
-                    <View key={r.habitId} style={{ gap: 4, paddingVertical: spacing.xs }}>
+                    <View key={r.habitId} style={{ gap: spacing.xs, paddingVertical: spacing.xs }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                         {h ? <HabitIcon icon={h.icon} colorId={h.colorId} size={28} /> : null}
                         <AppText variant="bodyStrong" style={{ flex: 1 }} numberOfLines={1}>

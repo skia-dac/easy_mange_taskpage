@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -17,7 +17,7 @@ import {
 } from '@/projections';
 import { addDaysIso, isoWeekday, minutesToTime, type IsoDate } from '@/shared/dates';
 import { useTheme } from '@/shared/theme';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable } from '@/shared/ui';
 
 const HOUR_HEIGHT = 52;
 const GUTTER = 36;
@@ -118,11 +118,11 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
       </View>
 
       {hasUntimed ? (
-        <View style={{ flexDirection: 'row', paddingLeft: GUTTER, gap: 2 }}>
+        <View style={{ flexDirection: 'row', paddingLeft: GUTTER, gap: spacing.xxs }}>
           {layouts.map((l) => (
-            <View key={l.day} style={{ flex: 1, gap: 2 }}>
+            <View key={l.day} style={{ flex: 1, gap: spacing.xxs }}>
               {l.untimed.map((item, i) => (
-                <Pressable
+                <Tappable
                   key={i}
                   accessibilityRole="button"
                   accessibilityLabel={title(item)}
@@ -137,7 +137,7 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
                   <AppText variant="label" numberOfLines={1} style={{ color: tone(item).fg }}>
                     {title(item)}
                   </AppText>
-                </Pressable>
+                </Tappable>
               ))}
             </View>
           ))}

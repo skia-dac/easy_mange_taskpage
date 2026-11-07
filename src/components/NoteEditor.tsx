@@ -3,7 +3,6 @@ import type { ComponentProps } from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Pressable,
   ScrollView,
   TextInput,
   View,
@@ -18,14 +17,15 @@ import {
   wrapSelection,
   type Selection,
 } from '@/modules/productivity';
-import { fonts, minTouchSize, useTheme } from '@/shared/theme';
+import { minTouchSize, useTheme } from '@/shared/theme';
+import { useInputProps, Tappable } from '@/shared/ui';
 
 type Tool = { icon: ComponentProps<typeof Feather>['name']; label: string; onPress: () => void };
 
 function ToolButton({ icon, label, onPress }: Tool) {
   const { colors, radius } = useTheme();
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -39,7 +39,7 @@ function ToolButton({ icon, label, onPress }: Tool) {
       })}
     >
       <Feather name={icon} size={20} color={colors.text} />
-    </Pressable>
+    </Tappable>
   );
 }
 
@@ -56,6 +56,7 @@ type Props = {
 export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActions = [] }: Props) {
   const { t } = useTranslation();
   const { colors, spacing, text } = useTheme();
+  const inputProps = useInputProps();
   const input = useRef<TextInput>(null);
   const [selection, setSelection] = useState<Selection>({ start: value.length, end: value.length });
   const pending = useRef<Selection | null>(null);
@@ -104,7 +105,7 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
         onSelectionChange={onSelectionChange}
         maxLength={NOTE_CONTENT_MAX}
         placeholder={placeholder}
-        placeholderTextColor={colors.muted}
+        {...inputProps}
         scrollEnabled
         textAlignVertical="top"
         style={{
@@ -112,9 +113,8 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
           minHeight: 240,
           padding: spacing.lg,
           color: colors.text,
-          fontFamily: fonts.body,
-          fontSize: text.body.fontSize + 1,
-          lineHeight: text.body.lineHeight + 2,
+          ...text.input,
+          lineHeight: text.input.lineHeight + 2,
         }}
       />
       <View
@@ -131,7 +131,7 @@ export function NoteEditor({ value, onChange, placeholder, autoFocus, extraActio
           horizontal
           keyboardShouldPersistTaps="always"
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: spacing.sm, gap: 2 }}
+          contentContainerStyle={{ paddingHorizontal: spacing.sm, gap: spacing.xxs }}
         >
           <ToolButton
             icon="type"

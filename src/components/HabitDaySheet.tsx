@@ -28,6 +28,7 @@ import {
   TextButton,
   TextField,
   fieldLimits,
+  Tappable,
 } from '@/shared/ui';
 
 type Props = {
@@ -96,7 +97,7 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   const option = (value: Choice, label: string, tone: 'success' | 'danger' | 'muted') => {
     const on = choice === value;
     return (
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityState={{ selected: on }}
         onPress={() => setChoice(value)}
@@ -115,7 +116,7 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
         <AppText variant="bodyStrong" color={on ? tone : 'text'}>
           {label}
         </AppText>
-      </Pressable>
+      </Tappable>
     );
   };
 
@@ -138,7 +139,7 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
               gap: spacing.md,
             }}
           >
-            <View style={{ gap: 2 }}>
+            <View style={{ gap: spacing.xxs }}>
               <AppText variant="heading" accessibilityRole="header">
                 {habit.name}
               </AppText>

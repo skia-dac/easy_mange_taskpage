@@ -1,7 +1,7 @@
 import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import type { Subject } from '@/modules/academic';
@@ -26,7 +26,7 @@ import { useLiveQuery } from '@/shared/db';
 import { formatDuration } from '@/shared/format';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme, type ColorTokens, fonts } from '@/shared/theme';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable, useLargeText } from '@/shared/ui';
 
 /**
  * Les 4 tuiles d'un coup d'œil en haut d'Aujourd'hui, choisies selon les espaces actifs
@@ -49,6 +49,8 @@ export function TodayGlance({
   habitLogs: readonly HabitLog[];
   subjects: ReadonlyMap<string, Subject>;
 }) {
+  const large = useLargeText();
+  const lines = large ? undefined : 1;
   const { t } = useTranslation();
   const { spacing } = useTheme();
   const spaces = useSpaces();
@@ -88,7 +90,7 @@ export function TodayGlance({
             <AppText variant="heading" numberOfLines={1} adjustsFontSizeToFit>
               {formatMoney(money.balance, money.currency)}
             </AppText>
-            <AppText variant="caption" color="muted" numberOfLines={1}>
+            <AppText variant="caption" color="muted" numberOfLines={lines}>
               {t('glance.perDay', { amount: formatMoney(money.perDay, money.currency) })}
             </AppText>
           </>
@@ -158,7 +160,7 @@ export function TodayGlance({
             <AppText variant="heading" color="danger" numberOfLines={1}>
               {examWhen}
             </AppText>
-            <AppText variant="caption" color="muted" numberOfLines={1}>
+            <AppText variant="caption" color="muted" numberOfLines={lines}>
               {exam.exam.title ?? subjects.get(exam.exam.subjectId)?.name ?? ''}
             </AppText>
           </>
@@ -205,7 +207,7 @@ export function TodayGlance({
           a11y={`${t('glance.courses')} : ${c.count}`}
         >
           <AppText variant="heading">{String(c.count)}</AppText>
-          <AppText variant="caption" color="muted" numberOfLines={1}>
+          <AppText variant="caption" color="muted" numberOfLines={lines}>
             {c.count > 0 && c.endsAt
               ? t('glance.coursesHint', { duration: formatDuration(c.minutes), end: c.endsAt })
               : t('glance.noCourses')}
@@ -293,7 +295,7 @@ export function TodayGlance({
               <AppText variant="heading" color="warning" numberOfLines={1} adjustsFontSizeToFit>
                 {formatMoney(next.amountMinor, money.currency)}
               </AppText>
-              <AppText variant="caption" color="muted" numberOfLines={1}>
+              <AppText variant="caption" color="muted" numberOfLines={lines}>
                 {next.recurring.name}
               </AppText>
             </>
@@ -308,12 +310,14 @@ export function TodayGlance({
   };
 
   const ids = glanceTiles(spaces.active, { todoListShown });
+  // Très grand texte : les tuiles passent les unes sous les autres au lieu de se serrer.
+  const pair = large ? 'column' : 'row';
   return (
     <View style={{ gap: spacing.sm }}>
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+      <View style={{ flexDirection: pair, gap: spacing.sm }}>
         {ids.slice(0, 2).map((id) => tiles[id]())}
       </View>
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+      <View style={{ flexDirection: pair, gap: spacing.sm }}>
         {ids.slice(2, 4).map((id) => tiles[id]())}
       </View>
     </View>
@@ -337,23 +341,24 @@ function Tile({
   row?: boolean;
   children: ReactNode;
 }) {
+  const large = useLargeText();
   const { colors, radius, spacing } = useTheme();
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={a11y}
       onPress={() => router.navigate(href)}
-      style={({ pressed }) => ({
-        flex: 1,
+      style={() => ({
+        // En colonne (très grand texte), la tuile prend la hauteur de son contenu.
+        flex: large ? undefined : 1,
         minHeight: 96,
         borderRadius: radius.lg,
         backgroundColor: colors[background],
-        paddingHorizontal: spacing.md + 2,
+        paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
         gap: row ? spacing.md : 2,
         flexDirection: row ? 'row' : 'column',
         alignItems: row ? 'center' : 'stretch',
-        opacity: pressed ? 0.85 : 1,
       })}
     >
       {label ? (
@@ -362,7 +367,7 @@ function Tile({
         </AppText>
       ) : null}
       {children}
-    </Pressable>
+    </Tappable>
   );
 }
 

@@ -5,10 +5,11 @@ import { goBack } from '@/components/navigation';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, Pressable, ScrollView, View } from 'react-native';
+import { Keyboard, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
+import { haptic } from '@/shared/haptics';
 import { MONEY_INTEGER_DIGITS } from '@/shared/fieldLimits';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
@@ -50,6 +51,7 @@ import {
   TextField,
   fieldLimits,
   KeyboardAvoiding,
+  Tappable,
 } from '@/shared/ui';
 
 type Params = {
@@ -193,6 +195,7 @@ export default function MoneyAddScreen() {
     try {
       if (existing) await updateTransaction(db, existing.id, input);
       else await createTransaction(db, input);
+      haptic('success');
       leave(close);
     } catch (e) {
       setSaving(false);
@@ -278,7 +281,7 @@ export default function MoneyAddScreen() {
             {cats.map((c) => {
               const on = c.id === selected;
               return (
-                <Pressable
+                <Tappable
                   key={c.id}
                   accessibilityRole="button"
                   accessibilityState={{ selected: on }}
@@ -302,7 +305,7 @@ export default function MoneyAddScreen() {
                   <AppText variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
                     {money.categoryName(c)}
                   </AppText>
-                </Pressable>
+                </Tappable>
               );
             })}
           </View>
@@ -349,9 +352,8 @@ export default function MoneyAddScreen() {
       >
         <View style={{ alignItems: 'center', gap: spacing.xs }}>
           <AppText
-            variant="title"
+            variant="display"
             color={kind === 'income' ? 'success' : 'text'}
-            style={{ fontSize: 36, lineHeight: 44 }}
             numberOfLines={1}
             adjustsFontSizeToFit
             accessibilityLiveRegion="polite"
@@ -365,7 +367,7 @@ export default function MoneyAddScreen() {
         {keyboardOpen ? null : (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
             {keys.map((k) => (
-              <Pressable
+              <Tappable
                 key={k}
                 accessibilityRole="button"
                 accessibilityLabel={k === 'back' ? t('money.erase') : k}
@@ -385,7 +387,7 @@ export default function MoneyAddScreen() {
                 ) : (
                   <AppText variant="heading">{k}</AppText>
                 )}
-              </Pressable>
+              </Tappable>
             ))}
           </View>
         )}

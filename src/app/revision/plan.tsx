@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -31,6 +31,7 @@ import {
   SectionHeader,
   showError,
   LoadingScreen,
+  Tappable,
 } from '@/shared/ui';
 import { saveRevisionPlan } from '@/workflows';
 
@@ -212,14 +213,14 @@ export default function RevisionPlanScreen() {
               title={formatShortDate(b.date, labels.lang)}
               subtitle={`${b.startTime} – ${b.endTime}`}
               trailing={
-                <Pressable
+                <Tappable
                   accessibilityRole="button"
                   accessibilityLabel={t('revision.removeSlot')}
                   hitSlop={12}
                   onPress={() => setRemoved((r) => new Set([...r, key(b)]))}
                 >
                   <Feather name="x" size={20} color={colors.muted} />
-                </Pressable>
+                </Tappable>
               }
             />
           ))}

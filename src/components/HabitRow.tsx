@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   addHabitCount,
@@ -15,11 +15,21 @@ import {
   type HabitLog,
 } from '@/modules/productivity';
 import { formatDuration } from '@/shared/format';
+import { haptic } from '@/shared/haptics';
 import { startOfWeekOn, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Checkbox, CheckPop, Settle, showError, showUndoToast } from '@/shared/ui';
+import {
+  AppText,
+  Checkbox,
+  CheckPop,
+  Settle,
+  showError,
+  showUndoToast,
+  Tappable,
+  useLineLimit,
+} from '@/shared/ui';
 
 import { HabitIcon } from './HabitIcon';
 
@@ -38,6 +48,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
   const { t } = useTranslation();
   const db = useDb();
   const { colors, radius, spacing } = useTheme();
+  const lines = useLineLimit(1);
   const log = logOn(logs, habit.id, day);
   const done = isDone(habit, log);
   const state = dayState(habit, logs, day, today);
@@ -78,24 +89,23 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
           paddingVertical: spacing.sm,
         }}
       >
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={habit.name}
           onPress={() => router.push({ pathname: '/habits/[id]', params: { id: habit.id } })}
           onLongPress={() => onMore(habit)}
-          style={({ pressed }) => ({
+          style={() => ({
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             gap: spacing.md,
-            opacity: pressed ? 0.7 : 1,
           })}
         >
           <HabitIcon icon={habit.icon} colorId={habit.colorId} />
-          <View style={{ flex: 1, gap: 2 }}>
+          <View style={{ flex: 1, gap: spacing.xxs }}>
             <AppText
               variant="bodyStrong"
-              numberOfLines={1}
+              numberOfLines={lines}
               style={done ? { textDecorationLine: 'line-through', color: colors.muted } : undefined}
             >
               {habit.name}
@@ -104,41 +114,43 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
               <AppText
                 variant="caption"
                 color={state === 'missed' ? 'danger' : 'muted'}
-                numberOfLines={1}
+                numberOfLines={lines}
               >
                 {subtitle}
               </AppText>
             ) : null}
           </View>
-        </Pressable>
-        <Pressable
+        </Tappable>
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('habits.more', { name: habit.name })}
           onPress={() => onMore(habit)}
           style={{
-            width: minTouchSize - 8,
+            width: minTouchSize,
             height: minTouchSize,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
           <Feather name="more-horizontal" size={20} color={colors.muted} />
-        </Pressable>
+        </Tappable>
         {habit.target > 1 ? (
-          <Pressable
+          <Tappable
             accessibilityRole="button"
             accessibilityLabel={t('habits.addOne', { name: habit.name })}
             disabled={done}
-            onPress={() =>
-              addHabitCount(db, habit.id, day, 1).then(
+            onPress={() => {
+              // Le dernier +1 termine l'habitude : même retour que cocher une case.
+              haptic(count + 1 >= habit.target ? 'complete' : 'selection');
+              void addHabitCount(db, habit.id, day, 1).then(
                 () =>
                   showUndoToast(t('habits.addOneToast', { name: habit.name }), () =>
                     addHabitCount(db, habit.id, day, -1),
                   ),
                 fail,
-              )
-            }
-            style={({ pressed }) => ({
+              );
+            }}
+            style={() => ({
               minWidth: minTouchSize,
               height: minTouchSize,
               borderRadius: radius.md,
@@ -146,7 +158,6 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
               alignItems: 'center',
               justifyContent: 'center',
               paddingHorizontal: spacing.sm,
-              opacity: pressed ? 0.7 : 1,
             })}
           >
             <CheckPop checked={done}>
@@ -158,7 +169,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
                 </AppText>
               )}
             </CheckPop>
-          </Pressable>
+          </Tappable>
         ) : (
           <Checkbox
             checked={done}

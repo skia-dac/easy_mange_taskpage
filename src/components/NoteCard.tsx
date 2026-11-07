@@ -48,6 +48,7 @@ export function NoteCard({
       <View
         style={{
           flexDirection: 'row',
+          flexWrap: 'wrap',
           justifyContent: 'space-between',
           alignItems: 'center',
           gap: spacing.xs,

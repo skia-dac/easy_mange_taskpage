@@ -20,6 +20,7 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
+import { spacing } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
 import {
   AppText,
@@ -124,13 +125,13 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
 
   const section = (title: string, items: WorkItem[]) =>
     items.length === 0 ? null : (
-      <View key={title} style={{ gap: 8 }}>
+      <View key={title} style={{ gap: spacing.sm }}>
         <RiseIn>
           <SectionHeader title={title} />
         </RiseIn>
         <Card>
           {items.map((w) => (
-            <RiseIn key={w.id}>
+            <RiseIn row key={w.id}>
               <WorkRow
                 item={w}
                 subjects={byId}
@@ -211,7 +212,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
                   </RiseIn>
                   <Card>
                     {upcomingExams.map((e) => (
-                      <RiseIn key={e.id}>
+                      <RiseIn row key={e.id}>
                         <ExamRow exam={e} subjects={byId} now={now} />
                       </RiseIn>
                     ))}
@@ -225,7 +226,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
                   </RiseIn>
                   <Card>
                     {pastExams.map((e) => (
-                      <RiseIn key={e.id}>
+                      <RiseIn row key={e.id}>
                         <ExamRow exam={e} subjects={byId} now={now} />
                       </RiseIn>
                     ))}

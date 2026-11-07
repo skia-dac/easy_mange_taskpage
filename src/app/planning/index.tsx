@@ -137,7 +137,7 @@ export default function PlanningScreen() {
           <Card>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
               <IconBadge icon="clock" />
-              <View style={{ flex: 1, gap: 2 }}>
+              <View style={{ flex: 1, gap: spacing.xxs }}>
                 <AppText variant="bodyStrong">
                   {t('glance.planOf', {
                     planned: formatDuration(week.plannedMinutes),

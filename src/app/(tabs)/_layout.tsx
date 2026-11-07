@@ -16,7 +16,7 @@ import { useDb } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import { SlidingTabBar } from '@/components/SlidingTabBar';
 import { TabBarVisibility } from '@/shared/tabBarVisibility';
-import { fonts, useTheme } from '@/shared/theme';
+import { fonts, textVariants, useTheme } from '@/shared/theme';
 import { LoadingScreen } from '@/shared/ui';
 
 type IconName = ComponentProps<typeof Feather>['name'];
@@ -77,7 +77,10 @@ export default function TabsLayout() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.muted,
           tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-          tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
+          tabBarLabelStyle: {
+            fontFamily: fonts.bodySemiBold,
+            fontSize: textVariants.label.fontSize,
+          },
           animation: reduced ? 'none' : 'fade',
           transitionSpec: reduced
             ? undefined

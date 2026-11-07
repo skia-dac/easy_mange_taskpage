@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router, type Href } from 'expo-router';
 import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   FadeInDown,
   FadeOut,
@@ -21,11 +21,15 @@ import { blockMinutes, isSlotEvent } from '@/modules/productivity';
 import type { DayEntry, DayLine, NextCourse } from '@/projections';
 import { toTime } from '@/shared/dates';
 import { formatDuration } from '@/shared/format';
-import { minTouchSize, useTheme, fonts } from '@/shared/theme';
-import { AppText, SectionHeader } from '@/shared/ui';
+import { bodyMaxFontSizeMultiplier, minTouchSize, useTheme, fonts } from '@/shared/theme';
+import { AppText, SectionHeader, Tappable } from '@/shared/ui';
 
-/** Largeur de la colonne des heures (« 09:00 ») : suit la taille de police choisie. */
-const timeWidth = (fontSize: number) => Math.round(fontSize * 3.1);
+/**
+ * Largeur de la colonne des heures (« 09:00 ») : suit la taille de police choisie dans l'app et
+ * celle du téléphone, pour que l'heure ne soit jamais coupée en très grand texte.
+ */
+const timeWidth = (fontSize: number, fontScale: number) =>
+  Math.round(fontSize * Math.min(Math.max(fontScale, 1), bodyMaxFontSizeMultiplier) * 3.1);
 const slide = LinearTransition.duration(450);
 const easeNext = FadeInDown.duration(320).springify().damping(18).stiffness(170);
 const leaveNext = FadeOut.duration(180);
@@ -90,7 +94,7 @@ export function DayLineCard({
       {total === 0 ? (
         <AppText color="muted">{t('dayline.empty')}</AppText>
       ) : (
-        <View style={{ gap: 0 }}>
+        <View>
           {slots.map((slot) => (
             <Animated.View key={slot.key} layout={move}>
               {slot.body}
@@ -106,6 +110,7 @@ export function DayLineCard({
 function NowLine({ now }: { now: Date }) {
   const { t } = useTranslation();
   const { colors, spacing, text } = useTheme();
+  const { fontScale } = useWindowDimensions();
   const reduced = useReducedMotion();
   const opacity = useSharedValue(1);
   useEffect(() => {
@@ -127,7 +132,7 @@ function NowLine({ now }: { now: Date }) {
       <AppText
         variant="caption"
         color="danger"
-        style={{ width: timeWidth(text.caption.fontSize), fontFamily: fonts.bodyBold }}
+        style={{ width: timeWidth(text.caption.fontSize, fontScale), fontFamily: fonts.bodyBold }}
       >
         {toTime(now)}
       </AppText>
@@ -156,12 +161,13 @@ function Rail({
   muted: boolean;
 }) {
   const { colors, spacing, text } = useTheme();
+  const { fontScale } = useWindowDimensions();
   return (
     <>
       <AppText
         variant="bodyStrong"
         color={muted ? 'muted' : 'text'}
-        style={{ width: timeWidth(text.bodyStrong.fontSize), paddingTop: spacing.sm }}
+        style={{ width: timeWidth(text.bodyStrong.fontSize, fontScale), paddingTop: spacing.sm }}
       >
         {time ?? ''}
       </AppText>
@@ -262,15 +268,15 @@ function Row({
   }
 
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={`${entry.start ?? t('dayline.allDay')}, ${title}${detail ? `, ${detail}` : ''}`}
       onPress={() => router.push(href)}
-      style={({ pressed }) => ({
+      style={() => ({
         flexDirection: 'row',
         gap: spacing.md,
         minHeight: last ? minTouchSize + 8 : 60,
-        opacity: pressed ? 0.7 : past ? 0.6 : 1,
+        opacity: past ? 0.6 : 1,
       })}
     >
       <Rail time={entry.start} dot={dot} hollow={hollow} last={last} muted={past} />
@@ -288,7 +294,7 @@ function Row({
           </AppText>
         ) : null}
       </View>
-    </Pressable>
+    </Tappable>
   );
 }
 
@@ -327,7 +333,7 @@ function NextRow({
           overflow: 'hidden',
         }}
       >
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={`${when} : ${name}, ${where}`}
           onPress={() =>
@@ -336,13 +342,12 @@ function NextRow({
               params: { id: o.seriesId, date: o.originalDate },
             })
           }
-          style={({ pressed }) => ({
+          style={() => ({
             flex: 1,
             paddingVertical: spacing.md,
             paddingLeft: spacing.lg,
             paddingRight: spacing.sm,
-            gap: 2,
-            opacity: pressed ? 0.85 : 1,
+            gap: spacing.xxs,
           })}
         >
           <AppText variant="label" color="onPrimary" style={{ letterSpacing: 1 }}>
@@ -354,8 +359,8 @@ function NextRow({
           <AppText variant="caption" color="onPrimary" numberOfLines={1}>
             {where}
           </AppText>
-        </Pressable>
-        <Pressable
+        </Tappable>
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('notes.takeNotes')}
           onPress={() =>
@@ -369,7 +374,7 @@ function NextRow({
               },
             })
           }
-          style={({ pressed }) => ({
+          style={() => ({
             width: minTouchSize,
             height: minTouchSize,
             marginRight: spacing.md,
@@ -377,11 +382,10 @@ function NextRow({
             backgroundColor: colors.onPrimary,
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: pressed ? 0.85 : 1,
           })}
         >
           <Feather name="edit-3" size={20} color={colors.primary} />
-        </Pressable>
+        </Tappable>
       </View>
     </View>
   );

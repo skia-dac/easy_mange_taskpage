@@ -2,11 +2,11 @@ import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
 import { useSpaces } from '@/shared/SpacesContext';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable } from '@/shared/ui';
 
 type Tile = {
   label: string;
@@ -83,11 +83,11 @@ export default function AddScreen() {
         {tiles
           .filter((tile) => study || !tile.study)
           .map((tile) => (
-            <Pressable
+            <Tappable
               key={tile.label}
               accessibilityRole="button"
               onPress={() => router.replace(tile.href)}
-              style={({ pressed }) => ({
+              style={() => ({
                 width: '30.5%',
                 minHeight: minTouchSize * 2.4,
                 borderRadius: radius.lg,
@@ -97,7 +97,6 @@ export default function AddScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: spacing.sm,
-                opacity: pressed ? 0.8 : 1,
               })}
             >
               <View
@@ -113,7 +112,7 @@ export default function AddScreen() {
                 <Feather name={tile.icon} size={24} color={colors[tile.color]} />
               </View>
               <AppText variant="bodyStrong">{tile.label}</AppText>
-            </Pressable>
+            </Tappable>
           ))}
       </View>
     </ScrollView>

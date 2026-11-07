@@ -1,13 +1,12 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable } from 'react-native';
 
 import { useProfile } from '@/hooks/useProfile';
 import { initials } from '@/modules/identity';
 import { attachmentUri } from '@/modules/platform';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable } from '@/shared/ui';
 
 /** Ta photo (ou tes initiales) en haut à droite de chaque onglet : ouvre le Profil. */
 export function ProfileButton() {
@@ -15,11 +14,11 @@ export function ProfileButton() {
   const { colors } = useTheme();
   const { profile } = useProfile();
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={t('profile.title')}
       onPress={() => router.push('/profile')}
-      style={({ pressed }) => ({
+      style={() => ({
         width: minTouchSize,
         height: minTouchSize,
         borderRadius: minTouchSize / 2,
@@ -29,7 +28,6 @@ export function ProfileButton() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        opacity: pressed ? 0.7 : 1,
       })}
     >
       {profile?.photoPath ? (
@@ -43,6 +41,6 @@ export function ProfileButton() {
           {initials(profile) || '?'}
         </AppText>
       )}
-    </Pressable>
+    </Tappable>
   );
 }

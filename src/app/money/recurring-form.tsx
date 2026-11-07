@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Switch, View } from 'react-native';
+import { View } from 'react-native';
 
 import { remindersText } from '@/components/money/recurringText';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
@@ -43,6 +43,7 @@ import {
   fieldLimits,
   moneyLimit,
   useSave,
+  Toggle,
 } from '@/shared/ui';
 
 type Form = {
@@ -69,7 +70,7 @@ export default function RecurringFormScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
   const params = useLocalSearchParams<{
     id?: string;
     kind?: string;
@@ -187,7 +188,7 @@ export default function RecurringFormScreen() {
     hint?: string,
   ) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: spacing.xxs }}>
         <AppText variant="bodyStrong">{label}</AppText>
         {hint ? (
           <AppText variant="caption" color="muted">
@@ -195,12 +196,7 @@ export default function RecurringFormScreen() {
           </AppText>
         ) : null}
       </View>
-      <Switch
-        accessibilityLabel={label}
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ true: colors.success, false: colors.border }}
-      />
+      <Toggle accessibilityLabel={label} value={value} onValueChange={onChange} />
     </View>
   );
 

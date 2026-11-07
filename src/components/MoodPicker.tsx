@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   energyEmoji,
@@ -13,7 +13,7 @@ import type { IsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, fieldLimits, showError, TextField } from '@/shared/ui';
+import { AppText, Card, fieldLimits, showError, TextField, Tappable } from '@/shared/ui';
 
 /**
  * Humeur et énergie du jour, de 1 à 5, avec une note facultative.
@@ -55,7 +55,7 @@ export function MoodPicker({ date }: { date: IsoDate }) {
         {moodLevels.map((v) => {
           const selected = v === value;
           return (
-            <Pressable
+            <Tappable
               key={v}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
@@ -72,8 +72,8 @@ export function MoodPicker({ date }: { date: IsoDate }) {
                 backgroundColor: selected ? colors.primarySoft : colors.surface,
               }}
             >
-              <AppText style={{ fontSize: 24, lineHeight: 30 }}>{emoji[v]}</AppText>
-            </Pressable>
+              <AppText variant="headline">{emoji[v]}</AppText>
+            </Tappable>
           );
         })}
       </View>

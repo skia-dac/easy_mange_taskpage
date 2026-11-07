@@ -3,7 +3,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { HabitDaySheet } from '@/components/HabitDaySheet';
 import { HabitIcon } from '@/components/HabitIcon';
@@ -43,6 +43,8 @@ import {
   SectionHeader,
   showError,
   TextButton,
+  Tappable,
+  Toggle,
 } from '@/shared/ui';
 import { deleteHabitEverywhere } from '@/workflows';
 
@@ -135,7 +137,7 @@ export default function HabitDetailScreen() {
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <HabitIcon icon={habit.icon} colorId={habit.colorId} size={52} />
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="title" numberOfLines={2}>
             {habit.name}
           </AppText>
@@ -175,13 +177,13 @@ export default function HabitDetailScreen() {
       {habit.tracksBody ? <BodyProgressCard habitId={habit.id} /> : null}
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-          <View style={{ flex: 1, gap: 2 }}>
+          <View style={{ flex: 1, gap: spacing.xxs }}>
             <AppText variant="bodyStrong">{t('progress.widgetTitle')}</AppText>
             <AppText variant="caption" color="muted">
               {t('progress.widgetHint')}
             </AppText>
           </View>
-          <Switch
+          <Toggle
             accessibilityLabel={t('progress.widgetTitle')}
             value={widgetHabit.data === habit.id}
             onValueChange={(on) =>
@@ -189,7 +191,6 @@ export default function HabitDetailScreen() {
                 showError(userMessageKey(e)),
               )
             }
-            trackColor={{ true: colors.success, false: colors.border }}
           />
         </View>
       </Card>
@@ -223,14 +224,14 @@ export default function HabitDetailScreen() {
           ))}
         </View>
         {[0, 1, 2, 3, 4, 5].map((r) => (
-          <View key={r} style={{ flexDirection: 'row', gap: 4, marginTop: 4 }}>
+          <View key={r} style={{ flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs }}>
             {cells.slice(r * 7, r * 7 + 7).map((d) => {
               const state = dayState(habit, logs, d, today);
               const [bg, fg] = STATE_COLORS[state];
               const inMonth = d.slice(0, 7) === month.slice(0, 7);
               const future = d > today;
               return (
-                <Pressable
+                <Tappable
                   key={d}
                   accessibilityRole="button"
                   accessibilityLabel={`${formatShortDate(d, labels.lang)} · ${t(`habits.state.${state}`)}`}
@@ -251,7 +252,7 @@ export default function HabitDetailScreen() {
                   <AppText variant="caption" color={fg}>
                     {String(fromIsoDate(d).getDate())}
                   </AppText>
-                </Pressable>
+                </Tappable>
               );
             })}
           </View>
@@ -265,11 +266,11 @@ export default function HabitDetailScreen() {
       <Card>
         {misses.length === 0 ? <AppText color="muted">{t('habits.noMisses')}</AppText> : null}
         {misses.map((m) => (
-          <Pressable
+          <Tappable
             key={m.id}
             accessibilityRole="button"
             onPress={() => setSheetDay(m.date)}
-            style={{ paddingVertical: spacing.sm, gap: 2 }}
+            style={{ paddingVertical: spacing.sm, gap: spacing.xxs }}
           >
             <AppText variant="bodyStrong">
               {`${formatShortDate(m.date, labels.lang)} · ${m.status === 'excused' ? t('habits.excused') : t('habits.missed')}`}
@@ -279,7 +280,7 @@ export default function HabitDetailScreen() {
                 .filter(Boolean)
                 .join(' · ') || t('habits.noReason')}
             </AppText>
-          </Pressable>
+          </Tappable>
         ))}
       </Card>
 

@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Switch, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   DEFAULT_WORK_WEEK_HOURS,
@@ -15,7 +15,15 @@ import { userMessageKey } from '@/shared/errors';
 import { useSpaces } from '@/shared/SpacesContext';
 import { spaceIds, toggleSpace, type SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
-import { AppText, Card, ChoiceSheet, confirmAction, showError } from '@/shared/ui';
+import {
+  AppText,
+  Card,
+  ChoiceSheet,
+  confirmAction,
+  showError,
+  Tappable,
+  Toggle,
+} from '@/shared/ui';
 
 import { spaceColor } from './SpaceUi';
 
@@ -90,7 +98,7 @@ export function SpacesCard() {
                 color={on ? (scheme === 'dark' ? c.strongDark : c.strong) : colors.muted}
               />
             </View>
-            <View style={{ flex: 1, gap: 2 }}>
+            <View style={{ flex: 1, gap: spacing.xxs }}>
               <AppText variant="bodyStrong">{t(`spaces.name.${id}`)}</AppText>
               <AppText variant="caption" color="muted">
                 {t(`spaces.hint.${id}`)}
@@ -101,24 +109,19 @@ export function SpacesCard() {
                 </AppText>
               ) : null}
               {id === 'work' && on ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setPickHours(true)}
-                  hitSlop={8}
-                >
+                <Tappable accessibilityRole="button" onPress={() => setPickHours(true)} hitSlop={8}>
                   <AppText variant="caption" color="primary">
                     {t('spaces.workHours', { hours })}
                   </AppText>
-                </Pressable>
+                </Tappable>
               ) : null}
             </View>
-            <Switch
+            <Toggle
               accessibilityLabel={t(`spaces.name.${id}`)}
               accessibilityHint={locked ? t('spaces.lastOne') : undefined}
               value={on}
               disabled={locked}
               onValueChange={(v) => void change(id, v)}
-              trackColor={{ true: colors.success, false: colors.border }}
             />
           </View>
         );

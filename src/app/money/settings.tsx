@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Stack } from 'expo-router';
 import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
@@ -40,6 +40,8 @@ import {
   TextField,
   fieldLimits,
   KeyboardAvoiding,
+  Tappable,
+  Toggle,
 } from '@/shared/ui';
 
 /** Réglages de l'argent : monnaie, début du mois ou de la semaine, widgets, catégories personnelles. */
@@ -173,17 +175,16 @@ export default function MoneySettingsScreen() {
         <SectionHeader title={t('money.widgets')} />
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            <View style={{ flex: 1, gap: 2 }}>
+            <View style={{ flex: 1, gap: spacing.xxs }}>
               <AppText variant="bodyStrong">{t('money.hideAmounts')}</AppText>
               <AppText variant="caption" color="muted">
                 {t('money.hideAmountsHint')}
               </AppText>
             </View>
-            <Switch
+            <Toggle
               accessibilityLabel={t('money.hideAmounts')}
               value={prefs.hideWidgetAmounts}
               onValueChange={(v) => void save({ hideWidgetAmounts: v })}
-              trackColor={{ true: colors.success, false: colors.border }}
             />
           </View>
         </Card>
@@ -199,14 +200,14 @@ export default function MoneySettingsScreen() {
                 leading={<CategoryBadge category={c} />}
                 onPress={() => startEdit(c)}
                 trailing={
-                  <Pressable
+                  <Tappable
                     accessibilityRole="button"
                     accessibilityLabel={t('common.delete')}
                     hitSlop={10}
                     onPress={() => void remove(c.id, money.categoryName(c))}
                   >
                     <Feather name="trash-2" size={20} color={colors.danger} />
-                  </Pressable>
+                  </Tappable>
                 }
               />
             ))}
@@ -241,7 +242,7 @@ export default function MoneySettingsScreen() {
             />
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
               {categoryIcons.map((i) => (
-                <Pressable
+                <Tappable
                   key={i}
                   accessibilityRole="button"
                   accessibilityState={{ selected: i === icon }}
@@ -262,12 +263,12 @@ export default function MoneySettingsScreen() {
                     size={20}
                     color={colors.text}
                   />
-                </Pressable>
+                </Tappable>
               ))}
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
               {subjectColors.map((c) => (
-                <Pressable
+                <Tappable
                   key={c.id}
                   accessibilityRole="button"
                   accessibilityState={{ selected: c.id === colorId }}

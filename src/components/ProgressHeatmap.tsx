@@ -83,7 +83,7 @@ export function ProgressHeatmap({
     const gap = 3;
     grid = (
       <View style={{ flexDirection: 'row', gap: spacing.xs }}>
-        <View style={{ gap, paddingTop: 16 }}>
+        <View style={{ gap, paddingTop: spacing.lg }}>
           {letters.map((l, i) => (
             <AppText
               key={i}
@@ -211,7 +211,7 @@ export function ProgressHeatmap({
               best: stats.bestRun,
             })}
           </AppText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
             <AppText variant="label" color="muted">
               {t('progress.less')}
             </AppText>

@@ -100,7 +100,7 @@ export default function MoodScreen() {
                   title={formatShortDate(l.date, labels.lang)}
                   subtitle={l.note}
                   trailing={
-                    <AppText style={{ fontSize: 20, lineHeight: 26 }}>
+                    <AppText variant="headline">
                       {`${moodEmoji[l.mood] ?? ''} ${energyEmoji[l.energy] ?? ''}`}
                     </AppText>
                   }

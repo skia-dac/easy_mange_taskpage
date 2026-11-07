@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import {
   getTodayLayout,
@@ -14,7 +14,7 @@ import { useSpaces } from '@/shared/SpacesContext';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, confirmAction, showError, TextButton } from '@/shared/ui';
+import { AppText, Card, confirmAction, showError, TextButton, Tappable, Toggle } from '@/shared/ui';
 
 /** L'étudiant choisit l'ordre des sections d'Aujourd'hui et celles qu'il veut voir. */
 const STUDY_SECTIONS: readonly TodaySectionId[] = ['next', 'courses', 'revision', 'exams'];
@@ -53,7 +53,7 @@ export default function TodayLayoutScreen() {
     });
 
   const arrow = (id: TodaySectionId, dir: -1 | 1, enabled: boolean) => (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={dir === -1 ? t('subtasks.up') : t('subtasks.down')}
       accessibilityState={{ disabled: !enabled }}
@@ -66,7 +66,7 @@ export default function TodayLayoutScreen() {
         size={20}
         color={enabled ? colors.primary : colors.border}
       />
-    </Pressable>
+    </Tappable>
   );
 
   const reset = async () => {
@@ -94,13 +94,12 @@ export default function TodayLayoutScreen() {
               </AppText>
               {arrow(id, -1, i > 0)}
               {arrow(id, 1, i < layout.order.length - 1)}
-              <Switch
+              <Toggle
                 accessibilityLabel={t('todayLayout.show', {
                   name: t(`todayLayout.sections.${id}`),
                 })}
                 value={visible}
                 onValueChange={(v) => setVisible(id, v)}
-                trackColor={{ true: colors.success, false: colors.border }}
               />
             </View>
           );

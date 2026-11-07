@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { parseBlocks, type Inline } from '@/modules/productivity';
 import { fonts, minTouchSize, useTheme } from '@/shared/theme';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable } from '@/shared/ui';
 
 type Props = {
   content: string;
@@ -75,7 +75,7 @@ export function NoteContent({ content, onToggleCheck }: Props) {
             );
           case 'check':
             return (
-              <Pressable
+              <Tappable
                 key={i}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: b.checked }}
@@ -111,7 +111,7 @@ export function NoteContent({ content, onToggleCheck }: Props) {
                     {b.inlines.map((x) => x.text).join('')}
                   </AppText>
                 </View>
-              </Pressable>
+              </Tappable>
             );
           default:
             return (

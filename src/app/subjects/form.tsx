@@ -4,11 +4,11 @@ import { goBack } from '@/components/navigation';
 import { setPickedSubject } from '@/components/pickerResult';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { createSubject, getSubject, updateSubject, type SubjectInput } from '@/modules/academic';
 import { useDb } from '@/shared/db';
-import { subjectColors, useTheme } from '@/shared/theme';
+import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
 import {
   FieldShell,
   FormScreen,
@@ -16,6 +16,7 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Tappable,
 } from '@/shared/ui';
 
 const empty: SubjectInput = {
@@ -31,7 +32,7 @@ const empty: SubjectInput = {
 export default function SubjectFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
-  const { colors, scheme } = useTheme();
+  const { colors, radius, scheme, spacing } = useTheme();
   const { id, from } = useLocalSearchParams<{ id?: string; from?: string }>();
   const [form, setForm] = useState<SubjectInput>(empty);
   const { errors, saving, run } = useSave();
@@ -75,20 +76,20 @@ export default function SubjectFormScreen() {
         returnKeyType="next"
       />
       <FieldShell label={t('subjects.color')}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
           {subjectColors.map((c, i) => {
             const selected = form.colorId === c.id;
             return (
-              <Pressable
+              <Tappable
                 key={c.id}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 accessibilityLabel={t('subjects.colorName', { n: i + 1 })}
                 onPress={() => set({ colorId: c.id })}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: minTouchSize,
+                  height: minTouchSize,
+                  borderRadius: radius.pill,
                   backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
                   borderWidth: selected ? 3 : 0,
                   borderColor: colors.text,
@@ -114,7 +115,7 @@ export default function SubjectFormScreen() {
         limit={fieldLimits.room}
         placeholder={t('common.optional')}
       />
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
         <View style={{ flex: 1 }}>
           <TextField
             label={t('subjects.code')}

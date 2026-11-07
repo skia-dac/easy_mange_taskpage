@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { eventHref } from '@/components/eventHref';
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
@@ -51,6 +51,7 @@ import {
   showError,
   showInfo,
   StateView,
+  Tappable,
 } from '@/shared/ui';
 import { moveCalendarItem } from '@/workflows';
 
@@ -179,7 +180,7 @@ export default function CalendarScreen() {
   };
 
   const navButton = (icon: 'chevron-left' | 'chevron-right', dir: 1 | -1) => (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={dir === -1 ? t('calendar.previous') : t('calendar.next')}
       onPress={() => step(dir)}
@@ -191,7 +192,7 @@ export default function CalendarScreen() {
       }}
     >
       <Feather name={icon} size={24} color={colors.primary} />
-    </Pressable>
+    </Tappable>
   );
 
   return (
@@ -217,7 +218,7 @@ export default function CalendarScreen() {
             />
           </View>
           {spaces.has('work') || spaces.has('personal') ? (
-            <Pressable
+            <Tappable
               accessibilityRole="button"
               accessibilityLabel={t('planning.title')}
               onPress={() => router.push('/planning')}
@@ -229,10 +230,10 @@ export default function CalendarScreen() {
               }}
             >
               <Feather name="repeat" size={22} color={colors.primary} />
-            </Pressable>
+            </Tappable>
           ) : null}
           {study ? (
-            <Pressable
+            <Tappable
               accessibilityRole="button"
               accessibilityLabel={t('calendar.timetables')}
               onPress={() => router.push('/timetables')}
@@ -244,7 +245,7 @@ export default function CalendarScreen() {
               }}
             >
               <Feather name="grid" size={22} color={colors.primary} />
-            </Pressable>
+            </Tappable>
           ) : null}
         </View>
 
@@ -253,11 +254,11 @@ export default function CalendarScreen() {
         >
           {navButton('chevron-left', -1)}
           {selected !== today ? (
-            <Pressable accessibilityRole="button" onPress={() => setSelected(today)} hitSlop={10}>
+            <Tappable accessibilityRole="button" onPress={() => setSelected(today)} hitSlop={10}>
               <AppText variant="bodyStrong" color="primary">
                 {t('calendar.goToday')}
               </AppText>
-            </Pressable>
+            </Tappable>
           ) : null}
           {navButton('chevron-right', 1)}
         </View>
@@ -351,11 +352,11 @@ function DayCell({
   dimmed,
 }: DayPickerProps & { day: IsoDate; dimmed?: boolean }) {
   const labels = useLabels();
-  const { colors, radius } = useTheme();
+  const { colors, radius, spacing } = useTheme();
   const isSelected = day === selected;
   const isToday = day === today;
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
       accessibilityLabel={formatLongDate(fromIsoDate(day), labels.lang)}
@@ -366,7 +367,7 @@ function DayCell({
         borderRadius: radius.md,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 2,
+        gap: spacing.xxs,
         backgroundColor: isSelected
           ? colors.primary
           : isOff(day)
@@ -392,7 +393,7 @@ function DayCell({
             : 'transparent',
         }}
       />
-    </Pressable>
+    </Tappable>
   );
 }
 
@@ -415,7 +416,7 @@ function WeekStrip({ start, ...rest }: DayPickerProps & { start: IsoDate }) {
   return (
     <Card style={{ padding: spacing.sm, gap: spacing.xs }}>
       <WeekdayHeader />
-      <View style={{ flexDirection: 'row', gap: 2 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.xxs }}>
         {Array.from({ length: 7 }, (_, i) => addDaysIso(start, i)).map((day) => (
           <DayCell key={day} day={day} {...rest} />
         ))}
@@ -433,7 +434,7 @@ function MonthGrid(props: DayPickerProps) {
     <Card style={{ padding: spacing.sm, gap: spacing.xs }}>
       <WeekdayHeader />
       {[0, 1, 2, 3, 4, 5].map((row) => (
-        <View key={row} style={{ flexDirection: 'row', gap: 2 }}>
+        <View key={row} style={{ flexDirection: 'row', gap: spacing.xxs }}>
           {grid.slice(row * 7, row * 7 + 7).map((day) => (
             <DayCell key={day} day={day} {...props} dimmed={day.slice(0, 7) !== month} />
           ))}

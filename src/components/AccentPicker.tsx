@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { accentColors, accentIds, minTouchSize, useTheme, type AccentId } from '@/shared/theme';
-import { AppText } from '@/shared/ui';
+import { AppText, Tappable } from '@/shared/ui';
 
 /** Couleur principale de l'app (boutons, onglet actif, carte du prochain cours…). */
 export function AccentPicker({
@@ -23,7 +23,7 @@ export function AccentPicker({
           const c = accentColors[id][scheme];
           const selected = id === value;
           return (
-            <Pressable
+            <Tappable
               key={id}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
@@ -41,7 +41,7 @@ export function AccentPicker({
               }}
             >
               {selected ? <Feather name="check" size={20} color={c.onPrimary} /> : null}
-            </Pressable>
+            </Tappable>
           );
         })}
       </View>

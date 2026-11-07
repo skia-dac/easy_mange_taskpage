@@ -398,6 +398,15 @@ Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is ch
 - **Aujourd'hui** : la tuile « À faire » cède sa place à « Terminées » quand la liste « À faire » est affichée ; Pro / Perso sans rien noté ont une première action guidée.
 - **Premier lancement** : 3 étapes (présentation, espaces, « Comment veux-tu commencer ? »), qui défilent, avec « Précédent » ; le bouton principal dit « Suivant » puis « Commencer ».
 
+## 5o. Finition visuelle et tactile (7 Nov 2026)
+
+- **Rythme et niveaux** : espacements sur une grille de 4 pt (`spacing.xxs` 2 → `xxxl` 40), échelle de texte `numeral` › `display` › `title` › `headline` › `heading` › `body` / `bodyStrong` › `input` › `caption` › `label` (`src/shared/theme/tokens.ts`). Plus de taille de police ni d'écart écrits en dur dans les écrans ; l'état vide a la même carte (bordure) que les listes.
+- **Grand texte** : `variantMaxFontSizeMultiplier` (contenu et saisies jusqu'à 200 %, titres plafonnés à 1,3–1,6). Au-delà de 135 % (`useLargeText`), les lignes ne coupent plus (`…`), l'étiquette d'une ligne passe sous le titre, les tuiles d'Aujourd'hui et les notes s'empilent, boutons et champs grandissent.
+- **Mode sombre** : jetons `outline` (contour des champs, interrupteur éteint, ≥ 3:1), `shadow` (noire en sombre, plus de halo clair sous le +), `ripple`, `skeleton`. Clavier sombre et curseur aux couleurs du thème (`useInputProps`). `colors.test.ts` vérifie chaque couple texte / fond (4,5:1) et commande / fond (3:1), dans les deux modes et pour chaque couleur principale.
+- **Chargement** : `StateView` montre une carte de lignes fantômes à la hauteur des vraies lignes, qui respire doucement (rien si les animations sont réduites).
+- **Toucher** : `Tappable` (s'éclaircit sur iOS, onde Material sur Android) et `PressableScale` (cartes, boutons) partout ; lignes des listes qui s'effacent et glissent (`RiseIn row`) ; bouton + qui s'enfonce et rebondit, et ne respire plus que trois fois à l'arrivée.
+- **Retours tactiles** (`expo-haptics`, `src/shared/haptics.ts`) : sélection (interrupteurs `Toggle`, segments, pastilles, bouton +), léger choc (cocher une tâche ou une habitude, glisser pour terminer), succès (formulaire enregistré), avertissement (avant une confirmation de suppression). Rien sur le web.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Carnet (tâches + notes) · Argent (Profil via the photo at the top right, 25 Sep 2026; Carnet 26 Sep 2026) · import AI budget OK (a few cents per page).

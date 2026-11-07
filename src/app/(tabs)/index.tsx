@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 
 import { CourseRow, EventRow, ExamRow, RevisionRow, WorkRow } from '@/components/AgendaRows';
@@ -44,6 +44,7 @@ import {
   SectionHeader,
   StateView,
   TextButton,
+  Tappable,
 } from '@/shared/ui';
 
 export default function TodayScreen() {
@@ -144,7 +145,7 @@ export default function TodayScreen() {
               </RiseIn>
               <Card>
                 {view.courses.map((o) => (
-                  <RiseIn key={`${o.seriesId}-${o.date}`}>
+                  <RiseIn row key={`${o.seriesId}-${o.date}`}>
                     <CourseRow occurrence={o} subjects={byId} />
                   </RiseIn>
                 ))}
@@ -159,7 +160,7 @@ export default function TodayScreen() {
               </RiseIn>
               <Card>
                 {revisions.map((b) => (
-                  <RiseIn key={b.id}>
+                  <RiseIn row key={b.id}>
                     <RevisionRow block={b} subjects={byId} />
                   </RiseIn>
                 ))}
@@ -177,7 +178,7 @@ export default function TodayScreen() {
             {habits.length > 0 ? (
               <Card>
                 {habits.map((h) => (
-                  <RiseIn key={h.id}>
+                  <RiseIn row key={h.id}>
                     <HabitRow
                       habit={h}
                       logs={habitLogs}
@@ -191,7 +192,7 @@ export default function TodayScreen() {
               </Card>
             ) : (
               <RiseIn>
-                <Pressable accessibilityRole="button" onPress={() => router.push('/habits')}>
+                <Tappable accessibilityRole="button" onPress={() => router.push('/habits')}>
                   <Card>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                       <IconBadge icon="target" />
@@ -203,7 +204,7 @@ export default function TodayScreen() {
                       </View>
                     </View>
                   </Card>
-                </Pressable>
+                </Tappable>
               </RiseIn>
             )}
           </>
@@ -222,7 +223,7 @@ export default function TodayScreen() {
             {todo.length > 0 ? (
               <Card>
                 {todo.map((w) => (
-                  <RiseIn key={`${w.kind}-${w.id}`}>
+                  <RiseIn row key={`${w.kind}-${w.id}`}>
                     <WorkRow
                       item={w}
                       subjects={byId}
@@ -249,7 +250,7 @@ export default function TodayScreen() {
               </RiseIn>
               <Card>
                 {view.events.map((e) => (
-                  <RiseIn key={e.id}>
+                  <RiseIn row key={e.id}>
                     <EventRow event={e} />
                   </RiseIn>
                 ))}
@@ -264,7 +265,7 @@ export default function TodayScreen() {
             {view.upcomingExams.length > 0 ? (
               <Card>
                 {view.upcomingExams.map(({ exam }) => (
-                  <RiseIn key={exam.id}>
+                  <RiseIn row key={exam.id}>
                     <ExamRow exam={exam} subjects={byId} now={now} />
                   </RiseIn>
                 ))}
@@ -351,11 +352,7 @@ export default function TodayScreen() {
 
         {agenda.data?.studySession ? (
           <RiseIn>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/study')}
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-            >
+            <Tappable accessibilityRole="button" onPress={() => router.push('/study')}>
               <Card>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <IconBadge icon="clock" />
@@ -367,7 +364,7 @@ export default function TodayScreen() {
                   </View>
                 </View>
               </Card>
-            </Pressable>
+            </Tappable>
           </RiseIn>
         ) : null}
 
@@ -386,11 +383,7 @@ export default function TodayScreen() {
 
         {view && eveningCard ? (
           <RiseIn>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/review')}
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-            >
+            <Tappable accessibilityRole="button" onPress={() => router.push('/review')}>
               <Card>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                   <IconBadge icon="moon" />
@@ -403,7 +396,7 @@ export default function TodayScreen() {
                   <Feather name="chevron-right" size={20} color={colors.muted} />
                 </View>
               </Card>
-            </Pressable>
+            </Tappable>
           </RiseIn>
         ) : null}
 
@@ -466,7 +459,7 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
 
   return (
     <Animated.View entering={reduced ? undefined : easeNextCard}>
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={`${ongoing ? t('today.ongoing') : t('today.nextCourse')} : ${subjectName}, ${o.startTime} – ${o.endTime}`}
         onPress={() =>
@@ -475,12 +468,11 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
             params: { id: o.seriesId, date: o.originalDate },
           })
         }
-        style={({ pressed }) => ({
+        style={() => ({
           backgroundColor: colors.primary,
           borderRadius: radius.xl,
           padding: spacing.xl,
           gap: spacing.sm,
-          opacity: pressed ? 0.9 : 1,
         })}
       >
         <View
@@ -498,7 +490,7 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
             {ongoing ? t('today.endsIn', { time }) : t('today.startsIn', { time })}
           </AppText>
         </View>
-        <AppText variant="title" color="onPrimary" style={{ fontSize: 24, lineHeight: 30 }}>
+        <AppText variant="headline" color="onPrimary">
           {o.title ?? subjectName}
         </AppText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg }}>
@@ -506,7 +498,7 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
           {info('map-pin', o.room)}
           {info('user', o.teacher)}
         </View>
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           onPress={() =>
             router.push({
@@ -519,7 +511,7 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
               },
             })
           }
-          style={({ pressed }) => ({
+          style={() => ({
             marginTop: spacing.xs,
             minHeight: 46,
             borderRadius: radius.md,
@@ -528,15 +520,14 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
             justifyContent: 'center',
             flexDirection: 'row',
             gap: spacing.sm,
-            opacity: pressed ? 0.85 : 1,
           })}
         >
           <Feather name="file-text" size={18} color={colors.primary} />
           <AppText variant="bodyStrong" color="primary">
             {t('notes.takeNotes')}
           </AppText>
-        </Pressable>
-      </Pressable>
+        </Tappable>
+      </Tappable>
     </Animated.View>
   );
 }

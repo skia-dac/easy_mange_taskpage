@@ -1,12 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { formatMoney } from '@/modules/finance';
 import { useMoneyData } from '@/projections';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Card, CountUpText, IconBadge } from '@/shared/ui';
+import { AppText, Card, CountUpText, IconBadge, Tappable } from '@/shared/ui';
 
 /** Carte d'Aujourd'hui : ce qui est dépensé aujourd'hui, ce qu'on peut encore dépenser, et un « + ». */
 export function TodayMoneyCard() {
@@ -20,10 +20,10 @@ export function TodayMoneyCard() {
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <IconBadge icon="credit-card" color="success" background="successSoft" />
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           onPress={() => router.navigate('/(tabs)/money')}
-          style={{ flex: 1, gap: 2 }}
+          style={{ flex: 1, gap: spacing.xxs }}
         >
           {started ? (
             <CountUpText
@@ -46,23 +46,22 @@ export function TodayMoneyCard() {
               {t('money.todayStartHint')}
             </AppText>
           )}
-        </Pressable>
-        <Pressable
+        </Tappable>
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('money.addExpense')}
           onPress={() => router.push({ pathname: '/money/add', params: { kind: 'expense' } })}
-          style={({ pressed }) => ({
+          style={() => ({
             width: minTouchSize,
             height: minTouchSize,
             borderRadius: radius.md,
             backgroundColor: colors.primary,
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: pressed ? 0.8 : 1,
           })}
         >
           <Feather name="plus" size={22} color={colors.onPrimary} />
-        </Pressable>
+        </Tappable>
       </View>
     </Card>
   );

@@ -104,7 +104,7 @@ export default function MoneyReportScreen() {
               }}
             >
               <CategoryBadge category={c.category} size={34} />
-              <View style={{ flex: 1, gap: 4 }}>
+              <View style={{ flex: 1, gap: spacing.xs }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <AppText variant="bodyStrong">{money.categoryName(c.category)}</AppText>
                   <AppText color="muted">

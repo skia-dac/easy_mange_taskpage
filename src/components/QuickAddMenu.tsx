@@ -10,7 +10,7 @@ import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
 import { useTabBarInset } from '@/shared/tabBarVisibility';
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
-import { AppText, Fab } from '@/shared/ui';
+import { AppText, Fab, Tappable } from '@/shared/ui';
 
 type Item = {
   key: string;
@@ -171,12 +171,12 @@ export function QuickAddMenu({ note, date }: Props) {
                 key={item.key}
                 entering={FadeInDown.duration(160).delay((shown.length - 1 - i) * 25)}
               >
-                <Pressable
+                <Tappable
                   ref={i === 0 ? first : undefined}
                   accessibilityRole="menuitem"
                   accessibilityLabel={item.label}
                   onPress={() => go(item.href)}
-                  style={({ pressed }) => ({
+                  style={() => ({
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: spacing.sm,
@@ -185,7 +185,6 @@ export function QuickAddMenu({ note, date }: Props) {
                     paddingRight: spacing.lg,
                     borderRadius: radius.pill,
                     backgroundColor: colors.surface,
-                    opacity: pressed ? 0.85 : 1,
                   })}
                 >
                   <View
@@ -201,7 +200,7 @@ export function QuickAddMenu({ note, date }: Props) {
                     <Feather name={item.icon} size={17} color={colors[item.color]} />
                   </View>
                   <AppText variant="bodyStrong">{item.label}</AppText>
-                </Pressable>
+                </Tappable>
               </Animated.View>
             ))}
           </View>

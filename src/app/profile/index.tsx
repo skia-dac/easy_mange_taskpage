@@ -9,11 +9,19 @@ import { fullName, initials, useAuth } from '@/modules/identity';
 import { attachmentUri, FEEDBACK_TABLE, feedbackCounts } from '@/modules/platform';
 import { useLiveQuery } from '@/shared/db';
 import { Image } from 'expo-image';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme } from '@/shared/theme';
 import { colorOf } from '@/modules/academic';
-import { AppText, Card, IconBadge, ListRow, SectionHeader, SubjectDot } from '@/shared/ui';
+import {
+  AppText,
+  Card,
+  IconBadge,
+  ListRow,
+  SectionHeader,
+  SubjectDot,
+  Tappable,
+} from '@/shared/ui';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -31,11 +39,11 @@ export default function ProfileScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
       <Stack.Screen options={{ title: t('profile.title') }} />
-      <Pressable
+      <Tappable
         accessibilityRole="button"
         accessibilityLabel={t('profile.edit')}
         onPress={() => router.push('/profile/edit')}
-        style={({ pressed }) => ({
+        style={() => ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.md,
@@ -44,7 +52,6 @@ export default function ProfileScreen() {
           backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.border,
-          opacity: pressed ? 0.8 : 1,
         })}
       >
         <View
@@ -70,7 +77,7 @@ export default function ProfileScreen() {
             </AppText>
           )}
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: spacing.xxs }}>
           <AppText variant="heading">{name || t('profile.noName')}</AppText>
           <AppText variant="caption" color="muted">
             {details || t('profile.completeHint')}
@@ -79,7 +86,7 @@ export default function ProfileScreen() {
         <AppText variant="bodyStrong" color="primary">
           {t('common.edit')}
         </AppText>
-      </Pressable>
+      </Tappable>
       {auth.enabled ? (
         <Card>
           <ListRow

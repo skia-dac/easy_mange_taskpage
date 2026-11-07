@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Switch, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   countAffectedOccurrences,
@@ -34,12 +34,13 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Toggle,
 } from '@/shared/ui';
 
 export default function OffPeriodFormScreen() {
   const { t } = useTranslation();
   const db = useDb();
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
   const { id, date } = useLocalSearchParams<{ id?: string; date?: string }>();
   const today = date ?? toIsoDate(new Date());
   const [form, setForm] = useState<OffPeriodInput>({
@@ -176,11 +177,10 @@ export default function OffPeriodFormScreen() {
               </AppText>
             ) : null}
           </View>
-          <Switch
+          <Toggle
             accessibilityLabel={t('offPeriods.suspend')}
             value={form.suspendCourses}
             onValueChange={(suspendCourses) => set({ suspendCourses })}
-            trackColor={{ true: colors.success, false: colors.border }}
           />
         </View>
       </Card>

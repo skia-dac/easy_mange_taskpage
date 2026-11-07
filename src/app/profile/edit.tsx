@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   getProfile,
@@ -29,6 +29,7 @@ import {
   fieldLimits,
   useSave,
   reportLoadError,
+  Tappable,
 } from '@/shared/ui';
 
 /** Modification du profil (§6). */
@@ -104,7 +105,7 @@ export default function ProfileEditScreen() {
     <FormScreen submitLabel={t('profile.save')} onSubmit={submit} saving={saving}>
       <Stack.Screen options={{ title: t('profile.edit') }} />
       <View style={{ alignItems: 'center', gap: spacing.sm }}>
-        <Pressable
+        <Tappable
           accessibilityRole="button"
           accessibilityLabel={t('profile.changePhoto')}
           onPress={() => void changePhoto()}
@@ -134,7 +135,7 @@ export default function ProfileEditScreen() {
               <Feather name="user" size={40} color={colors.onPrimary} />
             )}
           </View>
-        </Pressable>
+        </Tappable>
         <View style={{ flexDirection: 'row', gap: spacing.lg }}>
           <TextButton label={t('profile.changePhoto')} onPress={() => void changePhoto()} />
           {photo ? (

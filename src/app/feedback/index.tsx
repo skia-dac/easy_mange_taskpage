@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Switch, View } from 'react-native';
+import { View } from 'react-native';
 
 import { goBack } from '@/components/navigation';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
@@ -37,6 +37,8 @@ import {
   TextButton,
   TextField,
   useSave,
+  Tappable,
+  Toggle,
 } from '@/shared/ui';
 
 const KIND_ICONS: Record<FeedbackKind, ComponentProps<typeof Feather>['name']> = {
@@ -134,13 +136,13 @@ export default function FeedbackScreen() {
           {FEEDBACK_KINDS.map((k) => {
             const on = kind === k;
             return (
-              <Pressable
+              <Tappable
                 key={k}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: on }}
                 accessibilityLabel={`${t(`feedback.kind.${k}.title`)}. ${t(`feedback.kind.${k}.hint`)}`}
                 onPress={() => setKind(k)}
-                style={({ pressed }) => ({
+                style={() => ({
                   minHeight: minTouchSize + 16,
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -150,7 +152,6 @@ export default function FeedbackScreen() {
                   borderWidth: 1.5,
                   borderColor: on ? colors.primary : colors.border,
                   backgroundColor: on ? colors.primarySoft : colors.surface,
-                  opacity: pressed ? 0.85 : 1,
                 })}
               >
                 <View
@@ -169,7 +170,7 @@ export default function FeedbackScreen() {
                     color={on ? colors.onPrimary : colors.primary}
                   />
                 </View>
-                <View style={{ flex: 1, gap: 2 }}>
+                <View style={{ flex: 1, gap: spacing.xxs }}>
                   <AppText variant="bodyStrong">{t(`feedback.kind.${k}.title`)}</AppText>
                   <AppText variant="caption" color="muted">
                     {t(`feedback.kind.${k}.hint`)}
@@ -180,7 +181,7 @@ export default function FeedbackScreen() {
                   size={22}
                   color={on ? colors.primary : colors.border}
                 />
-              </Pressable>
+              </Tappable>
             );
           })}
         </View>
@@ -220,11 +221,11 @@ export default function FeedbackScreen() {
           <AppText variant="bodyStrong" style={{ flex: 1 }}>
             {t('feedback.blocking')}
           </AppText>
-          <Switch
+          <Toggle
             accessibilityLabel={t('feedback.blocking')}
             value={blocking}
             onValueChange={setBlocking}
-            trackColor={{ true: colors.danger, false: colors.border }}
+            tone="danger"
           />
         </View>
       ) : null}
