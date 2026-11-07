@@ -262,7 +262,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
         )}
         <View style={{ height: 80 }} />
       </Screen>
-      <Fab accessibilityLabel={t('add.title')} onPress={add} />
+      <Fab accessibilityLabel={tab === 'exam' ? t('exams.new') : t('work.newTask')} onPress={add} />
       {postpone.sheet}
     </View>
   );

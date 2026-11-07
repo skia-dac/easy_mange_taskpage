@@ -153,7 +153,9 @@ describe('écran Aujourd’hui', () => {
     await fireEvent.press(screen.getByLabelText('Ajouter'));
     expect(screen.getByText('Dépense')).toBeTruthy();
     expect(screen.getByText('Entrée d’argent')).toBeTruthy();
-    expect(screen.getByText('Note de cours')).toBeTruthy();
+    // Sans prochain cours (agenda vide du test précédent), la note n'est pas « de cours ».
+    expect(screen.getByText('Note')).toBeTruthy();
+    expect(screen.getByText('Autre (examen, cours…)')).toBeTruthy();
     await fireEvent.press(screen.getAllByLabelText('Fermer')[0]!);
     expect(screen.queryByText('Dépense')).toBeNull();
   });

@@ -8,6 +8,7 @@ import { eventHref } from '@/components/eventHref';
 import { calendarItemKey, CalendarItemRow } from '@/components/CalendarItemRow';
 import { ExportCalendarButton } from '@/components/ExportCalendarButton';
 import { ProfileButton } from '@/components/ProfileButton';
+import { QuickAddMenu } from '@/components/QuickAddMenu';
 import { SearchButton } from '@/components/SearchButton';
 import { WeekHoursGrid } from '@/components/WeekHoursGrid';
 import { useLabels } from '@/hooks/useLabels';
@@ -43,7 +44,6 @@ import {
   ChoiceChips,
   confirmAction,
   EmptyState,
-  Fab,
   Screen,
   Segmented,
   SectionHeader,
@@ -194,7 +194,8 @@ export default function CalendarScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Screen
-        title={formatMonthYear(selected, labels.lang)}
+        title={t('tabs.calendar')}
+        subtitle={formatMonthYear(selected, labels.lang)}
         actions={
           <>
             <ExportCalendarButton data={agenda.data} subjects={byId} />
@@ -320,10 +321,8 @@ export default function CalendarScreen() {
         )}
         <View style={{ height: 80 }} />
       </Screen>
-      <Fab
-        accessibilityLabel={t('add.title')}
-        onPress={() => router.push({ pathname: '/add', params: { date: selected } })}
-      />
+      {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi. */}
+      <QuickAddMenu date={selected} />
     </View>
   );
 }
