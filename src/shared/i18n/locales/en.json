@@ -162,7 +162,8 @@
     "moveHint": "Long-press then drag to move",
     "moveCourseTitle": "Move this class?",
     "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
-    "moveConfirm": "Move"
+    "moveConfirm": "Move",
+    "viewMode": "Calendar view"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -269,7 +270,11 @@
     "emptyHint": "Tap + to add a task.",
     "noExams": "No exams scheduled.",
     "noExamsHint": "Tap + to add an exam.",
-    "swipeHint": "Swipe right to complete, left to postpone."
+    "swipeHint": "Swipe right to complete, left to postpone.",
+    "kindFilter": "Type",
+    "subjectChip": "Subject: {{name}}",
+    "subjectAll": "Subject: all",
+    "subjectPick": "Filter by subject"
   },
   "profile": {
     "title": "Profile",
@@ -1476,7 +1481,9 @@
     "endDate": "Until (optional)",
     "addRecurringMenu": "Add a fixed cost or a tontine",
     "chargeOption": "Fixed cost",
-    "tontineOption": "Tontine"
+    "tontineOption": "Tontine",
+    "recurringKindLabel": "Fixed cost or tontine",
+    "frequency": "Frequency"
   },
   "glance": {
     "money": "Money",

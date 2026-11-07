@@ -39,7 +39,10 @@ export function TodayGlance({
   habits,
   habitLogs,
   subjects,
+  todoListShown = false,
 }: {
+  /** La liste « À faire » est affichée sur l'accueil : pas de tuile qui la répète. */
+  todoListShown?: boolean;
   view: TodayView;
   data: TodayData;
   habits: readonly Habit[];
@@ -304,7 +307,7 @@ export function TodayGlance({
     },
   };
 
-  const ids = glanceTiles(spaces.active);
+  const ids = glanceTiles(spaces.active, { todoListShown });
   return (
     <View style={{ gap: spacing.sm }}>
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>

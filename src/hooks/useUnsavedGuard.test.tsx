@@ -83,9 +83,12 @@ describe('useDirty', () => {
   });
 
   it('`markClean` remplace l’état de départ (fiche chargée de la base)', async () => {
-    const { result, rerender } = await renderHook(({ value }) => useDirty(value), {
-      initialProps: { value: { title: '' } },
-    });
+    const { result, rerender } = await renderHook(
+      ({ value }: { value: { title: string } }) => useDirty(value),
+      {
+        initialProps: { value: { title: '' } },
+      },
+    );
     await act(async () => result.current.markClean({ title: 'Chargée' }));
     await rerender({ value: { title: 'Chargée' } });
     expect(result.current.dirty).toBe(false);

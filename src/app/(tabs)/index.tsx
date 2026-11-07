@@ -38,9 +38,11 @@ import {
   Card,
   EmptyState,
   IconBadge,
+  loadStateOf,
   RiseIn,
   Screen,
   SectionHeader,
+  StateView,
   TextButton,
 } from '@/shared/ui';
 
@@ -83,6 +85,14 @@ export default function TodayScreen() {
   );
   const study = spaces.has('study');
   const personal = spaces.has('personal');
+  const agendaState = loadStateOf(agenda);
+  // Pro / Perso sans Études, rien encore noté : une première action guidée.
+  const firstStep =
+    !study &&
+    !!data &&
+    data.work.length === 0 &&
+    data.events.length === 0 &&
+    (data.habits?.length ?? 0) === 0;
 
   const sections: Record<TodaySectionId, ReactNode> = view
     ? {
@@ -90,6 +100,7 @@ export default function TodayScreen() {
           agenda.data && view ? (
             <RiseIn>
               <TodayGlance
+                todoListShown={!layout.hidden.includes('todo')}
                 view={view}
                 data={agenda.data}
                 habits={habits}
@@ -306,6 +317,36 @@ export default function TodayScreen() {
               </View>
             </Card>
           </RiseIn>
+        ) : null}
+
+        {firstStep ? (
+          spaces.has('work') ? (
+            <EmptyState
+              icon="briefcase"
+              title={t('today.firstStep.workTitle')}
+              message={t('today.firstStep.workHint')}
+              action={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+              secondaryAction={{
+                label: t('events.new'),
+                onPress: () => router.push({ pathname: '/events/form', params: {} }),
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon="home"
+              title={t('today.firstStep.personalTitle')}
+              message={t('today.firstStep.personalHint')}
+              action={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+              secondaryAction={{
+                label: t('habits.new'),
+                onPress: () => router.push('/habits/form'),
+              }}
+            />
+          )
+        ) : null}
+
+        {agendaState !== 'ready' ? (
+          <StateView state={agendaState} rows={4} onRetry={agenda.retry} />
         ) : null}
 
         {agenda.data?.studySession ? (

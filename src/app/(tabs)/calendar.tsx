@@ -44,11 +44,13 @@ import {
   ChoiceChips,
   confirmAction,
   EmptyState,
+  loadStateOf,
   Screen,
   Segmented,
   SectionHeader,
   showError,
   showInfo,
+  StateView,
 } from '@/shared/ui';
 import { moveCalendarItem } from '@/workflows';
 
@@ -75,6 +77,8 @@ export default function CalendarScreen() {
   const [shown, setShown] = useState<ReadonlySet<CalendarFilter>>(new Set(calendarFilters));
   const [selected, setSelected] = useState<IsoDate>(today);
   const agenda = useAgendaData();
+  // Ni données ni erreur : chargement ; échec : un vrai message et « Réessayer », jamais « Rien ».
+  const agendaState = loadStateOf(agenda);
   const spaces = useSpaces();
   const study = spaces.has('study');
   // Sans Études : ni cours, ni examens, ni révisions à filtrer.
@@ -161,7 +165,6 @@ export default function CalendarScreen() {
 
   const dayList = (day: IsoDate) => {
     const items = days.get(day) ?? [];
-    if (agenda.loading && items.length === 0) return null;
     if (items.length === 0)
       return (
         <EmptyState icon="calendar" title={t('calendar.empty')} message={t('calendar.emptyHint')} />
@@ -207,6 +210,7 @@ export default function CalendarScreen() {
         <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
           <View style={{ flex: 1 }}>
             <Segmented
+              accessibilityLabel={t('calendar.viewMode')}
               value={mode}
               onChange={setMode}
               options={viewModes.map((m) => ({ value: m, label: t(`calendar.${m}`) }))}
@@ -288,7 +292,9 @@ export default function CalendarScreen() {
           />
         )}
 
-        {mode === 'hours' ? (
+        {agendaState !== 'ready' ? (
+          <StateView state={agendaState} onRetry={agenda.retry} />
+        ) : mode === 'hours' ? (
           <>
             <AppText variant="caption" color="muted">
               {t('calendar.hoursHint')}

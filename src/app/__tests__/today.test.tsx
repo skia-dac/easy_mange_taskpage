@@ -90,11 +90,18 @@ const exam: Exam = {
 };
 
 let mockAgenda: TodayData = { series: [series], exams: [exam], work: [late], events: [] };
+// Lecture de l'agenda : prête (par défaut), en cours, ou en échec.
+let mockAgendaQuery: () => { data?: TodayData; loading: boolean; error: unknown } = () => ({
+  data: mockAgenda,
+  loading: false,
+  error: null,
+});
+const mockRetry = jest.fn();
 let mockSubjects: Subject[] = [subject];
 
 jest.mock('@/projections', () => ({
   ...jest.requireActual('@/projections'),
-  useAgendaData: () => ({ data: mockAgenda, loading: false, error: null }),
+  useAgendaData: () => ({ ...mockAgendaQuery(), retry: mockRetry }),
 }));
 jest.mock('@/hooks/useSubjects', () => ({
   useSubjects: () => ({
@@ -128,8 +135,10 @@ describe('écran Aujourd’hui', () => {
     expect(screen.getAllByText('Marketing stratégique').length).toBeGreaterThan(0);
     expect(screen.getByText('Étude de cas Marketing')).toBeTruthy();
     expect(screen.getByText('En retard')).toBeTruthy();
-    expect(screen.getByText('1 en retard')).toBeTruthy();
     expect(screen.getByText('19 j')).toBeTruthy();
+    // La liste « À faire » est affichée : pas de tuile « À faire » qui la répète.
+    expect(screen.queryByText('1 en retard')).toBeNull();
+    expect(screen.getByText('TERMINÉES')).toBeTruthy();
   });
 
   it('état vide : aucune matière, aucun cours', async () => {
@@ -187,5 +196,47 @@ describe('écran Aujourd’hui', () => {
     await fireEvent.press(screen.getByLabelText('Ajouter'));
     expect(screen.queryByText('Dépense')).toBeNull();
     expect(screen.getByText('Rendez-vous')).toBeTruthy();
+  });
+
+  it('chargement : des lignes fantômes, pas une liste vide', async () => {
+    mockAgendaQuery = () => ({ data: undefined, loading: true, error: null });
+    await render(<TodayScreen />);
+    expect(screen.getByLabelText('Chargement…')).toBeTruthy();
+    expect(screen.queryByText('Rien à faire pour le moment.')).toBeNull();
+  });
+
+  it('échec de lecture : un vrai message et « Réessayer »', async () => {
+    mockAgendaQuery = () => ({ data: undefined, loading: false, error: new Error('disk') });
+    await render(<TodayScreen />);
+    expect(screen.getByText('Impossible d’afficher cette liste')).toBeTruthy();
+    expect(screen.queryByText('Rien à faire pour le moment.')).toBeNull();
+    await fireEvent.press(screen.getByText('Réessayer'));
+    expect(mockRetry).toHaveBeenCalled();
+  });
+
+  it('Pro sans rien encore : une première action guidée', async () => {
+    mockAgendaQuery = () => ({
+      data: { series: [], exams: [], work: [], events: [] },
+      loading: false,
+      error: null,
+    });
+    await render(
+      <SpacesContext.Provider value={spacesValue(['work'])}>
+        <TodayScreen />
+      </SpacesContext.Provider>,
+    );
+    expect(screen.getByText('Commence ta semaine de travail')).toBeTruthy();
+    expect(screen.getByText('Nouvelle tâche')).toBeTruthy();
+    expect(screen.getByText('Nouveau rendez-vous')).toBeTruthy();
+  });
+
+  it('Perso seul sans rien encore : tâche ou habitude', async () => {
+    await render(
+      <SpacesContext.Provider value={spacesValue(['personal'])}>
+        <TodayScreen />
+      </SpacesContext.Provider>,
+    );
+    expect(screen.getByText('Organise ta vie perso')).toBeTruthy();
+    expect(screen.getByText('Nouvelle habitude')).toBeTruthy();
   });
 });

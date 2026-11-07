@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import { toIsoDate } from '../dates';
@@ -8,7 +8,7 @@ import { subscribeToChanges } from './changes';
 import { asDb } from './compat';
 import { notifyLoadError } from './loadErrors';
 import type { Db } from './types';
-import type { LiveQuery } from './useLiveQuery';
+import type { LiveQuery, LiveResult } from './useLiveQuery';
 
 type Entry<T> = {
   query: (db: Db) => Promise<T>;
@@ -109,7 +109,7 @@ export function useSharedLiveQuery<T>(
   query: (db: Db) => Promise<T>,
   tables: readonly string[],
   options: SharedLiveQueryOptions = {},
-): LiveQuery<T> {
+): LiveResult<T> {
   const db = asDb(useSQLiteContext());
   const refreshOnForeground = options.refreshOn === 'foreground';
   const subscribe = useCallback(
@@ -155,5 +155,16 @@ export function useSharedLiveQuery<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [db, key],
   );
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const retry = useCallback(
+    () => {
+      const entry = entryFor(db, key, query, tables);
+      entry.state = { ...entry.state, error: null, loading: true };
+      entry.listeners.forEach((l) => l());
+      reload(db, entry);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [db, key],
+  );
+  return useMemo(() => ({ ...state, retry }), [state, retry]);
 }

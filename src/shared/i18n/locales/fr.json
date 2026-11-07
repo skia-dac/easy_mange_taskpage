@@ -162,7 +162,8 @@
     "moveHint": "Appui long puis glisser pour déplacer",
     "moveCourseTitle": "Déplacer ce cours ?",
     "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
-    "moveConfirm": "Déplacer"
+    "moveConfirm": "Déplacer",
+    "viewMode": "Affichage du calendrier"
   },
   "calendarItem": {
     "exam": "Examen",
@@ -269,7 +270,11 @@
     "emptyHint": "Appuie sur + pour ajouter une tâche.",
     "noExams": "Aucun examen programmé.",
     "noExamsHint": "Appuie sur + pour ajouter un examen.",
-    "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter."
+    "swipeHint": "Glisse vers la droite pour terminer, vers la gauche pour reporter.",
+    "kindFilter": "Type",
+    "subjectChip": "Matière : {{name}}",
+    "subjectAll": "Matière : toutes",
+    "subjectPick": "Filtrer par matière"
   },
   "profile": {
     "title": "Profil",
@@ -1476,7 +1481,9 @@
     "endDate": "Jusqu’au (facultatif)",
     "addRecurringMenu": "Ajouter une charge fixe ou une tontine",
     "chargeOption": "Charge fixe",
-    "tontineOption": "Tontine"
+    "tontineOption": "Tontine",
+    "recurringKindLabel": "Charge fixe ou tontine",
+    "frequency": "Fréquence"
   },
   "glance": {
     "money": "Argent",

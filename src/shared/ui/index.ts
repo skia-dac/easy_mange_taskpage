@@ -30,6 +30,8 @@ export { LoadingScreen } from './LoadingScreen';
 export { RiseIn } from './RiseIn';
 export { Screen } from './Screen';
 export { SearchInput } from './SearchInput';
+export { loadStateOf, StateView } from './StateView';
+export type { LoadState } from './StateView';
 export { Segmented } from './Segmented';
 export { SectionHeader } from './SectionHeader';
 export { SelectField } from './SelectField';

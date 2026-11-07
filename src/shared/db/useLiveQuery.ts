@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useRef, useState, type DependencyList } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DependencyList } from 'react';
 
 import { logger } from '../logger';
 import { subscribeToChanges } from './changes';
@@ -8,6 +8,9 @@ import { notifyLoadError } from './loadErrors';
 import type { Db } from './types';
 
 export type LiveQuery<T> = { data: T | undefined; error: unknown; loading: boolean };
+
+/** Une lecture en direct, avec `retry` pour la relancer après un échec (« Réessayer »). */
+export type LiveResult<T> = LiveQuery<T> & { retry: () => void };
 
 /**
  * Lit des données et les recharge automatiquement quand une des tables indiquées change.
@@ -18,7 +21,7 @@ export function useLiveQuery<T>(
   query: (db: Db) => Promise<T>,
   tables: readonly string[],
   deps: DependencyList,
-): LiveQuery<T> {
+): LiveResult<T> {
   const db = asDb(useSQLiteContext());
   const [state, setState] = useState<LiveQuery<T>>({ data: undefined, error: null, loading: true });
   const [version, setVersion] = useState(0);
@@ -63,7 +66,11 @@ export function useLiveQuery<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, version, ...deps]);
 
-  return state;
+  const retry = useCallback(() => {
+    setState((s) => ({ ...s, error: null, loading: true }));
+    setVersion((v) => v + 1);
+  }, []);
+  return useMemo(() => ({ ...state, retry }), [state, retry]);
 }
 
 /** Accès direct à la base pour les écritures (use cases). */

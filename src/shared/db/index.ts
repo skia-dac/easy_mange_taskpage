@@ -9,5 +9,5 @@ export { migrations, SYNC_COLUMNS } from './migrations';
 export type { Db, SqlValue } from './types';
 export { useDb, useLiveQuery } from './useLiveQuery';
 export { useSharedLiveQuery } from './useSharedLiveQuery';
-export type { LiveQuery } from './useLiveQuery';
+export type { LiveQuery, LiveResult } from './useLiveQuery';
 export { readAppSetting, settingTable, writeAppSetting } from './settings';

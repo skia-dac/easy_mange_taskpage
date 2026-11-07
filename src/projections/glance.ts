@@ -20,8 +20,21 @@ export type GlanceTileId =
 /**
  * Les 4 tuiles selon les espaces actifs (maquettes validées) :
  * Études seul · Pro seul · Perso seul · deux espaces · les trois.
+ * `todoListShown` : la liste « À faire » est affichée plus bas sur l'accueil. La tuile « À faire »
+ * répéterait la liste : elle cède sa place à « Terminées » (cette semaine), sinon disparaît.
  */
-export function glanceTiles(active: ActiveSpaces): GlanceTileId[] {
+export function glanceTiles(
+  active: ActiveSpaces,
+  options: { todoListShown?: boolean } = {},
+): GlanceTileId[] {
+  const tiles = baseTiles(active);
+  if (!options.todoListShown) return tiles;
+  return tiles.flatMap((id) =>
+    id !== 'todo' ? [id] : tiles.includes('doneWeek') ? [] : ['doneWeek' as const],
+  );
+}
+
+function baseTiles(active: ActiveSpaces): GlanceTileId[] {
   const study = active.includes('study');
   const work = active.includes('work');
   const personal = active.includes('personal');

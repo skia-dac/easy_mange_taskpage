@@ -310,7 +310,7 @@ const cases: Case[] = [
       'Chapitres 1 à 3',
       'Personnaliser cet écran',
       'ARGENT',
-      '1 en retard',
+      'TERMINÉES',
     ],
   },
   {

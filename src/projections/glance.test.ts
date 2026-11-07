@@ -1,7 +1,14 @@
 import type { Occurrence } from '@/modules/academic';
 import { slotOccurrences, type RevisionBlock, type Slot } from '@/modules/productivity';
 
-import { coursesToday, doneThisWeek, meetingsToday, revisionWeek, workWeek } from './glance';
+import {
+  coursesToday,
+  doneThisWeek,
+  glanceTiles,
+  meetingsToday,
+  revisionWeek,
+  workWeek,
+} from './glance';
 import type { TodayData, TodayView } from './today';
 
 const nights: Slot = {
@@ -219,5 +226,34 @@ describe('tuiles Pro et Études', () => {
       doneMinutes: 60,
       plannedMinutes: 90,
     });
+  });
+});
+
+describe('tuiles d’Aujourd’hui sans doublon avec la liste « À faire »', () => {
+  it('sans la liste, la tuile « À faire » reste', () => {
+    expect(glanceTiles(['study'])).toEqual(['courses', 'exam', 'todo', 'revision']);
+  });
+
+  it('avec la liste, « À faire » cède sa place à « Terminées »', () => {
+    expect(glanceTiles(['study'], { todoListShown: true })).toEqual([
+      'courses',
+      'exam',
+      'doneWeek',
+      'revision',
+    ]);
+    expect(glanceTiles(['study', 'work', 'personal'], { todoListShown: true })).toEqual([
+      'money',
+      'habits',
+      'doneWeek',
+      'exam',
+    ]);
+  });
+
+  it('Pro seul : « Terminées » est déjà là, la tuile « À faire » disparaît', () => {
+    expect(glanceTiles(['work'], { todoListShown: true })).toEqual([
+      'plan',
+      'meetings',
+      'doneWeek',
+    ]);
   });
 });
