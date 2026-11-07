@@ -94,7 +94,13 @@
     "firstSubjectHint": "Ensuite, ajoute tes cours : ils apparaîtront ici et dans le calendrier.",
     "dayOff": "{{name}} : pas de cours aujourd’hui.",
     "greetingName": "Bonjour {{name}}",
-    "revisionTitle": "Révisions du jour"
+    "revisionTitle": "Révisions du jour",
+    "firstStep": {
+      "workTitle": "Commence ta semaine de travail",
+      "workHint": "Ajoute ta première tâche ou un rendez-vous : ta journée s’affichera ici.",
+      "personalTitle": "Organise ta vie perso",
+      "personalHint": "Note une première tâche, ou crée une habitude à suivre chaque jour."
+    }
   },
   "countdown": {
     "today": "Aujourd’hui",
@@ -394,7 +400,9 @@
     "repeat": "Répéter",
     "estimate": "Durée estimée",
     "noEstimate": "Aucune",
-    "startStudy": "Lancer le minuteur de révision"
+    "startStudy": "Lancer le minuteur de révision",
+    "moreOptions": "Plus d’options",
+    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description"
   },
   "exams": {
     "new": "Nouvel examen",
@@ -637,7 +645,9 @@
     "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
-    "startNow": "Commencer"
+    "startNow": "Commencer",
+    "welcome": "Bienvenue dans MySky",
+    "previous": "Précédent"
   },
   "notifications": {
     "title": "Notifications",
@@ -1743,8 +1753,8 @@
     "area": {
       "today": "Aujourd’hui",
       "calendar": "Calendrier",
-      "tasks": "Carnet · À faire",
-      "notes": "Carnet · Notes",
+      "tasks": "Carnet – À faire",
+      "notes": "Carnet – Notes",
       "habits": "Habitudes",
       "revision": "Révisions",
       "money": "Argent",
@@ -1798,5 +1808,15 @@
       "contact": "Contact : {{value}}",
       "technical": "MySky {{version}} · {{os}} · langue {{locale}} · erreur {{error}}"
     }
+  },
+  "unsaved": {
+    "title": "Abandonner les modifications ?",
+    "message": "Ce que tu as saisi ne sera pas enregistré.",
+    "discard": "Abandonner",
+    "keepEditing": "Continuer la saisie"
+  },
+  "state": {
+    "errorTitle": "Impossible d’afficher cette liste",
+    "loading": "Chargement…"
   }
 }

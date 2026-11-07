@@ -266,8 +266,7 @@ export default function SubjectDetailScreen() {
           title={t('subjects.work')}
           action={{
             label: t('common.add'),
-            onPress: () =>
-              router.push({ pathname: '/work/form', params: { subjectId: s.id } }),
+            onPress: () => router.push({ pathname: '/work/form', params: { subjectId: s.id } }),
           }}
         />
         <Card>

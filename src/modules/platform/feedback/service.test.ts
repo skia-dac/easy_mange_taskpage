@@ -182,7 +182,7 @@ describe('retours : envoi', () => {
     expect(url.startsWith('mailto:kamgayvanarmel@gmail.com?subject=')).toBe(true);
     const body = decodeURIComponent(url.split('&body=')[1]!);
     expect(body).toContain('Type : Un problème');
-    expect(body).toContain('Partie : Carnet · À faire');
+    expect(body).toContain('Partie : Carnet – À faire');
     expect(body).toContain('Bloquant : oui');
     expect(body).toContain(input.message);
     expect((await listFeedback(db))[0]?.status).toBe('sent');

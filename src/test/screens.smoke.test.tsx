@@ -320,13 +320,13 @@ const cases: Case[] = [
   },
   {
     name: 'Carnet (vue retenue par défaut : À faire)',
-    plus: 'Ajouter',
+    plus: 'Nouvelle tâche',
     load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
     expect: ['Carnet', 'À faire', 'Étude de cas Marketing', 'En retard'],
   },
   {
     name: 'Carnet — À faire',
-    plus: 'Ajouter',
+    plus: 'Nouvelle tâche',
     load: () => require('@/app/(tabs)/tasks') as { default: ComponentType },
     params: { view: 'todo' },
     expect: ['Carnet', 'Étude de cas Marketing', 'En retard'],
@@ -374,7 +374,7 @@ const cases: Case[] = [
     plus: 'Donner mon avis',
     load: () => require('@/app/feedback/history') as { default: ComponentType },
     expect: [
-      'Une idée · Tâches',
+      'Une idée · Carnet – À faire',
       'Pouvoir trier les tâches',
       'En attente d’envoi',
       'Renvoyer maintenant',
@@ -573,7 +573,7 @@ const cases: Case[] = [
     name: 'Formulaire tâche',
     load: () => require('@/app/work/form') as { default: ComponentType },
     params: { id: 'task', kind: 'task' },
-    expect: ['Enregistrer la tâche', 'Rappel', 'Durée estimée'],
+    expect: ['Enregistrer la tâche', 'Plus d’options', 'Statut'],
   },
   {
     name: 'Détail tâche avec étapes',
@@ -597,7 +597,7 @@ const cases: Case[] = [
     name: 'Formulaire événement',
     load: () => require('@/app/events/form') as { default: ComponentType },
     params: { id: 'event' },
-    expect: ['Réunion asso', 'Enregistrer l’événement'],
+    expect: ['Réunion asso', 'Enregistrer le rendez-vous'],
   },
   {
     name: 'Note',

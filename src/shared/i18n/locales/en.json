@@ -94,7 +94,13 @@
     "firstSubjectHint": "Then add your classes: they will show up here and in the calendar.",
     "dayOff": "{{name}}: no classes today.",
     "greetingName": "Hello {{name}}",
-    "revisionTitle": "Today’s revision"
+    "revisionTitle": "Today’s revision",
+    "firstStep": {
+      "workTitle": "Start your work week",
+      "workHint": "Add your first task or an appointment: your day will show up here.",
+      "personalTitle": "Organise your personal life",
+      "personalHint": "Add a first task, or create a habit to follow every day."
+    }
   },
   "countdown": {
     "today": "Today",
@@ -394,7 +400,9 @@
     "repeat": "Repeat",
     "estimate": "Estimated time",
     "noEstimate": "None",
-    "startStudy": "Start the study timer"
+    "startStudy": "Start the study timer",
+    "moreOptions": "More options",
+    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description"
   },
   "exams": {
     "new": "New exam",
@@ -637,7 +645,9 @@
     "progress": "Step {{step}} of {{total}}",
     "account": "I already have an account",
     "accountHint": "Get your data back from another phone",
-    "startNow": "Get started"
+    "startNow": "Get started",
+    "welcome": "Welcome to MySky",
+    "previous": "Back"
   },
   "notifications": {
     "title": "Notifications",
@@ -1743,8 +1753,8 @@
     "area": {
       "today": "Today",
       "calendar": "Calendar",
-      "tasks": "Notebook · To do",
-      "notes": "Notebook · Notes",
+      "tasks": "Notebook – To do",
+      "notes": "Notebook – Notes",
       "habits": "Habits",
       "revision": "Revision",
       "money": "Money",
@@ -1798,5 +1808,15 @@
       "contact": "Contact: {{value}}",
       "technical": "MySky {{version}} · {{os}} · language {{locale}} · error {{error}}"
     }
+  },
+  "unsaved": {
+    "title": "Discard changes?",
+    "message": "What you entered won’t be saved.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "state": {
+    "errorTitle": "Couldn’t show this list",
+    "loading": "Loading…"
   }
 }

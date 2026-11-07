@@ -2,6 +2,7 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import { takePickedSubject } from '@/components/pickerResult';
 import { goBack, backToList } from '@/components/navigation';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -82,6 +83,10 @@ export default function CourseFormScreen() {
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
+  // État de départ connu une fois le cours (ou l'emploi du temps) chargé.
+  const [ready, setReady] = useState(false);
+  const { dirty } = useDirty(form, ready);
+  const leave = useUnsavedGuard(dirty);
 
   // Modification : on charge le cours. Création : on part de l'emploi du temps choisi ou actif.
   useEffect(() => {
@@ -90,6 +95,7 @@ export default function CourseFormScreen() {
       if (params.id) {
         const c = await getCourseSeries(db, params.id);
         if (active && c) setForm({ ...c, startDate: c.validFrom, endDate: c.validUntil });
+        if (active) setReady(true);
         return;
       }
       const all = await listTimetables(db);
@@ -102,6 +108,7 @@ export default function CourseFormScreen() {
           endDate: tt.validUntil,
         }));
       }
+      if (active) setReady(true);
     })();
     return () => {
       active = false;
@@ -161,7 +168,7 @@ export default function CourseFormScreen() {
         await splitSeriesEverywhere(db, params.id, params.date as string, form);
       else if (params.id) await updateCourse(db, params.id, form);
       else await createCourse(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -177,7 +184,7 @@ export default function CourseFormScreen() {
     try {
       await deleteCourseEverywhere(db, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
-      backToList();
+      leave(backToList);
     } catch (e) {
       showError(userMessageKey(e));
     }
