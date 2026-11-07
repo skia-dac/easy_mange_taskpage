@@ -18,8 +18,13 @@ export type ColorTokens = {
   background: string;
   /** Fond des cartes */
   surface: string;
-  /** Bordures et séparateurs */
+  /** Bordures et séparateurs (décoratifs) */
   border: string;
+  /**
+   * Contour d'une commande (champ de saisie, interrupteur éteint) : contraste d'au moins 3:1
+   * sur le fond et les cartes, pour qu'on la voie sans deviner (WCAG 1.4.11).
+   */
+  outline: string;
   /** Texte principal */
   text: string;
   /** Texte secondaire */
@@ -35,6 +40,13 @@ export type ColorTokens = {
   successSoft: string;
   /** Voile derrière les fenêtres (bottom sheets, dialogues) */
   scrim: string;
+  /** Ombre portée (bouton +, toast). En sombre, noire : une ombre claire ferait un halo. */
+  shadow: string;
+  /** Onde Material sous le doigt (Android). */
+  ripple: string;
+  /** Blocs des lignes fantômes pendant un chargement, et leur reflet. */
+  skeleton: string;
+  skeletonHighlight: string;
   /** Grille de progression (façon GitHub) : case vide, puis du plus clair au plus foncé. */
   heat0: string;
   heat1: string;
@@ -50,6 +62,7 @@ export const lightColors: ColorTokens = {
   background: '#F4F7FC',
   surface: '#FFFFFF',
   border: '#DCE2EC',
+  outline: '#7D879A',
   text: '#14213D',
   muted: '#5A6478',
   warning: '#B54708',
@@ -59,6 +72,10 @@ export const lightColors: ColorTokens = {
   success: '#0E7555',
   successSoft: '#E2F3EC',
   scrim: 'rgba(20, 33, 61, 0.45)',
+  shadow: '#14213D',
+  ripple: 'rgba(20, 33, 61, 0.12)',
+  skeleton: '#E4E9F1',
+  skeletonHighlight: '#EFF2F7',
   heat0: '#E4E9F1',
   heat1: '#B7E3CB',
   heat2: '#6FC79A',
@@ -73,6 +90,7 @@ export const darkColors: ColorTokens = {
   background: '#0F1628',
   surface: '#182238',
   border: '#2A3550',
+  outline: '#6B7891',
   text: '#EAF0FA',
   muted: '#A3AEC2',
   warning: '#F5A25D',
@@ -82,6 +100,10 @@ export const darkColors: ColorTokens = {
   success: '#4CC79A',
   successSoft: '#17362C',
   scrim: 'rgba(0, 0, 0, 0.6)',
+  shadow: '#000000',
+  ripple: 'rgba(234, 240, 250, 0.16)',
+  skeleton: '#222D45',
+  skeletonHighlight: '#2B3752',
   heat0: '#222D45',
   heat1: '#17463A',
   heat2: '#1F6B4E',

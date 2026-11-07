@@ -1,4 +1,12 @@
-import { accentColors, darkColors, lightColors, subjectColors } from './colors';
+import {
+  accentColors,
+  accentIds,
+  darkColors,
+  lightColors,
+  subjectColors,
+  type ColorTokens,
+} from './colors';
+import { getTheme } from './useTheme';
 
 function luminance(hex: string): number {
   const n = hex.replace('#', '');
@@ -15,6 +23,72 @@ function contrast(a: string, b: string): number {
 }
 
 const AA = 4.5;
+/** Commandes, icônes et grands textes (WCAG 1.4.3 / 1.4.11). */
+const AA_UI = 3;
+
+type Token = keyof ColorTokens;
+
+/**
+ * Chaque texte de l'app et le fond sur lequel il est posé. Une nouvelle combinaison dans un
+ * écran se déclare ici : le test refuse tout couple sous le seuil AA, en clair comme en sombre.
+ */
+const textPairs: [fg: Token, bg: Token, where: string][] = [
+  ['text', 'background', 'texte principal sur l’écran'],
+  ['text', 'surface', 'texte principal sur une carte'],
+  ['muted', 'background', 'texte secondaire sur l’écran'],
+  ['muted', 'surface', 'texte secondaire, indications des champs'],
+  ['muted', 'border', 'segment non choisi (rail du sélecteur)'],
+  ['text', 'primarySoft', 'texte sur une tuile claire'],
+  ['text', 'warningSoft', 'texte sur une tuile « à vérifier »'],
+  ['text', 'dangerSoft', 'texte sur une tuile « en retard »'],
+  ['text', 'successSoft', 'texte sur une tuile « terminé »'],
+  ['primary', 'background', 'lien sur l’écran'],
+  ['primary', 'surface', 'bouton texte sur une carte'],
+  ['primary', 'primarySoft', 'étiquette principale'],
+  ['onPrimary', 'primary', 'bouton principal, carte « Prochain cours »'],
+  ['warning', 'surface', 'texte « aujourd’hui »'],
+  ['warning', 'warningSoft', 'étiquette « à vérifier »'],
+  ['danger', 'surface', 'texte « en retard », « Supprimer »'],
+  ['danger', 'background', 'erreur sous un champ'],
+  ['danger', 'dangerSoft', 'étiquette « en retard »'],
+  ['success', 'surface', 'texte « enregistré »'],
+  ['success', 'successSoft', 'étiquette « terminé »'],
+  ['onPrimary', 'success', 'action « Terminer » en glissant'],
+  ['onPrimary', 'warning', 'action « Reporter » en glissant'],
+  ['onPrimary', 'danger', 'action destructive en glissant'],
+  ['background', 'text', 'message bref (toast, couleurs inversées)'],
+];
+
+/** Commandes et icônes : contraste d'au moins 3:1 avec ce qui les entoure. */
+const uiPairs: [fg: Token, bg: Token, where: string][] = [
+  ['outline', 'surface', 'contour d’un champ, interrupteur éteint'],
+  ['outline', 'background', 'contour d’un champ posé sur l’écran'],
+  ['primary', 'surface', 'bouton principal sur une carte'],
+  ['primary', 'background', 'bouton + et bouton principal'],
+  ['success', 'surface', 'interrupteur allumé, case cochée'],
+  ['surface', 'success', 'coche dans une case cochée'],
+  ['muted', 'surface', 'case à cocher vide, icônes'],
+  ['danger', 'surface', 'bordure d’un champ en erreur'],
+];
+
+describe.each(
+  (['light', 'dark'] as const).flatMap((scheme) => accentIds.map((a) => [scheme, a] as const)),
+)('contraste WCAG AA — mode %s, couleur %s', (scheme, accent) => {
+  const { colors } = getTheme(scheme, accent);
+  it.each(textPairs)('texte %s sur %s (%s) ≥ 4,5:1', (fg, bg) => {
+    expect(contrast(colors[fg], colors[bg])).toBeGreaterThanOrEqual(AA);
+  });
+  it.each(uiPairs)('commande %s sur %s (%s) ≥ 3:1', (fg, bg) => {
+    expect(contrast(colors[fg], colors[bg])).toBeGreaterThanOrEqual(AA_UI);
+  });
+});
+
+describe('ombres en mode sombre', () => {
+  it('ne sont jamais claires (une ombre claire ferait un halo autour du bouton)', () => {
+    expect(luminance(darkColors.shadow)).toBeLessThan(0.05);
+    expect(luminance(lightColors.shadow)).toBeLessThan(0.05);
+  });
+});
 
 describe.each([
   ['clair', lightColors],
