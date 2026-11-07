@@ -1,6 +1,19 @@
 import Database from 'better-sqlite3';
 
-import { migrate, migrations, type Db, type SqlValue } from '@/shared/db';
+import {
+  migrate,
+  migrationPreparations,
+  migrations,
+  type Db,
+  type MigrationPreparations,
+  type SqlValue,
+} from '@/shared/db';
+
+function preparationsUpTo(upTo: number): MigrationPreparations {
+  return Object.fromEntries(
+    Object.entries(migrationPreparations).filter(([version]) => Number(version) <= upTo),
+  );
+}
 
 /** Vraie base SQLite en mémoire, avec la même interface que sur le téléphone. Tests uniquement. */
 /** `upTo` : s'arrête à cette version (pour tester une migration sur d'anciennes données). */
@@ -34,6 +47,10 @@ export async function createTestDb(upTo?: number): Promise<Db & { close(): void 
       sqlite.close();
     },
   };
-  await migrate(db, upTo === undefined ? migrations : migrations.slice(0, upTo));
+  await migrate(
+    db,
+    upTo === undefined ? migrations : migrations.slice(0, upTo),
+    upTo === undefined ? migrationPreparations : preparationsUpTo(upTo),
+  );
   return db;
 }

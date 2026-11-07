@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { notifyChange, nowIso, type Db, type SqlValue } from '@/shared/db';
+import { newId, notifyChange, nowIso, type Db, type SqlValue } from '@/shared/db';
 import { AppError } from '@/shared/errors';
 
 /**
@@ -111,6 +111,36 @@ export async function parseSnapshot(db: Db, text: string): Promise<BackupSnapsho
   return parsed.data;
 }
 
+type SnapshotRow = Record<string, SqlValue>;
+
+/**
+ * Sauvegarde faite avant la migration 16 : elle peut contenir plusieurs exceptions de cours
+ * vivantes pour la même (série, date), refusées par l'index unique. Comme la migration, on garde
+ * la ligne au plus petit id et on supprime logiquement les autres (suppression envoyée au serveur).
+ * Retourne les lignes à insérer et les ids supprimés.
+ */
+export function dedupeCourseExceptions(
+  rows: readonly SnapshotRow[],
+  now: string,
+): { rows: SnapshotRow[]; removed: { id: string; version: number }[] } {
+  const keep = new Map<string, string>();
+  for (const r of rows) {
+    if (r.deleted_at !== null && r.deleted_at !== undefined) continue;
+    const key = JSON.stringify([r.series_id, r.date]);
+    const id = String(r.id);
+    const current = keep.get(key);
+    if (current === undefined || id < current) keep.set(key, id);
+  }
+  const removed: { id: string; version: number }[] = [];
+  const out = rows.map((r) => {
+    if (r.deleted_at !== null && r.deleted_at !== undefined) return r;
+    if (keep.get(JSON.stringify([r.series_id, r.date])) === String(r.id)) return r;
+    removed.push({ id: String(r.id), version: Number(r.version ?? 0) });
+    return { ...r, deleted_at: now, updated_at: now, sync_status: 'pending_delete' };
+  });
+  return { rows: out, removed };
+}
+
 /**
  * Remplace TOUT le contenu de la base par la sauvegarde, dans une seule transaction :
  * si quelque chose échoue, la base reste telle qu'elle était.
@@ -121,8 +151,15 @@ export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise
     for (const table of [...BACKUP_TABLES].reverse()) {
       await txn.runAsync(`DELETE FROM ${table}`, []);
     }
+    const now = nowIso();
+    let removedExceptions: { id: string; version: number }[] = [];
     for (const table of BACKUP_TABLES) {
-      const rows = snapshot.tables[table] ?? [];
+      let rows = snapshot.tables[table] ?? [];
+      if (table === 'course_exceptions') {
+        const deduped = dedupeCourseExceptions(rows, now);
+        rows = deduped.rows;
+        removedExceptions = deduped.removed;
+      }
       if (rows.length === 0) continue;
       const columns = (
         await txn.getAllAsync<{ name: string }>(`PRAGMA table_info(${table})`, [])
@@ -136,6 +173,13 @@ export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise
           cols.map((c) => r[c] ?? null),
         );
       }
+    }
+    for (const r of removedExceptions) {
+      await txn.runAsync(
+        `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+         VALUES (?, 'course_exceptions', ?, 'delete', ?, ?, ?)`,
+        [newId(), r.id, JSON.stringify({ deleted_at: now, updated_at: now }), r.version, now],
+      );
     }
   });
   notifyChange(BACKUP_TABLES);

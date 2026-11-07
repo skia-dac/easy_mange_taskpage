@@ -1,4 +1,4 @@
-import type { Migration } from './migrate';
+import type { Migration, MigrationPreparations } from './migrate';
 
 /**
  * Colonnes communes à toutes les données synchronisées (architecture §7.2).
@@ -13,6 +13,45 @@ export const SYNC_COLUMNS = `
   sync_status TEXT NOT NULL DEFAULT 'pending_create'
     CHECK (sync_status IN ('synced', 'pending_create', 'pending_update', 'pending_delete', 'conflict'))
 `;
+
+/**
+ * Exceptions de cours : une seule ligne vivante par (série, date). Les doublons vivants (deux
+ * appareils hors ligne, ancienne version de l'app) sont supprimés logiquement en gardant le plus
+ * petit id — la même règle que la synchronisation (engine.ts) — et la suppression part par la file
+ * d'envoi pour que le serveur et les autres appareils l'apprennent.
+ */
+const DEDUPE_ALIVE_COURSE_EXCEPTIONS = `
+  INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+  SELECT lower(hex(randomblob(16))), 'course_exceptions', d.id, 'delete',
+    json_object(
+      'deleted_at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+      'updated_at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    ),
+    d.version, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+  FROM course_exceptions d
+  WHERE d.deleted_at IS NULL AND EXISTS (
+    SELECT 1 FROM course_exceptions k
+    WHERE k.series_id = d.series_id AND k.date = d.date AND k.deleted_at IS NULL AND k.id < d.id
+  );
+  UPDATE course_exceptions
+  SET deleted_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    sync_status = 'pending_delete'
+  WHERE deleted_at IS NULL AND EXISTS (
+    SELECT 1 FROM course_exceptions k
+    WHERE k.series_id = course_exceptions.series_id AND k.date = course_exceptions.date
+      AND k.deleted_at IS NULL AND k.id < course_exceptions.id
+  );
+`;
+
+/**
+ * Préparations exécutées juste avant une migration publiée (voir `MigrationPreparations`).
+ * v16 crée un index unique sur les exceptions vivantes : sans ce nettoyage, une base qui a des
+ * doublons échouerait à la v16 et l'app ne démarrerait plus.
+ */
+export const migrationPreparations: MigrationPreparations = {
+  16: DEDUPE_ALIVE_COURSE_EXCEPTIONS,
+};
 
 /**
  * Liste des migrations. Règles :
@@ -486,6 +525,15 @@ export const migrations: readonly Migration[] = [
       ALTER TABLE assignments ADD COLUMN repeat_parent_id TEXT;
       CREATE INDEX idx_tasks_repeat_parent ON tasks (repeat_parent_id);
       CREATE INDEX idx_assignments_repeat_parent ON assignments (repeat_parent_id);
+    `,
+  },
+  {
+    version: 19,
+    name: 'exceptions de cours : doublons vivants supprimés, index unique assuré',
+    sql: `
+      ${DEDUPE_ALIVE_COURSE_EXCEPTIONS}
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_course_exceptions_series_date_alive
+        ON course_exceptions (series_id, date) WHERE deleted_at IS NULL;
     `,
   },
 ];
