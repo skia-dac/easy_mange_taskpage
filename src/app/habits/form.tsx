@@ -193,6 +193,7 @@ export default function HabitFormScreen() {
       </FieldShell>
       <FieldShell label={t('habits.frequency')} error={errors.weekdays}>
         <Segmented
+          accessibilityLabel={t('habits.frequency')}
           value={form.frequency ?? 'daily'}
           onChange={(frequency) => set({ frequency })}
           options={habitFrequencies.map((f) => ({ value: f, label: t(`habits.freq.${f}`) }))}

@@ -227,6 +227,7 @@ export default function RecurringFormScreen() {
       />
       {!params.id ? (
         <Segmented
+          accessibilityLabel={t('money.recurringKindLabel')}
           value={form.kind}
           onChange={(kind) => set({ kind })}
           options={[
@@ -266,6 +267,7 @@ export default function RecurringFormScreen() {
         />
       ) : null}
       <Segmented
+        accessibilityLabel={t('money.frequency')}
         value={form.frequency}
         onChange={(frequency) => set({ frequency })}
         options={[

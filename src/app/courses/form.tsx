@@ -236,6 +236,7 @@ export default function CourseFormScreen() {
           {t('courses.recurrence')}
         </AppText>
         <Segmented
+          accessibilityLabel={t('courses.recurrence')}
           value={form.recurrence}
           onChange={(recurrence) => set({ recurrence })}
           options={[

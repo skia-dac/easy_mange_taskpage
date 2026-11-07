@@ -25,12 +25,14 @@ import {
   AppText,
   Card,
   ChoiceChips,
+  ChoiceSheet,
   EmptyState,
   Fab,
+  loadStateOf,
   RiseIn,
   Screen,
   SectionHeader,
-  Segmented,
+  StateView,
   SubjectDot,
   TextButton,
 } from '@/shared/ui';
@@ -68,6 +70,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
   const tab: Tab = study ? chosenTab : 'task';
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
+  const [subjectSheet, setSubjectSheet] = useState(false);
   const { subjects, byId } = useSubjects();
 
   const work = useLiveQuery(
@@ -89,6 +92,10 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
   );
   const counts = useLiveQuery(subtaskCounts, ['work_subtasks'], []);
   const postpone = usePostpone();
+  // Chargement ou échec de la liste affichée : jamais une liste vide trompeuse.
+  const listQuery = tab === 'exam' ? exams : work;
+  const listState = loadStateOf(listQuery);
+  const subject = subjectId ? byId.get(subjectId) : undefined;
 
   const filtered = useMemo(
     () =>
@@ -162,36 +169,37 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
       >
         {switcher ? <RiseIn>{switcher}</RiseIn> : null}
         {study ? (
+          // Une seule rangée de filtres : le type (tâches, examens) puis la matière (menu).
           <RiseIn>
-            <Segmented
-              value={tab}
-              onChange={setTab}
+            <ChoiceChips<string>
+              scroll
+              accessibilityLabel={t('tasks.kindFilter')}
               options={[
                 { value: 'task', label: t('tasks.segTasks') },
                 { value: 'exam', label: t('tasks.segExams') },
+                ...(subjects.length > 0
+                  ? [
+                      {
+                        value: '__subject',
+                        label: subject
+                          ? t('tasks.subjectChip', { name: subject.name })
+                          : t('tasks.subjectAll'),
+                        leading: subject ? <SubjectDot color={colorOf(subject)} size={10} /> : null,
+                      },
+                    ]
+                  : []),
               ]}
-            />
-          </RiseIn>
-        ) : null}
-        {subjects.length > 0 && study ? (
-          <RiseIn>
-            <ChoiceChips
-              scroll
-              options={[
-                { value: null, label: t('tasks.allSubjects') },
-                ...subjects.map((s) => ({
-                  value: s.id as string | null,
-                  label: s.name,
-                  leading: <SubjectDot color={colorOf(s)} size={10} />,
-                })),
-              ]}
-              selected={[subjectId]}
-              onToggle={setSubjectId}
+              selected={[tab, ...(subject ? ['__subject'] : [])]}
+              onToggle={(v) =>
+                v === '__subject' ? setSubjectSheet(true) : setTab(v === 'exam' ? 'exam' : 'task')
+              }
             />
           </RiseIn>
         ) : null}
 
-        {tab === 'exam' ? (
+        {listState !== 'ready' ? (
+          <StateView state={listState} onRetry={listQuery.retry} />
+        ) : tab === 'exam' ? (
           examList.length === 0 ? (
             <EmptyState icon="award" title={t('tasks.noExams')} message={t('tasks.noExamsHint')} />
           ) : (
@@ -235,7 +243,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
                 </AppText>
               </RiseIn>
             ) : null}
-            {!work.loading && openCount === 0 ? (
+            {openCount === 0 ? (
               <EmptyState
                 icon="check-circle"
                 title={t('tasks.empty')}
@@ -264,6 +272,15 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
       </Screen>
       <Fab accessibilityLabel={tab === 'exam' ? t('exams.new') : t('work.newTask')} onPress={add} />
       {postpone.sheet}
+      <ChoiceSheet
+        visible={subjectSheet}
+        title={t('tasks.subjectPick')}
+        options={[
+          { label: t('tasks.allSubjects'), onPress: () => setSubjectId(null) },
+          ...subjects.map((s) => ({ label: s.name, onPress: () => setSubjectId(s.id) })),
+        ]}
+        onClose={() => setSubjectSheet(false)}
+      />
     </View>
   );
 }

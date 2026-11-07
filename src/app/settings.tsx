@@ -398,6 +398,7 @@ export default function SettingsScreen() {
 
       <SectionHeader title={t('settings.appearance')} />
       <Segmented
+        accessibilityLabel={t('settings.appearance')}
         value={appearance}
         onChange={(v) => {
           setAppearance(v);
@@ -443,6 +444,7 @@ export default function SettingsScreen() {
 
       <SectionHeader title={t('settings.language')} />
       <Segmented
+        accessibilityLabel={t('settings.language')}
         value={lang}
         onChange={changeLanguage}
         options={[

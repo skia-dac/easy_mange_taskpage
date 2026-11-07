@@ -115,6 +115,7 @@ export default function HabitsScreen() {
             <ProgressHeatmap habits={habits} logs={logs} today={today} />
             <SectionHeader title={t('habits.review')} />
             <Segmented
+              accessibilityLabel={t('habits.review')}
               value={week}
               onChange={setWeek}
               options={[

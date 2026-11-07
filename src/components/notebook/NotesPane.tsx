@@ -13,12 +13,15 @@ import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme } from '@/shared/theme';
 import {
   ChoiceChips,
+  ChoiceSheet,
   EmptyState,
   Fab,
+  loadStateOf,
   RiseIn,
   Screen,
   SearchInput,
   SectionHeader,
+  StateView,
   SubjectDot,
 } from '@/shared/ui';
 
@@ -37,6 +40,7 @@ export function NotesPane({ title, switcher }: Props) {
   const [subjectId, setSubjectId] = useState<string | null>(null);
   // Les notes sont communes aux trois espaces ; on les range par catégories créées par l'utilisateur.
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [subjectSheet, setSubjectSheet] = useState(false);
   const spaces = useSpaces();
   const categories = useLiveQuery(listNoteCategories, ['note_categories'], []);
   const catById = useMemo(
@@ -59,6 +63,9 @@ export function NotesPane({ title, switcher }: Props) {
       }),
     [notes.data, subjectId, categoryId],
   );
+  const notesState = loadStateOf(notes);
+  const subjectFilter = spaces.has('study') && subjects.length > 0;
+  const subject = subjectId ? byId.get(subjectId) : undefined;
   const favorites = list.filter((n) => n.isFavorite);
   const recent = trimmed ? list : list.filter((n) => !n.isFavorite);
 
@@ -84,9 +91,22 @@ export function NotesPane({ title, switcher }: Props) {
           <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
         </RiseIn>
         <RiseIn>
+          {/* Une seule rangée : la matière (menu, Études) puis les catégories. */}
           <ChoiceChips
             scroll
+            accessibilityLabel={t('noteCategories.title')}
             options={[
+              ...(subjectFilter
+                ? [
+                    {
+                      value: '__subject' as string | null,
+                      label: subject
+                        ? t('tasks.subjectChip', { name: subject.name })
+                        : t('tasks.subjectAll'),
+                      leading: subject ? <SubjectDot color={colorOf(subject)} size={10} /> : null,
+                    },
+                  ]
+                : []),
               { value: null as string | null, label: t('noteCategories.all') },
               ...(categories.data ?? []).map((c) => ({
                 value: c.id as string | null,
@@ -95,31 +115,20 @@ export function NotesPane({ title, switcher }: Props) {
               })),
               { value: '__manage', label: t('noteCategories.manage') },
             ]}
-            selected={[categoryId]}
+            selected={[categoryId, ...(subject ? ['__subject'] : [])]}
             onToggle={(v) =>
-              v === '__manage' ? router.push('/notes/categories') : setCategoryId(v)
+              v === '__manage'
+                ? router.push('/notes/categories')
+                : v === '__subject'
+                  ? setSubjectSheet(true)
+                  : setCategoryId(v)
             }
           />
         </RiseIn>
-        {subjects.length > 0 && spaces.has('study') ? (
-          <RiseIn>
-            <ChoiceChips
-              scroll
-              options={[
-                { value: null, label: t('noteCategories.allSubjects') },
-                ...subjects.map((s) => ({
-                  value: s.id as string | null,
-                  label: s.name,
-                  leading: <SubjectDot color={colorOf(s)} size={10} />,
-                })),
-              ]}
-              selected={[subjectId]}
-              onToggle={setSubjectId}
-            />
-          </RiseIn>
-        ) : null}
 
-        {!notes.loading && list.length === 0 ? (
+        {notesState !== 'ready' ? (
+          <StateView state={notesState} onRetry={notes.retry} />
+        ) : list.length === 0 ? (
           trimmed ? (
             <EmptyState icon="search" title={t('notes.noResults')} />
           ) : (
@@ -156,6 +165,15 @@ export function NotesPane({ title, switcher }: Props) {
             },
           })
         }
+      />
+      <ChoiceSheet
+        visible={subjectSheet}
+        title={t('tasks.subjectPick')}
+        options={[
+          { label: t('noteCategories.allSubjects'), onPress: () => setSubjectId(null) },
+          ...subjects.map((s) => ({ label: s.name, onPress: () => setSubjectId(s.id) })),
+        ]}
+        onClose={() => setSubjectSheet(false)}
       />
     </View>
   );

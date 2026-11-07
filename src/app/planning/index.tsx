@@ -159,6 +159,7 @@ export default function PlanningScreen() {
           <View style={{ gap: spacing.sm }}>
             <AppText variant="bodyStrong">{t('planning.thisWeekIs')}</AppText>
             <Segmented
+              accessibilityLabel={t('planning.thisWeekIs')}
               value={current}
               onChange={setCurrent}
               options={[
