@@ -1,6 +1,6 @@
 import { Platform, Switch, type SwitchProps } from 'react-native';
 
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { useTheme, type ColorTokens } from '../theme';
 
 type Props = Omit<SwitchProps, 'trackColor' | 'thumbColor' | 'ios_backgroundColor'> & {

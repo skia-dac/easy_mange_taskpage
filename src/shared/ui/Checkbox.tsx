@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { CheckPop } from './checkMotion';
 import { Tappable } from './Tappable';
 

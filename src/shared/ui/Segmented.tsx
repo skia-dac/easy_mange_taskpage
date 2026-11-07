@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { AppText } from './AppText';
 import { useLineLimit } from './useLargeText';
 import { Tappable } from './Tappable';

@@ -16,7 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 

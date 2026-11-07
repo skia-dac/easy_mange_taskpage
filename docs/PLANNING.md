@@ -405,7 +405,7 @@ Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is ch
 - **Mode sombre** : jetons `outline` (contour des champs, interrupteur éteint, ≥ 3:1), `shadow` (noire en sombre, plus de halo clair sous le +), `ripple`, `skeleton`. Clavier sombre et curseur aux couleurs du thème (`useInputProps`). `colors.test.ts` vérifie chaque couple texte / fond (4,5:1) et commande / fond (3:1), dans les deux modes et pour chaque couleur principale.
 - **Chargement** : `StateView` montre une carte de lignes fantômes à la hauteur des vraies lignes, qui respire doucement (rien si les animations sont réduites).
 - **Toucher** : `Tappable` (s'éclaircit sur iOS, onde Material sur Android) et `PressableScale` (cartes, boutons) partout ; lignes des listes qui s'effacent et glissent (`RiseIn row`) ; bouton + qui s'enfonce et rebondit, et ne respire plus que trois fois à l'arrivée.
-- **Retours tactiles** (`expo-haptics`, `src/shared/haptics.ts`) : sélection (interrupteurs `Toggle`, segments, pastilles, bouton +), léger choc (cocher une tâche ou une habitude, glisser pour terminer), succès (formulaire enregistré), avertissement (avant une confirmation de suppression). Rien sur le web.
+- **Retours tactiles** (`expo-haptics`, `src/shared/ui/haptics.ts`) : sélection (interrupteurs `Toggle`, segments, pastilles, bouton +), léger choc (cocher une tâche ou une habitude, glisser pour terminer), succès (formulaire enregistré), avertissement (avant une confirmation de suppression). Rien sur le web.
 
 ## 6. Open questions for the product owner
 

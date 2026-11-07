@@ -15,7 +15,7 @@ import {
   type HabitLog,
 } from '@/modules/productivity';
 import { formatDuration } from '@/shared/format';
-import { haptic } from '@/shared/haptics';
+import { haptic } from '@/shared/ui/haptics';
 import { startOfWeekOn, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';

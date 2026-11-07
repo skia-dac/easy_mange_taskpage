@@ -9,7 +9,7 @@ import { Keyboard, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
-import { haptic } from '@/shared/haptics';
+import { haptic } from '@/shared/ui/haptics';
 import { MONEY_INTEGER_DIGITS } from '@/shared/fieldLimits';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';

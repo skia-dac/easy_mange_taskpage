@@ -1,6 +1,6 @@
 import { Alert } from 'react-native';
 
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { i18n } from '../i18n';
 import { logger } from '../logger';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { userMessageKey } from '../errors';
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { logger } from '../logger';
 import { isValidationError, type FieldErrors } from '../validation';
 import { showError } from './dialogs';

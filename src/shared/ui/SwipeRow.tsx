@@ -7,7 +7,7 @@ import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-import { haptic } from '../haptics';
+import { haptic } from './haptics';
 import { useTheme, type ColorTokens } from '../theme';
 import { AppText } from './AppText';
 
