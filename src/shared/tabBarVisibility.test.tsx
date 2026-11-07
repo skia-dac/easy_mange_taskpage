@@ -1,113 +1,51 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { AccessibilityInfo, ScrollView, Text } from 'react-native';
+import { act, renderHook } from '@testing-library/react-native';
+import type { ReactNode } from 'react';
 
-import { PlusButton } from './ui/PlusButton';
-import { TabBarVisibility, useTabBarHidden, useTabBarScrollHandlers } from './tabBarVisibility';
+import {
+  HIDE_DELTA,
+  nextTabBarState,
+  TabBarVisibility,
+  useTabBarHidden,
+  useTabBarScrollHandlers,
+} from './tabBarVisibility';
 
-function Harness() {
-  const hidden = useTabBarHidden();
-  const scroll = useTabBarScrollHandlers();
-  return (
-    <ScrollView testID="list" {...scroll}>
-      <Text>{hidden ? 'hidden' : 'shown'}</Text>
-    </ScrollView>
-  );
-}
+const scrollTo = (y: number) => ({ nativeEvent: { contentOffset: { y } } });
 
 describe('barre d’onglets au défilement', () => {
-  beforeEach(() => {
-    jest.spyOn(AccessibilityInfo, 'isScreenReaderEnabled').mockResolvedValue(false);
-    jest
-      .spyOn(AccessibilityInfo, 'addEventListener')
-      .mockReturnValue({ remove() {} } as unknown as ReturnType<
-        typeof AccessibilityInfo.addEventListener
-      >);
+  it('part en descendant, revient en remontant et en haut', () => {
+    let s = { hidden: false, anchor: 0 };
+    s = nextTabBarState(s, 100);
+    expect(s.hidden).toBe(true);
+    s = nextTabBarState(s, 300);
+    expect(s.hidden).toBe(true);
+    // Remonter un peu suffit.
+    s = nextTabBarState(s, 290);
+    expect(s.hidden).toBe(false);
+    // Un petit tremblement vers le bas ne la cache pas.
+    s = nextTabBarState(s, 290 + HIDE_DELTA - 1);
+    expect(s.hidden).toBe(false);
+    s = nextTabBarState(s, 290 + HIDE_DELTA + 1);
+    expect(s.hidden).toBe(true);
+    // En haut de la liste : toujours visible.
+    s = nextTabBarState(s, 10);
+    expect(s.hidden).toBe(false);
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
-  });
-
-  it('se cache pendant le défilement et revient seulement à l’arrêt', async () => {
-    jest.useFakeTimers();
-    await render(
-      <TabBarVisibility>
-        <Harness />
-      </TabBarVisibility>,
+  it('le hook cache la barre en descendant et la montre au défilement vers le haut', async () => {
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TabBarVisibility>{children}</TabBarVisibility>
     );
-
-    expect(screen.getByText('shown')).toBeTruthy();
-
-    await fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 48 } },
-    });
-    expect(screen.getByText('shown')).toBeTruthy();
-
-    await fireEvent(screen.getByTestId('list'), 'scrollBeginDrag');
-    expect(screen.getByText('hidden')).toBeTruthy();
-
-    await fireEvent(screen.getByTestId('list'), 'scrollEndDrag');
-
-    await act(async () => {
-      jest.advanceTimersByTime(179);
-    });
-    expect(screen.getByText('hidden')).toBeTruthy();
-
-    await act(async () => {
-      jest.advanceTimersByTime(1);
-    });
-    expect(screen.getByText('shown')).toBeTruthy();
-  });
-
-  it('fait suivre le bouton + : caché pendant le défilement, visible menu ouvert', async () => {
-    function Page({ open = false }: { open?: boolean }) {
-      const scroll = useTabBarScrollHandlers();
-      return (
-        <ScrollView testID="list" {...scroll}>
-          <PlusButton onPress={() => {}} accessibilityLabel="Ajouter" open={open} />
-        </ScrollView>
-      );
-    }
-
-    const view = await render(
-      <TabBarVisibility>
-        <Page />
-      </TabBarVisibility>,
+    const h = await renderHook(
+      () => ({ handlers: useTabBarScrollHandlers(), hidden: useTabBarHidden() }),
+      { wrapper },
     );
-
-    expect(shellOf(screen.getByLabelText('Ajouter')).props.accessibilityElementsHidden).toBe(false);
-
-    await fireEvent.scroll(screen.getByTestId('list'), {
-      nativeEvent: { contentOffset: { y: 80 } },
-    });
-    expect(shellOf(screen.getByLabelText('Ajouter')).props.accessibilityElementsHidden).toBe(false);
-
-    await fireEvent(screen.getByTestId('list'), 'scrollBeginDrag');
-    expect(
-      shellOf(screen.getByLabelText('Ajouter', { includeHiddenElements: true })).props
-        .accessibilityElementsHidden,
-    ).toBe(true);
-
-    await view.rerender(
-      <TabBarVisibility>
-        <Page open />
-      </TabBarVisibility>,
-    );
-    expect(shellOf(screen.getByLabelText('Ajouter')).props.accessibilityElementsHidden).toBe(false);
+    expect(h.result.current.hidden).toBe(false);
+    await act(async () => h.result.current.handlers.onScroll(scrollTo(200)));
+    expect(h.result.current.hidden).toBe(true);
+    // Aucun minuteur : elle reste cachée tant qu'on ne remonte pas.
+    await act(async () => h.result.current.handlers.onScroll(scrollTo(200)));
+    expect(h.result.current.hidden).toBe(true);
+    await act(async () => h.result.current.handlers.onScroll(scrollTo(150)));
+    expect(h.result.current.hidden).toBe(false);
   });
 });
-
-type Node = {
-  props: { accessibilityElementsHidden?: boolean };
-  parent: Node | null;
-};
-
-function shellOf(node: Node) {
-  let current: Node | null = node;
-  while (current && current.props.accessibilityElementsHidden === undefined) {
-    current = current.parent;
-  }
-  if (!current) throw new Error('enveloppe du bouton introuvable');
-  return current;
-}

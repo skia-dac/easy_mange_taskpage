@@ -23,7 +23,7 @@ function rememberHeight(distance: { value: number }, height: number) {
   distance.value = height;
 }
 
-/** La barre d'onglets glisse hors de l'écran pendant le défilement, puis revient à l'arrêt. */
+/** La barre d'onglets glisse hors de l'écran quand on descend, et revient quand on remonte. */
 export function SlidingTabBar(props: BottomTabBarProps) {
   const hidden = useTabBarHidden();
   const setScrolling = useSetTabBarScrolling();

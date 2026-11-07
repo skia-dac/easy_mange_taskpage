@@ -13,7 +13,7 @@ import { BottomTabBarHeightContext } from 'expo-router/build/react-navigation/bo
 const SetScrollingContext = createContext<(scrolling: boolean) => void>(() => {});
 const HiddenContext = createContext(false);
 
-/** La barre d'onglets se cache pendant le défilement, et revient quand il s'arrête. */
+/** La barre d'onglets se cache quand on descend dans une liste, et revient quand on remonte. */
 export function TabBarVisibility({ children }: { children: ReactNode }) {
   const [scrolling, setScrolling] = useState(false);
   const [reader, setReader] = useState(false);
@@ -34,7 +34,7 @@ export function TabBarVisibility({ children }: { children: ReactNode }) {
   );
 }
 
-/** Vrai pendant un défilement, faux dès qu'il s'est arrêté. Reste faux avec un lecteur d'écran. */
+/** Vrai quand on a descendu la liste, faux dès qu'on remonte. Reste faux avec un lecteur d'écran. */
 export function useTabBarHidden() {
   return useContext(HiddenContext);
 }
@@ -48,66 +48,52 @@ export function useTabBarInset() {
   return useContext(BottomTabBarHeightContext) ?? 0;
 }
 
-const STOP_MS = 180;
+/** Défilement vers le bas à partir duquel la barre part (évite les tremblements du doigt). */
+export const HIDE_DELTA = 12;
+/** Près du haut de la liste, la barre reste toujours là. */
+export const TOP_ZONE = 24;
 
 /**
- * À brancher sur le défilement principal. La barre et le bouton + ne partent
- * que quand le doigt (ou l'élan qui suit) fait bouger la liste. Un changement
- * de mise en page ne compte pas. Ils reviennent un court instant après l'arrêt.
+ * Règle iOS / Material : la barre part quand on descend nettement, revient dès qu'on remonte
+ * ou qu'on est en haut. `anchor` : position où la direction a changé pour la dernière fois.
+ */
+export function nextTabBarState(
+  state: { hidden: boolean; anchor: number },
+  y: number,
+): { hidden: boolean; anchor: number } {
+  if (y <= TOP_ZONE) return { hidden: false, anchor: y };
+  if (state.hidden) {
+    // Cachée : la moindre remontée la ramène.
+    if (y < state.anchor) return { hidden: false, anchor: y };
+    return { hidden: true, anchor: y };
+  }
+  if (y < state.anchor) return { hidden: false, anchor: y };
+  if (y - state.anchor >= HIDE_DELTA) return { hidden: true, anchor: y };
+  return state;
+}
+
+type ScrollEvent = { nativeEvent: { contentOffset: { y: number } } };
+
+/**
+ * À brancher sur le défilement principal. La barre et le bouton + partent quand on descend
+ * dans la liste, et reviennent dès qu'on remonte ou qu'on revient en haut. Un changement de mise
+ * en page ne bouge pas la position : il ne compte pas.
  */
 export function useTabBarScrollHandlers() {
-  const setScrolling = useSetTabBarScrolling();
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hidden = useRef(false);
-  const dragging = useRef(false);
+  const setHidden = useSetTabBarScrolling();
+  const state = useRef({ hidden: false, anchor: 0 });
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
+  // Écran quitté : la barre revient.
+  useEffect(() => () => setHidden(false), [setHidden]);
+
+  const onScroll = useCallback(
+    (event: ScrollEvent) => {
+      const next = nextTabBarState(state.current, event.nativeEvent.contentOffset.y);
+      if (next.hidden !== state.current.hidden) setHidden(next.hidden);
+      state.current = next;
     },
-    [],
+    [setHidden],
   );
 
-  const hide = useCallback(() => {
-    if (timer.current) clearTimeout(timer.current);
-    if (hidden.current) return;
-    hidden.current = true;
-    setScrolling(true);
-  }, [setScrolling]);
-
-  const showSoon = useCallback(() => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      if (dragging.current) return;
-      hidden.current = false;
-      setScrolling(false);
-    }, STOP_MS);
-  }, [setScrolling]);
-
-  const onScrollBeginDrag = useCallback(() => {
-    dragging.current = true;
-    hide();
-  }, [hide]);
-
-  const onScrollEndDrag = useCallback(() => {
-    dragging.current = false;
-    showSoon();
-  }, [showSoon]);
-
-  const onMomentumScrollBegin = useCallback(() => {
-    dragging.current = true;
-    hide();
-  }, [hide]);
-
-  const onMomentumScrollEnd = useCallback(() => {
-    dragging.current = false;
-    showSoon();
-  }, [showSoon]);
-
-  return {
-    onScrollBeginDrag,
-    onScrollEndDrag,
-    onMomentumScrollBegin,
-    onMomentumScrollEnd,
-  };
+  return { onScroll, scrollEventThrottle: 32 };
 }
