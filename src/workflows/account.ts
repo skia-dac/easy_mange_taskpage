@@ -8,6 +8,7 @@ import {
   setOnboardingDone,
   signOut,
 } from '@/modules/identity';
+import { conflictCount, pendingCount, runSync } from '@/modules/platform';
 import type { Db } from '@/shared/db';
 import { logger } from '@/shared/logger';
 
@@ -55,10 +56,44 @@ export async function fillProfileFromSignUp(
 }
 
 /**
+ * Ce que le serveur n'a pas encore : modifications en attente d'envoi et conflits non réglés
+ * (la version gardée de côté n'existe que sur ce téléphone). Effacer le téléphone les perdrait.
+ */
+export async function unsyncedCount(db: Db): Promise<number> {
+  const [pending, conflicts] = await Promise.all([pendingCount(db), conflictCount(db)]);
+  return pending + conflicts;
+}
+
+/**
+ * Avant d'effacer le téléphone : on tente un envoi, puis on compte ce qui n'est toujours pas
+ * sur le serveur. `push` ne lève jamais (runSync) ; une erreur inattendue compte comme un échec.
+ */
+export async function pushBeforeErase(
+  db: Db,
+  userId: string,
+  push: (db: Db, userId: string) => Promise<unknown> = runSync,
+): Promise<number> {
+  try {
+    await push(db, userId);
+  } catch (e) {
+    logger.error(e, { where: 'pushBeforeErase' });
+  }
+  return unsyncedCount(db);
+}
+
+/**
  * Déconnexion de ce téléphone. Les données restent sur le compte (spécification §5.6).
  * `keepOnPhone` : garder aussi la copie du téléphone (utilisable hors connexion) ou l'effacer.
+ * Effacer alors que des modifications ne sont pas envoyées est refusé, sauf si l'utilisateur l'a
+ * explicitement accepté (`discardUnsynced`, après « Effacer quand même »).
  */
-export async function signOutFromPhone(db: Db, keepOnPhone: boolean): Promise<void> {
+export async function signOutFromPhone(
+  db: Db,
+  keepOnPhone: boolean,
+  options: { discardUnsynced?: boolean } = {},
+): Promise<void> {
+  if (!keepOnPhone && !options.discardUnsynced && (await unsyncedCount(db)) > 0)
+    throw new AccountError('account.unsyncedBlocked');
   await signOut();
   if (!keepOnPhone) await wipeAllData(db);
 }

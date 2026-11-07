@@ -14,6 +14,7 @@ export { Disclosure } from './Disclosure';
 export {
   confirmAction,
   confirmDestructive,
+  confirmDestructiveOrRetry,
   confirmDiscard,
   reportLoadError,
   showError,

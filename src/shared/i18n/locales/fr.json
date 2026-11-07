@@ -967,7 +967,16 @@
     "deleteConfirm": "Supprimer mon compte",
     "otherTitle": "Données d’un autre compte",
     "otherMessage": "Ce téléphone contient les données d’un autre compte MySky. Pour continuer avec ce compte, elles seront effacées de ce téléphone (elles restent sur l’autre compte).",
-    "otherConfirm": "Effacer et continuer"
+    "otherConfirm": "Effacer et continuer",
+    "eraseTitle": "Effacer ce téléphone ?",
+    "eraseMessage": "Tout est envoyé sur ton compte. Les données, pièces jointes et sauvegardes de ce téléphone seront effacées, puis tu seras déconnecté.",
+    "eraseConfirm": "Effacer ce téléphone",
+    "unsyncedTitle": "Modifications pas encore envoyées",
+    "unsyncedMessage_one": "{{count}} modification n’est pas encore envoyée. Si tu continues, elle sera perdue.",
+    "unsyncedMessage_other": "{{count}} modifications ne sont pas encore envoyées. Si tu continues, elles seront perdues.",
+    "unsyncedRetry": "Réessayer l’envoi",
+    "unsyncedErase": "Effacer quand même",
+    "unsyncedBlocked": "Des modifications ne sont pas encore envoyées : ce téléphone n’a pas été effacé."
   },
   "auth": {
     "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer à synchroniser.",

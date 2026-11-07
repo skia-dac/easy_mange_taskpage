@@ -24,6 +24,7 @@ import {
   ChoiceSheet,
   Chip,
   confirmDestructive,
+  confirmDestructiveOrRetry,
   IconBadge,
   ListRow,
   LoadingScreen,
@@ -33,6 +34,7 @@ import {
 } from '@/shared/ui';
 import {
   deleteAccountEverywhere,
+  pushBeforeErase,
   replaceLocalDataWithAccount,
   signOutFromPhone,
 } from '@/workflows';
@@ -94,6 +96,40 @@ export default function AccountScreen() {
     if (after.state === 'error' || after.state === 'offline') {
       showError(after.lastError ?? 'sync.error');
     }
+  };
+
+  /**
+   * « Effacer ce téléphone » : on envoie d'abord ce qui attend. S'il reste des modifications non
+   * envoyées, on le dit avec leur nombre (réessayer, effacer quand même, annuler) ; sinon une
+   * confirmation simple. Jamais d'effacement sans confirmation.
+   */
+  const eraseThisPhone = async () => {
+    if (!userId) return;
+    for (;;) {
+      const left = await pushBeforeErase(db, userId);
+      if (left === 0) {
+        const ok = await confirmDestructive(
+          t('account.eraseTitle'),
+          t('account.eraseMessage'),
+          t('account.eraseConfirm'),
+        );
+        if (!ok) return;
+        await signOutFromPhone(db, false);
+        break;
+      }
+      const choice = await confirmDestructiveOrRetry(
+        t('account.unsyncedTitle'),
+        t('account.unsyncedMessage', { count: left }),
+        t('account.unsyncedRetry'),
+        t('account.unsyncedErase'),
+      );
+      if (choice === 'cancel') return;
+      if (choice === 'destructive') {
+        await signOutFromPhone(db, false, { discardUnsynced: true });
+        break;
+      }
+    }
+    router.replace('/onboarding');
   };
 
   if (!userId) {
@@ -272,11 +308,7 @@ export default function AccountScreen() {
             label: t('account.signOutErase'),
             hint: t('account.signOutEraseHint'),
             destructive: true,
-            onPress: () =>
-              void guard(async () => {
-                await signOutFromPhone(db, false);
-                router.replace('/onboarding');
-              }),
+            onPress: () => void guard(eraseThisPhone),
           },
         ]}
         onClose={() => setSheet(false)}

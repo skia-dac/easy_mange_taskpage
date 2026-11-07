@@ -967,7 +967,16 @@
     "deleteConfirm": "Delete my account",
     "otherTitle": "Data from another account",
     "otherMessage": "This phone holds data from another MySky account. To continue with this account, it will be erased from this phone (it stays on the other account).",
-    "otherConfirm": "Erase and continue"
+    "otherConfirm": "Erase and continue",
+    "eraseTitle": "Erase this phone?",
+    "eraseMessage": "Everything has been sent to your account. The data, attachments and backups on this phone will be erased, then you will be signed out.",
+    "eraseConfirm": "Erase this phone",
+    "unsyncedTitle": "Changes not sent yet",
+    "unsyncedMessage_one": "{{count}} change has not been sent yet. If you continue, it will be lost.",
+    "unsyncedMessage_other": "{{count}} changes have not been sent yet. If you continue, they will be lost.",
+    "unsyncedRetry": "Try sending again",
+    "unsyncedErase": "Erase anyway",
+    "unsyncedBlocked": "Some changes have not been sent yet: this phone was not erased."
   },
   "auth": {
     "sessionExpired": "Your session has expired. Sign in again to keep syncing.",

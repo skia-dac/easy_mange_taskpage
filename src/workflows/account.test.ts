@@ -8,13 +8,17 @@ import {
   saveProfile,
   setOnboardingDone,
 } from '@/modules/identity';
+import type { Db } from '@/shared/db';
 import { createTestDb } from '@/test/memoryDb';
 
 import {
   claimLocalData,
   deleteAccountEverywhere,
   fillProfileFromSignUp,
+  pushBeforeErase,
   replaceLocalDataWithAccount,
+  signOutFromPhone,
+  unsyncedCount,
 } from './account';
 import * as wipeModule from './wipeAllData';
 
@@ -173,6 +177,68 @@ describe('compte et données du téléphone', () => {
     expect(mockRemote.signOut).toHaveBeenCalled();
     expect(await getAccountOwner(db)).toBeNull();
     wipe.mockRestore();
+    db.close();
+  });
+
+  it('effacer ce téléphone : envoie d’abord, compte ce qui reste, refuse sans accord explicite', async () => {
+    const db = await createTestDb();
+    await claimLocalData(db, 'user-a');
+    await createSubject(db, { name: 'Maths', colorId: 'blue' });
+    await createSubject(db, { name: 'Physique', colorId: 'blue' });
+    expect(await unsyncedCount(db)).toBe(2);
+
+    // Envoi impossible (hors ligne) : il reste 2 modifications, l'effacement simple est refusé.
+    const offline = jest.fn(async () => null);
+    expect(await pushBeforeErase(db, 'user-a', offline)).toBe(2);
+    expect(offline).toHaveBeenCalledWith(db, 'user-a');
+    mockRemote.signOut.mockReset();
+    mockRemote.signOut.mockResolvedValue(undefined);
+    await expect(signOutFromPhone(db, false)).rejects.toMatchObject({
+      message: 'account.unsyncedBlocked',
+    });
+    expect(mockRemote.signOut).not.toHaveBeenCalled();
+    const kept = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
+    expect(kept?.n).toBe(2);
+
+    // Une erreur inattendue de l'envoi ne fait pas croire que tout est parti.
+    expect(await pushBeforeErase(db, 'user-a', () => Promise.reject(new Error('boom')))).toBe(2);
+
+    // Un conflit non réglé compte aussi (sa version n'existe que sur ce téléphone).
+    await db.runAsync(
+      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
+       VALUES ('c1', 'subjects', 's1', '{}', '{}', '2026-01-01T00:00:00.000Z')`,
+      [],
+    );
+    expect(await unsyncedCount(db)).toBe(3);
+
+    // « Effacer quand même » : accord explicite, le téléphone est vidé.
+    await signOutFromPhone(db, false, { discardUnsynced: true });
+    expect(mockRemote.signOut).toHaveBeenCalledTimes(1);
+    const n = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
+    expect(n?.n).toBe(0);
+    db.close();
+  });
+
+  it('effacer ce téléphone : tout est envoyé → l’effacement passe, garder ne vérifie rien', async () => {
+    const db = await createTestDb();
+    await claimLocalData(db, 'user-a');
+    await createSubject(db, { name: 'Maths', colorId: 'blue' });
+    // L'envoi réussit : la file se vide.
+    const push = jest.fn(async (d: Db) => {
+      await d.runAsync('DELETE FROM sync_outbox', []);
+    });
+    expect(await pushBeforeErase(db, 'user-a', push)).toBe(0);
+    mockRemote.signOut.mockReset();
+    mockRemote.signOut.mockResolvedValue(undefined);
+    await signOutFromPhone(db, false);
+    const n = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
+    expect(n?.n).toBe(0);
+
+    // Garder les données sur le téléphone : rien n'est effacé, même avec des envois en attente.
+    await createSubject(db, { name: 'Chimie', colorId: 'blue' });
+    await signOutFromPhone(db, true);
+    const kept = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM subjects', []);
+    expect(kept?.n).toBe(1);
     db.close();
   });
 });
