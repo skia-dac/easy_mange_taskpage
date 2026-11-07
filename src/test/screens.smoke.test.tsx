@@ -573,7 +573,26 @@ const cases: Case[] = [
     name: 'Formulaire tâche',
     load: () => require('@/app/work/form') as { default: ComponentType },
     params: { id: 'task', kind: 'task' },
-    expect: ['Enregistrer la tâche', 'Rappel', 'Durée estimée'],
+    // À la modification, la matière se rattache ou se retire (« Aucune »).
+    expect: [
+      'Enregistrer la tâche',
+      'Rappel',
+      'Durée estimée',
+      'Matière (facultatif)',
+      'Marketing stratégique',
+    ],
+  },
+  {
+    name: 'Formulaire devoir (matière modifiable)',
+    load: () => require('@/app/work/form') as { default: ComponentType },
+    params: { id: 'assignment', kind: 'assignment' },
+    expect: ['Enregistrer le devoir', 'Matière (facultatif)', 'Marketing stratégique'],
+  },
+  {
+    name: 'Nouvelle tâche (matière facultative)',
+    load: () => require('@/app/work/form') as { default: ComponentType },
+    params: { subjectId: 'subject' },
+    expect: ['Matière (facultatif)', 'Marketing stratégique', 'Enregistrer le devoir'],
   },
   {
     name: 'Détail tâche avec étapes',

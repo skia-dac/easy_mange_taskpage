@@ -69,8 +69,12 @@ export default function WorkFormScreen() {
     repeat: 'none',
     estimatedMinutes: null,
   });
-  // Une seule fiche : à la création, une matière (Études) fait de la tâche un devoir.
-  const kind: WorkKind = editing ? savedKind : study && form.subjectId ? 'assignment' : 'task';
+  // Une seule fiche : un devoir est une tâche avec une matière (Études). À la création, la matière
+  // choisit la table ; à la modification, l'élément reste dans sa table (même id, une seule
+  // modification à synchroniser) et la matière peut être ajoutée ou retirée.
+  const withSubject = study && !!form.subjectId;
+  const kind: WorkKind = editing ? savedKind : withSubject ? 'assignment' : 'task';
+  // Libellés : comme le reste de l'app (détail, listes), ceux de la table à la modification.
   const isTask = kind === 'task';
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
@@ -139,15 +143,14 @@ export default function WorkFormScreen() {
         placeholder={isTask ? t('work.titlePlaceholderTask') : t('work.titlePlaceholderAssignment')}
         autoFocus={!params.id}
       />
-      {/* La matière appartient à Études : sans Études, le champ n'existe pas. */}
-      {/* À la modification, un devoir garde une matière et une tâche sans matière n'en reçoit pas. */}
-      {study && (!editing || form.subjectId) ? (
+      {/* La matière appartient à Études : sans Études, le champ n'existe pas. Avec Études, on peut
+          toujours choisir « Aucune », à la création comme à la modification. */}
+      {study ? (
         <>
           <SelectField
-            label={isTask ? t('work.subjectOptional') : t('work.subject')}
-            required={!isTask}
+            label={t('work.subjectOptional')}
             value={form.subjectId ?? null}
-            noneLabel={isTask ? t('work.noSubject') : undefined}
+            noneLabel={t('work.noSubject')}
             options={subjectOptions(subjects)}
             onChange={(subjectId) => set({ subjectId })}
           />
