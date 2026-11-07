@@ -1721,6 +1721,15 @@
       "money_recurring": "Charge fixe ou tontine",
       "money_transactions": "Opération d’argent",
       "work_slots": "Créneau fixe"
+    },
+    "rejectedHint": "La renvoyer telle quelle serait refusée encore. Corrige l’élément si besoin, puis ignore ce message.",
+    "rejectedCannotRestore": "Cette modification a été refusée par le serveur : la renvoyer telle quelle échouerait encore.",
+    "rejection": {
+      "missingField": "Motif : une information obligatoire manque.",
+      "invalidValue": "Motif : une valeur n’est pas acceptée.",
+      "missingLink": "Motif : l’élément auquel elle est liée n’existe pas sur le serveur.",
+      "duplicate": "Motif : un élément identique existe déjà.",
+      "other": "Motif : données non valides."
     }
   },
   "feedback": {

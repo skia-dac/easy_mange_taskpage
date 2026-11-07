@@ -66,8 +66,14 @@ export type {
 } from './sync/engine';
 export { PULL_MARGIN_MS, withMargin } from './sync/remote';
 export { cancelSyncRetry, pendingRetryDelay, runSync } from './sync/runner';
-export { ignoreConflict, listConflicts, restoreConflict } from './sync/conflicts';
-export type { SyncConflict } from './sync/conflicts';
+export {
+  canRestore,
+  ignoreConflict,
+  listConflicts,
+  rejectionKinds,
+  restoreConflict,
+} from './sync/conflicts';
+export type { RejectionKind, SyncConflict } from './sync/conflicts';
 export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';
 export { SyncGate } from './sync/SyncGate';

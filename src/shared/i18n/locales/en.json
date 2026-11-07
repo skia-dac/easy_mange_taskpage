@@ -1721,6 +1721,15 @@
       "money_recurring": "Fixed charge or tontine",
       "money_transactions": "Money transaction",
       "work_slots": "Fixed slot"
+    },
+    "rejectedHint": "Sending it again as is would be refused again. Fix the item if needed, then dismiss this message.",
+    "rejectedCannotRestore": "The server refused this change: sending it again as is would fail again.",
+    "rejection": {
+      "missingField": "Reason: a required piece of information is missing.",
+      "invalidValue": "Reason: a value is not accepted.",
+      "missingLink": "Reason: the item it is linked to does not exist on the server.",
+      "duplicate": "Reason: an identical item already exists.",
+      "other": "Reason: invalid data."
     }
   },
   "feedback": {

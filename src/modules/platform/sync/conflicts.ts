@@ -1,6 +1,7 @@
 import { newId, notifyChange, nowIso, SYNCED_TABLES, type Db, type SqlValue } from '@/shared/db';
+import { AppError } from '@/shared/errors';
 
-import type { SyncedTable } from './engine';
+import { settleIfNothingPending, type SyncedTable } from './engine';
 
 /**
  * Conflits gardés de côté par la synchronisation (`sync_conflicts`) : la version locale d'une
@@ -13,8 +14,10 @@ export type SyncConflict = {
   entityId: string;
   /** Titre lisible de l'élément, si sa ligne en a un (titre, nom, personne…). */
   title: string | null;
-  /** Raison donnée par le serveur quand la modification a été refusée. */
+  /** Raison donnée par le serveur quand la modification a été refusée (technique, jamais affichée). */
   reason: string | null;
+  /** Motif lisible d'un refus (clé `conflicts.rejection.<motif>`), null si ce n'est pas un refus. */
+  rejection: RejectionKind | null;
   createdAt: string;
   local: Record<string, SqlValue>;
 };
@@ -27,6 +30,27 @@ type ConflictRow = {
   server_payload: string;
   created_at: string;
 };
+
+export const rejectionKinds = [
+  'missingField',
+  'invalidValue',
+  'missingLink',
+  'duplicate',
+  'other',
+] as const;
+export type RejectionKind = (typeof rejectionKinds)[number];
+
+/** Classe la raison technique du serveur (message Postgres) en un motif affichable. */
+export function rejectionKindOf(reason: string): RejectionKind {
+  const r = reason.toLowerCase();
+  if (r.includes('not-null') || r.includes('not null') || r.includes('null value'))
+    return 'missingField';
+  if (r.includes('foreign key')) return 'missingLink';
+  if (r.includes('unique') || r.includes('duplicate')) return 'duplicate';
+  if (r.includes('check') || r.includes('invalid') || r.includes('out of range'))
+    return 'invalidValue';
+  return 'other';
+}
 
 const NOT_RESTORED = new Set(['id', 'version', 'sync_status', 'created_at']);
 const TITLE_COLUMNS = ['title', 'name', 'person', 'first_name', 'date'];
@@ -48,6 +72,11 @@ function titleOf(local: Record<string, SqlValue>): string | null {
   return null;
 }
 
+function listReason(row: Pick<ConflictRow, 'server_payload'>): string | null {
+  const reason = parse(row.server_payload).reason;
+  return typeof reason === 'string' ? reason : null;
+}
+
 const isSynced = (t: string): t is SyncedTable => (SYNCED_TABLES as readonly string[]).includes(t);
 
 /** Conflits non résolus, les plus récents d'abord. */
@@ -58,23 +87,40 @@ export async function listConflicts(db: Db): Promise<SyncConflict[]> {
   );
   return rows.map((r) => {
     const local = parse(r.local_payload);
-    const server = parse(r.server_payload);
+    const reason = listReason(r);
     return {
       id: r.id,
       entity: r.entity,
       entityId: r.entity_id,
       title: titleOf(local),
-      reason: typeof server.reason === 'string' ? server.reason : null,
+      reason,
+      rejection: reason === null ? null : rejectionKindOf(reason),
       createdAt: r.created_at,
       local,
     };
   });
 }
 
-/** « Ignorer » : la version du serveur reste, le conflit est marqué résolu. */
+/**
+ * « Ignorer » : la version du serveur reste, le conflit est marqué résolu. Si la ligne est encore
+ * marquée « à envoyer » sans plus rien dans la file (refus), elle redevient synchronisée pour que
+ * les modifications des autres appareils puissent l'atteindre.
+ */
 export async function ignoreConflict(db: Db, id: string): Promise<void> {
-  await db.runAsync('UPDATE sync_conflicts SET resolved_at = ? WHERE id = ?', [nowIso(), id]);
-  notifyChange(['sync_conflicts']);
+  const row = await db.getFirstAsync<Pick<ConflictRow, 'entity' | 'entity_id'>>(
+    'SELECT entity, entity_id FROM sync_conflicts WHERE id = ?',
+    [id],
+  );
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.runAsync('UPDATE sync_conflicts SET resolved_at = ? WHERE id = ?', [nowIso(), id]);
+    if (row && isSynced(row.entity)) await settleIfNothingPending(txn, row.entity, row.entity_id);
+  });
+  notifyChange(row && isSynced(row.entity) ? [row.entity, 'sync_conflicts'] : ['sync_conflicts']);
+}
+
+/** Une modification refusée par le serveur ne se renvoie pas telle quelle : elle serait refusée encore. */
+export function canRestore(conflict: Pick<SyncConflict, 'reason'>): boolean {
+  return conflict.reason === null;
 }
 
 /**
@@ -87,6 +133,10 @@ export async function restoreConflict(db: Db, id: string): Promise<void> {
     id,
   ]);
   if (!row) return;
+  if (!canRestore({ reason: listReason(row) }))
+    throw new AppError('validation', 'rejectedConflict', {
+      messageKey: 'conflicts.rejectedCannotRestore',
+    });
   const table = row.entity;
   const local = parse(row.local_payload);
   if (!isSynced(table) || !local.id) {

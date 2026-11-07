@@ -10,6 +10,7 @@ import { createNote, deleteNote, listNotes } from '@/modules/productivity';
 import { FakeServer } from '@/test/fakeServer';
 import { createTestDb } from '@/test/memoryDb';
 
+import { canRestore, ignoreConflict, listConflicts, restoreConflict } from './conflicts';
 import { conflictCount, pendingCount, syncOnce } from './engine';
 
 const subject = { name: 'Maths', colorId: 'blue' };
@@ -243,6 +244,79 @@ describe('synchronisation', () => {
       'Maths',
       'Physique',
     ]);
+    a.close();
+    b.close();
+  });
+
+  it('après un refus, la ligne redevient synchronisée et reçoit la modification d’un autre téléphone', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const id = await createSubject(a, subject);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+
+    // A modifie, le serveur refuse : plus rien dans la file, la ligne n'est plus « à envoyer ».
+    jest.setSystemTime(new Date('2026-09-24T09:00:00.000Z'));
+    await updateSubject(a, id, { ...subject, name: 'Refusée' });
+    server.rejectIds.add(id);
+    expect((await syncOnce(a, server.remote())).rejected).toBe(1);
+    server.rejectIds.delete(id);
+    const after = await a.getFirstAsync<{ sync_status: string; version: number }>(
+      'SELECT sync_status, version FROM subjects WHERE id = ?',
+      [id],
+    );
+    expect(after).toEqual({ sync_status: 'synced', version: 1 });
+    expect(await pendingCount(a)).toBe(0);
+
+    // B modifie la même matière : A la reçoit (avant, la ligne restait figée en pending_update).
+    jest.setSystemTime(new Date('2026-09-24T10:00:00.000Z'));
+    await updateSubject(b, id, { ...subject, name: 'Depuis B' });
+    await syncOnce(b, server.remote());
+    const r = await syncOnce(a, server.remote());
+    expect(r.skipped).toBe(0);
+    expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Depuis B']);
+    a.close();
+    b.close();
+  });
+
+  it('ignorer un refus remet à « synchronisée » une ligne restée en attente sans rien dans la file', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const id = await createSubject(a, subject);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+    // Ligne figée par une ancienne version de l'app : pending_update, file vide, refus gardé.
+    await a.runAsync(
+      "UPDATE subjects SET sync_status = 'pending_update', name = 'Figée' WHERE id = ?",
+      [id],
+    );
+    await a.runAsync(
+      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
+       VALUES ('c', 'subjects', ?, ?, ?, 'x')`,
+      [id, JSON.stringify({ id, name: 'Figée' }), JSON.stringify({ reason: 'check violation' })],
+    );
+    const [conflict] = await listConflicts(a);
+    expect(conflict).toMatchObject({ rejection: 'invalidValue' });
+    expect(canRestore(conflict!)).toBe(false);
+    // « Restaurer » ne renvoie pas la même modification refusée.
+    await expect(restoreConflict(a, 'c')).rejects.toMatchObject({
+      messageKey: 'conflicts.rejectedCannotRestore',
+    });
+    expect(await pendingCount(a)).toBe(0);
+
+    await ignoreConflict(a, 'c');
+    const row = await a.getFirstAsync<{ sync_status: string }>(
+      'SELECT sync_status FROM subjects WHERE id = ?',
+      [id],
+    );
+    expect(row?.sync_status).toBe('synced');
+    jest.setSystemTime(new Date('2026-09-24T10:00:00.000Z'));
+    await updateSubject(b, id, { ...subject, name: 'Depuis B' });
+    await syncOnce(b, server.remote());
+    await syncOnce(a, server.remote());
+    expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Depuis B']);
     a.close();
     b.close();
   });

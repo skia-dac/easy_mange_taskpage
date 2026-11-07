@@ -192,6 +192,27 @@ async function markSynced(db: Db, g: Group, version: number): Promise<void> {
   else await db.runAsync(`UPDATE ${g.entity} SET version = ? WHERE id = ?`, [version, g.id]);
 }
 
+/**
+ * Une ligne en `pending_*` sans plus aucune entrée dans la file (modification refusée, ou mise de
+ * côté puis ignorée) : on la remet à `synced` pour que la réception puisse de nouveau la mettre à
+ * jour. Sa version reste la dernière version du serveur connue (celle sur laquelle elle était basée).
+ */
+export async function settleIfNothingPending(
+  db: Db,
+  table: SyncedTable,
+  id: string,
+): Promise<void> {
+  const left = await db.getFirstAsync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM sync_outbox WHERE entity = ? AND entity_id = ?',
+    [table, id],
+  );
+  if ((left?.n ?? 0) > 0) return;
+  await db.runAsync(
+    `UPDATE ${table} SET sync_status = 'synced' WHERE id = ? AND sync_status != 'synced'`,
+    [id],
+  );
+}
+
 async function enqueue(
   db: Db,
   table: SyncedTable,
@@ -314,6 +335,9 @@ async function push(db: Db, remote: RemoteApi, report: SyncReport, changed: Set<
           const local = await localRow(db, g.entity, g.id);
           if (local) await recordConflict(db, g.entity, local, { reason: r.reason });
           await deleteOutbox(db, g.ids);
+          // Plus rien à envoyer pour cette ligne : elle redevient « synchronisée » (sur la version
+          // du serveur qu'elle connaît), sinon la réception la sauterait pour toujours.
+          await settleIfNothingPending(db, g.entity, g.id);
           logger.warn('sync.rejected', { entity: g.entity, reason: r.reason });
           changed.add(g.entity);
           report.rejected++;

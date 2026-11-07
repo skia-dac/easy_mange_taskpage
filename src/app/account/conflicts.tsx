@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { useLabels } from '@/hooks/useLabels';
-import { ignoreConflict, listConflicts, restoreConflict } from '@/modules/platform';
+import { canRestore, ignoreConflict, listConflicts, restoreConflict } from '@/modules/platform';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDateTime } from '@/shared/format';
@@ -58,22 +58,34 @@ export default function ConflictsScreen() {
                 {formatDateTime(new Date(c.createdAt), labels.lang)}
               </AppText>
               <AppText variant="caption" color="muted">
-                {c.reason ? t('conflicts.rejected') : t('conflicts.replaced')}
+                {c.rejection ? t('conflicts.rejected') : t('conflicts.replaced')}
               </AppText>
+              {c.rejection ? (
+                <>
+                  {/* Motif lisible, jamais le message technique du serveur. */}
+                  <AppText variant="caption">{t(`conflicts.rejection.${c.rejection}`)}</AppText>
+                  <AppText variant="caption" color="muted">
+                    {t('conflicts.rejectedHint')}
+                  </AppText>
+                </>
+              ) : null}
               <View style={{ flexDirection: 'row', gap: spacing.lg, flexWrap: 'wrap' }}>
-                <TextButton
-                  label={t('conflicts.restore')}
-                  onPress={() =>
-                    void run(async () => {
-                      const ok = await confirmAction(
-                        t('conflicts.restoreTitle'),
-                        t('conflicts.restoreMessage'),
-                        t('conflicts.restore'),
-                      );
-                      if (ok) await restoreConflict(db, c.id);
-                    })
-                  }
-                />
+                {/* Une modification refusée ne se renvoie pas à l'identique : seulement « Ignorer ». */}
+                {canRestore(c) ? (
+                  <TextButton
+                    label={t('conflicts.restore')}
+                    onPress={() =>
+                      void run(async () => {
+                        const ok = await confirmAction(
+                          t('conflicts.restoreTitle'),
+                          t('conflicts.restoreMessage'),
+                          t('conflicts.restore'),
+                        );
+                        if (ok) await restoreConflict(db, c.id);
+                      })
+                    }
+                  />
+                ) : null}
                 <TextButton
                   label={t('conflicts.ignore')}
                   color="muted"
