@@ -1471,7 +1471,8 @@
     "endDate": "Until (optional)",
     "addRecurringMenu": "Add a fixed cost or a tontine",
     "chargeOption": "Fixed cost",
-    "tontineOption": "Tontine"
+    "tontineOption": "Tontine",
+    "paidToast": "{{name}}: paid"
   },
   "glance": {
     "money": "Money",

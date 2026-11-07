@@ -27,7 +27,14 @@ import {
   updateRecurring,
   updateTransaction,
 } from '@/modules/finance';
-import { moneyOverview, openLoans } from '@/projections';
+import {
+  dueKey,
+  forgetPaidLate,
+  loadMoney,
+  moneyOverview,
+  openLoans,
+  rememberPaidLate,
+} from '@/projections';
 import type { Db } from '@/shared/db';
 import { ValidationError } from '@/shared/validation';
 import { createTestDb } from '@/test/memoryDb';
@@ -47,7 +54,7 @@ const tx = (
   note?: string,
 ) => createTransaction(db, { kind, amountMinor, currency: XAF, date, categoryId, note });
 
-async function overview(today: string) {
+async function overview(today: string, keepPaidLate?: ReadonlySet<string>) {
   const prefs = await getMoneyPrefs(db);
   const range = periodContaining(today, prefs.period);
   return moneyOverview({
@@ -62,6 +69,7 @@ async function overview(today: string) {
     loans: await listLoans(db),
     linked: await listLinkedTransactions(db),
     categories: await listCategories(db),
+    ...(keepPaidLate ? { keepPaidLate } : {}),
   });
 }
 
@@ -267,6 +275,50 @@ describe('module Argent', () => {
       categories: [],
     });
     expect(past.due.map((d) => d.date)).toEqual(['2026-09-05']);
+  });
+
+  it('une échéance en retard qu’on vient de payer reste visible (cochée) dans la période', async () => {
+    await setMoneyPrefs(db, {
+      currency: XAF,
+      period: { kind: 'month', startDay: 1 },
+      hideWidgetAmounts: false,
+    });
+    const rent = await createRecurring(db, {
+      kind: 'charge',
+      name: 'Loyer',
+      categoryId: 'home',
+      amountMinor: 35000,
+      currency: XAF,
+      frequency: 'monthly',
+      dayOfMonth: 5,
+      startDate: '2026-09-01',
+      reminders: [],
+    });
+    const before = await overview('2026-10-10');
+    const september = before.due.find((d) => d.date === '2026-09-05')!;
+    expect(september.paid).toBe(false);
+
+    await payDue(db, rent, '2026-09-05', '2026-10-10');
+    // Sans mémoire de session : elle sort de la liste (comportement des autres sessions).
+    expect((await overview('2026-10-10')).due.map((d) => d.date)).toEqual(['2026-10-05']);
+    // Payée pendant cette session : toujours là, cochée, et hors du « à payer ».
+    const kept = await overview('2026-10-10', new Set([dueKey(september)]));
+    expect(kept.due.map((d) => [d.date, d.paid])).toEqual([
+      ['2026-09-05', true],
+      ['2026-10-05', false],
+    ]);
+    expect(kept.unpaidTotal).toBe(35000);
+
+    // Chargement réel de l'onglet : la période en cours garde la mémoire, pas la suivante.
+    rememberPaidLate('2026-10-01', dueKey(september));
+    const tab = await loadMoney(db, 0, '2026-10-10');
+    expect(tab.overview.due.map((d) => [d.date, d.paid])).toEqual([
+      ['2026-09-05', true],
+      ['2026-10-05', false],
+    ]);
+    const november = await loadMoney(db, 0, '2026-11-10');
+    expect(november.overview.due.some((d) => d.date === '2026-09-05')).toBe(false);
+    forgetPaidLate('2026-10-01', dueKey(september));
   });
 
   it('dé-payer puis « Annuler » recrée le paiement tel quel (#12)', async () => {

@@ -16,6 +16,30 @@ import { useSharedLiveQuery, type Db } from '@/shared/db';
 
 import { LATE_PERIODS, moneyOverview, type MoneyInput, type MoneyOverview } from './money';
 
+/**
+ * Échéances en retard payées pendant cette session (mémoire de l'app, jamais enregistrée), rangées
+ * par début de la période en cours : elles restent visibles cochées jusqu'à la fermeture de l'app ou
+ * au changement de période. À appeler AVANT `payDue`, qui déclenche le rechargement.
+ */
+const paidLateThisSession = new Map<string, Set<string>>();
+
+export function rememberPaidLate(periodFrom: string, key: string): void {
+  const set = paidLateThisSession.get(periodFrom) ?? new Set<string>();
+  set.add(key);
+  paidLateThisSession.set(periodFrom, set);
+}
+
+export function forgetPaidLate(periodFrom: string, key: string): void {
+  paidLateThisSession.get(periodFrom)?.delete(key);
+}
+
+function paidLateFor(periodFrom: string): ReadonlySet<string> {
+  // Nouvelle période : on oublie celles d'avant.
+  for (const from of paidLateThisSession.keys())
+    if (from !== periodFrom) paidLateThisSession.delete(from);
+  return new Set(paidLateThisSession.get(periodFrom) ?? []);
+}
+
 const TABLES = [
   'money_transactions',
   'money_categories',
@@ -61,6 +85,7 @@ export async function loadMoney(
     loans,
     linked,
     categories,
+    ...(offset === 0 ? { keepPaidLate: paidLateFor(range.from) } : {}),
   };
   return { prefs, input, overview: moneyOverview(input) };
 }

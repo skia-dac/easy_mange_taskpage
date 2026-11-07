@@ -31,7 +31,16 @@ export type MoneyInput = {
   /** Mouvements d'épargne et de prêts, toutes dates. */
   linked: readonly Transaction[];
   categories: readonly MoneyCategory[];
+  /**
+   * Échéances en retard payées pendant cette session, dans la période affichée (`dueKey`) : elles
+   * restent visibles (cochées) pour pouvoir être décochées, jusqu'au changement de période.
+   */
+  keepPaidLate?: ReadonlySet<string>;
 };
+
+/** Identifiant stable d'une échéance (charge fixe + date prévue). */
+export const dueKey = (d: { recurring: { id: string }; date: string }) =>
+  `${d.recurring.id}|${d.date}`;
 
 export type CategoryTotal = {
   categoryId: string;
@@ -134,14 +143,17 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
   const balance = input.balanceBeforeRange + items.reduce((s, t) => s + signedAmount(t), 0);
   const recurring = input.recurring.filter((r) => r.currency === currency);
   // Période en cours : une échéance des périodes précédentes restée impayée ne disparaît pas,
-  // elle reste « en retard » dans « à payer » et dans « après tes charges ».
+  // elle reste « en retard » dans « à payer » et dans « après tes charges ». Payée, elle sort
+  // de la liste, sauf si elle vient d'être payée pendant cette session (pour pouvoir la décocher).
   let lateFrom = range.from;
   if (inRange({ date: today }, range))
     for (let i = 0; i < LATE_PERIODS; i++)
       lateFrom = shiftPeriod({ from: lateFrom, to: lateFrom }, input.period, -1).from;
   const late =
     lateFrom < range.from
-      ? dueItems(recurring, mine, lateFrom, addDaysIso(range.from, -1)).filter((d) => !d.paid)
+      ? dueItems(recurring, mine, lateFrom, addDaysIso(range.from, -1)).filter(
+          (d) => !d.paid || (input.keepPaidLate?.has(dueKey(d)) ?? false),
+        )
       : [];
   const due = [...late, ...dueItems(recurring, mine, range.from, range.to)];
   const unpaidTotal = due.filter((d) => !d.paid).reduce((s, d) => s + d.amountMinor, 0);

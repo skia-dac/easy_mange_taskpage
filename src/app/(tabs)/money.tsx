@@ -11,7 +11,7 @@ import { ProfileButton } from '@/components/ProfileButton';
 import { HeaderButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, payDue, unpayDue, type DueItem } from '@/modules/finance';
-import { openLoans, useMoneyData } from '@/projections';
+import { dueKey, forgetPaidLate, openLoans, rememberPaidLate, useMoneyData } from '@/projections';
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -60,8 +60,18 @@ export default function MoneyScreen() {
 
   const togglePaid = (d: DueItem) => {
     if (!d.paid) {
-      payDue(db, d.recurring.id, d.date, current ? today : d.date).catch((e: unknown) =>
-        showError(userMessageKey(e)),
+      // Une échéance en retard payée reste visible (cochée) dans la période, pour pouvoir la décocher.
+      const late = current && d.date < input.range.from;
+      if (late) rememberPaidLate(input.range.from, dueKey(d));
+      payDue(db, d.recurring.id, d.date, current ? today : d.date).then(
+        () =>
+          showUndoToast(t('money.paidToast', { name: d.recurring.name }), () =>
+            unpayDue(db, d.recurring.id, d.date),
+          ),
+        (e: unknown) => {
+          if (late) forgetPaidLate(input.range.from, dueKey(d));
+          showError(userMessageKey(e));
+        },
       );
       return;
     }

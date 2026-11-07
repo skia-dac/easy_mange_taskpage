@@ -1471,7 +1471,8 @@
     "endDate": "Jusqu’au (facultatif)",
     "addRecurringMenu": "Ajouter une charge fixe ou une tontine",
     "chargeOption": "Charge fixe",
-    "tontineOption": "Tontine"
+    "tontineOption": "Tontine",
+    "paidToast": "{{name}} : payé"
   },
   "glance": {
     "money": "Argent",
