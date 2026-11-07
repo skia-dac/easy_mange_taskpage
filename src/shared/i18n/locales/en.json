@@ -645,12 +645,10 @@
     "howHint": "You can change your mind later.",
     "manual": "Create my timetable",
     "manualHint": "Add your subjects and classes one by one.",
-    "later": "Later",
     "laterHint": "Explore the app first.",
     "progress": "Step {{step}} of {{total}}",
     "account": "I already have an account",
     "accountHint": "Get your data back from another phone",
-    "startNow": "Get started",
     "welcome": "Welcome to MySky",
     "previous": "Back"
   },

@@ -645,12 +645,10 @@
     "howHint": "Tu pourras changer d’avis plus tard.",
     "manual": "Créer mon emploi du temps",
     "manualHint": "Ajoute tes matières et tes cours un par un.",
-    "later": "Plus tard",
     "laterHint": "Découvre d’abord l’application.",
     "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
-    "startNow": "Commencer",
     "welcome": "Bienvenue dans MySky",
     "previous": "Précédent"
   },
