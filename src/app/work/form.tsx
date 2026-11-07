@@ -16,6 +16,7 @@ import {
   getWorkItem,
   priorities,
   repeatRules,
+  shiftReminder,
   updateWorkItem,
   workStatuses,
   type WorkItemInput,
@@ -194,7 +195,15 @@ export default function WorkFormScreen() {
         mode="date"
         required
         value={form.dueDate}
-        onChange={(v) => set({ dueDate: v ?? toIsoDate(new Date()) })}
+        onChange={(v) => {
+          const dueDate = v ?? toIsoDate(new Date());
+          // Le rappel suit l'échéance (« la veille à 18:00 » reste la veille).
+          setForm((f) => ({
+            ...f,
+            dueDate,
+            reminderAt: shiftReminder(f.reminderAt, f.dueDate, dueDate),
+          }));
+        }}
         error={errors.dueDate}
       />
       {editing ? (

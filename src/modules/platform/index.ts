@@ -16,8 +16,10 @@ export { routeForResponse } from './notifications/route';
 export {
   ensurePermission,
   hasPermission,
+  notificationPermission,
   syncScheduledNotifications,
 } from './notifications/scheduler';
+export type { NotificationPermission } from './notifications/scheduler';
 export { NotificationsGate } from './notifications/NotificationsGate';
 export { useNotifications } from './notifications/useNotifications';
 export {

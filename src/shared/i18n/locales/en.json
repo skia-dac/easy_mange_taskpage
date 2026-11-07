@@ -73,7 +73,8 @@
     "invalid": "Invalid value.",
     "feedbackTooShort": "Write at least 10 characters.",
     "invalidEmail": "Invalid email address.",
-    "invalidYear": "Enter a school year, for example 2026–2027."
+    "invalidYear": "Enter a school year, for example 2026–2027.",
+    "reminderAfterDue": "The reminder must come before the due date. Pick an earlier time."
   },
   "today": {
     "greeting": "Hello",
@@ -616,7 +617,13 @@
     "examDays": "Reminders before the exam",
     "daysBefore_one": "{{count}} day before",
     "daysBefore_other": "{{count}} days before",
-    "examTime": "Reminder time"
+    "examTime": "Reminder time",
+    "permissionTitle": "Get your reminders?",
+    "permissionMessage": "MySky sends you a notification at reminder time, even offline. Your phone will ask for permission.",
+    "permissionContinue": "Continue",
+    "permissionOff": "Notifications are turned off: this reminder will not ring.",
+    "permissionAllow": "Allow notifications",
+    "permissionSettings": "Open settings"
   },
   "search": {
     "title": "Search",

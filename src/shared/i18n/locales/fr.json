@@ -73,7 +73,8 @@
     "invalid": "Valeur non valide.",
     "feedbackTooShort": "Écris au moins 10 caractères.",
     "invalidEmail": "Adresse e-mail non valide.",
-    "invalidYear": "Entre une année scolaire, par exemple 2026–2027."
+    "invalidYear": "Entre une année scolaire, par exemple 2026–2027.",
+    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt."
   },
   "today": {
     "greeting": "Bonjour",
@@ -616,7 +617,13 @@
     "examDays": "Rappels avant l’examen",
     "daysBefore_one": "{{count}} jour avant",
     "daysBefore_other": "{{count}} jours avant",
-    "examTime": "Heure des rappels"
+    "examTime": "Heure des rappels",
+    "permissionTitle": "Recevoir tes rappels ?",
+    "permissionMessage": "MySky t’envoie une notification au moment du rappel, même hors connexion. Ton téléphone va te demander l’autorisation.",
+    "permissionContinue": "Continuer",
+    "permissionOff": "Les notifications sont désactivées : ce rappel ne sonnera pas.",
+    "permissionAllow": "Autoriser les notifications",
+    "permissionSettings": "Ouvrir les réglages"
   },
   "search": {
     "title": "Recherche",
