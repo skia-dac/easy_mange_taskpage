@@ -46,3 +46,4 @@ yarn-error.*
 
 # Vérification d'assemblage (npm run check:bundle)
 .expo-export-check/
+.claude/worktrees/

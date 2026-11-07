@@ -92,12 +92,16 @@
     },
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/.expo/"
+      "/.expo/",
+      "/.claude/"
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.ts"
     ],
-    "resolver": "react-native-worklets/jest/resolver.js"
+    "resolver": "react-native-worklets/jest/resolver.js",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/.claude/"
+    ]
   },
   "engines": {
     "node": ">=20"
