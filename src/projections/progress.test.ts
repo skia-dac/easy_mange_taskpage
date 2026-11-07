@@ -77,6 +77,21 @@ describe('grille de progression (façon GitHub)', () => {
     expect(overallLevel([sport, water], logs, '2026-09-22', today)).toBe(2);
   });
 
+  it('toutes les habitudes aujourd’hui : celles pas encore faites comptent dans le total', () => {
+    const read = { ...water, id: 'read', target: 1 } as Habit;
+    const habits = [sport, water, read];
+    // Rien de fait aujourd'hui : case vide (pas « raté »).
+    expect(overallLevel(habits, logs, today, today)).toBeNull();
+    // 1 faite sur 3 : pas « objectif atteint ».
+    const oneDone = [...logs, log('sport', today)];
+    expect(overallLevel(habits, oneDone, today, today)).toBe(2);
+    // Les 3 faites : objectif atteint.
+    const allDone = [...oneDone, log('water', today, 8), log('read', today)];
+    expect(overallLevel(habits, allDone, today, today)).toBe(4);
+    // Une habitude seule, le jour même et pas encore faite : toujours une case vide.
+    expect(habitLevel(read, oneDone, today, today)).toBeNull();
+  });
+
   it('semaine, mois et année : les bonnes cases', () => {
     const lvl = (d: string) => habitLevel(sport, logs, d, today);
     const week = heatWeeks('week', today, 1, lvl);

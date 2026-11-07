@@ -47,7 +47,11 @@ export function habitLevel(
   }
 }
 
-/** Niveau de toutes les habitudes ensemble : part des habitudes prévues qui sont réussies. */
+/**
+ * Niveau de toutes les habitudes ensemble : part des habitudes prévues qui sont réussies.
+ * Aujourd'hui, une habitude prévue pas encore faite (`pending`) compte dans le total (1 faite sur 3
+ * n'est pas « objectif atteint ») ; si rien n'est encore fait, la case reste vide.
+ */
 export function overallLevel(
   habits: readonly Habit[],
   logs: readonly HabitLog[],
@@ -55,14 +59,21 @@ export function overallLevel(
   today: IsoDate,
 ): HeatLevel | null {
   let expected = 0;
+  let pending = 0;
   let score = 0;
   for (const h of habits) {
     const l = habitLevel(h, logs, day, today);
-    if (l === null) continue;
+    if (l === null) {
+      if (day <= today && dayState(h, logs, day, today) === 'pending') {
+        expected++;
+        pending++;
+      }
+      continue;
+    }
     expected++;
     score += l / 4;
   }
-  if (expected === 0) return null;
+  if (expected === 0 || expected === pending) return null;
   const ratio = score / expected;
   if (ratio >= 1) return 4;
   if (ratio >= 0.66) return 3;
