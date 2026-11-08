@@ -22,6 +22,7 @@ import { AccountGate } from '@/components/AccountGate';
 import { ConflictsGate } from '@/components/ConflictsGate';
 import { goBack } from '@/components/navigation';
 import { MoneyGate } from '@/components/MoneyGate';
+import { WidgetsGate } from '@/components/WidgetsGate';
 import { AppearanceProvider, AuthProvider, LanguageGate, SpacesProvider } from '@/modules/identity';
 import {
   BackupGate,
@@ -29,7 +30,6 @@ import {
   LockGate,
   NotificationsGate,
   safeErrorName,
-  WidgetsGate,
 } from '@/modules/platform';
 import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';

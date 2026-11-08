@@ -93,6 +93,8 @@ Modules (src/modules/<domain>)        → domain/ (pure TypeScript + zod, no Exp
 Shared (src/shared)                   → db (migrations, entityWriter, live queries), theme, i18n, ui kit, errors, logger, dates
 ```
 
+A layer only imports the layers below it. ESLint enforces this (`eslint.config.js`, `layer()`), tests excepted. One documented exception: the app's outputs in `platform` (`notifications/`, `widgets/`, `export/`) read `src/projections` (agenda, Today, widget data), and nothing else above. React gates that combine hooks from several layers (`AccountGate`, `ConflictsGate`, `MoneyGate`, `WidgetsGate`) live in `src/components`, not in a module.
+
 The domain functions and projections are plain TypeScript, unit-tested without a phone; data and workflows are tested on a real SQLite database (better-sqlite3), and every screen is rendered once by `src/test/screens.smoke.test.tsx`. There are no repository interfaces: each module's `index.ts` is its public contract.
 
 ### 4.2 Folder structure (as built, 26 Sep 2026)
@@ -113,7 +115,7 @@ src/modules/                  # domains; import only through their index.ts (ESL
 src/projections/              # computed, never stored: today, calendar, hourGrid, glance, stats, progress, review, revisionPlan, money, widget
 src/workflows/                # cross-module actions: account, deleteSubject / deleteCourse / deleteHabit, moveItem, search, wipeAllData
 src/hooks/                    # useLabels, useSubjects, useHabits, useProfile, useWeekStart, useWorkActions, useAfterSignIn
-src/components/               # shared rows, cards, sheets, gates (AccountGate, MoneyGate), money/, today/
+src/components/               # shared rows, cards, sheets, gates (AccountGate, ConflictsGate, MoneyGate, WidgetsGate), money/, today/
 src/shared/                   # db, theme (colors.ts = every colour), i18n (fr/en), ui kit, errors, logger, validation, dates, spaces
 supabase/
   migrations/20260924000000_mysky.sql   one file, generated from the phone's schema (`bun run test:server` checks it)

@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
 import { useSubjects } from '@/hooks/useSubjects';
-import { useSpaces } from '@/shared/SpacesContext';
 import { useWeekStart } from '@/hooks/useWeekStart';
 import { getProgressWidgetHabit } from '@/modules/identity';
+import { syncWidgets } from '@/modules/platform';
 import { listStudySessions } from '@/modules/productivity';
 import { buildWidgetMoney, buildWidgetTimeline, useAgendaData, useMoneyData } from '@/projections';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
@@ -17,9 +17,8 @@ import {
   formatShortDate,
   weekdayName,
 } from '@/shared/format';
+import { useSpaces } from '@/shared/SpacesContext';
 import { darkColors, lightColors, useTheme } from '@/shared/theme';
-
-import { syncWidgets } from './sync';
 
 /**
  * Composant sans affichage : recalcule les widgets à chaque changement de données,

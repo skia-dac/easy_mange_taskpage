@@ -59,15 +59,17 @@ jest.mock('@/modules/identity', () => ({
 jest.mock('@/components/AccountGate', () => ({ AccountGate: () => null }));
 jest.mock('@/components/MoneyGate', () => ({ MoneyGate: () => null }));
 jest.mock('@/components/ConflictsGate', () => ({ ConflictsGate: () => null }));
-jest.mock('@/modules/platform', () => {
+jest.mock('@/modules/platform', () => ({
+  ...jest.requireActual('@/modules/platform'),
+  BackupGate: () => null,
+  FeedbackGate: () => null,
+  LockGate: () => null,
+  NotificationsGate: () => null,
+}));
+jest.mock('@/components/WidgetsGate', () => {
   const { useSpaces } = jest.requireActual('@/shared/SpacesContext');
   const { useTheme } = jest.requireActual('@/shared/theme');
   return {
-    ...jest.requireActual('@/modules/platform'),
-    BackupGate: () => null,
-    FeedbackGate: () => null,
-    LockGate: () => null,
-    NotificationsGate: () => null,
     WidgetsGate: () => {
       const spaces = useSpaces();
       mockWidgetProps.push({
