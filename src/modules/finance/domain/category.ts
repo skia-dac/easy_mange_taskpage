@@ -185,3 +185,23 @@ export function findCategory(
   if (!id) return undefined;
   return builtInCategories.find((c) => c.id === id) ?? custom.find((c) => c.id === id);
 }
+
+/**
+ * Catégories dans l'ordre où les proposer : les plus utilisées d'abord (à égalité, la plus
+ * récente), puis les autres dans leur ordre habituel. `usage` vient de `categoryUsage`.
+ */
+export function rankCategories(
+  categories: readonly MoneyCategory[],
+  usage: readonly { categoryId: string; uses: number; lastDate: string }[],
+): MoneyCategory[] {
+  const stats = new Map(usage.map((u) => [u.categoryId, u]));
+  return categories
+    .map((c, index) => ({ c, index, u: stats.get(c.id) }))
+    .sort((a, b) => {
+      const byUses = (b.u?.uses ?? 0) - (a.u?.uses ?? 0);
+      if (byUses !== 0) return byUses;
+      const byDate = (b.u?.lastDate ?? '').localeCompare(a.u?.lastDate ?? '');
+      return byDate !== 0 ? byDate : a.index - b.index;
+    })
+    .map((x) => x.c);
+}

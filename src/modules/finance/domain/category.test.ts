@@ -9,7 +9,9 @@ import {
   categoryIconGroups,
   categoryIcons,
   categorySuggestions,
+  categoriesOf,
   normalizeCategoryName,
+  rankCategories,
   suggestionsFor,
 } from './category';
 
@@ -109,5 +111,32 @@ describe('idées de catégories', () => {
 
   it('noms comparables', () => {
     expect(normalizeCategoryName(' Église   /  dons ')).toBe('eglise / dons');
+  });
+});
+
+describe('ordre des catégories proposées', () => {
+  const expense = categoriesOf('expense', []);
+  const ids = (usage: Parameters<typeof rankCategories>[1]) =>
+    rankCategories(expense, usage).map((c) => c.id);
+
+  it('sans historique : l’ordre habituel', () => {
+    expect(ids([])).toEqual(expense.map((c) => c.id));
+  });
+
+  it('les plus utilisées d’abord, puis la plus récente à égalité, puis l’ordre habituel', () => {
+    const ranked = ids([
+      { categoryId: 'transport', uses: 5, lastDate: '2026-09-01' },
+      { categoryId: 'internet', uses: 2, lastDate: '2026-09-20' },
+      { categoryId: 'shoes', uses: 2, lastDate: '2026-09-21' },
+    ]);
+    expect(ranked.slice(0, 5)).toEqual(['transport', 'shoes', 'internet', 'food', 'drink']);
+    // Rien ne disparaît, rien n'est en double.
+    expect([...ranked].sort()).toEqual(expense.map((c) => c.id).sort());
+  });
+
+  it('ignore une catégorie inconnue (supprimée) de l’historique', () => {
+    expect(ids([{ categoryId: 'gone', uses: 9, lastDate: '2026-09-01' }])).toEqual(
+      expense.map((c) => c.id),
+    );
   });
 });

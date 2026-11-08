@@ -64,6 +64,35 @@ export async function listLinkedTransactions(db: Db) {
   return rows.map(toTransaction);
 }
 
+/** Usage d'une catégorie : nombre d'opérations et date de la plus récente. */
+export type CategoryUsage = { categoryId: string; uses: number; lastDate: IsoDate };
+
+/**
+ * Catégories les plus utilisées pour un type d'opération (dépense ou entrée), depuis une date
+ * (incluse) si elle est donnée : pour proposer d'abord celles qu'on choisit le plus souvent.
+ */
+export async function categoryUsage(
+  db: Db,
+  kind: 'expense' | 'income',
+  since?: IsoDate,
+): Promise<CategoryUsage[]> {
+  const params: string[] = [kind];
+  let range = '';
+  if (since) {
+    range = ' AND date >= ?';
+    params.push(since);
+  }
+  const rows = await db.getAllAsync<{ category_id: string; uses: number; last_date: string }>(
+    `SELECT category_id, COUNT(*) AS uses, MAX(date) AS last_date
+       FROM money_transactions
+      WHERE ${ALIVE} AND kind = ? AND category_id IS NOT NULL${range}
+      GROUP BY category_id
+      ORDER BY uses DESC, last_date DESC`,
+    params,
+  );
+  return rows.map((r) => ({ categoryId: r.category_id, uses: r.uses, lastDate: r.last_date }));
+}
+
 export async function listCategories(db: Db) {
   const rows = await db.getAllAsync<CategoryRow>(
     `SELECT * FROM money_categories WHERE ${ALIVE} AND archived = 0 ORDER BY position`,
