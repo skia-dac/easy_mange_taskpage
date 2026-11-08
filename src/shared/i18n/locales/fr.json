@@ -1218,7 +1218,8 @@
     "inTwoDays": "Dans 2 jours",
     "nextMonday": "Lundi prochain",
     "pickDate": "Choisir une autre date…",
-    "doneToast": "Reporté au {{date}}."
+    "doneToast": "Reporté au {{date}}.",
+    "pickDateTitle": "Nouvelle date"
   },
   "review": {
     "title": "Bilan du soir",

@@ -10,7 +10,7 @@ export type { ChoiceOption } from './ChoiceSheet';
 export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
 export { ChoiceChip, ChoiceChips } from './ChoiceChips';
-export { DateTimeField } from './DateTimeField';
+export { DateTimeField, useDateTimePicker } from './DateTimeField';
 export { Disclosure } from './Disclosure';
 export {
   confirmAction,

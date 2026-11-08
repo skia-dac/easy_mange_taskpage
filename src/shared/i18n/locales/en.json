@@ -1218,7 +1218,8 @@
     "inTwoDays": "In 2 days",
     "nextMonday": "Next Monday",
     "pickDate": "Pick another date…",
-    "doneToast": "Postponed to {{date}}."
+    "doneToast": "Postponed to {{date}}.",
+    "pickDateTitle": "New date"
   },
   "review": {
     "title": "Evening review",
