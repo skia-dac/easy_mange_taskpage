@@ -5,6 +5,10 @@ import { addSubtask, listSubtasks } from '../data/subtaskCommands';
 import { listWorkItems } from '../data/queries';
 import { nextDueDate } from './workItem';
 
+// Les données datent de septembre 2026 : l'horloge s'y place, pour que leurs rappels soient à
+// venir (un rappel choisi dans le passé est refusé).
+jest.useFakeTimers({ now: new Date('2026-09-20T08:00:00.000Z'), advanceTimers: true });
+
 describe('tâches récurrentes', () => {
   it('calcule la prochaine échéance', () => {
     expect(nextDueDate('2026-09-23', 'none')).toBeNull();

@@ -76,7 +76,8 @@
     "feedbackTooShort": "Écris au moins 10 caractères.",
     "invalidEmail": "Adresse e-mail non valide.",
     "invalidYear": "Entre une année scolaire, par exemple 2026–2027.",
-    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt."
+    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt.",
+    "reminderPast": "Ce rappel est déjà passé : choisis une heure à venir pour qu’il sonne."
   },
   "today": {
     "greeting": "Bonjour",
@@ -665,7 +666,8 @@
     "permissionContinue": "Continuer",
     "permissionOff": "Les notifications sont désactivées : ce rappel ne sonnera pas.",
     "permissionAllow": "Autoriser les notifications",
-    "permissionSettings": "Ouvrir les réglages"
+    "permissionSettings": "Ouvrir les réglages",
+    "permissionLater": "Plus tard"
   },
   "search": {
     "title": "Recherche",
@@ -879,7 +881,8 @@
     "moneyStart": "Ouvre MySky pour commencer",
     "progress": "Progression",
     "progressAll": "Mes habitudes",
-    "progressSummary": "{{count}} j réussis ce mois"
+    "progressSummary": "{{count}} j réussis ce mois",
+    "lastGradeLine": "Dernière : {{value}}/20 · {{title}}"
   },
   "habits": {
     "title": "Mes habitudes",
@@ -1846,7 +1849,8 @@
       "content": "Contenu",
       "description": "Description",
       "note": "Note"
-    }
+    },
+    "line": "{{label}} : {{value}}"
   },
   "feedback": {
     "title": "Donner mon avis",

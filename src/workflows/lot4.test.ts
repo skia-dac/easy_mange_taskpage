@@ -56,6 +56,10 @@ const task = {
   estimatedMinutes: 45,
 };
 
+// Les données datent de septembre 2026 : l'horloge s'y place, pour que leurs rappels soient à
+// venir (un rappel choisi dans le passé est refusé).
+jest.useFakeTimers({ now: new Date('2026-09-20T08:00:00.000Z'), advanceTimers: true });
+
 describe('sous-tâches et durée estimée', () => {
   it('garde la durée, compte l’avancement et réordonne', async () => {
     const id = await createWorkItem(db, 'task', task);

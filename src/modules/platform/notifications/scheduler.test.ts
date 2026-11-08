@@ -111,3 +111,100 @@ describe('reprogrammer seulement quand le plan change', () => {
     expect(planKey(plan, prefs, 'fr')).not.toBe(planKey(plan, prefs, 'en'));
   });
 });
+
+describe('reprogrammations qui se chevauchent', () => {
+  /** Notifications « programmées sur le téléphone » : ce que les appels laissent vraiment. */
+  let store: Map<string, number>;
+  /** Retient la prochaine annulation jusqu'à `release()` (un passage encore en cours). */
+  const holdNextCancel = () => {
+    let release = () => {};
+    cancel.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = () => {
+            store.clear();
+            resolve();
+          };
+        }),
+    );
+    return () => release();
+  };
+  const at = (day: number, hour: number) => new Date(2026, 8, day, hour, 0).toISOString();
+  const flush = () => new Promise((r) => setImmediate(r));
+  const fireTime = (req: Notifications.NotificationRequestInput) =>
+    (req.trigger as { date: Date }).date.getTime();
+
+  beforeEach(() => {
+    store = new Map();
+    cancel.mockImplementation(async () => store.clear());
+    schedule.mockImplementation(async (req) => {
+      store.set(req.identifier ?? '', fireTime(req));
+      return req.identifier ?? '';
+    });
+  });
+  afterEach(() => {
+    cancel.mockImplementation(async () => undefined);
+    schedule.mockImplementation(async () => 'id');
+  });
+
+  it('un passage commencé finit avant le suivant : aucun rappel fantôme', async () => {
+    const release = holdNextCancel();
+    // A : la tâche a un rappel. B (juste après) : la tâche est terminée, plus aucun rappel.
+    const a = syncScheduledNotifications(db, agenda([task]), now);
+    await flush();
+    const b = syncScheduledNotifications(db, agenda([{ ...task, status: 'done' }]), now);
+    await flush();
+    // B attend A : il n'a encore rien annulé.
+    expect(cancel).toHaveBeenCalledTimes(1);
+    release();
+    expect(await a).toBe(1);
+    expect(await b).toBe(0);
+    // A a programmé son rappel, puis B a tout annulé : rien ne reste.
+    expect(store.size).toBe(0);
+    // L'empreinte est celle de B : le même plan ne refait rien, un rappel revenu est reprogrammé.
+    await syncScheduledNotifications(db, agenda([{ ...task, status: 'done' }]), now);
+    expect(cancel).toHaveBeenCalledTimes(2);
+    await syncScheduledNotifications(db, agenda([task]), now);
+    expect(store.size).toBe(1);
+  });
+
+  it('appels regroupés pendant un passage : seul le plan le plus récent est programmé', async () => {
+    const release = holdNextCancel();
+    const a = syncScheduledNotifications(db, agenda([task]), now);
+    await flush();
+    const b = syncScheduledNotifications(db, agenda([{ ...task, reminderAt: at(27, 9) }]), now);
+    const c = syncScheduledNotifications(db, agenda([{ ...task, reminderAt: at(26, 9) }]), now);
+    release();
+    await Promise.all([a, b, c]);
+    // Deux passages seulement : A, puis C à la place de B.
+    expect(cancel).toHaveBeenCalledTimes(2);
+    const fired = schedule.mock.calls.map(([req]) => fireTime(req));
+    expect(fired).toEqual([new Date(task.reminderAt!).getTime(), new Date(at(26, 9)).getTime()]);
+    expect([...store.values()]).toEqual([new Date(at(26, 9)).getTime()]);
+  });
+
+  it('un rappel refusé : l’empreinte n’est pas posée, le passage suivant reprogramme', async () => {
+    schedule.mockRejectedValueOnce(new Error('quota'));
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await syncScheduledNotifications(db, agenda([task]), now);
+    expect(store.size).toBe(0);
+    // Même plan : pas « déjà programmé », il est refait.
+    await syncScheduledNotifications(db, agenda([task]), now);
+    expect(cancel).toHaveBeenCalledTimes(2);
+    expect(store.size).toBe(1);
+    quiet.mockRestore();
+  });
+
+  it('« tout annuler » attend le passage en cours : rien n’est reprogrammé après', async () => {
+    const release = holdNextCancel();
+    const a = syncScheduledNotifications(db, agenda([task]), now);
+    await flush();
+    const wiped = cancelAllReminders();
+    release();
+    await Promise.all([a, wiped]);
+    expect(store.size).toBe(0);
+    // L'empreinte est oubliée : le plan est reprogrammé au prochain passage.
+    await syncScheduledNotifications(db, agenda([task]), now);
+    expect(store.size).toBe(1);
+  });
+});

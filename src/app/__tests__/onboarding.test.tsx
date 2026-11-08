@@ -4,6 +4,7 @@ import { AccessibilityInfo, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { getActiveSpaces, isOnboardingDone } from '@/modules/identity';
+import { toIsoDate } from '@/shared/dates';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
@@ -148,7 +149,11 @@ describe('première utilisation', () => {
     await fireEvent.press(screen.getByLabelText('Noter ma première tâche'));
     await flush();
     expect(await isOnboardingDone(mockDb)).toBe(true);
-    expect(router.push).toHaveBeenCalledWith('/work/form');
+    // Datée d'aujourd'hui (jour local), sinon elle n'apparaît pas sur Aujourd'hui.
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/work/form',
+      params: { date: toIsoDate(new Date()) },
+    });
   });
 
   it('avec Études : le choix dit ce qu’il ouvre (les matières)', async () => {

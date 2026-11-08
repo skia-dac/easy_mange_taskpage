@@ -5,6 +5,7 @@ import { isoDate, parseInput, time } from '@/shared/validation';
 
 import { personalEventInputSchema, type PersonalEventInput } from '../domain/personalEvent';
 import {
+  assertReminderNotPast,
   nextOccurrenceInput,
   postponedReminder,
   workItemInputSchema,
@@ -62,6 +63,7 @@ async function spawnNext(w: EntityWriter, kind: WorkKind, id: string): Promise<s
 
 export async function createWorkItem(db: Db, kind: WorkKind, input: WorkItemInput) {
   const values = workValues(input, kind);
+  assertReminderNotPast(values.reminder_at, null);
   return write(db, (w) => w.insert(tableOf(kind), values));
 }
 
@@ -69,10 +71,17 @@ export async function updateWorkItem(db: Db, kind: WorkKind, id: string, input: 
   const values = workValues(input, kind);
   return write(db, async (w) => {
     // On garde la date de complétion d'origine si l'élément était déjà terminé.
-    const current = await w.db.getFirstAsync<{ status: string; completed_at: string | null }>(
-      `SELECT status, completed_at FROM ${tableOf(kind)} WHERE id = ? AND deleted_at IS NULL`,
+    const current = await w.db.getFirstAsync<{
+      status: string;
+      completed_at: string | null;
+      reminder_at: string | null;
+    }>(
+      `SELECT status, completed_at, reminder_at FROM ${tableOf(kind)}
+       WHERE id = ? AND deleted_at IS NULL`,
       [id],
     );
+    // Seul un rappel modifié est vérifié : un ancien rappel passé ne bloque pas la modification.
+    assertReminderNotPast(values.reminder_at, current?.reminder_at);
     if (values.status === 'done' && current?.status === 'done')
       values.completed_at = current.completed_at;
     await w.update(tableOf(kind), id, values);
@@ -146,7 +155,8 @@ async function rescheduleIn(
   const item = toWorkItem(kind)(row);
   await w.update(tableOf(kind), id, {
     due_date: dueDate,
-    ...(dueTime === undefined ? {} : { due_time: dueTime }),
+    // Sans date, une heure limite n'a plus de sens : elle part avec la date.
+    ...(dueDate === null ? { due_time: null } : dueTime === undefined ? {} : { due_time: dueTime }),
     reminder_at: postponedReminder(item, dueDate),
   });
   return item;
@@ -155,7 +165,8 @@ async function rescheduleIn(
 /**
  * Reporter une tâche (glisser vers la gauche, bilan du soir) ou la déplacer dans la vue semaine.
  * Le rappel suit l'échéance. `dueTime` absent = on garde l'heure actuelle. `dueDate` null
- * remet « sans date » (annuler le report d'une tâche qui n'en avait pas).
+ * remet « sans date » (« Retirer la date », ou annuler le report d'une tâche qui n'en avait
+ * pas) : l'heure limite est retirée aussi, et un rappel déjà passé avec elle.
  */
 export async function rescheduleWorkItem(
   db: Db,
@@ -255,12 +266,21 @@ function eventValues(input: PersonalEventInput) {
 
 export async function createPersonalEvent(db: Db, input: PersonalEventInput) {
   const values = eventValues(input);
+  assertReminderNotPast(values.reminder_at, null);
   return write(db, (w) => w.insert('personal_events', values));
 }
 
 export async function updatePersonalEvent(db: Db, id: string, input: PersonalEventInput) {
   const values = eventValues(input);
-  return write(db, (w) => w.update('personal_events', id, values));
+  return write(db, async (w) => {
+    const current = await w.db.getFirstAsync<{ reminder_at: string | null }>(
+      'SELECT reminder_at FROM personal_events WHERE id = ? AND deleted_at IS NULL',
+      [id],
+    );
+    // Seul un rappel modifié est vérifié : un ancien rappel passé ne bloque pas la modification.
+    assertReminderNotPast(values.reminder_at, current?.reminder_at);
+    await w.update('personal_events', id, values);
+  });
 }
 
 export async function deletePersonalEvent(db: Db, id: string) {

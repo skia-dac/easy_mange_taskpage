@@ -130,7 +130,7 @@ export default function ExamFormScreen() {
         leave(() => router.replace({ pathname: '/exams/[id]', params: { id } }));
       }
       // Rappels « 7 jours / 1 jour avant » : sans permission, ils ne sonneraient jamais.
-      if ((input.reminderDays ?? []).length > 0) void askNotificationPermission();
+      if ((input.reminderDays ?? []).length > 0) void askNotificationPermission(db);
     });
 
   const remove = async () => {

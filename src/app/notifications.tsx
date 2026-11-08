@@ -99,7 +99,10 @@ export default function NotificationsScreen() {
             {permission.state === 'denied' ? (
               <Button label={t('reminder.permissionSettings')} onPress={openNotificationSettings} />
             ) : (
-              <Button label={t('reminder.permissionAllow')} onPress={() => void permission.ask()} />
+              <Button
+                label={t('reminder.permissionAllow')}
+                onPress={() => void permission.ask({ force: true })}
+              />
             )}
           </View>
         </Card>

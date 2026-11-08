@@ -40,8 +40,9 @@ describe('conflits de synchronisation', () => {
     await addReplacedConflict();
     await render(<ConflictsScreen />);
     await flush();
-    expect(screen.getByText('Ta version (ce téléphone) : Exposé (moi)')).toBeTruthy();
-    expect(screen.getByText('Version gardée (serveur) : Exposé (autre)')).toBeTruthy();
+    // Typographie française : espace insécable avant « : » (texte traduit, jamais en dur).
+    expect(screen.getByText('Ta version (ce téléphone)\u00a0: Exposé (moi)')).toBeTruthy();
+    expect(screen.getByText('Version gardée (serveur)\u00a0: Exposé (autre)')).toBeTruthy();
     expect(screen.getByText('Titre · différent')).toBeTruthy();
 
     // Annuler : rien n'est abandonné.

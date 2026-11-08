@@ -10,7 +10,8 @@ import { showError } from './dialogs';
  * Gère l'enregistrement d'un formulaire :
  * - erreurs de saisie → affichées sous chaque champ ;
  * - autre erreur → message clair, les données saisies restent à l'écran ;
- * - réussite → un léger retour tactile « enregistré ».
+ * - réussite → un léger retour tactile « enregistré ». Une action qui échoue sans lever
+ *   d'erreur (elle a déjà prévenu l'utilisateur) rend `false` : aucun retour « réussi ».
  * Un seul enregistrement à la fois : un double appui sur « Enregistrer » (deux appuis dans la même
  * image, avant que l'état `saving` soit rendu) ne crée jamais de doublon. Le second appel rend
  * `undefined`, comme un échec : l'appelant ne revient donc en arrière qu'une fois.
@@ -30,7 +31,7 @@ export function useSave(messageKey: (error: unknown) => string = userMessageKey)
     setErrors({});
     try {
       const result = await action();
-      haptic('success');
+      if (result !== false) haptic('success');
       return result;
     } catch (error) {
       if (isValidationError(error)) {

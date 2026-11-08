@@ -423,7 +423,7 @@ export function GradesWidget({ data, theme }: Props) {
       />
       <TextWidget text={g.overall ? `${g.overall}/20` : '—'} style={{ fontSize: 32, fontWeight: 'bold', color: theme.text }} />
       <TextWidget
-        text={g.last ? `${data.labels.lastGrade} : ${g.last.value}/20 · ${g.last.title}` : data.labels.noGrade}
+        text={g.last ? g.last.line : data.labels.noGrade}
         maxLines={1}
         truncate="END"
         style={{ fontSize: 12, color: theme.muted }}

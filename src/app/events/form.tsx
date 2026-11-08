@@ -3,6 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { EditLoadView } from '@/components/EditLoadView';
 import { goBack } from '@/components/navigation';
 import { useEditLoad } from '@/hooks/useEditLoad';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +59,8 @@ export default function EventFormScreen() {
       if (params.id) await updatePersonalEvent(db, params.id, form);
       else await createPersonalEvent(db, form);
       leave(goBack);
+      // Rappel enregistré (le choix est fini) : sans permission, il ne sonnerait jamais.
+      if (form.reminderAt) void askNotificationPermission(db);
     });
 
   const remove = async () => {

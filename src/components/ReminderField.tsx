@@ -83,11 +83,15 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
     if (value === presetValue('sameDay', dueDate)) return 'sameDay';
     return 'custom';
   }, [value, dueDate]);
-  const [preset, setPreset] = useState<Preset>(detected);
+  // Une seule source : la valeur (et l'échéance). Seule exception, « Personnalisé » choisi alors
+  // que l'heure correspond encore à un préréglage : les champs date / heure restent ouverts.
+  // Une échéance retirée garde le rappel à son heure : il devient « Personnalisé », toujours
+  // affiché et modifiable (jamais un rappel caché).
+  const [customChosen, setCustomChosen] = useState(false);
   // Heure personnalisée refusée parce qu'elle est passée : le message reste jusqu'au prochain choix.
   const [rejected, setRejected] = useState(false);
-  const current = preset === 'custom' && value ? new Date(value) : null;
-  const shown = preset === detected || preset === 'custom' ? preset : detected;
+  const shown: Preset = !value ? 'none' : customChosen ? 'custom' : detected;
+  const current = shown === 'custom' && value ? new Date(value) : null;
   const available = availablePresets(dueDate);
   // Un préréglage déjà enregistré mais passé reste visible (sélectionné) : rien ne disparaît.
   const options = (['none', 'dayBefore', 'sameDay', 'custom'] as const).filter(
@@ -95,12 +99,12 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
   );
 
   const choose = (p: Preset) => {
-    setPreset(p);
+    setCustomChosen(p === 'custom');
     setRejected(false);
     if (p === 'custom') onChange(value && !isPast(value) ? value : defaultCustom(dueDate));
     else onChange(presetValue(p, dueDate));
-    // Premier rappel choisi : c'est le bon moment pour demander la permission.
-    if (p !== 'none' && !value) void permission.ask();
+    // La permission n'est pas demandée ici, au milieu du choix : la fiche la demande une fois le
+    // rappel enregistré (`askNotificationPermission`), et la note ci-dessous propose « Autoriser ».
   };
 
   /** Date ou heure personnalisée : un moment passé est refusé, avec un message clair. */
@@ -125,7 +129,7 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
         selected={[shown]}
         onToggle={choose}
       />
-      {preset === 'custom' && current ? (
+      {current ? (
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
           <View style={{ flex: 1 }}>
             <DateTimeField
@@ -154,7 +158,7 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
       ) : null}
       {error ? (
         <AppText variant="caption" color="danger" accessibilityRole="alert">
-          {error}
+          {t(error)}
         </AppText>
       ) : null}
       {settingOff && kind ? (
@@ -181,7 +185,7 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
           ) : (
             <TextButton
               label={t('reminder.permissionAllow')}
-              onPress={() => void permission.ask()}
+              onPress={() => void permission.ask({ force: true })}
             />
           )}
         </View>

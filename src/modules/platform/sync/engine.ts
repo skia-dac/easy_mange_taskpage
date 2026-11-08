@@ -475,6 +475,15 @@ export async function pendingCount(db: Db): Promise<number> {
   return r?.n ?? 0;
 }
 
+/** Ids des conflits encore à régler (pour repérer les nouveaux, pas seulement leur nombre). */
+export async function conflictIds(db: Db): Promise<string[]> {
+  const rows = await db.getAllAsync<{ id: string }>(
+    'SELECT id FROM sync_conflicts WHERE resolved_at IS NULL',
+    [],
+  );
+  return rows.map((r) => r.id);
+}
+
 export async function conflictCount(db: Db): Promise<number> {
   const r = await db.getFirstAsync<{ n: number }>(
     'SELECT COUNT(*) AS n FROM sync_conflicts WHERE resolved_at IS NULL',

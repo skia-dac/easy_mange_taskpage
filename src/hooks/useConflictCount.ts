@@ -1,4 +1,4 @@
-import { conflictCount } from '@/modules/platform';
+import { conflictCount, conflictIds } from '@/modules/platform';
 import { useLiveQuery } from '@/shared/db';
 
 /**
@@ -7,4 +7,12 @@ import { useLiveQuery } from '@/shared/db';
  */
 export function useConflictCount(): number | undefined {
   return useLiveQuery(conflictCount, ['sync_conflicts'], []).data;
+}
+
+/**
+ * Ids des conflits encore à régler, `undefined` tant que la lecture n'a pas répondu. Un conflit
+ * réglé et un nouveau dans la même synchronisation gardent le même nombre : les ids, eux, changent.
+ */
+export function useConflictIds(): readonly string[] | undefined {
+  return useLiveQuery(conflictIds, ['sync_conflicts'], []).data;
 }

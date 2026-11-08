@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { spaceColor } from '@/components/SpaceUi';
 import { setActiveSpaces, setOnboardingDone, useAuth } from '@/modules/identity';
+import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
@@ -90,7 +91,9 @@ export default function OnboardingScreen() {
     setFinishing(false);
     router.replace('/');
     if (then === 'subject') router.push('/subjects/form');
-    if (then === 'task') router.push('/work/form');
+    // Datée d'aujourd'hui : Aujourd'hui n'affiche que les tâches du jour ou en retard.
+    if (then === 'task')
+      router.push({ pathname: '/work/form', params: { date: toIsoDate(new Date()) } });
     if (then === 'account') router.push('/auth/sign-in');
   };
 

@@ -115,10 +115,13 @@ export default function FeedbackScreen() {
       pending.current = null; // la capture appartient maintenant au retour enregistré
       if (outcome === 'mailFailed') {
         showError('feedback.mailFailed');
-        return leave(goBack);
+        leave(goBack);
+        // Échec déjà annoncé : pas de retour tactile « réussi ».
+        return false;
       }
       showToast(t(outcome === 'queued' ? 'feedback.queued' : 'feedback.thanks'));
       leave(goBack);
+      return true;
     });
 
   const placeholder = t(`feedback.placeholder.${kind ?? 'other'}`);
