@@ -22,6 +22,8 @@ type Props = {
   avoidKeyboard?: boolean;
   /** Retouches du panneau (marges intérieures, écart entre les blocs). */
   style?: StyleProp<ViewStyle>;
+  /** iPhone : la fenêtre a fini de disparaître (`onDismiss` de Modal, iOS seulement). */
+  onDismissed?: () => void;
 };
 
 /**
@@ -32,7 +34,14 @@ type Props = {
  * Le voile est invisible pour le lecteur d'écran (on ferme avec « Annuler », le bouton retour
  * d'Android ou le geste d'échappement de VoiceOver) ; le panneau est modal pour lui.
  */
-export function BottomSheet({ visible, onClose, children, avoidKeyboard, style }: Props) {
+export function BottomSheet({
+  visible,
+  onClose,
+  children,
+  avoidKeyboard,
+  style,
+  onDismissed,
+}: Props) {
   const { colors, radius, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const body = (
@@ -67,7 +76,13 @@ export function BottomSheet({ visible, onClose, children, avoidKeyboard, style }
   );
   return (
     // `onRequestClose` : le bouton retour d'Android ferme la fenêtre.
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      onDismiss={onDismissed}
+    >
       {avoidKeyboard ? (
         <KeyboardAvoidingView
           style={{ flex: 1 }}
