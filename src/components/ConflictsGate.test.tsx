@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { notifyChange, type Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
-import { showToast } from '@/shared/ui';
+import { showToast, type ToastOptions } from '@/shared/ui';
 import { createTestDb } from '@/test/memoryDb';
 
 import { ConflictsGate } from './ConflictsGate';
@@ -57,8 +57,14 @@ describe('conflits de synchronisation visibles', () => {
     expect(toast).not.toHaveBeenCalled();
     await addConflict();
     expect(toast).toHaveBeenCalledTimes(1);
-    const [message, action] = toast.mock.calls[0]!;
-    expect(message).toBe('Un conflit de synchronisation est à régler.');
+    const [message, options] = toast.mock.calls[0]!;
+    // Titre court + ce qu'il faut faire, ton « attention » (icône d'alerte).
+    expect(message).toEqual({
+      title: 'Conflit de synchronisation',
+      detail: 'Choisis la version à garder.',
+    });
+    const { action, tone } = options as ToastOptions;
+    expect(tone).toBe('warning');
     expect(action?.label).toBe('Voir');
     action?.onPress();
     expect(router.push).toHaveBeenCalledWith('/account/conflicts');
@@ -80,7 +86,10 @@ describe('conflits de synchronisation visibles', () => {
     ]);
     await addConflict();
     expect(toast).toHaveBeenCalledTimes(1);
-    expect(toast.mock.calls[0]![0]).toBe('Un conflit de synchronisation est à régler.');
+    expect(toast.mock.calls[0]![0]).toEqual({
+      title: 'Conflit de synchronisation',
+      detail: 'Choisis la version à garder.',
+    });
   });
 
   it('conflits déjà là à l’ouverture : pas de message (le badge les rappelle)', async () => {

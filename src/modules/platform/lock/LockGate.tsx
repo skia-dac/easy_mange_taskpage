@@ -8,7 +8,7 @@ import { isAppLockEnabled } from '@/modules/identity';
 import { settingTable, subscribeToChanges, useDb } from '@/shared/db';
 import { logger } from '@/shared/logger';
 import { useTheme } from '@/shared/theme';
-import { AppText, Button } from '@/shared/ui';
+import { AppText, Button, useCoversToast } from '@/shared/ui';
 
 /** Le verrou se réactive après ce délai en arrière-plan (pas à chaque changement d'app). */
 const RELOCK_AFTER_MS = 30_000;
@@ -97,6 +97,9 @@ export function LockGate() {
     });
     return () => sub.remove();
   }, [enabled, unlock]);
+
+  // Écran verrouillé par-dessus l'app : une erreur passe par une alerte, pas par un message caché.
+  useCoversToast(enabled && locked);
 
   if (!enabled || !locked) return null;
   return (

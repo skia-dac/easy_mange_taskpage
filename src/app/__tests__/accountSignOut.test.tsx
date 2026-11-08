@@ -101,7 +101,10 @@ describe('Compte › Se déconnecter', () => {
     await fireEvent.press(screen.getByText(t('account.signOutKeep')));
     await flush();
     expect(mockSignOutFromPhone).toHaveBeenCalledWith(mockDb, true);
-    expect(mockToast).toHaveBeenCalledWith(t('account.signedOutKept'));
+    expect(mockToast).toHaveBeenCalledWith(
+      { title: t('account.signedOutKept'), detail: t('account.signedOutKeptDetail') },
+      { tone: 'success' },
+    );
   });
 
   it('« Effacer ce téléphone » : même parcours que les Réglages, après la fermeture du menu', async () => {

@@ -143,6 +143,12 @@ describe('note : suppression et pièces jointes', () => {
       'application/pdf',
       'td1.pdf',
     );
-    expect(mockToast).toHaveBeenCalledWith('Ce fichier ne peut pas être ouvert sur ce téléphone.');
+    expect(mockToast).toHaveBeenCalledWith(
+      {
+        title: 'Impossible d’ouvrir ce fichier',
+        detail: 'Aucune app de ce téléphone ne sait le lire.',
+      },
+      { tone: 'error' },
+    );
   });
 });

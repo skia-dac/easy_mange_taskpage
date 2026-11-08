@@ -105,20 +105,24 @@ export default function PlanningScreen() {
     const events = await listPersonalEvents(db);
     const inputs = copyWeekInputs(events, addDaysIso(thisWeek, -7));
     if (inputs.length === 0) {
-      showToast(t('planning.copyNothing'));
+      showToast({ title: t('planning.copyNothing'), detail: t('planning.copyNothingDetail') });
       return;
     }
     const ok = await confirmAction(
-      t('planning.copyTitle'),
+      t('planning.copyConfirmTitle'),
       t('planning.copyConfirm', { count: inputs.length }),
-      t('planning.copyButton'),
+      t('planning.copyConfirmButton'),
     );
     if (!ok) return;
     setCopying(true);
     try {
       const ids = await createPersonalEvents(db, inputs);
-      showUndoToast(t('planning.copyDone', { count: inputs.length }), () =>
-        deletePersonalEvents(db, ids),
+      showUndoToast(
+        {
+          title: t('planning.copyDone', { count: inputs.length }),
+          detail: t('planning.copyDoneDetail'),
+        },
+        () => deletePersonalEvents(db, ids),
       );
     } catch (e) {
       showError(userMessageKey(e));

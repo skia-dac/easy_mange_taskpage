@@ -101,7 +101,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
               haptic(count + 1 >= habit.target ? 'complete' : 'selection');
               void addHabitCount(db, habit.id, day, 1).then(
                 () =>
-                  showUndoToast(t('habits.addOneToast', { name: habit.name }), () =>
+                  showUndoToast({ title: t('habits.addOneToast'), detail: habit.name }, () =>
                     addHabitCount(db, habit.id, day, -1),
                   ),
                 fail,
@@ -136,7 +136,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
               const previous = log ?? null;
               void setHabitDone(db, habit.id, day, !done).then(() => {
                 if (done) return;
-                showUndoToast(t('habits.doneToast', { name: habit.name }), () =>
+                showUndoToast({ title: t('habits.doneToast'), detail: habit.name }, () =>
                   restoreHabitDay(db, habit.id, day, previous),
                 );
               }, fail);

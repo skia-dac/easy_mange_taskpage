@@ -55,6 +55,22 @@ export type ColorTokens = {
   heat2: string;
   heat3: string;
   heat4: string;
+  /**
+   * Message bref (toast) : surface inversée, sombre en mode clair et claire en mode sombre, pour
+   * se détacher de l'écran sans le cacher. Ses textes, son bouton et ses icônes ont leurs
+   * couleurs (contraste testé sur `inverseSurface`).
+   */
+  inverseSurface: string;
+  /** Texte principal sur `inverseSurface`. */
+  onInverseSurface: string;
+  /** Texte secondaire sur `inverseSurface` (le nom de l'élément sous « Payé »). */
+  inverseMuted: string;
+  /** Bouton « Annuler » et icône « info » sur `inverseSurface`. */
+  inversePrimary: string;
+  /** Icônes d'état sur `inverseSurface` : réussi, attention, erreur. */
+  inverseSuccess: string;
+  inverseWarning: string;
+  inverseDanger: string;
 };
 
 export const lightColors: ColorTokens = {
@@ -84,6 +100,13 @@ export const lightColors: ColorTokens = {
   heat2: '#6FC79A',
   heat3: '#27A066',
   heat4: '#0E7555',
+  inverseSurface: '#1B2740',
+  onInverseSurface: '#F3F6FB',
+  inverseMuted: '#B8C2D4',
+  inversePrimary: '#A8C3FF',
+  inverseSuccess: '#6BD3A4',
+  inverseWarning: '#F5B26E',
+  inverseDanger: '#FF9B91',
 };
 
 export const darkColors: ColorTokens = {
@@ -113,6 +136,13 @@ export const darkColors: ColorTokens = {
   heat2: '#1F6B4E',
   heat3: '#2E9B69',
   heat4: '#4CC79A',
+  inverseSurface: '#E4EAF5',
+  onInverseSurface: '#14213D',
+  inverseMuted: '#465068',
+  inversePrimary: '#1C4CB5',
+  inverseSuccess: '#0B6A4B',
+  inverseWarning: '#97470A',
+  inverseDanger: '#B0261D',
 };
 
 /** Couleurs proposées pour les matières : couleur forte + version claire. */

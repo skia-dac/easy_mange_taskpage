@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { haptic } from './haptics';
 import { i18n } from '../i18n';
 import { logger } from '../logger';
+import { showErrorToast } from './Toast';
 
 /** Demande confirmation avant une action destructive (§90). Résout `true` si confirmé. */
 export function confirmDestructive(
@@ -69,9 +70,13 @@ export function confirmDiscard(): Promise<boolean> {
   });
 }
 
-/** Message d'erreur simple, compréhensible (jamais technique). */
+/**
+ * Erreur simple, compréhensible (jamais technique), qui ne bloque rien : un message « erreur » en
+ * bas de l'écran. Quand une fenêtre le cacherait (bottom sheet, écran « Ajouter »), une alerte
+ * native à la place. Les confirmations restent des alertes (voir plus haut).
+ */
 export function showError(messageKey: string): void {
-  Alert.alert(i18n.t('errors.title'), i18n.t(messageKey));
+  showErrorToast(messageKey);
 }
 
 /** Message d'information simple (titre + texte déjà traduits). */

@@ -119,7 +119,12 @@ export default function FeedbackScreen() {
         // Échec déjà annoncé : pas de retour tactile « réussi ».
         return false;
       }
-      showToast(t(outcome === 'queued' ? 'feedback.queued' : 'feedback.thanks'));
+      showToast(
+        outcome === 'queued'
+          ? { title: t('feedback.queued'), detail: t('feedback.queuedDetail') }
+          : { title: t('feedback.thanks'), detail: t('feedback.thanksDetail') },
+        { tone: 'success' },
+      );
       leave(goBack);
       return true;
     });

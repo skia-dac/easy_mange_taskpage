@@ -96,7 +96,7 @@ export default function ProfileEditScreen() {
     const ok = await confirmDestructive(
       t('profile.removePhotoTitle'),
       t('profile.removePhotoMessage'),
-      t('common.delete'),
+      t('common.remove'),
     );
     if (!ok) return;
     try {

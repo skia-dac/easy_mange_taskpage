@@ -123,7 +123,7 @@ describe('première utilisation', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Commencer' }));
     await flush();
     expect(alert).toHaveBeenCalledWith(
-      'Oups',
+      'Enregistrer à nouveau\u00a0?',
       expect.any(String),
       expect.arrayContaining([expect.objectContaining({ text: 'Réessayer' })]),
       expect.any(Object),

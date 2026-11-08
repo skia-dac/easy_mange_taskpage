@@ -25,10 +25,13 @@ export function ConflictsGate() {
     if (before === null) return;
     const added = ids.filter((id) => !before.has(id)).length;
     if (added === 0) return;
-    showToast(t('conflicts.newToast', { count: added }), {
-      label: t('conflicts.see'),
-      onPress: () => router.push('/account/conflicts'),
-    });
+    showToast(
+      { title: t('conflicts.newToast', { count: added }), detail: t('conflicts.newToastDetail') },
+      {
+        tone: 'warning',
+        action: { label: t('conflicts.see'), onPress: () => router.push('/account/conflicts') },
+      },
+    );
   }, [ids, t]);
 
   return null;

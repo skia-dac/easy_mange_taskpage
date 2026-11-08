@@ -37,7 +37,7 @@ function Tile({ icon, tone, label, children, onPress }: TileProps) {
   );
 }
 
-/** Entrées, Dépenses, Épargne, Prêté : quatre tuiles qui ouvrent leur écran. */
+/** Entrées, Dépenses, Épargne, On me doit : quatre tuiles qui ouvrent leur écran. */
 export function MoneyTiles({ overview: o, offset }: { overview: MoneyOverview; offset: number }) {
   const { t } = useTranslation();
   const { spacing } = useTheme();

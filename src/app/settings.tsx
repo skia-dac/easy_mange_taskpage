@@ -184,7 +184,10 @@ export default function SettingsScreen() {
   const backupNow = () =>
     run(async () => {
       await writeBackup(db);
-      showToast(t('backup.doneMessage'));
+      showToast(
+        { title: t('backup.doneToast'), detail: t('backup.doneToastDetail') },
+        { tone: 'success' },
+      );
     });
 
   const share = (file: BackupFile) =>

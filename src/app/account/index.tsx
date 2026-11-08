@@ -163,8 +163,8 @@ export default function AccountScreen() {
               onPress={() =>
                 void guard(async () => {
                   const ok = await confirmDestructive(
-                    t('account.otherTitle'),
-                    t('account.otherMessage'),
+                    t('account.otherConfirmTitle'),
+                    t('account.otherConfirmMessage'),
                     t('account.otherConfirm'),
                   );
                   if (ok) await replaceLocalDataWithAccount(db, userId);
@@ -272,7 +272,10 @@ export default function AccountScreen() {
             onPress: () =>
               void guard(async () => {
                 await signOutFromPhone(db, true);
-                showToast(t('account.signedOutKept'));
+                showToast(
+                  { title: t('account.signedOutKept'), detail: t('account.signedOutKeptDetail') },
+                  { tone: 'success' },
+                );
               }),
           },
           {

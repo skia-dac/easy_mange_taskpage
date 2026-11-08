@@ -20,7 +20,7 @@ import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
 import { useTabBarInset } from '@/shared/tabBarVisibility';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Fab, Tappable, useAfterDismiss } from '@/shared/ui';
+import { AppText, Fab, Tappable, useAfterDismiss, useCoversToast } from '@/shared/ui';
 
 type Item = ItemLook & {
   key: string;
@@ -53,6 +53,7 @@ export function QuickAddMenu({ note, date }: Props) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const [open, setOpen] = useState(false);
+  useCoversToast(open);
   const spaces = useSpaces();
   const first = useRef<View>(null);
   const withDate = date ? { date } : {};

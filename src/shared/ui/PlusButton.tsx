@@ -17,6 +17,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { haptic } from './haptics';
 import { useTabBarHidden, useTabBarInset } from '../tabBarVisibility';
+import { fabLiftFor, useToastHeight } from './toastLayout';
 import { useTheme } from '../theme';
 
 const TURN = { damping: 14, stiffness: 220 };
@@ -118,6 +119,9 @@ export function PlusButton({
   const press = useSharedValue(1);
   const turn = useSharedValue(open && !overlay ? 1 : 0);
   const shift = useSharedValue(0);
+  // Un message en bas de l'écran : le bouton remonte au-dessus de lui (Material), puis redescend.
+  const toastHeight = useToastHeight();
+  const lift = useSharedValue(fabLiftFor(toastHeight));
   const seen = useRef(overlay);
   // La copie posée sur un menu reste toujours là (le menu est ouvert).
   const away = hidden && !open && !overlay;
@@ -126,6 +130,12 @@ export function PlusButton({
     const travel = bottomInset + spacing.xl + SIZE;
     slideY(shift, away ? travel : 0, reduced ? 0 : away ? 160 : 220);
   }, [away, bottomInset, reduced, shift, spacing.xl]);
+
+  useEffect(() => {
+    const to = fabLiftFor(toastHeight);
+    // Animations coupées : il saute à sa place.
+    lift.value = reduced ? to : withTiming(to, { duration: 200, easing: SLIDE });
+  }, [lift, reduced, toastHeight]);
 
   useEffect(() => {
     arrive.value = reduced ? 1 : withSpring(1, ARRIVE);
@@ -149,11 +159,12 @@ export function PlusButton({
     backgroundColor: interpolateColor(turn.value, [0, 1], [colors.primary, colors.text]),
   }));
   const slideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: shift.value }],
+    transform: [{ translateY: shift.value - lift.value }],
   }));
 
   return (
     <Animated.View
+      testID="plus-button"
       pointerEvents={away ? 'none' : 'box-none'}
       accessibilityElementsHidden={away}
       importantForAccessibility={away ? 'no-hide-descendants' : 'auto'}

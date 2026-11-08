@@ -78,7 +78,7 @@ export default function OnboardingScreen() {
       } catch (e) {
         logger.error(e, { where: 'onboarding' });
         const retry = await confirmAction(
-          t('errors.title'),
+          t('onboarding.finishFailedTitle'),
           t(userMessageKey(e)),
           t('errors.retry'),
         );

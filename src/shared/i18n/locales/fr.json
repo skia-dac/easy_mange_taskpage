@@ -31,7 +31,8 @@
     "next": "Suivant",
     "clearField": "Effacer {{label}}",
     "showMore": "Voir plus ({{count}})",
-    "today": "Aujourd’hui"
+    "today": "Aujourd’hui",
+    "remove": "Retirer"
   },
   "tabs": {
     "today": "Aujourd’hui",
@@ -167,7 +168,7 @@
     "hoursHint": "Appui long sur un élément puis glisse-le pour changer son jour ou son heure.",
     "moveHint": "Appui long puis glisser pour déplacer. Avec le lecteur d’écran, utilise les actions.",
     "moveCourseTitle": "Déplacer ce cours ?",
-    "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
+    "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}} ; les autres semaines ne changent pas.",
     "moveConfirm": "Déplacer",
     "viewMode": "Affichage du calendrier",
     "previousStep": {
@@ -235,15 +236,17 @@
     "sharePdf": "Partager en PDF",
     "pdfFooter": "Exporté de MySky le {{date}}",
     "screenTitle": "Note",
-    "saveFailed": "La note n’a pas pu être enregistrée. Rouvre-la pour vérifier ton texte.",
-    "attachmentCannotOpen": "Ce fichier ne peut pas être ouvert sur ce téléphone.",
-    "unsavedRetry": "Non enregistré · Réessayer",
+    "saveFailed": "Note non enregistrée",
+    "attachmentCannotOpen": "Impossible d’ouvrir ce fichier",
+    "unsavedRetry": "Non enregistrée · Réessayer",
     "unsavedRetryLabel": "Note non enregistrée. Réessayer l’enregistrement",
     "notFound": "Note introuvable",
     "notFoundHint": "Cette note a peut-être été supprimée.",
     "more": "Plus d’actions",
     "removeAttachmentTitle": "Retirer « {{name}} » ?",
-    "removeAttachmentMessage": "Le fichier sera retiré de la note et effacé de ce téléphone."
+    "removeAttachmentMessage": "Le fichier sera retiré de la note et effacé de ce téléphone.",
+    "saveFailedDetail": "Rouvre-la pour vérifier ton texte.",
+    "attachmentCannotOpenDetail": "Aucune app de ce téléphone ne sait le lire."
   },
   "editor": {
     "heading": "Titre",
@@ -402,7 +405,7 @@
     "delete": "Supprimer ce cours",
     "deleteTitle": "Supprimer ce cours ?",
     "deleteSeries": "Toutes les séances de ce cours (chaque {{weekday}}) seront supprimées.",
-    "deleteOnce": "Ce cours sera supprimé.",
+    "deleteOnce": "Il disparaîtra de ton calendrier.",
     "detailTitle": "Cours",
     "every": "Chaque {{weekday}}",
     "editSeriesHint": "La modification s’applique à toutes les séances de ce cours.",
@@ -439,7 +442,7 @@
     "completedOn": "Terminée le {{date}}",
     "markDone": "Marquer comme terminé",
     "reopen": "Remettre à faire",
-    "doneToast": "Terminée : {{title}}",
+    "doneToast": "Tâche terminée",
     "prefilled": "Matière reprise de ton cours.",
     "repeat": "Répéter",
     "estimate": "Durée estimée",
@@ -497,8 +500,8 @@
     "cancelled": "Annulé",
     "modified": "Modifié",
     "cancel": "Marquer ce cours comme annulé",
-    "cancelTitle": "Annuler ce cours ?",
-    "cancelMessage": "Le cours du {{date}} sera marqué « Annulé » dans le calendrier. Les autres séances ne changent pas.",
+    "cancelTitle": "Marquer ce cours comme annulé ?",
+    "cancelMessage": "Seule la séance du {{date}} est concernée : elle reste visible avec la mention « Annulé ».",
     "confirmCancel": "Marquer annulé",
     "restore": "Rétablir ce cours",
     "restoreHint": "Ce cours a été modifié pour ce jour seulement. Rétablir remet les valeurs de la série.",
@@ -511,7 +514,7 @@
     "scopeAll": "Toute la série",
     "deleteScopeTitle": "Que veux-tu supprimer ?",
     "deleteThisHint": "Supprimer une seule séance = la marquer « Annulé ».",
-    "deleteFollowingMessage": "Ce cours et tous les suivants à partir du {{date}} seront supprimés. Les séances précédentes restent.",
+    "deleteFollowingMessage": "Les séances à partir du {{date}} seront supprimées ; les précédentes restent.",
     "overrideHint": "Laisse un champ vide pour garder la valeur habituelle.",
     "note": "Note pour ce jour",
     "notePlaceholder": "Ex. Cours déplacé en salle C04",
@@ -667,7 +670,7 @@
     "daysBefore_other": "{{count}} jours avant",
     "examTime": "Heure des rappels",
     "permissionTitle": "Recevoir tes rappels ?",
-    "permissionMessage": "MySky t’envoie une notification au moment du rappel, même hors connexion. Ton téléphone va te demander l’autorisation.",
+    "permissionMessage": "MySky t’envoie une notification au moment du rappel, même hors connexion ; ton téléphone va te demander l’autorisation.",
     "permissionContinue": "Continuer",
     "permissionOff": "Les notifications sont désactivées : ce rappel ne sonnera pas.",
     "permissionAllow": "Autoriser les notifications",
@@ -709,7 +712,8 @@
     "welcome": "Bienvenue dans MySky",
     "previous": "Précédent",
     "firstTask": "Noter ma première tâche",
-    "firstTaskHint": "Une chose à faire, petite ou grande."
+    "firstTaskHint": "Une chose à faire, petite ou grande.",
+    "finishFailedTitle": "Enregistrer à nouveau ?"
   },
   "notifications": {
     "ask": "Autorise les notifications pour que tes rappels sonnent, même hors connexion.",
@@ -740,7 +744,6 @@
     "never": "Aucune sauvegarde pour le moment",
     "now": "Sauvegarder maintenant",
     "doneTitle": "Sauvegarde faite",
-    "doneMessage": "Tes données ont été copiées dans le dossier de l’app.",
     "share": "Partager une sauvegarde",
     "shareTitle": "Sauvegarde MySky",
     "shareMessage": "Choisis la sauvegarde à envoyer (Fichiers, mail, AirDrop…).",
@@ -749,14 +752,16 @@
     "restoreHint": "Les données actuelles seront remplacées par celles de la sauvegarde.",
     "chooseFile": "Choisir un fichier…",
     "restoreTitle": "Restaurer cette sauvegarde ?",
-    "restoreMessage_one": "Sauvegarde du {{date}} ({{count}} élément). Tes données actuelles seront remplacées.",
-    "restoreMessage_other": "Sauvegarde du {{date}} ({{count}} éléments). Tes données actuelles seront remplacées.",
+    "restoreMessage_one": "Tes données actuelles seront remplacées par la sauvegarde du {{date}} ({{count}} élément).",
+    "restoreMessage_other": "Tes données actuelles seront remplacées par la sauvegarde du {{date}} ({{count}} éléments).",
     "restoreConfirm": "Restaurer",
     "restoredTitle": "Données restaurées",
     "restoredMessage": "Tes données ont été remplacées par la sauvegarde.",
     "unreadable": "Ce fichier n’est pas une sauvegarde MySky lisible.",
     "tooRecent": "Cette sauvegarde vient d’une version plus récente de MySky. Mets l’app à jour.",
-    "size": "{{kb}} Ko"
+    "size": "{{kb}} Ko",
+    "doneToast": "Sauvegarde enregistrée",
+    "doneToastDetail": "Dans le dossier de l’app"
   },
   "grades": {
     "title": "Mes notes",
@@ -961,7 +966,7 @@
     "clearDayMessage": "Ce que tu as noté pour {{name}} ce jour-là sera retiré.",
     "more": "Noter le jour pour {{name}}",
     "addOne": "Ajouter 1 à {{name}}",
-    "addOneToast": "+1 pour {{name}}",
+    "addOneToast": "+1 ajouté",
     "progressCount": "{{count}} / {{target}} {{unit}}",
     "progressWeek": "{{done}} / {{target}} cette semaine",
     "streakDays_one": "{{count}} jour d’affilée",
@@ -999,7 +1004,7 @@
       "map-pin": "Repère",
       "smartphone": "Téléphone"
     },
-    "doneToast": "Fait : {{name}}",
+    "doneToast": "Habitude faite",
     "plusOne": "+1"
   },
   "account": {
@@ -1022,7 +1027,7 @@
     "deleteTitle": "Supprimer ton compte ?",
     "deleteMessage": "Ton compte, toutes tes données sur le serveur (y compris les fichiers joints) et les données de ce téléphone seront supprimés.",
     "deleteContinue": "Continuer",
-    "deleteAgainTitle": "Dernière vérification",
+    "deleteAgainTitle": "Vraiment supprimer ton compte ?",
     "deleteAgainMessage": "Cette action est définitive et ne peut pas être annulée.",
     "deleteConfirm": "Supprimer mon compte",
     "otherTitle": "Données d’un autre compte",
@@ -1031,13 +1036,16 @@
     "eraseTitle": "Effacer ce téléphone ?",
     "eraseMessage": "Ce qui n’est pas encore envoyé part d’abord sur ton compte. Les données, pièces jointes et sauvegardes de ce téléphone seront ensuite effacées et tu seras déconnecté. Ton compte et ses données restent sur le serveur : pour les supprimer aussi, utilise « Supprimer mon compte » dans « Compte et synchronisation ».",
     "eraseConfirm": "Effacer ce téléphone",
-    "unsyncedTitle": "Modifications pas encore envoyées",
-    "unsyncedMessage_one": "{{count}} modification n’est pas encore envoyée. Si tu continues, elle sera perdue.",
-    "unsyncedMessage_other": "{{count}} modifications ne sont pas encore envoyées. Si tu continues, elles seront perdues.",
+    "unsyncedTitle": "Effacer sans envoyer tes modifications ?",
+    "unsyncedMessage_one": "{{count}} modification pas encore envoyée sera perdue.",
+    "unsyncedMessage_other": "{{count}} modifications pas encore envoyées seront perdues.",
     "unsyncedRetry": "Réessayer l’envoi",
     "unsyncedErase": "Effacer quand même",
     "unsyncedBlocked": "Des modifications ne sont pas encore envoyées : ce téléphone n’a pas été effacé.",
-    "signedOutKept": "Tu es déconnecté. Tes données restent sur ce téléphone."
+    "signedOutKept": "Déconnecté",
+    "signedOutKeptDetail": "Tes données restent sur ce téléphone.",
+    "otherConfirmTitle": "Effacer les données de l’autre compte ?",
+    "otherConfirmMessage": "Elles seront retirées de ce téléphone, mais restent sur l’autre compte MySky."
   },
   "auth": {
     "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer à synchroniser.",
@@ -1084,7 +1092,9 @@
       "notConfigured": "Les comptes ne sont pas disponibles dans cette version.",
       "deleteFailed": "Le compte n’a pas pu être supprimé. Vérifie ta connexion et réessaie.",
       "localWipeFailed": "Ton compte a été supprimé du serveur, mais les données de ce téléphone n’ont pas pu être effacées. Utilise « Supprimer toutes mes données » dans les réglages."
-    }
+    },
+    "sessionExpiredToast": "Session expirée",
+    "sessionExpiredDetail": "Reconnecte-toi pour continuer à synchroniser."
   },
   "sync": {
     "title": "Synchronisation",
@@ -1214,20 +1224,21 @@
     "down": "Descendre",
     "remove": "Retirer l’étape",
     "removeTitle": "Retirer « {{title}} » ?",
-    "removeMessage": "Cette étape sera supprimée."
+    "removeMessage": "Elle disparaîtra de la liste des étapes."
   },
   "postpone": {
     "today": "Aujourd’hui",
     "removeDate": "Retirer la date",
-    "removedToast": "Date retirée : la tâche est « Sans date ».",
+    "removedToast": "Date retirée",
     "action": "Reporter",
     "title": "Reporter à quand ?",
     "tomorrow": "Demain",
     "inTwoDays": "Dans 2 jours",
     "nextMonday": "Lundi prochain",
     "pickDate": "Choisir une autre date…",
-    "doneToast": "Reporté au {{date}}.",
-    "pickDateTitle": "Nouvelle date"
+    "doneToast": "Reportée au {{date}}",
+    "pickDateTitle": "Nouvelle date",
+    "tomorrowToast": "Reportée à demain"
   },
   "review": {
     "title": "Bilan du soir",
@@ -1241,7 +1252,7 @@
     "postponeAllMessage_one": "{{count}} élément passera à demain.",
     "postponeAllMessage_other": "{{count}} éléments passeront à demain.",
     "postponeAllConfirm": "Reporter",
-    "postponeAllDone": "Reporté à demain ({{count}})",
+    "postponeAllDone": "Reporté à demain",
     "revisions": "Révisions d’aujourd’hui",
     "habits": "Tes habitudes",
     "mood": "Ta journée",
@@ -1250,7 +1261,9 @@
     "plannedTime": "Travail prévu demain : {{time}}",
     "done": "C’est prêt pour demain",
     "money": "Ton argent aujourd’hui · {{amount}}",
-    "moneyNone": "Rien de noté aujourd’hui. Une dépense à ajouter ?"
+    "moneyNone": "Rien de noté aujourd’hui. Une dépense à ajouter ?",
+    "postponeAllDoneDetail_one": "{{count}} élément",
+    "postponeAllDoneDetail_other": "{{count}} éléments"
   },
   "mood": {
     "title": "Humeur et énergie",
@@ -1325,7 +1338,7 @@
     "expenses": "Dépenses",
     "incomes": "Entrées",
     "savings": "Épargne",
-    "loans": "Prêté (on me doit)",
+    "loans": "On me doit",
     "emptyTitle": "Commence par noter l’argent que tu as",
     "emptyHint": "Ajoute une entrée (argent reçu, bourse, salaire…), puis tes dépenses au fil des jours. MySky calcule ce qu’il te reste.",
     "dueTitle": "Charges fixes et tontines",
@@ -1380,7 +1393,7 @@
     "deleteMessage": "Elle ne comptera plus dans ton argent.",
     "invalidAmount": "Entre un montant.",
     "repayTooMuch": "Le remboursement dépasse ce qui reste dû.",
-    "unpaidToast": "{{name}} : paiement annulé",
+    "unpaidToast": "Paiement annulé",
     "tooManyReminders": "3 rappels au maximum.",
     "kind": {
       "expense": "Dépense",
@@ -1650,7 +1663,7 @@
     "addRecurringMenu": "Ajouter une charge fixe ou une tontine",
     "chargeOption": "Charge fixe",
     "tontineOption": "Tontine",
-    "paidToast": "{{name}} : payé",
+    "paidToast": "Payé",
     "recurringKindLabel": "Charge fixe ou tontine",
     "frequency": "Fréquence",
     "leftBar": "Part du budget restante",
@@ -1745,9 +1758,9 @@
     "changeLater": "Tu pourras changer à tout moment dans ton profil.",
     "offTitle": "Désactiver « {{name}} » ?",
     "offMessage": {
-      "study": "Tes matières, cours, examens, révisions et les tâches liées à une matière sont gardés, juste cachés. Leurs rappels sont mis en pause. Réactive l’espace quand tu veux : tout revient.",
-      "work": "Ton objectif d’heures de travail est caché. Tes tâches, rendez-vous et notes restent visibles : ils sont communs à tous tes espaces. Tes créneaux restent visibles si Perso est actif. Réactive l’espace quand tu veux : tout revient.",
-      "personal": "Ton argent, tes habitudes et ton humeur sont gardés, juste cachés. Les tontines continuent d’être comptées ; les rappels sont mis en pause. Tes tâches, rendez-vous et notes restent visibles. Réactive l’espace quand tu veux : tout revient."
+      "study": "Tes matières, cours, examens et révisions sont gardés mais cachés, et leurs rappels sont mis en pause.",
+      "work": "Ton objectif d’heures de travail est caché ; tes tâches, rendez-vous et notes restent visibles.",
+      "personal": "Ton argent, tes habitudes et ton humeur sont gardés mais cachés, et leurs rappels sont mis en pause."
     },
     "offConfirm": "Désactiver",
     "onboardingTitle": "Tu utilises MySky pour…",
@@ -1823,7 +1836,7 @@
     "note": "Note",
     "delete": "Supprimer le créneau",
     "deleteTitle": "Supprimer « {{title}} » ?",
-    "deleteMessage": "Il disparaît de toutes les semaines. Tes rendez-vous ajoutés à la main ne changent pas.",
+    "deleteMessage": "Il disparaît de toutes les semaines ; tes rendez-vous ajoutés à la main restent.",
     "rotationTitle": "Rotation",
     "thisWeekIs": "Cette semaine est une…",
     "weekA": "Semaine A",
@@ -1839,16 +1852,20 @@
     "copyButton": "Copier la semaine dernière",
     "copyConfirm_one": "{{count}} rendez-vous sera ajouté à cette semaine.",
     "copyConfirm_other": "{{count}} rendez-vous seront ajoutés à cette semaine.",
-    "copyDone_one": "{{count}} rendez-vous ajouté.",
-    "copyDone_other": "{{count}} rendez-vous ajoutés.",
-    "copyNothing": "Rien à copier : la semaine dernière n’a pas de rendez-vous, ou ils sont déjà sur cette semaine.",
+    "copyDone_one": "{{count}} rendez-vous copié",
+    "copyDone_other": "{{count}} rendez-vous copiés",
+    "copyNothing": "Rien à copier",
     "slotMoveTitle": "Créneau fixe",
     "slotMoveMessage": "Il revient chaque semaine : change ses heures dans « Mon planning ».",
     "addMenu": "Ajouter au planning",
     "slotOption": "Créneau fixe",
     "slotOptionHint": "Revient chaque semaine (ou semaine A / B)",
     "eventOption": "Rendez-vous",
-    "eventOptionHint": "Une seule fois, à une date précise"
+    "eventOptionHint": "Une seule fois, à une date précise",
+    "copyNothingDetail": "La semaine dernière n’a pas de nouveau rendez-vous.",
+    "copyDoneDetail": "Depuis la semaine dernière",
+    "copyConfirmTitle": "Copier la semaine dernière ?",
+    "copyConfirmButton": "Copier"
   },
   "bodyProgress": {
     "title": "Ma progression physique",
@@ -1882,8 +1899,8 @@
     "withPhoto": "avec photo"
   },
   "conflicts": {
-    "newToast_one": "Un conflit de synchronisation est à régler.",
-    "newToast_other": "{{count}} conflits de synchronisation sont à régler.",
+    "newToast_one": "Conflit de synchronisation",
+    "newToast_other": "{{count}} conflits de synchronisation",
     "see": "Voir",
     "badge_one": "{{count}} conflit à régler",
     "badge_other": "{{count}} conflits à régler",
@@ -1944,7 +1961,7 @@
     "ignoreTitle": "Abandonner ta version ?",
     "ignoreMessage": "La version de ce téléphone sera abandonnée définitivement ; la version gardée sur le serveur reste.",
     "ignoreRejectedMessage": "Ta modification refusée sera abandonnée définitivement ; l’élément reste tel qu’il est sur ce téléphone.",
-    "ignoreConfirm": "Abandonner ma version",
+    "ignoreConfirm": "Abandonner",
     "field": {
       "deleted_at": "État",
       "title": "Titre",
@@ -1966,7 +1983,9 @@
       "description": "Description",
       "note": "Note"
     },
-    "line": "{{label}} : {{value}}"
+    "line": "{{label}} : {{value}}",
+    "newToastDetail": "Choisis la version à garder.",
+    "restoreConfirm": "Restaurer"
   },
   "feedback": {
     "title": "Donner mon avis",
@@ -2024,8 +2043,8 @@
     "mailNote": "Ta messagerie va s’ouvrir avec le message prêt : il te restera à l’envoyer. La capture n’y est pas jointe.",
     "send": "Envoyer",
     "sendByMail": "Envoyer par e-mail",
-    "thanks": "Merci ! Ton retour est bien noté.",
-    "queued": "Merci ! Ton retour est bien noté, il partira dès que tu seras connecté.",
+    "thanks": "Merci pour ton retour",
+    "queued": "Merci pour ton retour",
     "mailFailed": "Aucune messagerie n’a pu s’ouvrir. Ton retour est gardé : réessaie depuis « Mes retours ».",
     "status": {
       "sent": "Envoyé",
@@ -2035,10 +2054,10 @@
     "emptyMessage": "Un bug, une idée ? Tes retours apparaîtront ici.",
     "write": "Donner mon avis",
     "retry": "Renvoyer maintenant",
-    "retrySent": "C’est parti : tes retours sont envoyés.",
-    "retryStill": "Pas encore envoyé. Réessaie quand tu seras connecté.",
+    "retrySent": "Retours envoyés",
+    "retryStill": "Pas encore envoyé",
     "deleteTitle": "Supprimer ce retour ?",
-    "deleteMessage": "Il n’a pas encore été envoyé. Il sera effacé de ce téléphone.",
+    "deleteMessage": "Il n’a pas encore été envoyé et sera effacé de ce téléphone.",
     "reportProblem": "Signaler ce problème",
     "mail": {
       "subject": "MySky – {{kind}} ({{area}})",
@@ -2047,7 +2066,10 @@
       "blocking": "Bloquant : oui",
       "contact": "Contact : {{value}}",
       "technical": "MySky {{version}} · {{os}} · langue {{locale}} · erreur {{error}}"
-    }
+    },
+    "retryStillDetail": "Réessaie une fois connecté.",
+    "queuedDetail": "Il partira dès que tu seras connecté.",
+    "thanksDetail": "Il est bien arrivé."
   },
   "unsaved": {
     "title": "Abandonner les modifications ?",

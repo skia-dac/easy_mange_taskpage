@@ -3,6 +3,7 @@
  * revient exactement comme avant (rien de noté, ou « pas fait » avec sa raison).
  */
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
@@ -63,20 +64,25 @@ describe('annuler une habitude cochée', () => {
     const id = await createHabit(mockDb, { name: 'Méditer' });
     const habit = (await getHabit(mockDb, id)) as Habit;
     await render(
-      <SafeAreaProvider
-        initialMetrics={{
-          frame: { x: 0, y: 0, width: 390, height: 844 },
-          insets: { top: 0, left: 0, right: 0, bottom: 0 },
-        }}
-      >
-        <HabitRow habit={habit} logs={[]} day={DAY} today={DAY} weekStart={1} onMore={() => {}} />
-        <ToastHost />
-      </SafeAreaProvider>,
+      // Comme dans l'app : le message se ferme aussi d'un glissement (racine des gestes).
+      <GestureHandlerRootView>
+        <SafeAreaProvider
+          initialMetrics={{
+            frame: { x: 0, y: 0, width: 390, height: 844 },
+            insets: { top: 0, left: 0, right: 0, bottom: 0 },
+          }}
+        >
+          <HabitRow habit={habit} logs={[]} day={DAY} today={DAY} weekStart={1} onMore={() => {}} />
+          <ToastHost />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>,
     );
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Méditer' }));
     await flush();
     expect((await logOf(id))?.status).toBe('done');
-    expect(screen.getByText(i18n.t('habits.doneToast', { name: 'Méditer' }))).toBeTruthy();
+    // Titre court « Habitude faite », le nom de l'habitude dessous.
+    expect(screen.getByText(i18n.t('habits.doneToast'))).toBeTruthy();
+    expect(screen.getAllByText('Méditer').length).toBeGreaterThan(1);
     await fireEvent.press(screen.getByText(i18n.t('toast.undo')));
     await flush();
     expect(await logOf(id)).toBeUndefined();

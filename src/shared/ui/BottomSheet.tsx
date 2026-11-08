@@ -24,6 +24,7 @@ import { useSafeAreaInsets, type EdgeInsets } from 'react-native-safe-area-conte
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useTheme } from '../theme';
+import { useCoversToast } from './toastLayout';
 
 type Props = {
   visible: boolean;
@@ -96,6 +97,8 @@ export function BottomSheet({
   const { height } = useWindowDimensions();
   const reduced = useReducedMotion();
   const maxHeight = sheetMaxHeight(height, insets);
+  // Fenêtre ouverte : un message posé à la racine serait caché dessous.
+  useCoversToast(visible);
 
   // Le panneau part du bas de l'écran et monte à sa place à chaque ouverture.
   const offset = useSharedValue(reduced ? 0 : height);

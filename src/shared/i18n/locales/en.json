@@ -31,7 +31,8 @@
     "next": "Next",
     "clearField": "Clear {{label}}",
     "showMore": "Show more ({{count}})",
-    "today": "Today"
+    "today": "Today",
+    "remove": "Remove"
   },
   "tabs": {
     "today": "Today",
@@ -167,7 +168,7 @@
     "hoursHint": "Long-press an item, then drag it to change its day or time.",
     "moveHint": "Long-press then drag to move. With a screen reader, use the actions.",
     "moveCourseTitle": "Move this class?",
-    "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
+    "moveCourseMessage": "Only this session moves to {{date}} at {{time}}; other weeks stay the same.",
     "moveConfirm": "Move",
     "viewMode": "Calendar view",
     "previousStep": {
@@ -235,15 +236,17 @@
     "sharePdf": "Share as PDF",
     "pdfFooter": "Exported from MySky on {{date}}",
     "screenTitle": "Note",
-    "saveFailed": "The note could not be saved. Open it again to check your text.",
-    "attachmentCannotOpen": "This file cannot be opened on this phone.",
+    "saveFailed": "Note not saved",
+    "attachmentCannotOpen": "Can’t open this file",
     "unsavedRetry": "Not saved · Retry",
     "unsavedRetryLabel": "Note not saved. Try saving again",
     "notFound": "Note not found",
     "notFoundHint": "This note may have been deleted.",
     "more": "More actions",
     "removeAttachmentTitle": "Remove “{{name}}”?",
-    "removeAttachmentMessage": "The file will be removed from the note and erased from this phone."
+    "removeAttachmentMessage": "The file will be removed from the note and erased from this phone.",
+    "saveFailedDetail": "Open it again to check your text.",
+    "attachmentCannotOpenDetail": "No app on this phone can read it."
   },
   "editor": {
     "heading": "Heading",
@@ -402,7 +405,7 @@
     "delete": "Delete this class",
     "deleteTitle": "Delete this class?",
     "deleteSeries": "All sessions of this class (every {{weekday}}) will be deleted.",
-    "deleteOnce": "This class will be deleted.",
+    "deleteOnce": "It will disappear from your calendar.",
     "detailTitle": "Class",
     "every": "Every {{weekday}}",
     "editSeriesHint": "Changes apply to all sessions of this class.",
@@ -439,7 +442,7 @@
     "completedOn": "Completed on {{date}}",
     "markDone": "Mark as done",
     "reopen": "Mark as not done",
-    "doneToast": "Done: {{title}}",
+    "doneToast": "Task done",
     "prefilled": "Subject taken from your class.",
     "repeat": "Repeat",
     "estimate": "Estimated time",
@@ -497,8 +500,8 @@
     "cancelled": "Cancelled",
     "modified": "Changed",
     "cancel": "Mark this class as cancelled",
-    "cancelTitle": "Cancel this class?",
-    "cancelMessage": "The class on {{date}} will be marked “Cancelled” in the calendar. Other sessions don’t change.",
+    "cancelTitle": "Mark this class as cancelled?",
+    "cancelMessage": "Only the session on {{date}} is affected: it stays visible, labelled “Cancelled”.",
     "confirmCancel": "Mark cancelled",
     "restore": "Restore this class",
     "restoreHint": "This class was changed for this day only. Restoring brings back the series values.",
@@ -511,7 +514,7 @@
     "scopeAll": "The whole series",
     "deleteScopeTitle": "What do you want to delete?",
     "deleteThisHint": "Deleting a single session = marking it “Cancelled”.",
-    "deleteFollowingMessage": "This session and all the following ones from {{date}} will be deleted. Earlier sessions are kept.",
+    "deleteFollowingMessage": "Sessions from {{date}} onwards will be deleted; earlier ones are kept.",
     "overrideHint": "Leave a field empty to keep the usual value.",
     "note": "Note for this day",
     "notePlaceholder": "e.g. Class moved to room C04",
@@ -667,7 +670,7 @@
     "daysBefore_other": "{{count}} days before",
     "examTime": "Reminder time",
     "permissionTitle": "Get your reminders?",
-    "permissionMessage": "MySky sends you a notification at reminder time, even offline. Your phone will ask for permission.",
+    "permissionMessage": "MySky sends you a notification at reminder time, even offline; your phone will ask for permission.",
     "permissionContinue": "Continue",
     "permissionOff": "Notifications are turned off: this reminder will not ring.",
     "permissionAllow": "Allow notifications",
@@ -709,7 +712,8 @@
     "welcome": "Welcome to MySky",
     "previous": "Back",
     "firstTask": "Write down my first task",
-    "firstTaskHint": "Something to do, big or small."
+    "firstTaskHint": "Something to do, big or small.",
+    "finishFailedTitle": "Save again?"
   },
   "notifications": {
     "ask": "Allow notifications so your reminders can ring, even offline.",
@@ -740,7 +744,6 @@
     "never": "No backup yet",
     "now": "Back up now",
     "doneTitle": "Backup done",
-    "doneMessage": "Your data has been copied to the app folder.",
     "share": "Share a backup",
     "shareTitle": "MySky backup",
     "shareMessage": "Choose the backup to send (Files, email, AirDrop…).",
@@ -749,14 +752,16 @@
     "restoreHint": "Current data will be replaced by the backup.",
     "chooseFile": "Choose a file…",
     "restoreTitle": "Restore this backup?",
-    "restoreMessage_one": "Backup from {{date}} ({{count}} item). Your current data will be replaced.",
-    "restoreMessage_other": "Backup from {{date}} ({{count}} items). Your current data will be replaced.",
+    "restoreMessage_one": "Your current data will be replaced by the backup from {{date}} ({{count}} item).",
+    "restoreMessage_other": "Your current data will be replaced by the backup from {{date}} ({{count}} items).",
     "restoreConfirm": "Restore",
     "restoredTitle": "Data restored",
     "restoredMessage": "Your data has been replaced by the backup.",
     "unreadable": "This file is not a readable MySky backup.",
     "tooRecent": "This backup comes from a newer version of MySky. Update the app.",
-    "size": "{{kb}} KB"
+    "size": "{{kb}} KB",
+    "doneToast": "Backup saved",
+    "doneToastDetail": "In the app folder"
   },
   "grades": {
     "title": "My grades",
@@ -961,7 +966,7 @@
     "clearDayMessage": "What you logged for {{name}} on that day will be removed.",
     "more": "Log the day for {{name}}",
     "addOne": "Add 1 to {{name}}",
-    "addOneToast": "+1 for {{name}}",
+    "addOneToast": "+1 added",
     "progressCount": "{{count}} / {{target}} {{unit}}",
     "progressWeek": "{{done}} / {{target}} this week",
     "streakDays_one": "{{count}} day in a row",
@@ -999,7 +1004,7 @@
       "map-pin": "Map pin",
       "smartphone": "Phone"
     },
-    "doneToast": "Done: {{name}}",
+    "doneToast": "Habit done",
     "plusOne": "+1"
   },
   "account": {
@@ -1022,8 +1027,8 @@
     "deleteTitle": "Delete your account?",
     "deleteMessage": "Your account, all your data on the server (including attached files) and this phone’s data will be deleted.",
     "deleteContinue": "Continue",
-    "deleteAgainTitle": "Last check",
-    "deleteAgainMessage": "This cannot be undone.",
+    "deleteAgainTitle": "Really delete your account?",
+    "deleteAgainMessage": "This is permanent and cannot be undone.",
     "deleteConfirm": "Delete my account",
     "otherTitle": "Data from another account",
     "otherMessage": "This phone holds data from another MySky account. To continue with this account, it will be erased from this phone (it stays on the other account).",
@@ -1031,13 +1036,16 @@
     "eraseTitle": "Erase this phone?",
     "eraseMessage": "Anything not sent yet goes to your account first. The data, attachments and backups on this phone will then be erased and you will be signed out. Your account and its data stay on the server: to delete them too, use “Delete my account” in “Account and sync”.",
     "eraseConfirm": "Erase this phone",
-    "unsyncedTitle": "Changes not sent yet",
-    "unsyncedMessage_one": "{{count}} change has not been sent yet. If you continue, it will be lost.",
-    "unsyncedMessage_other": "{{count}} changes have not been sent yet. If you continue, they will be lost.",
+    "unsyncedTitle": "Erase without sending your changes?",
+    "unsyncedMessage_one": "{{count}} change not sent yet will be lost.",
+    "unsyncedMessage_other": "{{count}} changes not sent yet will be lost.",
     "unsyncedRetry": "Try sending again",
     "unsyncedErase": "Erase anyway",
     "unsyncedBlocked": "Some changes have not been sent yet: this phone was not erased.",
-    "signedOutKept": "You are signed out. Your data stays on this phone."
+    "signedOutKept": "Signed out",
+    "signedOutKeptDetail": "Your data stays on this phone.",
+    "otherConfirmTitle": "Erase the other account’s data?",
+    "otherConfirmMessage": "It will be removed from this phone, but stays on the other MySky account."
   },
   "auth": {
     "sessionExpired": "Your session has expired. Sign in again to keep syncing.",
@@ -1084,7 +1092,9 @@
       "notConfigured": "Accounts are not available in this version.",
       "deleteFailed": "The account could not be deleted. Check your connection and try again.",
       "localWipeFailed": "Your account was deleted from the server, but the data on this phone could not be erased. Use “Delete all my data” in Settings."
-    }
+    },
+    "sessionExpiredToast": "Session expired",
+    "sessionExpiredDetail": "Sign in again to keep syncing."
   },
   "sync": {
     "title": "Sync",
@@ -1214,20 +1224,21 @@
     "down": "Move down",
     "remove": "Remove the step",
     "removeTitle": "Remove “{{title}}”?",
-    "removeMessage": "This step will be deleted."
+    "removeMessage": "It will disappear from the list of steps."
   },
   "postpone": {
     "today": "Today",
     "removeDate": "Remove the date",
-    "removedToast": "Date removed: the task is now “No date”.",
+    "removedToast": "Date removed",
     "action": "Postpone",
     "title": "Postpone until when?",
     "tomorrow": "Tomorrow",
     "inTwoDays": "In 2 days",
     "nextMonday": "Next Monday",
     "pickDate": "Pick another date…",
-    "doneToast": "Postponed to {{date}}.",
-    "pickDateTitle": "New date"
+    "doneToast": "Moved to {{date}}",
+    "pickDateTitle": "New date",
+    "tomorrowToast": "Moved to tomorrow"
   },
   "review": {
     "title": "Evening review",
@@ -1241,7 +1252,7 @@
     "postponeAllMessage_one": "{{count}} item will move to tomorrow.",
     "postponeAllMessage_other": "{{count}} items will move to tomorrow.",
     "postponeAllConfirm": "Postpone",
-    "postponeAllDone": "Postponed to tomorrow ({{count}})",
+    "postponeAllDone": "Moved to tomorrow",
     "revisions": "Today’s revision",
     "habits": "Your habits",
     "mood": "Your day",
@@ -1250,7 +1261,9 @@
     "plannedTime": "Work planned tomorrow: {{time}}",
     "done": "All set for tomorrow",
     "money": "Your money today · {{amount}}",
-    "moneyNone": "Nothing noted today. Any spending to add?"
+    "moneyNone": "Nothing noted today. Any spending to add?",
+    "postponeAllDoneDetail_one": "{{count}} item",
+    "postponeAllDoneDetail_other": "{{count}} items"
   },
   "mood": {
     "title": "Mood and energy",
@@ -1325,7 +1338,7 @@
     "expenses": "Expenses",
     "incomes": "Income",
     "savings": "Savings",
-    "loans": "Lent (owed to me)",
+    "loans": "Owed to me",
     "emptyTitle": "Start by noting the money you have",
     "emptyHint": "Add an income (money received, grant, pay…), then your spending day by day. MySky works out what you have left.",
     "dueTitle": "Fixed costs and tontines",
@@ -1380,7 +1393,7 @@
     "deleteMessage": "It will no longer count in your money.",
     "invalidAmount": "Enter an amount.",
     "repayTooMuch": "The repayment exceeds what is still owed.",
-    "unpaidToast": "{{name}}: payment undone",
+    "unpaidToast": "Payment undone",
     "tooManyReminders": "3 reminders at most.",
     "kind": {
       "expense": "Expense",
@@ -1650,7 +1663,7 @@
     "addRecurringMenu": "Add a fixed cost or a tontine",
     "chargeOption": "Fixed cost",
     "tontineOption": "Tontine",
-    "paidToast": "{{name}}: paid",
+    "paidToast": "Paid",
     "recurringKindLabel": "Fixed cost or tontine",
     "frequency": "Frequency",
     "leftBar": "Share of budget left",
@@ -1745,9 +1758,9 @@
     "changeLater": "You can change this at any time in your profile.",
     "offTitle": "Turn off “{{name}}”?",
     "offMessage": {
-      "study": "Your subjects, classes, exams, revision and subject tasks are kept, just hidden. Their reminders are paused. Turn the space back on whenever you like: everything comes back.",
-      "work": "Your work-hours goal is hidden. Your tasks, appointments and notes stay visible: they are shared by all your spaces. Your slots stay visible if Personal is on. Turn the space back on whenever you like: everything comes back.",
-      "personal": "Your money, habits and mood are kept, just hidden. Tontines keep being counted; reminders are paused. Your tasks, appointments and notes stay visible. Turn the space back on whenever you like: everything comes back."
+      "study": "Your subjects, classes, exams and revision are kept but hidden, and their reminders are paused.",
+      "work": "Your work-hours goal is hidden; your tasks, appointments and notes stay visible.",
+      "personal": "Your money, habits and mood are kept but hidden, and their reminders are paused."
     },
     "offConfirm": "Turn off",
     "onboardingTitle": "You use MySky for…",
@@ -1823,7 +1836,7 @@
     "note": "Note",
     "delete": "Delete slot",
     "deleteTitle": "Delete “{{title}}”?",
-    "deleteMessage": "It disappears from every week. Appointments you added yourself don’t change.",
+    "deleteMessage": "It disappears from every week; appointments you added yourself stay.",
     "rotationTitle": "Rotation",
     "thisWeekIs": "This week is…",
     "weekA": "Week A",
@@ -1839,16 +1852,20 @@
     "copyButton": "Copy last week",
     "copyConfirm_one": "{{count}} appointment will be added to this week.",
     "copyConfirm_other": "{{count}} appointments will be added to this week.",
-    "copyDone_one": "{{count}} appointment added.",
-    "copyDone_other": "{{count}} appointments added.",
-    "copyNothing": "Nothing to copy: last week has no appointments, or they are already on this week.",
+    "copyDone_one": "{{count}} appointment copied",
+    "copyDone_other": "{{count}} appointments copied",
+    "copyNothing": "Nothing to copy",
     "slotMoveTitle": "Fixed slot",
     "slotMoveMessage": "It comes back every week: change its times in “My planner”.",
     "addMenu": "Add to planning",
     "slotOption": "Fixed slot",
     "slotOptionHint": "Repeats every week (or week A / B)",
     "eventOption": "Appointment",
-    "eventOptionHint": "Just once, on a given date"
+    "eventOptionHint": "Just once, on a given date",
+    "copyNothingDetail": "Last week has no new appointments.",
+    "copyDoneDetail": "From last week",
+    "copyConfirmTitle": "Copy last week?",
+    "copyConfirmButton": "Copy"
   },
   "bodyProgress": {
     "title": "My physical progress",
@@ -1882,8 +1899,8 @@
     "withPhoto": "with photo"
   },
   "conflicts": {
-    "newToast_one": "A sync conflict needs your attention.",
-    "newToast_other": "{{count}} sync conflicts need your attention.",
+    "newToast_one": "Sync conflict",
+    "newToast_other": "{{count}} sync conflicts",
     "see": "View",
     "badge_one": "{{count}} conflict to resolve",
     "badge_other": "{{count}} conflicts to resolve",
@@ -1944,7 +1961,7 @@
     "ignoreTitle": "Discard your version?",
     "ignoreMessage": "The version on this phone will be discarded for good; the version kept on the server stays.",
     "ignoreRejectedMessage": "Your rejected change will be discarded for good; the item stays as it is on this phone.",
-    "ignoreConfirm": "Discard my version",
+    "ignoreConfirm": "Discard",
     "field": {
       "deleted_at": "State",
       "title": "Title",
@@ -1966,7 +1983,9 @@
       "description": "Description",
       "note": "Note"
     },
-    "line": "{{label}}: {{value}}"
+    "line": "{{label}}: {{value}}",
+    "newToastDetail": "Choose which version to keep.",
+    "restoreConfirm": "Restore"
   },
   "feedback": {
     "title": "Give feedback",
@@ -2024,8 +2043,8 @@
     "mailNote": "Your mail app will open with the message ready: you just need to send it. The screenshot is not attached.",
     "send": "Send",
     "sendByMail": "Send by email",
-    "thanks": "Thank you! Your feedback has been noted.",
-    "queued": "Thank you! Your feedback has been noted, it will be sent as soon as you’re online.",
+    "thanks": "Thanks for your feedback",
+    "queued": "Thanks for your feedback",
     "mailFailed": "No mail app could be opened. Your feedback is kept: try again from “My feedback”.",
     "status": {
       "sent": "Sent",
@@ -2035,10 +2054,10 @@
     "emptyMessage": "A bug, an idea? Your messages will appear here.",
     "write": "Give feedback",
     "retry": "Send now",
-    "retrySent": "Done: your feedback has been sent.",
-    "retryStill": "Not sent yet. Try again when you’re online.",
+    "retrySent": "Feedback sent",
+    "retryStill": "Not sent yet",
     "deleteTitle": "Delete this feedback?",
-    "deleteMessage": "It hasn’t been sent yet. It will be erased from this phone.",
+    "deleteMessage": "It hasn’t been sent yet and will be erased from this phone.",
     "reportProblem": "Report this problem",
     "mail": {
       "subject": "MySky – {{kind}} ({{area}})",
@@ -2047,7 +2066,10 @@
       "blocking": "Blocking: yes",
       "contact": "Contact: {{value}}",
       "technical": "MySky {{version}} · {{os}} · language {{locale}} · error {{error}}"
-    }
+    },
+    "retryStillDetail": "Try again once you’re online.",
+    "queuedDetail": "It will be sent once you’re online.",
+    "thanksDetail": "We’ve received it."
   },
   "unsaved": {
     "title": "Discard changes?",

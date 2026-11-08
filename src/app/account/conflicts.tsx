@@ -169,7 +169,7 @@ export default function ConflictsScreen() {
                           const ok = await confirmAction(
                             t('conflicts.restoreTitle'),
                             t('conflicts.restoreMessage'),
-                            t('conflicts.restore'),
+                            t('conflicts.restoreConfirm'),
                           );
                           if (ok) await restoreConflict(db, c.id);
                         })

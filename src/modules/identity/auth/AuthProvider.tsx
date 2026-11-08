@@ -41,7 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = client.auth.onAuthStateChange((event, next) => {
       // Déconnexion que l'app n'a pas demandée (jeton expiré ou révoqué) : on prévient.
       if (event === 'SIGNED_OUT' && !takeExplicitSignOut())
-        showToast(i18n.t('auth.sessionExpired'));
+        showToast(
+          {
+            title: i18n.t('auth.sessionExpiredToast'),
+            detail: i18n.t('auth.sessionExpiredDetail'),
+          },
+          { tone: 'warning' },
+        );
       setSession(next);
       setLoading(false);
     });

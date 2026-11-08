@@ -55,7 +55,12 @@ export default function FeedbackHistoryScreen() {
     setBusy(true);
     try {
       const report = await retryFeedback(db, getSupabase());
-      showToast(t(report.sent > 0 ? 'feedback.retrySent' : 'feedback.retryStill'));
+      if (report.sent > 0) showToast(t('feedback.retrySent'), { tone: 'success' });
+      else
+        showToast(
+          { title: t('feedback.retryStill'), detail: t('feedback.retryStillDetail') },
+          { tone: 'warning' },
+        );
     } catch (e) {
       showError(userMessageKey(e));
     } finally {

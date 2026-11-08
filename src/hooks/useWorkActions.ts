@@ -7,7 +7,7 @@ import {
   undoWorkDone,
   type WorkItem,
 } from '@/modules/productivity';
-import type { IsoDate } from '@/shared/dates';
+import { addDaysIso, toIsoDate, type IsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
@@ -31,22 +31,27 @@ export function useWorkActions() {
   const setDone = (item: WorkTarget, done: boolean) =>
     setWorkStatus(db, item.kind, item.id, done ? 'done' : 'todo').then((spawnedId) => {
       if (!done) return;
-      const message = t('work.doneToast', { title: item.title });
       // On restaure l'état d'avant (« à faire » ou « en cours »), pas forcément « à faire »,
       // et on retire l'occurrence suivante créée pour une tâche répétée.
       const previous = item.status === 'done' ? 'todo' : item.status;
-      showUndoToast(message, () => undoWorkDone(db, item.kind, item.id, previous, spawnedId));
+      showUndoToast({ title: t('work.doneToast'), detail: item.title }, () =>
+        undoWorkDone(db, item.kind, item.id, previous, spawnedId),
+      );
     }, fail);
+
+  /** « Reportée à demain », « Reportée au 12 nov. » ou « Date retirée ». */
+  const postponedTitle = (date: IsoDate | null) => {
+    if (!date) return t('postpone.removedToast');
+    if (date === addDaysIso(toIsoDate(new Date()), 1)) return t('postpone.tomorrowToast');
+    return t('postpone.doneToast', { date: formatShortDate(date, labels.lang) });
+  };
 
   /** Nouvelle échéance ; `null` retire la date (la tâche passe « Sans date »). */
   const postpone = (item: WorkTarget, date: IsoDate | null) =>
     rescheduleWorkItem(db, item.kind, item.id, date).then(
       () =>
-        showUndoToast(
-          date
-            ? t('postpone.doneToast', { date: formatShortDate(date, labels.lang) })
-            : t('postpone.removedToast'),
-          () => rescheduleWorkItem(db, item.kind, item.id, item.dueDate, item.dueTime),
+        showUndoToast({ title: postponedTitle(date), detail: item.title }, () =>
+          rescheduleWorkItem(db, item.kind, item.id, item.dueDate, item.dueTime),
         ),
       fail,
     );

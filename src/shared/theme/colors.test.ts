@@ -57,8 +57,9 @@ const textPairs: [fg: Token, bg: Token, where: string][] = [
   ['onPrimary', 'success', 'action « Terminer » en glissant'],
   ['onPrimary', 'warning', 'action « Reporter » en glissant'],
   ['onPrimary', 'danger', 'action destructive en glissant'],
-  ['background', 'text', 'message bref (toast, couleurs inversées)'],
-  ['primarySoft', 'text', 'bouton « Annuler » du toast'],
+  ['onInverseSurface', 'inverseSurface', 'message bref (toast) : titre'],
+  ['inverseMuted', 'inverseSurface', 'message bref (toast) : détail sous le titre'],
+  ['inversePrimary', 'inverseSurface', 'bouton « Annuler » du toast'],
   ['muted', 'disabled', 'libellé d’un bouton désactivé'],
   ['text', 'warningSoft', 'carte Argent « découvert » : libellé et phrase'],
   ['warning', 'warningSoft', 'carte Argent « découvert » : montant du solde'],
@@ -82,7 +83,12 @@ const uiPairs: [fg: Token, bg: Token, where: string][] = [
   ['success', 'successSoft', 'icône de la tuile « Entrées »'],
   ['danger', 'dangerSoft', 'icône de la tuile « Dépenses »'],
   ['primary', 'primarySoft', 'icône de la tuile « Épargne »'],
-  ['warning', 'warningSoft', 'icône de la tuile « Prêté »'],
+  ['warning', 'warningSoft', 'icône de la tuile « On me doit »'],
+  ['inverseSuccess', 'inverseSurface', 'icône « réussi » du toast'],
+  ['inversePrimary', 'inverseSurface', 'icône « info » du toast'],
+  ['inverseWarning', 'inverseSurface', 'icône « attention » du toast'],
+  ['inverseDanger', 'inverseSurface', 'icône « erreur » du toast'],
+  ['onInverseSurface', 'inverseSurface', 'bouton « Fermer » du toast'],
 ];
 
 describe.each(
@@ -94,6 +100,21 @@ describe.each(
   });
   it.each(uiPairs)('commande %s sur %s (%s) ≥ 3:1', (fg, bg) => {
     expect(contrast(colors[fg], colors[bg])).toBeGreaterThanOrEqual(AA_UI);
+  });
+});
+
+describe.each([
+  ['clair', lightColors],
+  ['sombre', darkColors],
+])('message bref (toast) — mode %s', (_name, c) => {
+  it('sa surface se détache nettement de l’écran (inversée)', () => {
+    expect(contrast(c.inverseSurface, c.background)).toBeGreaterThanOrEqual(AA);
+    expect(contrast(c.inverseSurface, c.surface)).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('sombre sur un écran clair, claire sur un écran sombre', () => {
+    const screenIsLight = luminance(c.background) > 0.5;
+    expect(luminance(c.inverseSurface) > 0.5).toBe(!screenIsLight);
   });
 });
 

@@ -8,6 +8,7 @@ import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { FieldShell } from './FieldShell';
 import { Tappable } from './Tappable';
+import { useCoversToast } from './toastLayout';
 
 export type SelectOption = { value: string; label: string; leading?: ReactNode };
 
@@ -40,6 +41,7 @@ export function SelectField({
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
   const [open, setOpen] = useState(false);
+  useCoversToast(open);
   const current = options.find((o) => o.value === value);
   const choose = (v: string | null) => {
     onChange(v);

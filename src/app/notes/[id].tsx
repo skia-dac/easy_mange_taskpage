@@ -310,7 +310,13 @@ export default function NoteScreen() {
       // L'écran se ferme : un échec ne peut plus s'afficher sous le titre, on le dit par un toast.
       void persistRef.current().catch((e: unknown) => {
         logger.error(e, { where: 'note.saveOnLeave' });
-        showToast(tRef.current('notes.saveFailed'));
+        showToast(
+          {
+            title: tRef.current('notes.saveFailed'),
+            detail: tRef.current('notes.saveFailedDetail'),
+          },
+          { tone: 'error' },
+        );
       });
     };
   }, []);
@@ -612,8 +618,14 @@ export default function NoteScreen() {
             accessibilityLabel={t('notes.unsavedRetryLabel')}
             accessibilityLiveRegion="polite"
             onPress={retrySave}
-            style={{ minHeight: minTouchSize, justifyContent: 'center' }}
+            style={{
+              minHeight: minTouchSize,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.xs,
+            }}
           >
+            <Feather name="alert-circle" size={14} color={colors.danger} />
             <AppText variant="caption" color="danger">
               {t('notes.unsavedRetry')}
             </AppText>
@@ -678,6 +690,14 @@ function AttachmentTile({
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
   const exists = attachmentExists(a.localPath);
+  const cannotOpen = () =>
+    showToast(
+      {
+        title: t('notes.attachmentCannotOpen'),
+        detail: t('notes.attachmentCannotOpenDetail'),
+      },
+      { tone: 'error' },
+    );
   const open = () => {
     if (!exists) {
       showError('notes.attachmentMissing');
@@ -685,11 +705,11 @@ function AttachmentTile({
     }
     openLocalFile(attachmentUri(a.localPath), a.mimeType, a.name)
       .then((ok) => {
-        if (!ok) showToast(t('notes.attachmentCannotOpen'));
+        if (!ok) cannotOpen();
       })
       .catch((e: unknown) => {
         logger.error(e, { where: 'note.openAttachment' });
-        showToast(t('notes.attachmentCannotOpen'));
+        cannotOpen();
       });
   };
   return (

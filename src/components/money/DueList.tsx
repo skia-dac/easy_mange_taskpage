@@ -60,7 +60,7 @@ export function DueList({ overview: o, input, current, today, lang }: Props) {
     if (late) rememberPaidLate(input.range.from, dueKey(d));
     payDue(db, d.recurring.id, d.date, current ? today : d.date).then(
       () =>
-        showUndoToast(t('money.paidToast', { name: d.recurring.name }), () =>
+        showUndoToast({ title: t('money.paidToast'), detail: d.recurring.name }, () =>
           unpayDue(db, d.recurring.id, d.date),
         ),
       (e: unknown) => {
@@ -75,8 +75,10 @@ export function DueList({ overview: o, input, current, today, lang }: Props) {
     const paidTx = input.transactions.find((x) => x.id === d.transactionId);
     unpayDue(db, d.recurring.id, d.date).then(
       () =>
-        showUndoToast(t('money.unpaidToast', { name: d.recurring.name }), () =>
-          payDue(db, d.recurring.id, d.date, paidTx?.date ?? d.date, paidTx?.amountMinor),
+        showUndoToast(
+          { title: t('money.unpaidToast'), detail: d.recurring.name },
+          () => payDue(db, d.recurring.id, d.date, paidTx?.date ?? d.date, paidTx?.amountMinor),
+          { tone: 'info' },
         ),
       (e: unknown) => showError(userMessageKey(e)),
     );

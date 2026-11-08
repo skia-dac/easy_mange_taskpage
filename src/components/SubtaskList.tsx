@@ -60,7 +60,7 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
     const ok = await confirmDestructive(
       t('subtasks.removeTitle', { title }),
       t('subtasks.removeMessage'),
-      t('common.delete'),
+      t('common.remove'),
     );
     if (ok) await deleteSubtask(db, id).catch(fail);
   };

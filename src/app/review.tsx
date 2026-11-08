@@ -112,7 +112,13 @@ export default function EveningReviewScreen() {
     if (!ok) return;
     try {
       const previous = await rescheduleWorkItems(db, review.remaining, review.tomorrow);
-      showUndoToast(t('review.postponeAllDone', { count }), () => restoreWorkDates(db, previous));
+      showUndoToast(
+        {
+          title: t('review.postponeAllDone'),
+          detail: t('review.postponeAllDoneDetail', { count }),
+        },
+        () => restoreWorkDates(db, previous),
+      );
     } catch (e) {
       fail(e);
     }

@@ -19,8 +19,8 @@ export function useAfterSignIn() {
     if (!userId) return;
     if ((await claimLocalData(db, userId)) === 'otherAccount') {
       const ok = await confirmDestructive(
-        t('account.otherTitle'),
-        t('account.otherMessage'),
+        t('account.otherConfirmTitle'),
+        t('account.otherConfirmMessage'),
         t('account.otherConfirm'),
       );
       if (!ok) {
