@@ -130,7 +130,11 @@ export default function RecurringScreen() {
           </>
         )}
       </ScrollView>
-      <Fab accessibilityLabel={t('money.addRecurringMenu')} onPress={() => setMenu(true)} />
+      <Fab
+        accessibilityLabel={t('money.addRecurringMenu')}
+        menuOpen={menu}
+        onPress={() => setMenu(true)}
+      />
       <ChoiceSheet
         visible={menu}
         title={t('money.addRecurringMenu')}

@@ -11,7 +11,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useSetTabBarScrolling, useTabBarHidden } from '@/shared/tabBarVisibility';
+import {
+  reportTabBarHeight,
+  useSetTabBarScrolling,
+  useTabBarHidden,
+} from '@/shared/tabBarVisibility';
 
 const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
 
@@ -49,7 +53,11 @@ export function SlidingTabBar(props: BottomTabBarProps) {
       pointerEvents={hidden ? 'none' : 'box-none'}
       accessibilityElementsHidden={hidden}
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
-      onLayout={(event) => rememberHeight(distance, event.nativeEvent.layout.height)}
+      onLayout={(event) => {
+        rememberHeight(distance, event.nativeEvent.layout.height);
+        // Le toast (monté à la racine) se pose au-dessus de la barre et du bouton +.
+        reportTabBarHeight(event.nativeEvent.layout.height);
+      }}
       style={[{ position: 'absolute', left: 0, right: 0, bottom: 0 }, style]}
     >
       <BottomTabBar {...props} />
