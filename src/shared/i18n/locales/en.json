@@ -75,7 +75,8 @@
     "invalid": "Invalid value.",
     "feedbackTooShort": "Write at least 10 characters.",
     "invalidEmail": "Invalid email address.",
-    "invalidYear": "Enter a school year, for example 2026–2027."
+    "invalidYear": "Enter a school year, for example 2026–2027.",
+    "reminderAfterDue": "The reminder must come before the due date. Pick an earlier time."
   },
   "today": {
     "greeting": "Hello",
@@ -220,7 +221,10 @@
     "empty2": "Empty note",
     "untitled": "Untitled",
     "sharePdf": "Share as PDF",
-    "pdfFooter": "Exported from MySky on {{date}}"
+    "pdfFooter": "Exported from MySky on {{date}}",
+    "screenTitle": "Note",
+    "saveFailed": "The note could not be saved. Open it again to check your text.",
+    "attachmentCannotOpen": "This file cannot be opened on this phone."
   },
   "editor": {
     "heading": "Heading",
@@ -286,7 +290,8 @@
     "kindFilter": "Type",
     "subjectChip": "Subject: {{name}}",
     "subjectAll": "Subject: all",
-    "subjectPick": "Filter by subject"
+    "subjectPick": "Filter by subject",
+    "groupNoDate": "No date"
   },
   "profile": {
     "title": "Profile",
@@ -419,7 +424,9 @@
     "noEstimate": "None",
     "startStudy": "Start the study timer",
     "moreOptions": "More options",
-    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description"
+    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description",
+    "noDate": "No date",
+    "noDateHint": "No date: the task stays in the Notebook, never “late”."
   },
   "exams": {
     "new": "New exam",
@@ -549,7 +556,8 @@
     "moneyBody": "{{amount}} · on {{date}}",
     "moneyBodyTime": "{{amount}} · on {{date}} at {{time}}",
     "payoutTitle": "It’s your turn: {{name}}",
-    "payoutBody": "You receive {{amount}} today."
+    "payoutBody": "You receive {{amount}} today.",
+    "workBodyNoDate": "{{title}}"
   },
   "settings": {
     "title": "Settings",
@@ -628,7 +636,13 @@
     "examDays": "Reminders before the exam",
     "daysBefore_one": "{{count}} day before",
     "daysBefore_other": "{{count}} days before",
-    "examTime": "Reminder time"
+    "examTime": "Reminder time",
+    "permissionTitle": "Get your reminders?",
+    "permissionMessage": "MySky sends you a notification at reminder time, even offline. Your phone will ask for permission.",
+    "permissionContinue": "Continue",
+    "permissionOff": "Notifications are turned off: this reminder will not ring.",
+    "permissionAllow": "Allow notifications",
+    "permissionSettings": "Open settings"
   },
   "search": {
     "title": "Search",
@@ -656,14 +670,16 @@
     "body3": "A reminder at the right time so you forget nothing: classes, meetings, tasks, tontines.",
     "howTitle": "How do you want to start?",
     "howHint": "You can change your mind later.",
-    "manual": "Create my timetable",
-    "manualHint": "Add your subjects and classes one by one.",
+    "manual": "Add my subjects",
+    "manualHint": "Start with your subjects, then add your classes.",
     "laterHint": "Explore the app first.",
     "progress": "Step {{step}} of {{total}}",
     "account": "I already have an account",
     "accountHint": "Get your data back from another phone",
     "welcome": "Welcome to MySky",
-    "previous": "Back"
+    "previous": "Back",
+    "firstTask": "Write down my first task",
+    "firstTaskHint": "Something to do, big or small."
   },
   "notifications": {
     "title": "Notifications",
@@ -980,7 +996,16 @@
     "deleteConfirm": "Delete my account",
     "otherTitle": "Data from another account",
     "otherMessage": "This phone holds data from another MySky account. To continue with this account, it will be erased from this phone (it stays on the other account).",
-    "otherConfirm": "Erase and continue"
+    "otherConfirm": "Erase and continue",
+    "eraseTitle": "Erase this phone?",
+    "eraseMessage": "Everything has been sent to your account. The data, attachments and backups on this phone will be erased, then you will be signed out.",
+    "eraseConfirm": "Erase this phone",
+    "unsyncedTitle": "Changes not sent yet",
+    "unsyncedMessage_one": "{{count}} change has not been sent yet. If you continue, it will be lost.",
+    "unsyncedMessage_other": "{{count}} changes have not been sent yet. If you continue, they will be lost.",
+    "unsyncedRetry": "Try sending again",
+    "unsyncedErase": "Erase anyway",
+    "unsyncedBlocked": "Some changes have not been sent yet: this phone was not erased."
   },
   "auth": {
     "sessionExpired": "Your session has expired. Sign in again to keep syncing.",
@@ -1756,6 +1781,37 @@
       "missingLink": "Reason: the item it is linked to does not exist on the server.",
       "duplicate": "Reason: an identical item already exists.",
       "other": "Reason: invalid data."
+    },
+    "mine": "Your version (this phone)",
+    "theirs": "Kept version (server)",
+    "differs": "different",
+    "emptyValue": "—",
+    "deletedValue": "Deleted",
+    "notDeletedValue": "Present",
+    "ignoreTitle": "Discard your version?",
+    "ignoreMessage": "The version on this phone will be discarded for good; the version kept on the server stays.",
+    "ignoreRejectedMessage": "Your rejected change will be discarded for good; the item stays as it is on this phone.",
+    "ignoreConfirm": "Discard my version",
+    "field": {
+      "deleted_at": "State",
+      "title": "Title",
+      "name": "Name",
+      "person": "Person",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "date": "Date",
+      "due_date": "Due date",
+      "due_time": "Due time",
+      "time": "Time",
+      "start_time": "Start",
+      "end_time": "End",
+      "amount_minor": "Amount",
+      "target_minor": "Target",
+      "status": "Status",
+      "room": "Room",
+      "content": "Content",
+      "description": "Description",
+      "note": "Note"
     }
   },
   "feedback": {

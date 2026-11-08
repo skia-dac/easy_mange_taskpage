@@ -86,6 +86,17 @@ export type MoneyOverview = {
   /** Objectifs archivés (atteints, rangés) : montrés à part, hors des totaux. */
   archivedGoals: { goal: Goal; savedMinor: number }[];
   loans: { loan: Loan; outstandingMinor: number; totalMinor: number }[];
+  /**
+   * Tuile « Prêts » : les deux sens, dans la devise affichée, prêts ouverts seulement (mêmes
+   * règles que l'écran Prêts). `owedToMeMinor` = « On me doit », `iOweMinor` = « Je dois ».
+   */
+  loanTotals: { owedToMeMinor: number; iOweMinor: number };
+  /**
+   * Tuile « Épargne » : ce qui est mis de côté sur les objectifs actifs, regroupé par devise
+   * (jamais d'addition entre devises). La devise affichée d'abord (toujours présente), puis les
+   * autres devises qui ont de l'épargne, par ordre alphabétique.
+   */
+  savingsByCurrency: { currency: string; savedMinor: number }[];
   /** Prochaine cotisation et prochain tour de chaque tontine. */
   tontines: { recurring: Recurring; next: IsoDate | null; payoutDate: IsoDate | null }[];
   insights: MoneyInsight[];
@@ -243,6 +254,32 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
       return { loan, totalMinor, outstandingMinor: net(moves, out, back) };
     });
 
+  const outstanding = (direction: Loan['direction']) =>
+    openLoans(loans, direction).reduce((s, l) => s + l.outstandingMinor, 0);
+  const loanTotals = { owedToMeMinor: outstanding('lent'), iOweMinor: outstanding('borrowed') };
+
+  // Chaque objectif compte dans SA devise (ses mouvements ont forcément sa devise).
+  const savedBy = new Map<string, number>([[currency, 0]]);
+  for (const goal of input.goals) {
+    if (goal.archived) continue;
+    const saved = net(
+      input.linked.filter((t) => t.goalId === goal.id && t.currency === goal.currency),
+      'saving',
+      'saving_back',
+    );
+    savedBy.set(goal.currency, (savedBy.get(goal.currency) ?? 0) + saved);
+  }
+  const savingsByCurrency = [...savedBy.entries()]
+    .filter(([c, savedMinor]) => c === currency || savedMinor !== 0)
+    .map(([c, savedMinor]) => ({ currency: c, savedMinor }))
+    .sort((a, b) =>
+      a.currency === currency
+        ? -1
+        : b.currency === currency
+          ? 1
+          : a.currency.localeCompare(b.currency),
+    );
+
   const tontines = input.recurring
     .filter((r) => r.kind === 'tontine' && r.active)
     .map((recurring) => ({
@@ -279,6 +316,8 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
     goals,
     archivedGoals,
     loans,
+    loanTotals,
+    savingsByCurrency,
     tontines,
     insights,
     items,

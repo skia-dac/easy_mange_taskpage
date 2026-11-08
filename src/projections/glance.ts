@@ -77,7 +77,7 @@ export function workWeek(data: TodayData, weekFrom: IsoDate, targetHours: number
       : Math.max(0, timeToMinutes(e.endTime) - timeToMinutes(e.startTime));
   }
   for (const w of data.work) {
-    if (!inWeek(w.dueDate, weekFrom)) continue;
+    if (!w.dueDate || !inWeek(w.dueDate, weekFrom)) continue;
     planned += w.estimatedMinutes ?? 0;
   }
   const target = Math.round(targetHours * 60);

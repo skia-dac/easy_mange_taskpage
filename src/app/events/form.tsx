@@ -10,6 +10,7 @@ import {
   createPersonalEvent,
   deletePersonalEvent,
   getPersonalEvent,
+  shiftReminder,
   updatePersonalEvent,
   type PersonalEventInput,
 } from '@/modules/productivity';
@@ -102,7 +103,11 @@ export default function EventFormScreen() {
         mode="date"
         required
         value={form.date}
-        onChange={(v) => set({ date: v ?? toIsoDate(new Date()) })}
+        onChange={(v) => {
+          const date = v ?? toIsoDate(new Date());
+          // Le rappel suit la date de l'événement.
+          setForm((f) => ({ ...f, date, reminderAt: shiftReminder(f.reminderAt, f.date, date) }));
+        }}
         error={errors.date}
       />
       <View style={{ flexDirection: 'row', gap: spacing.md }}>

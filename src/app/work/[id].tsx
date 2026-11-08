@@ -10,7 +10,7 @@ import { SubtaskList } from '@/components/SubtaskList';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import { deleteWorkItem, getWorkItem, isOverdue, type WorkKind } from '@/modules/productivity';
+import { deleteWorkItem, getWorkItemOfKind, isOverdue } from '@/modules/productivity';
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -39,19 +39,27 @@ export default function WorkDetailScreen() {
   const now = useNow();
   const { spacing } = useTheme();
   const params = useLocalSearchParams<{ id: string; kind?: string }>();
-  const kind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { byId } = useSubjects();
   const postpone = usePostpone();
   const actions = useWorkActions();
+  // Sans `kind` dans le lien, l'élément est cherché dans les deux tables (jamais « introuvable » à tort).
   const item = useLiveQuery(
-    (d) => getWorkItem(d, kind, params.id),
-    [kind === 'task' ? 'tasks' : 'assignments'],
-    [kind, params.id],
+    (d) => getWorkItemOfKind(d, params.kind, params.id),
+    ['tasks', 'assignments'],
+    [params.kind, params.id],
   );
 
   if (item.loading) return <LoadingScreen />;
   const w = item.data;
-  if (!w) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
+  if (!w)
+    return (
+      <EmptyState
+        icon="alert-circle"
+        title={t('errors.itemNotFound')}
+        action={{ label: t('common.back'), onPress: () => goBack() }}
+      />
+    );
+  const kind = w.kind;
 
   const subject = w.subjectId ? byId.get(w.subjectId) : undefined;
   const done = w.status === 'done';
@@ -89,7 +97,11 @@ export default function WorkDetailScreen() {
         </AppText>
         <Card>
           <ListRow
-            title={[formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')}
+            title={
+              w.dueDate
+                ? [formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')
+                : t('work.noDate')
+            }
             subtitle={t('work.due')}
             leading={<IconBadge icon="clock" />}
           />

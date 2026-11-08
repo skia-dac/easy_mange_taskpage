@@ -20,6 +20,23 @@ export type SyncConflict = {
   rejection: RejectionKind | null;
   createdAt: string;
   local: Record<string, SqlValue>;
+  /** Version du serveur qui a gagné ; null pour un refus (le serveur n'a rien gardé). */
+  server: Record<string, SqlValue> | null;
+};
+
+/** Comment afficher la valeur d'un champ clé (l'écran formate selon la langue). */
+export type ConflictFieldType = 'text' | 'date' | 'time' | 'money' | 'deleted';
+
+/** Un champ clé de l'élément, côte à côte : ta version (ce téléphone) et celle du serveur. */
+export type ConflictField = {
+  column: string;
+  type: ConflictFieldType;
+  local: SqlValue;
+  server: SqlValue;
+  /** Devise des montants (`money`), lue dans la version correspondante. */
+  localCurrency: string | null;
+  serverCurrency: string | null;
+  differs: boolean;
 };
 
 type ConflictRow = {
@@ -77,6 +94,66 @@ function listReason(row: Pick<ConflictRow, 'server_payload'>): string | null {
   return typeof reason === 'string' ? reason : null;
 }
 
+/**
+ * Champs clés montrés pour comparer, dans l'ordre : ce que l'utilisateur reconnaît (titre, date,
+ * montant…). Seuls ceux présents dans l'une des deux versions apparaissent.
+ */
+const KEY_FIELDS: readonly { column: string; type: ConflictFieldType }[] = [
+  { column: 'deleted_at', type: 'deleted' },
+  { column: 'title', type: 'text' },
+  { column: 'name', type: 'text' },
+  { column: 'person', type: 'text' },
+  { column: 'first_name', type: 'text' },
+  { column: 'last_name', type: 'text' },
+  { column: 'date', type: 'date' },
+  { column: 'due_date', type: 'date' },
+  { column: 'due_time', type: 'time' },
+  { column: 'time', type: 'time' },
+  { column: 'start_time', type: 'time' },
+  { column: 'end_time', type: 'time' },
+  { column: 'amount_minor', type: 'money' },
+  { column: 'target_minor', type: 'money' },
+  { column: 'status', type: 'text' },
+  { column: 'room', type: 'text' },
+  { column: 'content', type: 'text' },
+  { column: 'description', type: 'text' },
+  { column: 'note', type: 'text' },
+];
+
+/** Texte long (contenu d'une note) : un aperçu suffit pour reconnaître la version. */
+export const CONFLICT_PREVIEW = 80;
+
+function shown(v: SqlValue | undefined, type: ConflictFieldType): SqlValue {
+  if (v === undefined || v === '') return null;
+  if (type === 'text' && typeof v === 'string' && v.length > CONFLICT_PREVIEW)
+    return `${v.slice(0, CONFLICT_PREVIEW).trimEnd()}…`;
+  return v;
+}
+
+/** Les champs clés des deux versions d'un conflit, pour les comparer avant de choisir. */
+export function conflictFields(conflict: Pick<SyncConflict, 'local' | 'server'>): ConflictField[] {
+  const { local, server } = conflict;
+  const currency = (row: Record<string, SqlValue> | null) =>
+    row && typeof row.currency === 'string' ? row.currency : null;
+  const out: ConflictField[] = [];
+  for (const { column, type } of KEY_FIELDS) {
+    const l = shown(local[column], type);
+    const s = server ? shown(server[column], type) : null;
+    // Toujours montrer « supprimé » s'il l'est d'un côté ; sinon seulement les champs remplis.
+    if (l === null && s === null) continue;
+    out.push({
+      column,
+      type,
+      local: l,
+      server: s,
+      localCurrency: currency(local),
+      serverCurrency: currency(server),
+      differs: server !== null && l !== s,
+    });
+  }
+  return out;
+}
+
 const isSynced = (t: string): t is SyncedTable => (SYNCED_TABLES as readonly string[]).includes(t);
 
 /** Conflits non résolus, les plus récents d'abord. */
@@ -88,6 +165,7 @@ export async function listConflicts(db: Db): Promise<SyncConflict[]> {
   return rows.map((r) => {
     const local = parse(r.local_payload);
     const reason = listReason(r);
+    const server = reason === null ? parse(r.server_payload) : null;
     return {
       id: r.id,
       entity: r.entity,
@@ -97,6 +175,7 @@ export async function listConflicts(db: Db): Promise<SyncConflict[]> {
       rejection: reason === null ? null : rejectionKindOf(reason),
       createdAt: r.created_at,
       local,
+      server,
     };
   });
 }

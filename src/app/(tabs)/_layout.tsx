@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Tabs } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { ComponentProps } from 'react';
 import { Easing, type ColorValue } from 'react-native';
 import Animated, {
@@ -12,7 +12,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 
 import { isOnboardingDone } from '@/modules/identity';
-import { useDb } from '@/shared/db';
+import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import { SlidingTabBar } from '@/components/SlidingTabBar';
 import { TabBarVisibility } from '@/shared/tabBarVisibility';
@@ -54,19 +54,17 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const reduced = useReducedMotion();
-  const db = useDb();
-  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  // Relu à chaque changement des réglages : l'accueil tout juste terminé est vu tout de suite,
+  // même si cet écran est resté monté pendant l'accueil (jamais de retour en boucle).
+  const onboarding = useLiveQuery(isOnboardingDone, ['app_settings'], []);
   const spaces = useSpaces();
   // Un seul nom, quels que soient les espaces : « Calendrier » (onglet et titre de l'écran).
   // « Mon planning » reste le nom des créneaux fixes (/planning), ouvert depuis le calendrier.
   const calendarTitle = t('tabs.calendar');
 
-  useEffect(() => {
-    void isOnboardingDone(db).then(setOnboarded, () => setOnboarded(true));
-  }, [db]);
-
-  if (onboarded === null) return <LoadingScreen />;
-  if (!onboarded) return <Redirect href="/onboarding" />;
+  // Lecture en échec : on ouvre l'app plutôt que de renvoyer à l'accueil (pas de piège).
+  if (onboarding.data === undefined && !onboarding.error) return <LoadingScreen />;
+  if (onboarding.data === false) return <Redirect href="/onboarding" />;
 
   return (
     <TabBarVisibility>

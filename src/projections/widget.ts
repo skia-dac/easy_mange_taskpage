@@ -356,7 +356,11 @@ function buildSubjects(
         : '',
       nextCourseRoom: next?.room ?? '',
       openTasks: work.length,
-      nextDue: due ? `${due.title} · ${texts.weekdayShort(isoWeekday(due.dueDate))}` : '',
+      nextDue: due
+        ? due.dueDate
+          ? `${due.title} · ${texts.weekdayShort(isoWeekday(due.dueDate))}`
+          : due.title
+        : '',
       nextExam: exam ? examWhen(exam.date, today, texts) : '',
     };
   });
@@ -423,7 +427,7 @@ function buildMonth(
   const dueDays = new Set(
     data.work
       .filter((w) => w.status !== 'done')
-      .map((w) => w.dueDate)
+      .flatMap((w) => (w.dueDate ? [w.dueDate] : []))
       .concat(data.events.map((e) => e.date)),
   );
   const examDays = new Set(data.exams.map((e) => e.date));
@@ -529,7 +533,9 @@ export function buildWidgetData(
     ) ?? null;
 
   const open = data.work
-    .filter((w) => w.status !== 'done' && (w.dueDate <= today || isOverdue(w, now)))
+    .filter(
+      (w) => w.status !== 'done' && ((!!w.dueDate && w.dueDate <= today) || isOverdue(w, now)),
+    )
     .sort(compareWorkItems);
   const tasks: WidgetTask[] = open.slice(0, WIDGET_MAX_TASKS).map((w) => ({
     title: w.title,

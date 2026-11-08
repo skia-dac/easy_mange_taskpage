@@ -120,10 +120,12 @@ export function planReminders(
       id: `work:${w.kind}:${w.id}`,
       fireAt: at,
       title: { key: w.kind === 'task' ? 'notif.taskTitle' : 'notif.assignmentTitle' },
-      body: {
-        key: 'notif.workBody',
-        params: { title: w.title, date: w.dueDate, time: w.dueTime ?? '' },
-      },
+      body: w.dueDate
+        ? {
+            key: 'notif.workBody',
+            params: { title: w.title, date: w.dueDate, time: w.dueTime ?? '' },
+          }
+        : { key: 'notif.workBodyNoDate', params: { title: w.title } },
       action: { kind: 'work', workKind: w.kind, id: w.id },
     });
   }

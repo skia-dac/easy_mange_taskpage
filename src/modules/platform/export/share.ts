@@ -48,3 +48,31 @@ export async function sharePdf(html: string, name: string, dialogTitle: string):
     throw new AppError('unknown', 'pdf share failed', { cause: e });
   }
 }
+
+/** Type iOS (UTI) d'un fichier joint, déduit de son type MIME : la feuille propose les bonnes apps. */
+function utiOf(mimeType: string | null): string | undefined {
+  if (!mimeType) return undefined;
+  if (mimeType === 'application/pdf') return 'com.adobe.pdf';
+  if (mimeType.startsWith('image/')) return 'public.image';
+  if (mimeType.startsWith('text/')) return 'public.text';
+  return undefined;
+}
+
+/**
+ * Ouvre une pièce jointe (fichier privé de l'app) avec la feuille de partage du système : aperçu,
+ * « Ouvrir dans… », Fichiers. Un lien `file://` privé ne s'ouvre pas avec `Linking` (iOS refuse,
+ * Android lève une erreur). Retourne false si le partage n'est pas disponible sur ce téléphone.
+ */
+export async function openLocalFile(
+  uri: string,
+  mimeType: string | null,
+  dialogTitle: string,
+): Promise<boolean> {
+  if (!(await Sharing.isAvailableAsync())) return false;
+  await Sharing.shareAsync(uri, {
+    mimeType: mimeType ?? undefined,
+    UTI: utiOf(mimeType),
+    dialogTitle,
+  });
+  return true;
+}

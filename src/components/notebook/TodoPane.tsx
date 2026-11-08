@@ -126,7 +126,8 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
     return {
       overdue: open.filter((w) => isOverdue(w, now)),
       today: open.filter((w) => !isOverdue(w, now) && w.dueDate === today),
-      upcoming: open.filter((w) => !isOverdue(w, now) && w.dueDate > today),
+      upcoming: open.filter((w) => !isOverdue(w, now) && !!w.dueDate && w.dueDate > today),
+      noDate: open.filter((w) => !w.dueDate),
       done: filtered
         .filter((w) => w.status === 'done')
         .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '')),
@@ -145,7 +146,8 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
           params: study && subjectId ? { subjectId } : {},
         });
 
-  const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
+  const openCount =
+    groups.overdue.length + groups.today.length + groups.upcoming.length + groups.noDate.length;
 
   // Liste à plat (titres, lignes, boutons) pour une liste virtualisée : seules les lignes
   // proches de l'écran sont montées, même avec des centaines de tâches terminées.
@@ -182,6 +184,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
     workSection('overdue', t('tasks.groupOverdue'), groups.overdue);
     workSection('today', t('tasks.groupToday'), groups.today);
     workSection('upcoming', t('tasks.groupUpcoming'), groups.upcoming);
+    workSection('noDate', t('tasks.groupNoDate'), groups.noDate);
     if (groups.done.length > 0) {
       entries.push({ kind: 'doneToggle', key: 'doneToggle' });
       if (showDone) {

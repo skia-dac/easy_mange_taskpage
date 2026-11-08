@@ -15,7 +15,7 @@ export type WorkItemRow = {
   title: string;
   description: string | null;
   subject_id: string | null;
-  due_date: string;
+  due_date: string | null;
   due_time: string | null;
   priority: string;
   status: string;

@@ -7,8 +7,10 @@ export {
   claimLocalData,
   deleteAccountEverywhere,
   fillProfileFromSignUp,
+  pushBeforeErase,
   replaceLocalDataWithAccount,
   signOutFromPhone,
+  unsyncedCount,
 } from './account';
 export type { ClaimResult } from './account';
 export { saveRevisionPlan } from './revisionPlan';

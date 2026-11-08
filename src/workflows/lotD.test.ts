@@ -34,7 +34,11 @@ const task = {
 describe('lot D — bilan du soir et planning', () => {
   it('« Tout reporter » en une transaction, et « Annuler » remet les échéances', async () => {
     const a = await createWorkItem(db, 'task', task);
-    const b = await createWorkItem(db, 'assignment', { ...task, dueDate: '2026-09-23' });
+    const b = await createWorkItem(db, 'assignment', {
+      ...task,
+      dueDate: '2026-09-23',
+      reminderAt: null,
+    });
     const previous = await rescheduleWorkItems(
       db,
       [

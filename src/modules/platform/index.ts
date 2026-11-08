@@ -16,8 +16,10 @@ export { routeForResponse } from './notifications/route';
 export {
   ensurePermission,
   hasPermission,
+  notificationPermission,
   syncScheduledNotifications,
 } from './notifications/scheduler';
+export type { NotificationPermission } from './notifications/scheduler';
 export { NotificationsGate } from './notifications/NotificationsGate';
 export { useNotifications } from './notifications/useNotifications';
 export {
@@ -50,7 +52,7 @@ export type { BackupSnapshot } from './backup/snapshot';
 export { BackupGate } from './backup/BackupGate';
 export { canUseAppLock, LockGate } from './lock/LockGate';
 export { buildIcs } from './export/ics';
-export { safeFileName, shareIcs, sharePdf } from './export/share';
+export { openLocalFile, safeFileName, shareIcs, sharePdf } from './export/share';
 export { WidgetsGate } from './widgets/WidgetsGate';
 export { syncWidgets } from './widgets/sync';
 export { widgetTaskHandler } from './widgets/android/taskHandler';
@@ -68,12 +70,18 @@ export { PULL_MARGIN_MS, withMargin } from './sync/remote';
 export { cancelSyncRetry, pendingRetryDelay, runSync } from './sync/runner';
 export {
   canRestore,
+  conflictFields,
   ignoreConflict,
   listConflicts,
   rejectionKinds,
   restoreConflict,
 } from './sync/conflicts';
-export type { RejectionKind, SyncConflict } from './sync/conflicts';
+export type {
+  ConflictField,
+  ConflictFieldType,
+  RejectionKind,
+  SyncConflict,
+} from './sync/conflicts';
 export { getSyncStatus, useSyncStatus } from './sync/status';
 export type { SyncStatus } from './sync/status';
 export { SyncGate } from './sync/SyncGate';

@@ -108,7 +108,10 @@ export function WorkRow({
   const subject = item.subjectId ? subjects.get(item.subjectId) : undefined;
   const done = item.status === 'done';
   const late = isOverdue(item, now);
-  const when = [showDate ? formatShortDate(item.dueDate, labels.lang) : null, item.dueTime]
+  const when = [
+    showDate && item.dueDate ? formatShortDate(item.dueDate, labels.lang) : null,
+    item.dueTime,
+  ]
     .filter(Boolean)
     .join(' · ');
   const toggle = () => void actions.setDone(item, !done);

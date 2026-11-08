@@ -2,7 +2,13 @@ import { createSubject, listSubjects, updateSubject } from '@/modules/academic';
 import { FakeServer } from '@/test/fakeServer';
 import { createTestDb } from '@/test/memoryDb';
 
-import { ignoreConflict, listConflicts, restoreConflict } from './conflicts';
+import {
+  CONFLICT_PREVIEW,
+  conflictFields,
+  ignoreConflict,
+  listConflicts,
+  restoreConflict,
+} from './conflicts';
 import { conflictCount, pendingCount, syncOnce } from './engine';
 
 const subject = { name: 'Maths', colorId: 'blue' };
@@ -29,6 +35,13 @@ describe('conflits de synchronisation (écran)', () => {
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ entity: 'subjects', entityId: id, title: 'Version A' });
     expect(list[0]?.reason).toBeNull();
+    // Les deux versions sont lisibles côte à côte avant de choisir.
+    expect(list[0]?.server).toMatchObject({ name: 'Version B' });
+    expect(conflictFields(list[0]!).find((f) => f.column === 'name')).toMatchObject({
+      local: 'Version A',
+      server: 'Version B',
+      differs: true,
+    });
 
     // Restaurer : la ligne locale reprend « Version A », part par la file, et gagne sur le serveur.
     jest.setSystemTime(new Date('2026-09-24T11:00:00.000Z'));
@@ -71,5 +84,49 @@ describe('conflits de synchronisation (écran)', () => {
     expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Revenue']);
     expect(await pendingCount(a)).toBe(1);
     a.close();
+  });
+
+  it('champs clés selon le type : montant avec sa devise, date, aperçu des longs textes, suppression', () => {
+    const fields = conflictFields({
+      local: {
+        id: 't1',
+        kind: 'expense',
+        amount_minor: 1500,
+        currency: 'XAF',
+        date: '2026-09-24',
+        note: 'x'.repeat(200),
+        deleted_at: null,
+      },
+      server: {
+        id: 't1',
+        kind: 'expense',
+        amount_minor: 2000,
+        currency: 'XAF',
+        date: '2026-09-24',
+        note: null,
+        deleted_at: '2026-09-25T00:00:00.000Z',
+      },
+    });
+    expect(fields.map((f) => f.column)).toEqual(['deleted_at', 'date', 'amount_minor', 'note']);
+    expect(fields.find((f) => f.column === 'amount_minor')).toMatchObject({
+      type: 'money',
+      local: 1500,
+      server: 2000,
+      localCurrency: 'XAF',
+      differs: true,
+    });
+    expect(fields.find((f) => f.column === 'date')?.differs).toBe(false);
+    expect(String(fields.find((f) => f.column === 'note')?.local)).toHaveLength(
+      CONFLICT_PREVIEW + 1,
+    );
+    expect(fields.find((f) => f.column === 'deleted_at')).toMatchObject({
+      type: 'deleted',
+      differs: true,
+    });
+    // Un refus n'a pas de version serveur : seulement la tienne, jamais « différent ».
+    const rejected = conflictFields({ local: { id: 'x', title: 'Exposé' }, server: null });
+    expect(rejected).toEqual([
+      expect.objectContaining({ column: 'title', server: null, differs: false }),
+    ]);
   });
 });

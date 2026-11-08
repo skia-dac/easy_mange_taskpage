@@ -26,34 +26,49 @@ export type WorkStatus = (typeof workStatuses)[number];
 export const repeatRules = ['none', 'daily', 'weekly', 'monthly'] as const;
 export type RepeatRule = (typeof repeatRules)[number];
 
-export const workItemInputSchema = z.object({
-  title: requiredText(fieldLimits.title120.max),
-  description: optionalText(fieldLimits.description2000.max),
-  subjectId: optionalId,
-  dueDate: isoDate,
-  dueTime: optionalTime,
-  priority: z.enum(priorities),
-  status: z.enum(workStatuses),
-  /** Date et heure du rappel (ISO), null = aucun (§73, §75). */
-  reminderAt: z.iso
-    .datetime({ offset: true })
-    .nullish()
-    .transform((v) => v ?? null),
-  repeat: z.enum(repeatRules).default('none'),
-  /** Durée estimée en minutes (facultative). */
-  estimatedMinutes: z
-    .number({ error: 'validation.invalidDuration' })
-    .int({ error: 'validation.invalidDuration' })
-    .min(5, { error: 'validation.invalidDuration' })
-    .max(240, { error: 'validation.invalidDuration' })
-    .nullish()
-    .transform((v) => v ?? null),
-  /**
-   * Ancien champ « espace », plus demandé : une tâche est commune aux trois espaces.
-   * Absent à la modification = on garde la valeur enregistrée (jamais écrasée).
-   */
-  space: spaceSchema.optional(),
-});
+export const workItemInputSchema = z
+  .object({
+    title: requiredText(fieldLimits.title120.max),
+    description: optionalText(fieldLimits.description2000.max),
+    subjectId: optionalId,
+    /** Échéance, null = « Sans date » (jamais en retard, rangée à part dans le Carnet). */
+    dueDate: isoDate.nullish().transform((v) => v ?? null),
+    dueTime: optionalTime,
+    priority: z.enum(priorities),
+    status: z.enum(workStatuses),
+    /** Date et heure du rappel (ISO), null = aucun (§73, §75). */
+    reminderAt: z.iso
+      .datetime({ offset: true })
+      .nullish()
+      .transform((v) => v ?? null),
+    repeat: z.enum(repeatRules).default('none'),
+    /** Durée estimée en minutes (facultative). */
+    estimatedMinutes: z
+      .number({ error: 'validation.invalidDuration' })
+      .int({ error: 'validation.invalidDuration' })
+      .min(5, { error: 'validation.invalidDuration' })
+      .max(240, { error: 'validation.invalidDuration' })
+      .nullish()
+      .transform((v) => v ?? null),
+    /**
+     * Ancien champ « espace », plus demandé : une tâche est commune aux trois espaces.
+     * Absent à la modification = on garde la valeur enregistrée (jamais écrasée).
+     */
+    space: spaceSchema.optional(),
+  })
+  .superRefine((w, ctx) => {
+    // Un rappel sert à prévenir AVANT l'échéance : après, il arriverait trop tard.
+    // Sans date, rien à dépasser : le rappel est libre.
+    if (w.reminderAt && w.dueDate) {
+      const due = dueMoment({ dueDate: w.dueDate, dueTime: w.dueTime ?? null });
+      if (due && new Date(w.reminderAt).getTime() > due.getTime())
+        ctx.addIssue({
+          code: 'custom',
+          path: ['reminderAt'],
+          message: 'validation.reminderAfterDue',
+        });
+    }
+  });
 
 export type WorkItemInput = z.input<typeof workItemInputSchema>;
 export type WorkItem = z.output<typeof workItemInputSchema> & {
@@ -71,8 +86,12 @@ export function isWorkVisible(item: Pick<WorkItem, 'kind'>, active: ActiveSpaces
   return item.kind === 'task' || active.includes('study');
 }
 
-/** Moment où l'élément devient « en retard » : l'heure limite, sinon la fin de la journée. */
-export function dueMoment(item: Pick<WorkItem, 'dueDate' | 'dueTime'>): Date {
+/**
+ * Moment où l'élément devient « en retard » : l'heure limite, sinon la fin de la journée.
+ * null = sans date (jamais en retard).
+ */
+export function dueMoment(item: Pick<WorkItem, 'dueDate' | 'dueTime'>): Date | null {
+  if (!item.dueDate) return null;
   return item.dueTime ? atTime(item.dueDate, item.dueTime) : atTime(item.dueDate, '23:59');
 }
 
@@ -84,7 +103,8 @@ export function isOverdue(
   item: Pick<WorkItem, 'dueDate' | 'dueTime' | 'status'>,
   now: Date,
 ): boolean {
-  return item.status !== 'done' && dueMoment(item).getTime() < now.getTime();
+  const due = dueMoment(item);
+  return item.status !== 'done' && due !== null && due.getTime() < now.getTime();
 }
 
 export function isDueOn(item: Pick<WorkItem, 'dueDate'>, day: IsoDate): boolean {
@@ -93,10 +113,13 @@ export function isDueOn(item: Pick<WorkItem, 'dueDate'>, day: IsoDate): boolean 
 
 const priorityRank: Record<Priority, number> = { urgent: 0, important: 1, normal: 2, low: 3 };
 
-/** Tri : date limite, puis priorité (urgent d'abord), puis titre. */
+/** Sans date : après tout ce qui a une date. */
+const sortMoment = (w: WorkItem) => dueMoment(w)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+
+/** Tri : date limite (sans date à la fin), puis priorité (urgent d'abord), puis titre. */
 export function compareWorkItems(a: WorkItem, b: WorkItem): number {
   return (
-    dueMoment(a).getTime() - dueMoment(b).getTime() ||
+    sortMoment(a) - sortMoment(b) ||
     priorityRank[a.priority] - priorityRank[b.priority] ||
     a.title.localeCompare(b.title)
   );
@@ -123,11 +146,25 @@ export function nextDueDate(date: IsoDate, rule: RepeatRule): IsoDate | null {
   }
 }
 
-/** La tâche suivante d'une tâche répétée : même contenu, échéance et rappel décalés, à faire. */
-export function nextOccurrenceInput(item: WorkItem): WorkItemInput | null {
-  const dueDate = nextDueDate(item.dueDate, item.repeat);
+/**
+ * La tâche suivante d'une tâche répétée : même contenu, échéance et rappel décalés, à faire.
+ * Sans date, la répétition part du jour où elle est terminée (`today`).
+ */
+export function nextOccurrenceInput(
+  item: WorkItem,
+  today: IsoDate = toIsoDate(new Date()),
+): WorkItemInput | null {
+  const from = item.dueDate ?? today;
+  const dueDate = nextDueDate(from, item.repeat);
   if (!dueDate) return null;
-  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(item.dueDate).getTime();
+  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(from).getTime();
+  const reminder = item.reminderAt
+    ? new Date(new Date(item.reminderAt).getTime() + shift).toISOString()
+    : null;
+  // Ancienne donnée (rappel après l'échéance) : la suivante est créée sans rappel plutôt que refusée.
+  const reminderFits =
+    !reminder ||
+    new Date(reminder).getTime() <= (dueMoment({ dueDate, dueTime: item.dueTime })?.getTime() ?? 0);
   return {
     title: item.title,
     description: item.description,
@@ -136,9 +173,7 @@ export function nextOccurrenceInput(item: WorkItem): WorkItemInput | null {
     dueTime: item.dueTime,
     priority: item.priority,
     status: 'todo',
-    reminderAt: item.reminderAt
-      ? new Date(new Date(item.reminderAt).getTime() + shift).toISOString()
-      : null,
+    reminderAt: reminderFits ? reminder : null,
     repeat: item.repeat,
     estimatedMinutes: item.estimatedMinutes,
     space: item.space,
@@ -168,11 +203,25 @@ export function postponeTargets(today: IsoDate): {
  */
 export function postponedReminder(
   item: Pick<WorkItem, 'dueDate' | 'reminderAt'>,
-  dueDate: IsoDate,
+  dueDate: IsoDate | null,
 ) {
-  if (!item.reminderAt) return null;
-  const shift = fromIsoDate(dueDate).getTime() - fromIsoDate(item.dueDate).getTime();
-  return new Date(new Date(item.reminderAt).getTime() + shift).toISOString();
+  return shiftReminder(item.reminderAt, item.dueDate, dueDate);
+}
+
+/**
+ * Le rappel suit la date : « la veille à 18:00 » reste la veille de la nouvelle date (même écart
+ * en jours, même heure). Sert aussi dans les formulaires quand on change la date.
+ */
+export function shiftReminder(
+  reminderAt: string | null | undefined,
+  from: IsoDate | null | undefined,
+  to: IsoDate | null | undefined,
+): string | null {
+  if (!reminderAt) return null;
+  // Date ajoutée ou retirée : aucun écart à garder, le rappel reste à son heure.
+  if (!from || !to || from === to) return reminderAt;
+  const shift = fromIsoDate(to).getTime() - fromIsoDate(from).getTime();
+  return new Date(new Date(reminderAt).getTime() + shift).toISOString();
 }
 
 // ---- Sous-tâches ----

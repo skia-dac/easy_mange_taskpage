@@ -54,6 +54,7 @@ import {
   KeyboardAvoiding,
   Tappable,
   useTextScale,
+  reportLoadError,
 } from '@/shared/ui';
 
 type Params = {
@@ -147,7 +148,11 @@ export default function MoneyAddScreen() {
       setDate(tx.date);
       setNote(tx.note ?? '');
       setCurrency(tx.currency);
-    })();
+    })().catch((e: unknown) => {
+      // Lecture ratée : message clair, jamais un chargement sans fin (ni un Enregistrer qui doublerait).
+      reportLoadError(e);
+      if (params.id) setLoadState('missing');
+    });
   }, [db, params.id]);
 
   // Mouvement lié à un prêt ou à un objectif : il a forcément leur devise.

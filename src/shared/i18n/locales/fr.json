@@ -75,7 +75,8 @@
     "invalid": "Valeur non valide.",
     "feedbackTooShort": "Écris au moins 10 caractères.",
     "invalidEmail": "Adresse e-mail non valide.",
-    "invalidYear": "Entre une année scolaire, par exemple 2026–2027."
+    "invalidYear": "Entre une année scolaire, par exemple 2026–2027.",
+    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt."
   },
   "today": {
     "greeting": "Bonjour",
@@ -220,7 +221,10 @@
     "empty2": "Note vide",
     "untitled": "Sans titre",
     "sharePdf": "Partager en PDF",
-    "pdfFooter": "Exporté de MySky le {{date}}"
+    "pdfFooter": "Exporté de MySky le {{date}}",
+    "screenTitle": "Note",
+    "saveFailed": "La note n’a pas pu être enregistrée. Rouvre-la pour vérifier ton texte.",
+    "attachmentCannotOpen": "Ce fichier ne peut pas être ouvert sur ce téléphone."
   },
   "editor": {
     "heading": "Titre",
@@ -286,7 +290,8 @@
     "kindFilter": "Type",
     "subjectChip": "Matière : {{name}}",
     "subjectAll": "Matière : toutes",
-    "subjectPick": "Filtrer par matière"
+    "subjectPick": "Filtrer par matière",
+    "groupNoDate": "Sans date"
   },
   "profile": {
     "title": "Profil",
@@ -419,7 +424,9 @@
     "noEstimate": "Aucune",
     "startStudy": "Lancer le minuteur de révision",
     "moreOptions": "Plus d’options",
-    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description"
+    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description",
+    "noDate": "Sans date",
+    "noDateHint": "Sans date : la tâche reste dans le Carnet, jamais « en retard »."
   },
   "exams": {
     "new": "Nouvel examen",
@@ -549,7 +556,8 @@
     "moneyBody": "{{amount}} · le {{date}}",
     "moneyBodyTime": "{{amount}} · le {{date}} à {{time}}",
     "payoutTitle": "C’est ton tour : {{name}}",
-    "payoutBody": "Tu reçois {{amount}} aujourd’hui."
+    "payoutBody": "Tu reçois {{amount}} aujourd’hui.",
+    "workBodyNoDate": "{{title}}"
   },
   "settings": {
     "title": "Réglages",
@@ -628,7 +636,13 @@
     "examDays": "Rappels avant l’examen",
     "daysBefore_one": "{{count}} jour avant",
     "daysBefore_other": "{{count}} jours avant",
-    "examTime": "Heure des rappels"
+    "examTime": "Heure des rappels",
+    "permissionTitle": "Recevoir tes rappels ?",
+    "permissionMessage": "MySky t’envoie une notification au moment du rappel, même hors connexion. Ton téléphone va te demander l’autorisation.",
+    "permissionContinue": "Continuer",
+    "permissionOff": "Les notifications sont désactivées : ce rappel ne sonnera pas.",
+    "permissionAllow": "Autoriser les notifications",
+    "permissionSettings": "Ouvrir les réglages"
   },
   "search": {
     "title": "Recherche",
@@ -656,14 +670,16 @@
     "body3": "Un rappel au bon moment pour ne rien oublier : cours, réunions, tâches, tontines.",
     "howTitle": "Comment veux-tu commencer ?",
     "howHint": "Tu pourras changer d’avis plus tard.",
-    "manual": "Créer mon emploi du temps",
-    "manualHint": "Ajoute tes matières et tes cours un par un.",
+    "manual": "Ajouter mes matières",
+    "manualHint": "Commence par tes matières, puis ajoute tes cours.",
     "laterHint": "Découvre d’abord l’application.",
     "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
     "welcome": "Bienvenue dans MySky",
-    "previous": "Précédent"
+    "previous": "Précédent",
+    "firstTask": "Noter ma première tâche",
+    "firstTaskHint": "Une chose à faire, petite ou grande."
   },
   "notifications": {
     "title": "Notifications",
@@ -980,7 +996,16 @@
     "deleteConfirm": "Supprimer mon compte",
     "otherTitle": "Données d’un autre compte",
     "otherMessage": "Ce téléphone contient les données d’un autre compte MySky. Pour continuer avec ce compte, elles seront effacées de ce téléphone (elles restent sur l’autre compte).",
-    "otherConfirm": "Effacer et continuer"
+    "otherConfirm": "Effacer et continuer",
+    "eraseTitle": "Effacer ce téléphone ?",
+    "eraseMessage": "Tout est envoyé sur ton compte. Les données, pièces jointes et sauvegardes de ce téléphone seront effacées, puis tu seras déconnecté.",
+    "eraseConfirm": "Effacer ce téléphone",
+    "unsyncedTitle": "Modifications pas encore envoyées",
+    "unsyncedMessage_one": "{{count}} modification n’est pas encore envoyée. Si tu continues, elle sera perdue.",
+    "unsyncedMessage_other": "{{count}} modifications ne sont pas encore envoyées. Si tu continues, elles seront perdues.",
+    "unsyncedRetry": "Réessayer l’envoi",
+    "unsyncedErase": "Effacer quand même",
+    "unsyncedBlocked": "Des modifications ne sont pas encore envoyées : ce téléphone n’a pas été effacé."
   },
   "auth": {
     "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer à synchroniser.",
@@ -1756,6 +1781,37 @@
       "missingLink": "Motif : l’élément auquel elle est liée n’existe pas sur le serveur.",
       "duplicate": "Motif : un élément identique existe déjà.",
       "other": "Motif : données non valides."
+    },
+    "mine": "Ta version (ce téléphone)",
+    "theirs": "Version gardée (serveur)",
+    "differs": "différent",
+    "emptyValue": "—",
+    "deletedValue": "Supprimé",
+    "notDeletedValue": "Présent",
+    "ignoreTitle": "Abandonner ta version ?",
+    "ignoreMessage": "La version de ce téléphone sera abandonnée définitivement ; la version gardée sur le serveur reste.",
+    "ignoreRejectedMessage": "Ta modification refusée sera abandonnée définitivement ; l’élément reste tel qu’il est sur ce téléphone.",
+    "ignoreConfirm": "Abandonner ma version",
+    "field": {
+      "deleted_at": "État",
+      "title": "Titre",
+      "name": "Nom",
+      "person": "Personne",
+      "first_name": "Prénom",
+      "last_name": "Nom",
+      "date": "Date",
+      "due_date": "Échéance",
+      "due_time": "Heure limite",
+      "time": "Heure",
+      "start_time": "Début",
+      "end_time": "Fin",
+      "amount_minor": "Montant",
+      "target_minor": "Objectif",
+      "status": "Statut",
+      "room": "Salle",
+      "content": "Contenu",
+      "description": "Description",
+      "note": "Note"
     }
   },
   "feedback": {

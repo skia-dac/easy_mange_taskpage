@@ -33,6 +33,20 @@ export async function getWorkItem(db: Db, kind: WorkKind, id: string) {
   return row ? toWorkItem(kind)(row) : null;
 }
 
+/**
+ * Un élément dont on ne connaît que l'id (lien sans `kind`) : cherché dans les tâches, puis dans
+ * les devoirs. Le type vient de la table où il est trouvé.
+ */
+export async function findWorkItem(db: Db, id: string) {
+  return (await getWorkItem(db, 'task', id)) ?? (await getWorkItem(db, 'assignment', id));
+}
+
+/** Avec `kind` connu : lecture directe ; sinon recherche dans les deux tables. */
+export async function getWorkItemOfKind(db: Db, kind: string | undefined, id: string) {
+  if (kind === 'task' || kind === 'assignment') return getWorkItem(db, kind, id);
+  return findWorkItem(db, id);
+}
+
 export async function listPersonalEvents(db: Db) {
   const rows = await db.getAllAsync<PersonalEventRow>(
     `SELECT * FROM personal_events WHERE ${ALIVE} ORDER BY date, start_time`,

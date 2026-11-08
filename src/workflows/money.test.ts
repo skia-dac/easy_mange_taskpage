@@ -455,4 +455,49 @@ describe('module Argent', () => {
       updateRecurring(db, id, { ...base, endDate: '2026-08-01' }),
     ).rejects.toBeInstanceOf(ValidationError);
   });
+
+  it('tuiles : « On me doit » et « Je dois » séparés, épargne regroupée par devise', async () => {
+    const kevin = await createLoan(
+      db,
+      { direction: 'lent', person: 'Kevin' },
+      { amountMinor: 10000, currency: XAF, date: '2026-09-04' },
+    );
+    await createTransaction(db, {
+      kind: 'lend_back',
+      amountMinor: 3000,
+      currency: XAF,
+      date: '2026-09-06',
+      loanId: kevin,
+    });
+    await createLoan(
+      db,
+      { direction: 'borrowed', person: 'Papa' },
+      { amountMinor: 7000, currency: XAF, date: '2026-09-04' },
+    );
+    // En euros : ni « on me doit » ni « je dois » en XAF.
+    await createLoan(
+      db,
+      { direction: 'borrowed', person: 'Léa' },
+      { amountMinor: 5000, currency: 'EUR', date: '2026-09-04' },
+    );
+    const phone = await createGoal(db, { name: 'Téléphone', targetMinor: 150000, currency: XAF });
+    const trip = await createGoal(db, { name: 'Voyage', targetMinor: 50000, currency: 'EUR' });
+    const save = (goalId: string, amountMinor: number, currency: string) =>
+      createTransaction(db, { kind: 'saving', amountMinor, currency, date: '2026-09-05', goalId });
+    await save(phone, 20000, XAF);
+    await save(trip, 1500, 'EUR');
+
+    const o = await overview('2026-09-15');
+    expect(o.loanTotals).toEqual({ owedToMeMinor: 7000, iOweMinor: 7000 });
+    // Jamais 20 000 + 1 500 additionnés : une ligne par devise, la devise affichée d'abord.
+    expect(o.savingsByCurrency).toEqual([
+      { currency: XAF, savedMinor: 20000 },
+      { currency: 'EUR', savedMinor: 1500 },
+    ]);
+    // Objectif archivé : hors de la tuile.
+    await setGoalArchived(db, trip, true);
+    expect((await overview('2026-09-15')).savingsByCurrency).toEqual([
+      { currency: XAF, savedMinor: 20000 },
+    ]);
+  });
 });

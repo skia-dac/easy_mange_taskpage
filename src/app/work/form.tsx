@@ -13,9 +13,10 @@ import {
   createWorkItem,
   deleteWorkItem,
   estimatePresets,
-  getWorkItem,
+  getWorkItemOfKind,
   priorities,
   repeatRules,
+  shiftReminder,
   updateWorkItem,
   workStatuses,
   type WorkItemInput,
@@ -31,7 +32,9 @@ import {
   confirmDestructive,
   DateTimeField,
   Disclosure,
+  EmptyState,
   FormScreen,
+  LoadingScreen,
   SelectField,
   showError,
   TextButton,
@@ -73,8 +76,14 @@ export default function WorkFormScreen() {
   const spaces = useSpaces();
   const study = spaces.has('study');
   const editing = !!params.id;
-  // Le type enregistré (tâche ou devoir) ne change jamais à la modification.
-  const savedKind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
+  // Le type enregistré (tâche ou devoir) ne change jamais à la modification. Sans `kind` dans
+  // le lien, il vient de la table où l'élément est trouvé.
+  const [foundKind, setFoundKind] = useState<WorkKind | null>(null);
+  const savedKind: WorkKind = foundKind ?? (params.kind === 'task' ? 'task' : 'assignment');
+  // Modification : 'loading' jusqu'à la lecture, 'missing' si l'élément n'existe plus.
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>(
+    params.id ? 'loading' : 'ready',
+  );
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
     title: params.title ?? '',
@@ -107,14 +116,22 @@ export default function WorkFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getWorkItem(db, savedKind, params.id)
+    void getWorkItemOfKind(db, params.kind, params.id)
       .then((w) => {
-        if (!w) return;
+        if (!w) {
+          setLoadState('missing');
+          return;
+        }
+        setFoundKind(w.kind);
         setForm(w);
         markClean(w);
+        setLoadState('ready');
       })
-      .catch(reportLoadError);
-  }, [db, savedKind, params.id, markClean]);
+      .catch((e: unknown) => {
+        reportLoadError(e);
+        setLoadState('missing');
+      });
+  }, [db, params.kind, params.id, markClean]);
 
   const submit = () =>
     run(async () => {
@@ -145,6 +162,19 @@ export default function WorkFormScreen() {
       ? t('work.editTask')
       : t('work.editAssignment')
     : t('work.newTask');
+
+  if (loadState === 'loading') return <LoadingScreen />;
+  if (loadState === 'missing')
+    return (
+      <>
+        <Stack.Screen options={{ title }} />
+        <EmptyState
+          icon="alert-circle"
+          title={t('errors.itemNotFound')}
+          action={{ label: t('common.back'), onPress: () => goBack() }}
+        />
+      </>
+    );
 
   return (
     <FormScreen
@@ -194,11 +224,25 @@ export default function WorkFormScreen() {
       <DateTimeField
         label={isTask ? t('work.dueDate') : t('work.dueDateAssignment')}
         mode="date"
-        required
-        value={form.dueDate}
-        onChange={(v) => set({ dueDate: v ?? toIsoDate(new Date()) })}
+        clearable
+        value={form.dueDate ?? null}
+        onChange={(v) => {
+          // « Effacer » retire vraiment la date : la tâche passe « Sans date » (jamais en retard).
+          const dueDate = v ?? null;
+          // Le rappel suit l'échéance (« la veille à 18:00 » reste la veille).
+          setForm((f) => ({
+            ...f,
+            dueDate,
+            reminderAt: shiftReminder(f.reminderAt, f.dueDate, dueDate),
+          }));
+        }}
         error={errors.dueDate}
       />
+      {!form.dueDate ? (
+        <AppText variant="caption" color="muted">
+          {t('work.noDateHint')}
+        </AppText>
+      ) : null}
       {editing ? (
         <ChoiceChips
           label={t('work.status')}
@@ -222,7 +266,7 @@ export default function WorkFormScreen() {
           error={errors.dueTime}
         />
         <ReminderField
-          dueDate={form.dueDate}
+          dueDate={form.dueDate ?? null}
           value={form.reminderAt ?? null}
           onChange={(reminderAt) => set({ reminderAt })}
           error={errors.reminderAt}

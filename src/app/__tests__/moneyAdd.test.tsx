@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createTransaction, listTransactions } from '@/modules/finance';
@@ -25,14 +26,18 @@ jest.mock('expo-router', () => {
 });
 // L'opération à modifier n'arrive que lorsqu'on libère la lecture (comme une base lente).
 let release: (() => void) | null = null;
+/** Lecture qui échoue (base illisible) : l'écran ne doit pas attendre sans fin. */
+const mockRead = { fail: false };
 jest.mock('@/modules/finance', () => {
   const actual = jest.requireActual<typeof import('@/modules/finance')>('@/modules/finance');
   return {
     ...actual,
     getTransaction: (db: Db, id: string) =>
-      new Promise<unknown>((resolve) => {
-        release = () => resolve(actual.getTransaction(db, id));
-      }),
+      mockRead.fail
+        ? Promise.reject(new Error('disk'))
+        : new Promise<unknown>((resolve) => {
+            release = () => resolve(actual.getTransaction(db, id));
+          }),
   };
 });
 jest.mock('@/modules/platform', () => ({
@@ -82,5 +87,28 @@ describe('modifier une opération', () => {
     expect(await screen.findByDisplayValue('Déjeuner')).toBeTruthy();
     expect(screen.getByText(i18n.t('money.delete'))).toBeTruthy();
     expect(await listTransactions(mockDb)).toHaveLength(1);
+  });
+
+  it('lecture en échec : message clair, plus d’écran d’attente sans fin, aucun Enregistrer', async () => {
+    mockRead.fail = true;
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <GestureHandlerRootView>
+          <MoneyAddScreen />
+        </GestureHandlerRootView>
+      </SafeAreaProvider>,
+    );
+    for (let i = 0; i < 3; i++) await flush();
+    expect(alert).toHaveBeenCalledWith(i18n.t('errors.title'), i18n.t('errors.loadFailed'));
+    expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
+    expect(screen.queryByText(/Enregistrer/)).toBeNull();
+    alert.mockRestore();
+    mockRead.fail = false;
   });
 });

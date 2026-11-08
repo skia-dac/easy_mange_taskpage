@@ -135,7 +135,7 @@ async function rescheduleIn(
   w: EntityWriter,
   kind: WorkKind,
   id: string,
-  dueDate: IsoDate,
+  dueDate: IsoDate | null,
   dueTime?: string | null,
 ) {
   const row = await w.db.getFirstAsync<WorkItemRow>(
@@ -154,16 +154,17 @@ async function rescheduleIn(
 
 /**
  * Reporter une tâche (glisser vers la gauche, bilan du soir) ou la déplacer dans la vue semaine.
- * Le rappel suit l'échéance. `dueTime` absent = on garde l'heure actuelle.
+ * Le rappel suit l'échéance. `dueTime` absent = on garde l'heure actuelle. `dueDate` null
+ * remet « sans date » (annuler le report d'une tâche qui n'en avait pas).
  */
 export async function rescheduleWorkItem(
   db: Db,
   kind: WorkKind,
   id: string,
-  dueDate: IsoDate,
+  dueDate: IsoDate | null,
   dueTime?: string | null,
 ) {
-  parseInput(isoDate, dueDate);
+  if (dueDate !== null) parseInput(isoDate, dueDate);
   if (dueTime) parseInput(time, dueTime);
   return write(db, async (w) => {
     await rescheduleIn(w, kind, id, dueDate, dueTime);
@@ -173,7 +174,7 @@ export async function rescheduleWorkItem(
 export type WorkDateSnapshot = {
   kind: WorkKind;
   id: string;
-  dueDate: IsoDate;
+  dueDate: IsoDate | null;
   dueTime: string | null;
 };
 

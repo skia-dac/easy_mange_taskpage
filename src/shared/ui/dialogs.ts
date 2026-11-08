@@ -26,6 +26,32 @@ export function confirmDestructive(
 }
 
 /**
+ * Action destructive qu'on peut encore éviter en réessayant (ex. envoi pas terminé) :
+ * « Réessayer », l'action destructive, ou « Annuler » (par défaut). Trois boutons au plus :
+ * la boîte native Android n'en montre pas davantage.
+ */
+export function confirmDestructiveOrRetry(
+  title: string,
+  message: string,
+  retryLabel: string,
+  destructiveLabel: string,
+): Promise<'retry' | 'destructive' | 'cancel'> {
+  haptic('warning');
+  return new Promise((resolve) => {
+    Alert.alert(
+      title,
+      message,
+      [
+        { text: i18n.t('common.cancel'), style: 'cancel', onPress: () => resolve('cancel') },
+        { text: retryLabel, onPress: () => resolve('retry') },
+        { text: destructiveLabel, style: 'destructive', onPress: () => resolve('destructive') },
+      ],
+      { cancelable: true, onDismiss: () => resolve('cancel') },
+    );
+  });
+}
+
+/**
  * Quitter un formulaire modifié : « Abandonner les modifications ? ». Résout `true` pour
  * abandonner, `false` pour continuer la saisie (choix par défaut, bouton d'annulation).
  */

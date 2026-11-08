@@ -118,6 +118,18 @@ export async function ensurePermission(): Promise<boolean> {
   return asked.granted;
 }
 
+/**
+ * État de la permission, pour l'expliquer au bon moment : `undetermined` = on peut encore
+ * demander (après une courte explication) ; `denied` = seul le réglage du téléphone peut la rendre.
+ */
+export type NotificationPermission = 'granted' | 'undetermined' | 'denied';
+
+export async function notificationPermission(): Promise<NotificationPermission> {
+  const current = await Notifications.getPermissionsAsync();
+  if (current.granted) return 'granted';
+  return current.canAskAgain ? 'undetermined' : 'denied';
+}
+
 export async function hasPermission(): Promise<boolean> {
   return (await Notifications.getPermissionsAsync()).granted;
 }

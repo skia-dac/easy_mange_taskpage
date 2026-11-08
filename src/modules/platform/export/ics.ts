@@ -144,7 +144,7 @@ export function buildIcs(data: TodayData, labels: Labels, now = new Date()): str
     });
   }
   for (const w of data.work) {
-    if (w.status === 'done' || w.dueDate < from || w.dueDate > to) continue;
+    if (w.status === 'done' || !w.dueDate || w.dueDate < from || w.dueDate > to) continue;
     const prefix = w.kind === 'task' ? labels.task : labels.assignment;
     events.push({ uid: `${w.kind}-${w.id}`, summary: `${prefix} : ${w.title}`, allDay: w.dueDate });
   }
