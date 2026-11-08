@@ -118,10 +118,17 @@ export default function SubjectDetailScreen() {
   };
   const deleteOptions: ChoiceOption[] = [
     ...(deleteSheet && deleteSheet.tasks + deleteSheet.assignments + deleteSheet.notes > 0
-      ? [{ label: t('subjects.keepWork'), onPress: () => void doDelete('keepWork') }]
+      ? [
+          {
+            label: t('subjects.keepWork'),
+            afterDismiss: true,
+            onPress: () => void doDelete('keepWork'),
+          },
+        ]
       : []),
     {
       label: t('subjects.deleteAll'),
+      afterDismiss: true,
       destructive: true,
       onPress: () => void doDelete('deleteAll'),
     },
@@ -131,18 +138,22 @@ export default function SubjectDetailScreen() {
   const addOptions: ChoiceOption[] = [
     {
       label: t('add.course'),
+      afterDismiss: true,
       onPress: () => router.push({ pathname: '/courses/form', params: { subjectId: s.id } }),
     },
     {
       label: t('add.exam'),
+      afterDismiss: true,
       onPress: () => router.push({ pathname: '/exams/form', params: { subjectId: s.id } }),
     },
     {
       label: t('add.task'),
+      afterDismiss: true,
       onPress: () => router.push({ pathname: '/work/form', params: { subjectId: s.id } }),
     },
     {
       label: t('add.note'),
+      afterDismiss: true,
       onPress: () =>
         router.push({ pathname: '/notes/[id]', params: { id: 'new', subjectId: s.id } }),
     },

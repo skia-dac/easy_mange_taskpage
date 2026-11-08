@@ -186,7 +186,8 @@
     "moveNextDay": "Move to the next day",
     "todayCell": "today",
     "offCell": "holiday, no classes",
-    "hasItemsCell": "has items"
+    "hasItemsCell": "has items",
+    "hourMark": "{{hour}}:00"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -238,7 +239,10 @@
     "unsavedRetry": "Not saved · Retry",
     "unsavedRetryLabel": "Note not saved. Try saving again",
     "notFound": "Note not found",
-    "notFoundHint": "This note may have been deleted."
+    "notFoundHint": "This note may have been deleted.",
+    "more": "More actions",
+    "removeAttachmentTitle": "Remove “{{name}}”?",
+    "removeAttachmentMessage": "The file will be removed from the note and erased from this phone."
   },
   "editor": {
     "heading": "Heading",
@@ -725,11 +729,8 @@
     "wipe": "Delete all my data",
     "wipeHint": "Erases subjects, classes, notes, tasks, settings, attachments and backups from this phone. Cannot be undone.",
     "wipeTitle": "Delete all your data?",
-    "wipeMessage": "Everything will be erased from this phone, including backups. Share a backup first if you want to keep a copy.\n\nIf you are signed in to an account, changes not sent yet are sent first; if sending fails, you choose to try again or lose them. You will then be signed out: your account and its data stay on the server. To delete them too, use “Delete my account” in “Account and sync”.",
-    "wipeConfirm": "Continue",
-    "wipeAgainTitle": "Last check",
-    "wipeAgainMessage": "This cannot be undone. Really delete all your data?",
-    "wipeAgainConfirm": "Delete everything"
+    "wipeMessage": "Everything will be erased from this phone, including backups. Share a backup first if you want to keep a copy. This cannot be undone.",
+    "wipeConfirm": "Delete everything"
   },
   "backup": {
     "title": "Local backup",
@@ -997,7 +998,8 @@
       "map-pin": "Map pin",
       "smartphone": "Phone"
     },
-    "doneToast": "Done: {{name}}"
+    "doneToast": "Done: {{name}}",
+    "plusOne": "+1"
   },
   "account": {
     "title": "Account and sync",
@@ -1026,14 +1028,15 @@
     "otherMessage": "This phone holds data from another MySky account. To continue with this account, it will be erased from this phone (it stays on the other account).",
     "otherConfirm": "Erase and continue",
     "eraseTitle": "Erase this phone?",
-    "eraseMessage": "Everything has been sent to your account. The data, attachments and backups on this phone will be erased, then you will be signed out.",
+    "eraseMessage": "Anything not sent yet goes to your account first. The data, attachments and backups on this phone will then be erased and you will be signed out. Your account and its data stay on the server: to delete them too, use “Delete my account” in “Account and sync”.",
     "eraseConfirm": "Erase this phone",
     "unsyncedTitle": "Changes not sent yet",
     "unsyncedMessage_one": "{{count}} change has not been sent yet. If you continue, it will be lost.",
     "unsyncedMessage_other": "{{count}} changes have not been sent yet. If you continue, they will be lost.",
     "unsyncedRetry": "Try sending again",
     "unsyncedErase": "Erase anyway",
-    "unsyncedBlocked": "Some changes have not been sent yet: this phone was not erased."
+    "unsyncedBlocked": "Some changes have not been sent yet: this phone was not erased.",
+    "signedOutKept": "You are signed out. Your data stays on this phone."
   },
   "auth": {
     "sessionExpired": "Your session has expired. Sign in again to keep syncing.",
@@ -1222,7 +1225,8 @@
     "inTwoDays": "In 2 days",
     "nextMonday": "Next Monday",
     "pickDate": "Pick another date…",
-    "doneToast": "Postponed to {{date}}."
+    "doneToast": "Postponed to {{date}}.",
+    "pickDateTitle": "New date"
   },
   "review": {
     "title": "Evening review",

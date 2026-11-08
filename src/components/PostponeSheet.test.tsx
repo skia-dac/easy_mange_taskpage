@@ -7,6 +7,7 @@ import { createWorkItem, getWorkItem, type WorkItem } from '@/modules/productivi
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
+import { router } from 'expo-router';
 
 import { canPostpone, usePostpone } from './PostponeSheet';
 
@@ -68,12 +69,39 @@ describe('menu « Reporter »', () => {
     expect(screen.queryByText(i18n.t('postpone.title'))).toBeNull();
   });
 
-  it('échéance à venir : demain, 2 jours, lundi, autre date, retirer la date (pas « Aujourd’hui »)', async () => {
-    await show(await task('2026-09-24'));
+  it('échéance aujourd’hui : demain, 2 jours, lundi, autre date, retirer la date (pas « Aujourd’hui »)', async () => {
+    await show(await task('2026-09-23'));
     expect(screen.getByText(i18n.t('postpone.title'))).toBeTruthy();
     expect(screen.queryByText(i18n.t('postpone.today'))).toBeNull();
     expect(screen.getByText(i18n.t('postpone.tomorrow'))).toBeTruthy();
     expect(screen.getByText(i18n.t('postpone.removeDate'))).toBeTruthy();
+  });
+
+  it('échéance à venir : « Aujourd’hui » avance la tâche, tout de suite', async () => {
+    const later = await task('2026-09-28');
+    await show(later);
+    await fireEvent.press(screen.getByText(i18n.t('postpone.today')));
+    // Simple enregistrement : pas d'attente de la fermeture du menu.
+    await flush();
+    expect((await getWorkItem(mockDb, 'task', later.id))?.dueDate).toBe('2026-09-23');
+  });
+
+  it('« Choisir une autre date… » ouvre le sélecteur de date, pas la fiche', async () => {
+    const dated = await task('2026-09-25');
+    await show(dated);
+    await fireEvent.press(screen.getByText(i18n.t('postpone.pickDate')));
+    await act(async () => {
+      jest.advanceTimersByTime(1500);
+    });
+    expect(router.push).not.toHaveBeenCalled();
+    const picker = screen.getByTestId('date-time-picker');
+    expect(screen.getByText(i18n.t('postpone.pickDateTitle'))).toBeTruthy();
+    await fireEvent(picker, 'change', {
+      nativeEvent: { timestamp: new Date(2026, 9, 2, 12).getTime(), utcOffset: 0 },
+    });
+    await fireEvent.press(screen.getByText(i18n.t('common.ok')));
+    await flush();
+    expect((await getWorkItem(mockDb, 'task', dated.id))?.dueDate).toBe('2026-10-02');
   });
 
   it('en retard : « Aujourd’hui » ramène la tâche à aujourd’hui', async () => {

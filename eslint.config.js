@@ -36,6 +36,11 @@ module.exports = defineConfig([
               message:
                 "Depuis le SDK 56, expo-router refuse react-navigation : importe depuis 'expo-router/react-navigation' (ou 'expo-router/js-tabs').",
             },
+            {
+              group: ['expo-router/build/*'],
+              message:
+                "Chemin interne d'expo-router, qui change sans prévenir : importe depuis 'expo-router', 'expo-router/js-tabs' ou 'expo-router/react-navigation'.",
+            },
           ],
         },
       ],

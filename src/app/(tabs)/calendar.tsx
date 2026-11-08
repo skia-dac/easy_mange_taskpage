@@ -19,6 +19,7 @@ import {
   calendarFilters,
   calendarStep,
   filterItems,
+  quickAddDay,
   useAgendaData,
   type CalendarFilter,
   type CalendarItem,
@@ -140,11 +141,12 @@ export default function CalendarScreen() {
     }
   };
 
-  const move = async (item: CalendarItem, to: MoveTarget) => {
+  /** Déplace un élément ; `false` si rien n'a bougé (refusé, annulé, échec). */
+  const move = async (item: CalendarItem, to: MoveTarget): Promise<boolean> => {
     if (item.kind === 'event' && isSlotEvent(item.event)) {
       // Séance d'un créneau fixe : elle se change dans « Mon planning » (toutes les semaines).
       showInfo(t('planning.slotMoveTitle'), t('planning.slotMoveMessage'));
-      return;
+      return false;
     }
     if (item.kind === 'course') {
       // Un cours revient chaque semaine : on précise que seule cette séance bouge.
@@ -156,9 +158,15 @@ export default function CalendarScreen() {
         }),
         t('calendar.moveConfirm'),
       );
-      if (!ok) return;
+      if (!ok) return false;
     }
-    await moveCalendarItem(db, item, to).catch((e: unknown) => showError(userMessageKey(e)));
+    try {
+      await moveCalendarItem(db, item, to);
+      return true;
+    } catch (e) {
+      showError(userMessageKey(e));
+      return false;
+    }
   };
 
   const step = (dir: 1 | -1) => setSelected(calendarStep(mode, selected, dir));
@@ -331,7 +339,7 @@ export default function CalendarScreen() {
               days={days}
               subjects={byId}
               onOpen={open}
-              onMove={(item, to) => void move(item, to)}
+              onMove={move}
             />
           </>
         ) : mode === 'week' ? (
@@ -353,8 +361,9 @@ export default function CalendarScreen() {
         )}
         <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
-      {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi. */}
-      <QuickAddMenu date={selected} />
+      {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi (vue Heures :
+          aujourd'hui ou le premier jour de la semaine affichée, voir quickAddDay). */}
+      <QuickAddMenu date={quickAddDay(mode, selected, weekStart, today)} />
     </View>
   );
 }

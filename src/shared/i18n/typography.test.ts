@@ -17,7 +17,7 @@ function values(node: unknown, path = ''): [string, string][] {
 describe('typographie française (fr.json)', () => {
   const texts = values(fr).map(([k, v]) => [k, v.replace(/\{\{[^}]*\}\}/g, 'X')] as const);
 
-  it('espace fine insécable avant ; ? ! et insécable avant :', () => {
+  it('espace insécable avant ; ? ! :', () => {
     const bad = texts.filter(([, v]) => / [;?!:]/.test(v)).map(([k]) => k);
     expect(bad).toEqual([]);
   });
@@ -27,8 +27,10 @@ describe('typographie française (fr.json)', () => {
     expect(bad).toEqual([]);
   });
 
-  it('le bon espace : fine (U+202F) avant ; ? ! et insécable (U+00A0) avant :', () => {
-    const bad = texts.filter(([, v]) => /\u00a0[;?!]/.test(v) || /\u202f:/.test(v)).map(([k]) => k);
+  it('jamais d’espace fine insécable (U+202F) : la police du texte ne l’a pas', () => {
+    // Plus Jakarta Sans n'a pas de glyphe U+202F (vérifié dans la table cmap des fichiers .ttf) ;
+    // elle a U+00A0, insécable elle aussi.
+    const bad = texts.filter(([, v]) => v.includes('\u202f')).map(([k]) => k);
     expect(bad).toEqual([]);
   });
 });

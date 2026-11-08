@@ -23,19 +23,21 @@ jest.mock('react-native/Libraries/Modal/Modal', () => {
 
 jest.useFakeTimers();
 
-function Harness({ action }: { action: () => void }) {
+function Harness({ action, afterDismiss = true }: { action: () => void; afterDismiss?: boolean }) {
   const [open, setOpen] = useState(true);
   return (
     <ChoiceSheet
       visible={open}
       title="Se déconnecter"
-      options={[{ label: 'Effacer ce téléphone', destructive: true, onPress: action }]}
+      options={[
+        { label: 'Effacer ce téléphone', destructive: true, afterDismiss, onPress: action },
+      ]}
       onClose={() => setOpen(false)}
     />
   );
 }
 
-async function show(action: () => void) {
+async function show(action: () => void, afterDismiss = true) {
   await render(
     <SafeAreaProvider
       initialMetrics={{
@@ -43,7 +45,7 @@ async function show(action: () => void) {
         insets: { top: 0, left: 0, right: 0, bottom: 0 },
       }}
     >
-      <Harness action={action} />
+      <Harness action={action} afterDismiss={afterDismiss} />
     </SafeAreaProvider>,
   );
 }
@@ -94,5 +96,29 @@ describe('ChoiceSheet : l’action part une fois la fenêtre fermée', () => {
     expect(action).not.toHaveBeenCalled();
     await wait(CHOICE_ANDROID_DELAY_MS);
     expect(action).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ChoiceSheet : une option sans afterDismiss part tout de suite', () => {
+  it.each(['ios', 'android'] as const)('%s : action immédiate, une seule fois', async (os) => {
+    jest.replaceProperty(Platform, 'OS', os);
+    const action = jest.fn();
+    await show(action, false);
+    await fireEvent.press(screen.getByText('Effacer ce téléphone'));
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(mockModal.visible).toBe(false);
+    await act(async () => mockModal.onDismiss?.());
+    await wait(CHOICE_IOS_FALLBACK_MS);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it('démontée pendant la fermeture : l’action en attente est annulée', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    const action = jest.fn();
+    await show(action);
+    await fireEvent.press(screen.getByText('Effacer ce téléphone'));
+    await act(async () => screen.unmount());
+    await wait(CHOICE_IOS_FALLBACK_MS);
+    expect(action).not.toHaveBeenCalled();
   });
 });

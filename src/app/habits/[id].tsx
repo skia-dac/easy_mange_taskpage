@@ -290,14 +290,13 @@ export default function HabitDetailScreen() {
         </AppText>
       ) : null}
       <TextButton label={t('habits.delete')} color="danger" onPress={() => void remove()} />
-      {sheetDay ? (
-        <HabitDaySheet
-          habit={habit}
-          date={sheetDay}
-          log={logOn(logs, habit.id, sheetDay)}
-          onClose={() => setSheetDay(null)}
-        />
-      ) : null}
+      <HabitDaySheet
+        visible={sheetDay !== null}
+        habit={habit}
+        date={sheetDay}
+        log={sheetDay ? logOn(logs, habit.id, sheetDay) : undefined}
+        onClose={() => setSheetDay(null)}
+      />
     </ScrollView>
   );
 }

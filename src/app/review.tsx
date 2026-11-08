@@ -232,14 +232,13 @@ export default function EveningReviewScreen() {
       ) : null}
       <Button label={t('review.done')} onPress={() => goBack()} />
       {postpone.sheet}
-      {habitSheet ? (
-        <HabitDaySheet
-          habit={habitSheet}
-          date={review.today}
-          log={logOn(habitLogs, habitSheet.id, review.today)}
-          onClose={() => setHabitSheet(null)}
-        />
-      ) : null}
+      <HabitDaySheet
+        visible={habitSheet !== null}
+        habit={habitSheet}
+        date={review.today}
+        log={habitSheet ? logOn(habitLogs, habitSheet.id, review.today) : undefined}
+        onClose={() => setHabitSheet(null)}
+      />
     </ScrollView>
   );
 }

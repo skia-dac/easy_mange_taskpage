@@ -1,50 +1,16 @@
-import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Tabs } from 'expo-router';
-import { useEffect } from 'react';
-import type { ComponentProps } from 'react';
-import { Easing, type ColorValue } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { Easing } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { isOnboardingDone } from '@/modules/identity';
 import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import { SlidingTabBar } from '@/components/SlidingTabBar';
+import { tabIcon } from '@/components/TabIcon';
 import { TabBarVisibility } from '@/shared/tabBarVisibility';
 import { fonts, textVariants, useTheme } from '@/shared/theme';
 import { LoadingScreen } from '@/shared/ui';
-
-type IconName = ComponentProps<typeof Feather>['name'];
-
-function tabIcon(name: IconName) {
-  function TabIcon({
-    color,
-    size,
-    focused,
-  }: {
-    color: ColorValue;
-    size: number;
-    focused: boolean;
-  }) {
-    const reduced = useReducedMotion();
-    const scale = useSharedValue(focused ? 1.12 : 1);
-    useEffect(() => {
-      scale.value = withSpring(reduced || !focused ? 1 : 1.12, { damping: 12, stiffness: 220 });
-    }, [focused, reduced, scale]);
-    const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-    return (
-      <Animated.View style={style}>
-        <Feather name={name} size={size} color={color} />
-      </Animated.View>
-    );
-  }
-  return TabIcon;
-}
 
 /**
  * Les 4 onglets : Aujourd'hui · Calendrier · Carnet (tâches + notes) · Argent.

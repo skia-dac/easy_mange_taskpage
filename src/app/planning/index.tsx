@@ -82,9 +82,15 @@ export default function PlanningScreen() {
       : null;
   const addSlot = () => router.push('/planning/slot-form');
   const addOptions: ChoiceOption[] = [
-    { label: t('planning.slotOption'), hint: t('planning.slotOptionHint'), onPress: addSlot },
+    {
+      label: t('planning.slotOption'),
+      afterDismiss: true,
+      hint: t('planning.slotOptionHint'),
+      onPress: addSlot,
+    },
     {
       label: t('planning.eventOption'),
+      afterDismiss: true,
       hint: t('planning.eventOptionHint'),
       onPress: () => router.push({ pathname: '/events/form', params: { date: today } }),
     },

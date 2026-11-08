@@ -176,8 +176,8 @@ export default function LoansScreen() {
         visible={menu}
         title={t('money.newLoan')}
         options={[
-          { label: t('money.iLent'), onPress: () => add('lent') },
-          { label: t('money.iBorrowed'), onPress: () => add('borrowed') },
+          { label: t('money.iLent'), afterDismiss: true, onPress: () => add('lent') },
+          { label: t('money.iBorrowed'), afterDismiss: true, onPress: () => add('borrowed') },
         ]}
         onClose={() => setMenu(false)}
       />

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
-import { usePostpone } from '@/components/PostponeSheet';
+import { canPostpone, usePostpone } from '@/components/PostponeSheet';
 import { ProfileButton } from '@/components/ProfileButton';
 import { SearchButton } from '@/components/SearchButton';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -180,7 +180,10 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
     examSection('upcoming', t('tasks.groupUpcoming'), upcomingExams);
     examSection('past', t('tasks.groupPast'), pastExams);
   } else if (listState === 'ready') {
-    entries.push(openCount > 0 ? { kind: 'hint', key: 'hint' } : { kind: 'empty', key: 'empty' });
+    // L'aide du glisser n'apparaît que si une ligne peut se reporter (tâche datée, à faire).
+    const swipeable = [...groups.overdue, ...groups.today, ...groups.upcoming].some(canPostpone);
+    if (openCount === 0) entries.push({ kind: 'empty', key: 'empty' });
+    else if (swipeable) entries.push({ kind: 'hint', key: 'hint' });
     workSection('overdue', t('tasks.groupOverdue'), groups.overdue);
     workSection('today', t('tasks.groupToday'), groups.today);
     workSection('upcoming', t('tasks.groupUpcoming'), groups.upcoming);

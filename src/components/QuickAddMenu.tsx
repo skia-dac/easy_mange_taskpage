@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AccessibilityInfo,
-  BackHandler,
+  Modal,
   Pressable,
   ScrollView,
   useWindowDimensions,
@@ -20,7 +20,7 @@ import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
 import { useTabBarInset } from '@/shared/tabBarVisibility';
 import { minTouchSize, useTheme } from '@/shared/theme';
-import { AppText, Fab, Tappable } from '@/shared/ui';
+import { AppText, Fab, Tappable, useAfterDismiss } from '@/shared/ui';
 
 type Item = ItemLook & {
   key: string;
@@ -41,6 +41,10 @@ type Props = {
  * Le « + » d'Aujourd'hui et du Calendrier : un appui ouvre les ajouts les plus fréquents
  * (dépense, entrée d'argent, tâche, note, rendez-vous, révision) et, avec Études, « Autre »
  * pour le reste (examen, cours, matière). Ailleurs, le « + » crée directement.
+ *
+ * Le menu vit dans une fenêtre (`Modal`) : son voile couvre tout l'écran, barre d'onglets
+ * comprise (on ne change pas d'onglet menu ouvert), et le bouton retour d'Android le ferme. Une
+ * copie du « + », devenu ×, est posée au même endroit par-dessus le voile pour le refermer.
  */
 export function QuickAddMenu({ note, date }: Props) {
   const { t } = useTranslation();
@@ -59,14 +63,7 @@ export function QuickAddMenu({ note, date }: Props) {
     const focus = setTimeout(() => {
       if (first.current) AccessibilityInfo.sendAccessibilityEvent(first.current, 'focus');
     }, 200);
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setOpen(false);
-      return true;
-    });
-    return () => {
-      clearTimeout(focus);
-      sub.remove();
-    };
+    return () => clearTimeout(focus);
   }, [open]);
 
   const items: Item[] = [
@@ -130,14 +127,24 @@ export function QuickAddMenu({ note, date }: Props) {
   const menuBottom = spacing.xl + tabBarInset + 58 + spacing.md;
   const menuMaxHeight = Math.max(minTouchSize * 2, height - menuBottom - insets.top - spacing.md);
 
+  // L'écran choisi s'ouvre une fois la fenêtre du menu fermée (iPhone : sinon il peut être ignoré).
+  const afterClose = useAfterDismiss();
   const go = (href: Href) => {
     setOpen(false);
-    router.push(href);
+    afterClose.schedule(() => router.push(href));
   };
 
   return (
     <>
-      {open ? (
+      <Modal
+        visible={open}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setOpen(false)}
+        onDismiss={afterClose.onDismiss}
+      >
         <View
           testID="quick-add-menu"
           accessibilityViewIsModal
@@ -220,8 +227,15 @@ export function QuickAddMenu({ note, date }: Props) {
               </Pressable>
             </ScrollView>
           </View>
+          <Fab
+            overlay
+            open
+            bottomInset={tabBarInset}
+            accessibilityLabel={t('common.close')}
+            onPress={() => setOpen(false)}
+          />
         </View>
-      ) : null}
+      </Modal>
       <Fab
         open={open}
         bottomInset={tabBarInset}

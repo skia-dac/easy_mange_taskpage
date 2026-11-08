@@ -55,6 +55,7 @@ import {
   Card,
   Chip,
   ChoiceChips,
+  ChoiceSheet,
   confirmDestructive,
   EmptyState,
   KeyboardAvoiding,
@@ -117,6 +118,8 @@ export default function NoteScreen() {
   /** Titre proposé depuis un cours : seul, il ne suffit pas à créer la note. */
   const prefilledTitle = useRef<string | null>(null);
   const [editing, setEditing] = useState(isNew);
+  /** Menu « … » de l'en-tête : favori, partager, supprimer. */
+  const [menu, setMenu] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [subjectId, setSubjectId] = useState<string | null>(params.subjectId ?? null);
@@ -369,8 +372,8 @@ export default function NoteScreen() {
 
   const removeFile = async (a: Attachment) => {
     const ok = await confirmDestructive(
-      a.name,
-      t('notes.removeAttachment'),
+      t('notes.removeAttachmentTitle', { name: a.name }),
+      t('notes.removeAttachmentMessage'),
       t('notes.removeAttachment'),
     );
     if (!ok) return;
@@ -415,7 +418,7 @@ export default function NoteScreen() {
       // l'enregistrement de sortie garde la note telle quelle (jamais une note vidée).
       deleted.current = true;
       files.forEach((a) => deleteLocalFile(a.localPath));
-      setNoteId(null);
+      // On garde l'écran tel quel pendant le retour : pas de « Note introuvable » qui clignote.
       leave(goBack);
     } catch (e) {
       fail(e);
@@ -452,12 +455,18 @@ export default function NoteScreen() {
 
   const subject = subjectId ? byId.get(subjectId) : undefined;
   const category = (categories.data ?? []).find((c) => c.id === categoryId);
+  // En-tête : deux commandes au plus. « Modifier / Terminé », puis « … » pour le reste.
   const headerRight = () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+      <TextButton
+        label={editing ? t('notes.done') : t('notes.edit')}
+        onPress={() => setEditing(!editing)}
+      />
       <Tappable
         accessibilityRole="button"
-        accessibilityLabel={favorite ? t('notes.unfavorite') : t('notes.favorite')}
-        onPress={() => void toggleFavorite()}
+        accessibilityLabel={t('notes.more')}
+        accessibilityState={{ expanded: menu }}
+        onPress={() => setMenu(true)}
         style={{
           width: minTouchSize,
           height: minTouchSize,
@@ -465,28 +474,39 @@ export default function NoteScreen() {
           justifyContent: 'center',
         }}
       >
-        <Feather name="star" size={22} color={favorite ? colors.warning : colors.muted} />
+        <Feather name="more-horizontal" size={22} color={colors.primary} />
       </Tappable>
-      {noteId && !editing ? (
-        <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={t('notes.sharePdf')}
-          onPress={() => void sharePdfFile()}
-          style={{
-            width: minTouchSize,
-            height: minTouchSize,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Feather name="share" size={22} color={colors.muted} />
-        </Tappable>
-      ) : null}
-      <TextButton
-        label={editing ? t('notes.done') : t('notes.edit')}
-        onPress={() => setEditing(!editing)}
-      />
     </View>
+  );
+  const menuSheet = (
+    <ChoiceSheet
+      visible={menu}
+      title={title.trim() || t('notes.screenTitle')}
+      onClose={() => setMenu(false)}
+      options={[
+        {
+          label: favorite ? t('notes.unfavorite') : t('notes.favorite'),
+          selected: favorite,
+          onPress: () => void toggleFavorite(),
+        },
+        ...(noteId
+          ? [
+              {
+                label: t('notes.sharePdf'),
+                // La feuille de partage est une autre fenêtre.
+                afterDismiss: true,
+                onPress: () => void sharePdfFile(),
+              },
+            ]
+          : []),
+        {
+          label: t('notes.delete'),
+          destructive: true,
+          afterDismiss: true,
+          onPress: () => void remove(),
+        },
+      ]}
+    />
   );
 
   const files = attachments.data ?? [];
@@ -557,22 +577,33 @@ export default function NoteScreen() {
         </View>
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-        <TextInput
-          accessibilityLabel={t('notes.titlePlaceholder')}
-          editable={editing}
-          value={title}
-          onChangeText={(v) => scheduleSave({ title: v })}
-          maxLength={NOTE_TITLE_MAX}
-          placeholder={t('notes.titlePlaceholder')}
-          {...inputProps}
-          maxFontSizeMultiplier={variantMaxFontSizeMultiplier.headline}
-          style={{
-            flex: 1,
-            ...text.headline,
-            color: colors.text,
-            paddingVertical: spacing.xs,
-          }}
-        />
+        {editing ? (
+          <TextInput
+            accessibilityLabel={t('notes.titlePlaceholder')}
+            value={title}
+            onChangeText={(v) => scheduleSave({ title: v })}
+            maxLength={NOTE_TITLE_MAX}
+            placeholder={t('notes.titlePlaceholder')}
+            {...inputProps}
+            maxFontSizeMultiplier={variantMaxFontSizeMultiplier.headline}
+            style={{
+              flex: 1,
+              ...text.headline,
+              color: colors.text,
+              paddingVertical: spacing.xs,
+            }}
+          />
+        ) : (
+          // Lecture : un vrai titre, annoncé comme tel par le lecteur d'écran.
+          <AppText
+            variant="headline"
+            accessibilityRole="header"
+            color={title.trim() ? 'text' : 'muted'}
+            style={{ flex: 1, paddingVertical: spacing.xs }}
+          >
+            {title.trim() || t('notes.untitled')}
+          </AppText>
+        )}
         {unsaved && status !== 'saving' ? (
           // Échec de l'enregistrement automatique : indiqué une fois, ici, sans alerte bloquante ;
           // la prochaine modification (ou un appui) retente.
@@ -599,6 +630,7 @@ export default function NoteScreen() {
   return (
     <KeyboardAvoiding>
       <Stack.Screen options={{ title: t('notes.screenTitle'), headerRight }} />
+      {menuSheet}
       {editing ? (
         <View style={{ flex: 1 }}>
           <View style={{ paddingTop: spacing.md }}>{meta}</View>

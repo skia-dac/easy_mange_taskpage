@@ -9,12 +9,17 @@ import {
   type ReactNode,
 } from 'react';
 import { AccessibilityInfo } from 'react-native';
-import { BottomTabBarHeightContext } from 'expo-router/build/react-navigation/bottom-tabs';
+import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
+
+import { tabBarHidesOnScroll } from './ui/tabBarBehavior';
 
 const SetScrollingContext = createContext<(scrolling: boolean) => void>(() => {});
 const HiddenContext = createContext(false);
 
-/** La barre d'onglets se cache quand on descend dans une liste, et revient quand on remonte. */
+/**
+ * La barre d'onglets se cache quand on descend dans une liste, et revient quand on remonte.
+ * Android seulement : sur iPhone elle reste visible (voir `tabBarHidesOnScroll`).
+ */
 export function TabBarVisibility({ children }: { children: ReactNode }) {
   const [scrolling, setScrolling] = useState(false);
   const [reader, setReader] = useState(false);
@@ -30,7 +35,9 @@ export function TabBarVisibility({ children }: { children: ReactNode }) {
 
   return (
     <SetScrollingContext.Provider value={set}>
-      <HiddenContext.Provider value={scrolling && !reader}>{children}</HiddenContext.Provider>
+      <HiddenContext.Provider value={scrolling && !reader && tabBarHidesOnScroll()}>
+        {children}
+      </HiddenContext.Provider>
     </SetScrollingContext.Provider>
   );
 }

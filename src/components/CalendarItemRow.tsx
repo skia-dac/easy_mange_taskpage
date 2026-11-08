@@ -13,7 +13,7 @@ export function CalendarItemRow({ item, subjects, now }: Props) {
     case 'exam':
       return <ExamRow exam={item.exam} subjects={subjects} now={now} />;
     case 'work':
-      return <WorkRow item={item.item} subjects={subjects} now={now} />;
+      return <WorkRow item={item.item} subjects={subjects} now={now} showKind />;
     case 'event':
       return <EventRow event={item.event} />;
     case 'dayOff':

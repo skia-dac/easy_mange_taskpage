@@ -1,4 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { State } from 'react-native-gesture-handler';
+import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 import { Dimensions, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
@@ -71,5 +73,74 @@ describe('fenêtre du bas', () => {
     expect(handle.props.accessibilityElementsHidden).toBe(true);
     await fireEvent(screen.getByTestId('sheet-panel'), 'accessibilityEscape');
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  describe('glisser pour fermer', () => {
+    // Les gestes ne s'enregistrent pour `fireGestureHandler` que si NODE_ENV vaut « test ».
+    const env = process.env.NODE_ENV;
+    beforeAll(() => {
+      process.env.NODE_ENV = 'test';
+      jest.useFakeTimers();
+    });
+    afterAll(() => {
+      process.env.NODE_ENV = env;
+      jest.useRealTimers();
+    });
+
+    const pull = (testId: string, translationY: number) =>
+      act(async () => {
+        fireGestureHandler(getByGestureTestId(testId), [
+          { state: State.BEGAN, translationY: 0, velocityY: 0 },
+          { state: State.ACTIVE, translationY: translationY / 2, velocityY: 0 },
+          { state: State.ACTIVE, translationY, velocityY: 0 },
+          { state: State.END, translationY, velocityY: 0 },
+        ]);
+        // Fin de l'animation de sortie.
+        jest.advanceTimersByTime(500);
+      });
+
+    const open = async (onClose: () => void) =>
+      render(
+        withInsets(
+          <BottomSheet visible onClose={onClose}>
+            <Text>Contenu</Text>
+          </BottomSheet>,
+        ),
+      );
+
+    it('par la poignée', async () => {
+      const onClose = jest.fn();
+      await open(onClose);
+      await pull('sheet-handle-drag', 200);
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('par le contenu quand il est en haut de son défilement', async () => {
+      const onClose = jest.fn();
+      await open(onClose);
+      await pull('sheet-content-drag', 200);
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('un petit glissé du contenu ne ferme pas', async () => {
+      const onClose = jest.fn();
+      await open(onClose);
+      await pull('sheet-content-drag', 40);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('contenu défilé : le geste fait défiler, la fenêtre reste', async () => {
+      const onClose = jest.fn();
+      await open(onClose);
+      await fireEvent.scroll(screen.getByTestId('sheet-scroll'), {
+        nativeEvent: {
+          contentOffset: { x: 0, y: 120 },
+          contentSize: { width: 390, height: 2000 },
+          layoutMeasurement: { width: 390, height: 600 },
+        },
+      });
+      await pull('sheet-content-drag', 200);
+      expect(onClose).not.toHaveBeenCalled();
+    });
   });
 });

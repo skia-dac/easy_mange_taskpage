@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useCallback, useRef } from 'react';
-import { Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Platform, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { minTouchSize, useTheme } from '../theme';
@@ -15,6 +15,12 @@ export type ChoiceOption = {
   destructive?: boolean;
   /** Option actuellement choisie : coche visible et état « sélectionné » pour le lecteur d'écran. */
   selected?: boolean;
+  /**
+   * L'action présente quelque chose par-dessus (alerte, confirmation, autre fenêtre, navigation) :
+   * elle attend que la fenêtre ait fini de se fermer. Sans ce drapeau, elle part tout de suite
+   * (simple changement d'état : filtre, enregistrement).
+   */
+  afterDismiss?: boolean;
 };
 
 type Props = {
@@ -34,16 +40,21 @@ export const CHOICE_IOS_FALLBACK_MS = 1000;
  * Menu de choix en bas de l'écran, identique sur iPhone et Android
  * (la boîte native limite Android à 3 boutons et change l'ordre).
  *
- * L'action choisie ne part qu'une fois la fenêtre fermée : sur iPhone, une alerte présentée
- * pendant qu'une Modal disparaît peut être ignorée par le système (la confirmation qui suit
- * ne s'afficherait jamais et l'écran resterait bloqué).
+ * Une option `afterDismiss` ne part qu'une fois la fenêtre fermée : sur iPhone, une alerte ou
+ * une navigation présentée pendant qu'une Modal disparaît peut être ignorée par le système (la
+ * confirmation qui suit ne s'afficherait jamais et l'écran resterait bloqué). Les autres partent
+ * aussitôt.
  */
 export function ChoiceSheet({ visible, title, message, options, onClose }: Props) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
-  const { height } = useWindowDimensions();
   const pending = useRef<(() => void) | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Un choix est déjà fait pour cette ouverture : un second appui ne fait rien. */
+  const chosen = useRef(false);
+  useEffect(() => {
+    if (visible) chosen.current = false;
+  }, [visible]);
 
   /** Lance l'action en attente, une seule fois (fin de fermeture ou filet de sécurité). */
   const runPending = useCallback(() => {
@@ -54,9 +65,25 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
     action?.();
   }, []);
 
+  // Écran quitté avant la fin de la fermeture : l'action en attente n'a plus de sens.
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      pending.current = null;
+    },
+    [],
+  );
+
   const choose = (o: ChoiceOption) => {
     // Un second appui pendant la fermeture ne lance pas une seconde action.
-    if (pending.current) return;
+    if (pending.current || chosen.current) return;
+    chosen.current = true;
+    if (!o.afterDismiss) {
+      onClose();
+      o.onPress();
+      return;
+    }
     pending.current = o.onPress;
     onClose();
     timer.current = setTimeout(
@@ -75,10 +102,8 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
         {title}
       </AppText>
       {message ? <AppText color="muted">{message}</AppText> : null}
-      <ScrollView
-        style={{ maxHeight: height * 0.6, marginTop: spacing.xs }}
-        contentContainerStyle={{ gap: spacing.sm }}
-      >
+      {/* Pas de second défilement : celui de la fenêtre suffit (et la laisse glisser du contenu). */}
+      <View style={{ marginTop: spacing.xs, gap: spacing.sm }}>
         {options.map((o, i) => (
           <Tappable
             key={`${i}:${o.label}`}
@@ -113,7 +138,7 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
             {o.selected ? <Feather name="check" size={20} color={colors.primary} /> : null}
           </Tappable>
         ))}
-      </ScrollView>
+      </View>
       <View style={{ marginTop: spacing.xs }}>
         <Tappable
           accessibilityRole="button"

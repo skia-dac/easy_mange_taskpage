@@ -122,7 +122,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
                 <Feather name="check" size={20} color={colors.success} />
               ) : (
                 <AppText variant="bodyStrong" color="primary">
-                  +1
+                  {t('habits.plusOne')}
                 </AppText>
               )}
             </CheckPop>

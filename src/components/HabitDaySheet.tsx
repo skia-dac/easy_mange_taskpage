@@ -31,19 +31,74 @@ import {
 } from '@/shared/ui';
 
 type Props = {
+  /** Fenêtre ouverte. Fermée, elle garde la dernière habitude affichée pendant qu'elle disparaît. */
+  visible: boolean;
   habit: Habit | null;
-  date: IsoDate;
+  date: IsoDate | null;
   log: HabitLog | undefined;
   onClose: () => void;
+  /** La fenêtre a fini de disparaître (voir `BottomSheet`). */
+  onDismissed?: () => void;
 };
 
 type Choice = 'done' | 'missed' | 'excused';
+type Shown = { habit: Habit; date: IsoDate; log: HabitLog | undefined };
 
 /**
  * Noter un jour : fait, pas fait ou excusé. La raison est facultative
  * (quelques raisons rapides + un texte libre).
+ *
+ * Toujours montée et pilotée par `visible` : à la fermeture, elle garde l'habitude et le jour
+ * affichés le temps de son animation de sortie. Chaque ouverture repart des valeurs enregistrées.
  */
-export function HabitDaySheet({ habit, date, log, onClose }: Props) {
+export function HabitDaySheet({ visible, habit, date, log, onClose, onDismissed }: Props) {
+  const { spacing } = useTheme();
+  const open = visible && !!habit && !!date;
+  const [shown, setShown] = useState<Shown | null>(open ? { habit, date, log } : null);
+  // Chaque nouvelle ouverture remet le formulaire à zéro (clé de `DayForm`).
+  const [session, setSession] = useState(0);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setSession((n) => n + 1);
+  }
+  // Ouverte : on suit l'habitude, le jour et la ligne enregistrée. Fermée : on garde les derniers.
+  if (open && (shown?.habit !== habit || shown.date !== date || shown.log !== log)) {
+    setShown({ habit, date, log });
+  }
+
+  return (
+    <BottomSheet
+      visible={open && !!shown}
+      onClose={onClose}
+      onDismissed={onDismissed}
+      avoidKeyboard
+      style={{ gap: spacing.md }}
+    >
+      {shown ? (
+        <DayForm
+          key={`${session}:${shown.habit.id}:${shown.date}`}
+          habit={shown.habit}
+          date={shown.date}
+          log={shown.log}
+          onClose={onClose}
+        />
+      ) : null}
+    </BottomSheet>
+  );
+}
+
+function DayForm({
+  habit,
+  date,
+  log,
+  onClose,
+}: {
+  habit: Habit;
+  date: IsoDate;
+  log: HabitLog | undefined;
+  onClose: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const db = useDb();
   const { colors, radius, spacing } = useTheme();
@@ -59,8 +114,6 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   const [reasonCode, setReasonCode] = useState<MissReason | null>(log?.reasonCode ?? null);
   const [reason, setReason] = useState(log?.reason ?? '');
   const [duration, setDuration] = useState<number | null>(log?.durationMinutes ?? null);
-
-  if (!habit) return null;
 
   const save = async () => {
     try {
@@ -119,7 +172,7 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   };
 
   return (
-    <BottomSheet visible onClose={onClose} avoidKeyboard style={{ gap: spacing.md }}>
+    <>
       <View style={{ gap: spacing.xxs }}>
         <AppText variant="heading" accessibilityRole="header">
           {habit.name}
@@ -175,6 +228,6 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
         <TextButton label={t('habits.clearDay')} color="danger" onPress={() => void clear()} />
       ) : null}
       <TextButton label={t('common.cancel')} onPress={onClose} />
-    </BottomSheet>
+    </>
   );
 }

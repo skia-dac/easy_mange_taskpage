@@ -10,7 +10,7 @@ export type { ChoiceOption } from './ChoiceSheet';
 export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
 export { ChoiceChip, ChoiceChips } from './ChoiceChips';
-export { DateTimeField } from './DateTimeField';
+export { DateTimeField, useDateTimePicker } from './DateTimeField';
 export { Disclosure } from './Disclosure';
 export {
   confirmAction,
@@ -48,6 +48,7 @@ export type { SelectOption } from './SelectField';
 export { SubjectBar, SubjectDot } from './SubjectDot';
 export { TextButton } from './TextButton';
 export { useScreenReader } from './useScreenReader';
+export { AFTER_DISMISS_IOS_FALLBACK_MS, useAfterDismiss } from './useAfterDismiss';
 export { Toggle } from './Toggle';
 export { showToast, showUndoToast, ToastHost } from './Toast';
 export type { ToastAction } from './Toast';

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, View } from 'react-native';
 
 import { AccentPicker } from '@/components/AccentPicker';
+import { useErasePhone } from '@/hooks/useErasePhone';
 import { useLabels } from '@/hooks/useLabels';
 import {
   accountMessageKey,
@@ -17,7 +18,6 @@ import {
   getTextScalePreference,
   getWeekStart,
   isAppLockEnabled,
-  signOut,
   setAccentPreference,
   setAppearancePreference,
   setAppLockEnabled,
@@ -25,7 +25,6 @@ import {
   setNotificationPreferences,
   setTextScalePreference,
   setWeekStart,
-  useAuth,
   weekStartOptions,
   type AccentPreference,
   type AppearancePreference,
@@ -61,7 +60,6 @@ import {
   ChoiceChips,
   ChoiceSheet,
   confirmDestructive,
-  confirmDestructiveOrRetry,
   DateTimeField,
   IconBadge,
   ListRow,
@@ -75,7 +73,6 @@ import {
   reportLoadError,
   Toggle,
 } from '@/shared/ui';
-import { pushBeforeErase, signOutFromPhone, wipeAllData } from '@/workflows';
 
 type SheetKind = 'share' | 'restore' | null;
 
@@ -97,7 +94,6 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { userId } = useAuth();
   const { spacing } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
@@ -111,6 +107,7 @@ export default function SettingsScreen() {
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [busy, setBusy] = useState(false);
+  const erasePhone = useErasePhone();
 
   const refreshBackups = useCallback(async () => {
     const last = await getLastBackupAt(db);
@@ -220,48 +217,7 @@ export default function SettingsScreen() {
 
   const wipe = () =>
     run(async () => {
-      const first = await confirmDestructive(
-        t('data.wipeTitle'),
-        t('data.wipeMessage'),
-        t('data.wipeConfirm'),
-      );
-      if (!first) return;
-      // Connecté : comme « Compte › Effacer ce téléphone », on envoie d'abord ce qui attend ; s'il
-      // reste des modifications non envoyées, on le dit (réessayer, effacer quand même, annuler).
-      let discardUnsynced = false;
-      if (userId) {
-        for (;;) {
-          const left = await pushBeforeErase(db, userId);
-          if (left === 0) break;
-          const choice = await confirmDestructiveOrRetry(
-            t('account.unsyncedTitle'),
-            t('account.unsyncedMessage', { count: left }),
-            t('account.unsyncedRetry'),
-            t('account.unsyncedErase'),
-          );
-          if (choice === 'cancel') return;
-          if (choice === 'destructive') {
-            discardUnsynced = true;
-            break;
-          }
-        }
-      }
-      const second = await confirmDestructive(
-        t('data.wipeAgainTitle'),
-        t('data.wipeAgainMessage'),
-        t('data.wipeAgainConfirm'),
-      );
-      if (!second) return;
-      if (userId) {
-        // Refuse encore d'effacer des modifications non envoyées sans « Effacer quand même ».
-        await signOutFromPhone(db, false, { discardUnsynced });
-      } else {
-        await wipeAllData(db);
-        // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau
-        // (sans condition : une session peut exister sans que l'état d'auth soit encore renseigné).
-        await signOut();
-      }
-      router.replace('/onboarding');
+      await erasePhone();
     }, wipeErrorKey);
 
   const toggleAppLock = async (value: boolean) => {
@@ -331,6 +287,8 @@ export default function SettingsScreen() {
         b.size === null
           ? undefined
           : t('backup.size', { kb: Math.max(1, Math.round(b.size / 1024)) }),
+      // Partager ouvre la feuille du système, restaurer demande confirmation : après la fermeture.
+      afterDismiss: true,
       onPress: () => onPick(b),
     }));
 
@@ -534,7 +492,11 @@ export default function SettingsScreen() {
         message={t('backup.restoreHint')}
         options={[
           ...backupOptions((b) => void restore(b.uri)),
-          { label: t('backup.chooseFile'), onPress: () => void restoreFromPicker() },
+          {
+            label: t('backup.chooseFile'),
+            afterDismiss: true,
+            onPress: () => void restoreFromPicker(),
+          },
         ]}
         onClose={() => setSheet(null)}
       />

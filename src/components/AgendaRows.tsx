@@ -96,11 +96,17 @@ export function WorkRow({
   showDate,
   onPostpone,
   progress,
+  showKind,
 }: {
   item: WorkItem;
   subjects: SubjectMap;
   now: Date;
   showDate?: boolean;
+  /**
+   * Le type (« Tâche ») en tête du sous-titre : seulement dans une liste qui mêle plusieurs types
+   * (calendrier). Dans une liste de tâches, il se répéterait sur chaque ligne.
+   */
+  showKind?: boolean;
   /** Active le glisser : à droite pour terminer, à gauche pour reporter. */
   onPostpone?: (item: WorkItem) => void;
   /** Avancement de la checklist, s'il y en a une. */
@@ -144,7 +150,7 @@ export function WorkRow({
       title={item.title}
       struck={done}
       subtitle={[
-        t(`calendarItem.${item.kind}`),
+        showKind ? t(`calendarItem.${item.kind}`) : null,
         subject?.name,
         when,
         item.estimatedMinutes ? labels.duration(item.estimatedMinutes) : null,

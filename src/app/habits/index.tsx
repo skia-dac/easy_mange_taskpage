@@ -235,14 +235,13 @@ export default function HabitsScreen() {
         ) : null}
       </ScrollView>
       <Fab accessibilityLabel={t('habits.new')} onPress={() => router.push('/habits/form')} />
-      {sheet ? (
-        <HabitDaySheet
-          habit={sheet}
-          date={today}
-          log={logOn(logs, sheet.id, today)}
-          onClose={() => setSheet(null)}
-        />
-      ) : null}
+      <HabitDaySheet
+        visible={sheet !== null}
+        habit={sheet}
+        date={today}
+        log={sheet ? logOn(logs, sheet.id, today) : undefined}
+        onClose={() => setSheet(null)}
+      />
     </View>
   );
 }
