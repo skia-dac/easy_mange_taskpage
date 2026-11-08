@@ -10,13 +10,15 @@ Statut au **26 septembre 2026** : **MVP complet, audits A → F faits**, en atte
 - **Habitudes et sport** : quotidien ou hebdomadaire, durée, poids et photos de progression (privées), grille de progression, humeur.
 - **Argent** : dépenses et entrées, catégories perso, charges fixes et tontines, épargne, prêts, rapport, recherche.
 - **Donner mon avis** (Profil) : bug, idée ou autre en un écran, envoyé au serveur (écriture seule, avec ou sans compte) ou par e-mail, gardé en file hors connexion ; « Mes retours » pour suivre l’envoi.
-- **Compte facultatif** (e-mail, Apple, Google) et synchronisation ; sans compte, tout marche hors connexion sur un seul téléphone.
-- **Widgets** : 14 sur iPhone (+ Live Activity « Révision ») et 15 sur Android (dev build requis) ; rappels locaux, sauvegarde quotidienne, export `.ics`, verrouillage Face ID, français et anglais.
+- **Compte facultatif** (e-mail, Apple, Google) : c'est la sauvegarde. Avec un compte, tout est synchronisé et revient sur un autre téléphone ; sans compte, tout marche hors connexion mais reste **seulement sur ce téléphone** (perdu en cas de perte, de changement ou de désinstallation). Pas de version web pour l'instant.
+- **Widgets** : 14 sur iPhone (+ Live Activity « Révision ») et 15 sur Android (dev build requis) ; rappels locaux, copie de secours quotidienne sur le téléphone, export `.ics`, verrouillage Face ID, français et anglais.
 
 **Après mise à jour du dépôt : rejouer `supabase/migrations/20260924000000_mysky.sql` sur le projet Supabase.**
 
 - Plan, architecture et phases : [`docs/PLANNING.md`](docs/PLANNING.md)
 - Sécurité et qualité : [`docs/SECURITY.md`](docs/SECURITY.md)
+- Brancher Supabase (comptes et sauvegarde sur le compte), pas à pas sous Windows : [`docs/GUIDE-SUPABASE.md`](docs/GUIDE-SUPABASE.md)
+- Tests sur téléphone (Expo Go ou build de développement) : [`docs/CHECKLIST-APPAREIL.md`](docs/CHECKLIST-APPAREIL.md)
 - Idées pour la version 2 : [`docs/VERSION_2.md`](docs/VERSION_2.md)
 - Politique de confidentialité (texte de l’app et de la page publique pour les stores) : [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md). Nom de l’éditeur et e-mail de contact à remplir dans `src/shared/legal.ts`.
 - Maquettes : https://claude.ai/artifact/BXWQxZyRPWzu9KNHhb2n5K
@@ -27,10 +29,11 @@ Prérequis : [Node.js](https://nodejs.org) 20 ou plus.
 
 ```bash
 npm install        # une seule fois
-npm start          # lance le serveur de développement
+npm run start:go   # serveur de développement, à ouvrir dans Expo Go
+npm start          # serveur pour le build de développement (expo-dev-client)
 ```
 
-Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et scanne le QR code affiché.
+Avec Expo Go (App Store / Google Play), scanne le QR code affiché. Widgets, tâche de fond, vrais rappels et connexion Google / Apple demandent le **build de développement** : `npx eas-cli@latest build --profile development --platform android` (APK) ou `--profile development-simulator --platform ios`, puis `npm start`. Pendant que le serveur tourne, la touche `s` bascule entre les deux. Ce qui marche où : [`docs/CHECKLIST-APPAREIL.md`](docs/CHECKLIST-APPAREIL.md).
 
 ## Avant chaque commit
 
@@ -48,7 +51,7 @@ npm run check      # types + lint + formatage + tests + schéma serveur
 | `npm run audit:prod` | Cherche les failles connues dans les dépendances |
 | `npm run doctor` | Diagnostic Expo |
 
-Comptes et synchronisation : sans `.env.local`, l’app fonctionne sans compte. Pour les activer, suivre [`supabase/README.md`](supabase/README.md).
+Comptes et synchronisation : sans `.env.local`, l’app fonctionne sans compte. Pour les activer, suivre [`docs/GUIDE-SUPABASE.md`](docs/GUIDE-SUPABASE.md) (résumé : [`supabase/README.md`](supabase/README.md)).
 
 Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`), pour qu'elle soit compatible avec le SDK Expo.
 
