@@ -456,11 +456,7 @@ const cases: Case[] = [
     name: 'Saisie rapide',
     load: () => require('@/app/money/add') as { default: ComponentType },
     params: { kind: 'expense' },
-    expect: [
-      'Nourriture',
-      'Chaussures',
-      'Aujourd’hui, par défaut. Touche la date si c’était un autre jour.',
-    ],
+    expect: ['Nourriture', 'Chaussures', 'Tout voir', 'Aujourd’hui', 'Hier', 'Ajouter une note'],
   },
   {
     name: 'Modifier une opération',

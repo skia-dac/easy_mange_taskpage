@@ -27,6 +27,12 @@ export function isCurrency(code: string): code is CurrencyCode {
 
 const decimalsOf = (code: string) => (isCurrency(code) ? currencies[code].decimals : 2);
 
+/** Symbole affiché d'une monnaie (« FCFA », « € ») ; son code si elle est inconnue. */
+export const currencySymbol = (code: string) => (isCurrency(code) ? currencies[code].symbol : code);
+
+/** Chiffres groupés par milliers avec une espace simple (« 12 500 »). */
+const groupThousands = (digits: string) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
 /** « 12 500 FCFA », « 12,50 € » (séparateur de milliers : espace simple, lisible partout). */
 export function formatMoney(
   minor: number,
@@ -37,13 +43,10 @@ export function formatMoney(
   const abs = Math.abs(Math.round(minor));
   const units = Math.floor(abs / 10 ** d);
   const cents = abs % 10 ** d;
-  const grouped = String(units).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const grouped = groupThousands(String(units));
   const number = d > 0 ? `${grouped},${String(cents).padStart(d, '0')}` : grouped;
   const sign = minor < 0 ? '−' : options.signed && minor > 0 ? '+' : '';
-  const symbol =
-    options.symbol === false
-      ? ''
-      : ` ${isCurrency(currency) ? currencies[currency].symbol : currency}`;
+  const symbol = options.symbol === false ? '' : ` ${currencySymbol(currency)}`;
   return `${sign}${number}${symbol}`;
 }
 
@@ -66,4 +69,15 @@ export function amountInput(minor: number, currency: string): string {
   const d = decimalsOf(currency);
   if (d === 0) return String(minor);
   return `${Math.floor(minor / 10 ** d)},${String(minor % 10 ** d).padStart(d, '0')}`;
+}
+
+/**
+ * Montant en cours de saisie sur le pavé (« 12500 », « 12, », « 12,5 ») → texte affiché, groupé
+ * par milliers comme `formatMoney` mais sans symbole et sans compléter les décimales pas encore
+ * tapées (« 12 500 », « 12, », « 12,5 »). Vide → « 0 ».
+ */
+export function formatAmountTyping(text: string): string {
+  const [int = '', frac] = text.split(',');
+  const units = int.replace(/\D/g, '').replace(/^0+(?=\d)/, '') || '0';
+  return frac === undefined ? groupThousands(units) : `${groupThousands(units)},${frac}`;
 }

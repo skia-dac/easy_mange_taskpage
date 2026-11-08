@@ -1,5 +1,4 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 
 import { EditLoadView } from '@/components/EditLoadView';
 import { goBack } from '@/components/navigation';
@@ -10,15 +9,18 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AmountDisplay } from '@/components/money/AmountDisplay';
+import { AmountPad } from '@/components/money/AmountPad';
 import { amountPadMode } from '@/components/money/amountPadLayout';
-import { CategoryBadge } from '@/components/money/CategoryBadge';
+import { CategoryPicker } from '@/components/money/CategoryPicker';
+import { EntryDetails } from '@/components/money/EntryDetails';
 import { haptic } from '@/shared/ui/haptics';
 import { MONEY_INTEGER_DIGITS } from '@/shared/fieldLimits';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
-import { useLabels } from '@/hooks/useLabels';
 import {
   amountInput,
   categoriesOf,
+  categoryUsage,
   createTransaction,
   currencies,
   deleteTransaction,
@@ -30,29 +32,25 @@ import {
   isCurrency,
   listCategories,
   parseAmount,
+  rankCategories,
   transactionKinds,
   updateTransaction,
   type Transaction,
   type TransactionKind,
 } from '@/modules/finance';
-import { fromIsoDate, toIsoDate } from '@/shared/dates';
+import { addDaysIso, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { isValidationError } from '@/shared/validation';
-import { formatLongDate } from '@/shared/format';
-import { minTouchSize, useTheme } from '@/shared/theme';
+import { useTheme } from '@/shared/theme';
 import {
   AppText,
   Button,
   confirmDestructive,
-  DateTimeField,
   Segmented,
   showError,
   TextButton,
-  TextField,
-  fieldLimits,
   KeyboardAvoiding,
-  Tappable,
   useTextScale,
   reportLoadError,
 } from '@/shared/ui';
@@ -68,16 +66,19 @@ type Params = {
 
 const close = () => goBack('/(tabs)/money');
 
+/** Les catégories sont rangées d'après l'usage des 90 derniers jours. */
+const USAGE_DAYS = 90;
+
 /**
- * Saisie rapide d'une opération : dépense ou entrée → catégorie → montant → Enregistrer.
- * La date du jour est choisie par défaut (modifiable). Sert aussi à modifier une opération,
- * à mettre de côté (objectif) et à noter un remboursement (prêt).
+ * Saisie rapide d'une opération, à une main : le montant en haut (tapé sur le pavé, sous le
+ * pouce), la catégorie la plus utilisée déjà choisie, puis « Ajouter 2 500 FCFA · Nourriture ».
+ * La date du jour et la note sont facultatives, repliées. Sert aussi à modifier une opération, à
+ * mettre de côté (objectif) et à noter un remboursement (prêt).
  */
 export default function MoneyAddScreen() {
   const { t } = useTranslation();
-  const labels = useLabels();
   const db = useDb();
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const windowSize = useWindowDimensions();
   const textScale = useTextScale();
@@ -155,12 +156,21 @@ export default function MoneyAddScreen() {
     context.data?.loan?.currency ?? context.data?.goal?.currency ?? preferredCurrency;
 
   const plain = kind === 'expense' || kind === 'income';
+  const categoryKind = kind === 'income' ? 'income' : 'expense';
+  const usageSince = addDaysIso(today, -USAGE_DAYS);
+  const usage = useLiveQuery(
+    (d) => (plain ? categoryUsage(d, categoryKind, usageSince) : Promise.resolve([])),
+    ['money_transactions'],
+    [plain, categoryKind, usageSince],
+  );
   const cats = useMemo(
-    () => (plain ? categoriesOf(kind === 'income' ? 'income' : 'expense', custom.data ?? []) : []),
-    [plain, kind, custom.data],
+    () =>
+      plain ? rankCategories(categoriesOf(categoryKind, custom.data ?? []), usage.data ?? []) : [],
+    [plain, categoryKind, custom.data, usage.data],
   );
   const decimals = isCurrency(currency) ? currencies[currency].decimals : 2;
   const amount = parseAmount(digits || '0', currency);
+  // Aucune catégorie touchée : la plus utilisée (un appui de moins dans le cas courant).
   const selected = categoryId ?? cats[0]?.id ?? null;
 
   const press = (k: string) => {
@@ -175,6 +185,10 @@ export default function MoneyAddScreen() {
       const digits = (next.split(',')[0] ?? '').replace(/^0+(?=\d)/, '');
       return digits.length > MONEY_INTEGER_DIGITS - decimals ? d : next;
     });
+  };
+  const clear = () => {
+    setError(null);
+    setDigits('');
   };
 
   const save = async () => {
@@ -209,7 +223,7 @@ export default function MoneyAddScreen() {
       setSaving(false);
       if (isValidationError(e)) {
         // Erreurs de saisie à leur place : la note sous son champ ; le montant (ex. remboursement
-        // au-delà du reste dû) et le reste sous le pavé. Jamais de message générique.
+        // au-delà du reste dû) et le reste sous le montant. Jamais de message générique.
         const { note: noteKey, ...others } = e.fields;
         setNoteError(noteKey);
         const other = others.amountMinor ?? Object.values(others)[0];
@@ -240,23 +254,25 @@ export default function MoneyAddScreen() {
         ? t('money.newIncome')
         : money.kind(kind);
   const subject = context.data?.goal?.name ?? context.data?.loan?.person ?? null;
-  const keys = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    decimals > 0 ? ',' : '000',
-    '0',
-    'back',
-  ];
+  const categoryName = plain && selected ? money.nameOf(selected) : null;
+  const formatted = amount ? formatMoney(amount, currency) : null;
+  // Le bouton résume l'action : « Ajouter 2 500 FCFA · Nourriture ».
+  const saveLabel = existing
+    ? formatted && categoryName
+      ? t('money.saveWithAmount', { amount: formatted, category: categoryName })
+      : formatted
+        ? t('money.saveAmountOnly', { amount: formatted })
+        : t('money.save')
+    : categoryName
+      ? formatted
+        ? t('money.addWithAmount', { amount: formatted, category: categoryName })
+        : t('money.addNoAmount', { category: categoryName })
+      : formatted
+        ? t('money.saveAmountOnly', { amount: formatted })
+        : t('money.save');
 
-  // Petit écran ou grand texte : pavé compact ; s'il prend encore trop de place, le montant et
-  // le pavé défilent avec le reste et seul « Enregistrer » reste fixé en bas.
+  // Petit écran ou grand texte : pavé compact ; s'il prend encore trop de place, le pavé défile
+  // avec le reste et seul « Enregistrer » reste fixé en bas.
   const padMode = amountPadMode({
     windowHeight: windowSize.height,
     scale: textScale,
@@ -265,66 +281,8 @@ export default function MoneyAddScreen() {
   });
   const compact = padMode !== 'regular';
   const inline = padMode === 'inline';
-  const amountAndPad = (
-    <View
-      style={
-        inline
-          ? { gap: spacing.md }
-          : {
-              paddingHorizontal: spacing.xl,
-              paddingTop: compact ? spacing.sm : spacing.md,
-              paddingBottom: compact ? spacing.sm : spacing.md,
-              gap: compact ? spacing.sm : spacing.md,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
-              backgroundColor: colors.background,
-            }
-      }
-    >
-      <View style={{ alignItems: 'center', gap: spacing.xs }}>
-        <AppText
-          variant={compact ? 'title' : 'display'}
-          color={kind === 'income' ? 'success' : 'text'}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          accessibilityLiveRegion="polite"
-        >
-          {amount
-            ? formatMoney(amount, currency)
-            : `0 ${isCurrency(currency) ? currencies[currency].symbol : currency}`}
-        </AppText>
-        {error ? <AppText color="danger">{error}</AppText> : null}
-      </View>
-      {keyboardOpen ? null : (
-        <View
-          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: compact ? spacing.xs : spacing.sm }}
-        >
-          {keys.map((k) => (
-            <Tappable
-              key={k}
-              accessibilityRole="button"
-              accessibilityLabel={k === 'back' ? t('money.erase') : k}
-              onPress={() => press(k)}
-              style={({ pressed }) => ({
-                width: '31%',
-                flexGrow: 1,
-                minHeight: compact ? minTouchSize : minTouchSize + 4,
-                borderRadius: radius.md,
-                backgroundColor: pressed ? colors.primarySoft : colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
-              })}
-            >
-              {k === 'back' ? (
-                <Feather name="delete" size={22} color={colors.text} />
-              ) : (
-                <AppText variant="heading">{k}</AppText>
-              )}
-            </Tappable>
-          ))}
-        </View>
-      )}
-    </View>
+  const pad = keyboardOpen ? null : (
+    <AmountPad decimals={decimals} mode={padMode} onKey={press} onClear={clear} />
   );
 
   if (loadState !== 'ready')
@@ -335,7 +293,12 @@ export default function MoneyAddScreen() {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.xl,
+          paddingTop: compact ? spacing.md : spacing.lg,
+          paddingBottom: spacing.lg,
+          gap: compact ? spacing.md : spacing.lg,
+        }}
       >
         <Stack.Screen options={{ title }} />
         {plain ? (
@@ -352,97 +315,60 @@ export default function MoneyAddScreen() {
             ]}
           />
         ) : subject ? (
-          <AppText variant="heading">{subject}</AppText>
+          <AppText variant="heading" style={{ textAlign: 'center' }}>
+            {subject}
+          </AppText>
         ) : null}
+
+        <AmountDisplay
+          digits={digits}
+          currency={currency}
+          income={kind === 'income'}
+          compact={compact}
+          error={error}
+        />
 
         {plain ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {cats.map((c) => {
-              const on = c.id === selected;
-              return (
-                <Tappable
-                  key={c.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on }}
-                  accessibilityLabel={money.categoryName(c)}
-                  onPress={() => setCategoryId(c.id)}
-                  style={{
-                    width: '23%',
-                    flexGrow: 1,
-                    minHeight: 76,
-                    borderRadius: radius.md,
-                    borderWidth: on ? 2 : 1.5,
-                    borderColor: on ? colors.primary : colors.border,
-                    backgroundColor: on ? colors.primarySoft : colors.surface,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: spacing.xs,
-                    padding: spacing.xs,
-                  }}
-                >
-                  <CategoryBadge category={c} size={30} />
-                  <AppText variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
-                    {money.categoryName(c)}
-                  </AppText>
-                </Tappable>
-              );
-            })}
-          </View>
+          <CategoryPicker
+            categories={cats}
+            selectedId={selected}
+            onSelect={setCategoryId}
+            onCreate={() =>
+              router.push({ pathname: '/money/category-form', params: { kind: categoryKind } })
+            }
+            nameOf={money.categoryName}
+          />
         ) : null}
 
-        <View style={{ gap: spacing.xs }}>
-          <DateTimeField
-            label={t('money.date')}
-            mode="date"
-            required
-            value={date}
-            onChange={(v) => setDate(v ?? today)}
-          />
-          <AppText variant="caption" color={date === today ? 'muted' : 'warning'}>
-            {date === today
-              ? t('money.dateIsToday')
-              : t('money.dateOther', { date: formatLongDate(fromIsoDate(date), labels.lang) })}
-          </AppText>
-        </View>
+        {inline ? pad : null}
 
-        <TextField
-          label={t('money.note')}
-          value={note}
-          onChangeText={(v) => {
+        <EntryDetails
+          today={today}
+          date={date}
+          onDate={setDate}
+          note={note}
+          onNote={(v) => {
             setNote(v);
             setNoteError(undefined);
           }}
-          error={noteError}
-          placeholder={t('common.optional')}
-          limit={fieldLimits.note120}
+          noteError={noteError}
         />
-        {inline ? amountAndPad : null}
       </ScrollView>
-      {inline ? null : amountAndPad}
-      {/* Pied fixe : le bouton Enregistrer reste visible, quelle que soit la taille d'écran ;
-          le montant et le pavé aussi, sauf s'ils ne laissent plus de place (voir `padMode`). */}
+      {/* Pied fixe, sous le pouce : le pavé (sauf s'il ne laisse plus de place, voir `padMode`)
+          et le bouton Enregistrer, toujours visible. */}
       <View
         style={{
-          paddingHorizontal: spacing.xl,
-          paddingTop: inline ? spacing.sm : 0,
+          paddingHorizontal: spacing.lg,
+          paddingTop: compact ? spacing.sm : spacing.md,
           paddingBottom: (compact ? spacing.sm : spacing.md) + insets.bottom,
           gap: compact ? spacing.sm : spacing.md,
-          borderTopWidth: inline ? 1 : 0,
+          borderTopWidth: 1,
           borderTopColor: colors.border,
           backgroundColor: colors.background,
         }}
       >
-        <Button
-          label={
-            plain && selected
-              ? t(kind === 'income' ? 'money.saveIncome' : 'money.saveExpense', {
-                  category: money.categoryName(cats.find((c) => c.id === selected)),
-                })
-              : t('money.save')
-          }
-          onPress={() => void save()}
-          disabled={saving}
-        />
+        {inline ? null : pad}
+        <Button label={saveLabel} onPress={() => void save()} disabled={saving || !amount} />
         {existing ? (
           <TextButton label={t('money.delete')} color="danger" onPress={() => void remove()} />
         ) : null}

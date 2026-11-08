@@ -59,7 +59,8 @@ jest.mock('@/shared/ui', () => {
   return {
     ...actual,
     Button: (props: React.ComponentProps<typeof actual.Button>) => {
-      if (/Enregistrer/.test(props.label)) {
+      // « Ajouter 500 FCFA · Nourriture » (nouvelle) ou « Enregistrer … » (modification).
+      if (/^(Ajouter|Enregistrer)/.test(props.label)) {
         const onPress = props.onPress;
         mockSavePress.current = onPress ? () => onPress({} as never) : null;
       }
@@ -100,14 +101,23 @@ describe('modifier une opération', () => {
       </SafeAreaProvider>,
     );
     // Avant le chargement : écran d'attente, aucun bouton qui créerait un doublon.
-    // (« Enregistrer » ou « Enregistrer · Repas » : aucun des deux.)
-    expect(screen.queryByText(/Enregistrer/)).toBeNull();
+    // (« Enregistrer » ou « Enregistrer 1 500 FCFA · Nourriture » : aucun des deux.)
+    expect(screen.queryByText(/Enregistrer|Ajouter/)).toBeNull();
     expect(screen.queryByText(i18n.t('money.delete'))).toBeNull();
     await act(async () => release?.());
     for (let i = 0; i < 5; i++) await flush();
-    // Chargée : le formulaire est en mode modification, avec la note existante.
+    // Chargée : le formulaire est en mode modification, avec la note, le montant, la catégorie et
+    // la date (hier) de l'opération.
     expect(await screen.findByDisplayValue('Déjeuner')).toBeTruthy();
     expect(screen.getByText(i18n.t('money.delete'))).toBeTruthy();
+    expect(screen.getByLabelText('Montant : 1 500 FCFA')).toBeTruthy();
+    expect(screen.getByText('Enregistrer 1 500 FCFA · Nourriture')).toBeTruthy();
+    expect(screen.getByTestId('category-food').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
+    expect(screen.getByTestId('date-yesterday').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
     expect(await listTransactions(mockDb)).toHaveLength(1);
   });
 
@@ -130,7 +140,7 @@ describe('modifier une opération', () => {
     // Une lecture ratée n'est pas une opération supprimée : on peut réessayer.
     expect(screen.getByText(i18n.t('state.itemErrorTitle'))).toBeTruthy();
     expect(screen.queryByText(i18n.t('errors.itemNotFound'))).toBeNull();
-    expect(screen.queryByText(/Enregistrer/)).toBeNull();
+    expect(screen.queryByText(/Enregistrer|Ajouter/)).toBeNull();
 
     // « Réessayer » : la lecture réussit, le formulaire apparaît avec l'opération.
     mockRead.fail = false;
@@ -161,7 +171,7 @@ describe('modifier une opération', () => {
     for (let i = 0; i < 3; i++) await flush();
     expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
     expect(screen.getByText('Retour')).toBeTruthy();
-    expect(screen.queryByText(/Enregistrer/)).toBeNull();
+    expect(screen.queryByText(/Enregistrer|Ajouter/)).toBeNull();
     mockParams.id = id!;
   });
 });
@@ -201,5 +211,131 @@ describe('nouvelle opération', () => {
     expect(await listTransactions(mockDb)).toHaveLength(before + 1);
     expect(router.back).toHaveBeenCalledTimes(1);
     if (editedId) mockParams.id = editedId;
+  });
+});
+
+describe('saisie rapide', () => {
+  let editedId: string | undefined;
+  beforeEach(() => {
+    editedId = mockParams.id;
+    delete mockParams.id;
+    mockParams.kind = 'expense';
+    mockCreate.mockClear();
+    jest.mocked(router.push).mockClear();
+  });
+  afterEach(() => {
+    delete mockParams.kind;
+    if (editedId) mockParams.id = editedId;
+  });
+
+  async function renderNew() {
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <GestureHandlerRootView>
+          <MoneyAddScreen />
+        </GestureHandlerRootView>
+      </SafeAreaProvider>,
+    );
+    for (let i = 0; i < 3; i++) await flush();
+  }
+  const type = async (...keys: string[]) => {
+    for (const k of keys) await fireEvent.press(screen.getByTestId(`pad-${k}`));
+  };
+
+  it('montant à 0 : « 0 » estompé et bouton désactivé, rien n’est enregistré', async () => {
+    await renderNew();
+    expect(screen.getByLabelText('Montant : 0 FCFA')).toBeTruthy();
+    // La catégorie la plus utilisée (Nourriture, déjà notée) est choisie d'office.
+    const button = screen.getByRole('button', { name: 'Ajouter · Nourriture' });
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.press(button);
+    for (let i = 0; i < 3; i++) await flush();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('le montant tapé est groupé par milliers et résumé dans le bouton', async () => {
+    await renderNew();
+    await type('2', '5', '0', '0');
+    expect(screen.getByText('2 500')).toBeTruthy();
+    expect(screen.getByLabelText('Montant : 2 500 FCFA')).toBeTruthy();
+    await type('000');
+    expect(screen.getByText('2 500 000')).toBeTruthy();
+    await type('back', 'back', 'back');
+    const button = screen.getByRole('button', { name: 'Ajouter 2 500 FCFA · Nourriture' });
+    expect(button.props.accessibilityState).toMatchObject({ disabled: false });
+    // FCFA sans décimales : pas de virgule, « Trois zéros » à la place.
+    expect(screen.getByLabelText('Trois zéros')).toBeTruthy();
+    expect(screen.queryByLabelText('Virgule')).toBeNull();
+  });
+
+  it('touche longue sur « Effacer » : tout le montant est effacé', async () => {
+    await renderNew();
+    await type('1', '2', '3');
+    expect(screen.getByLabelText('Montant : 123 FCFA')).toBeTruthy();
+    const erase = screen.getByLabelText('Effacer');
+    expect(erase.props.accessibilityHint).toBe(i18n.t('money.eraseHint'));
+    await fireEvent(erase, 'longPress');
+    expect(screen.getByLabelText('Montant : 0 FCFA')).toBeTruthy();
+    // Aussi par l'action du lecteur d'écran.
+    await type('4');
+    await fireEvent(erase, 'accessibilityAction', { nativeEvent: { actionName: 'clear' } });
+    expect(screen.getByLabelText('Montant : 0 FCFA')).toBeTruthy();
+  });
+
+  it('« Tout voir » : toutes les catégories en entier, choix, et « Nouvelle catégorie »', async () => {
+    await renderNew();
+    // Sur la ligne : 7 catégories et « Tout voir », groupe de boutons radio.
+    const quick = screen.getAllByTestId(/^category-(?!all|new)/);
+    expect(quick).toHaveLength(7);
+    expect(quick[0]!.props.testID).toBe('category-food');
+    expect(screen.queryByTestId('category-supplies')).toBeNull();
+
+    await fireEvent.press(screen.getByLabelText('Voir les 16 catégories'));
+    expect(screen.getByText('Choisir une catégorie')).toBeTruthy();
+    // Noms complets, jamais coupés (« Fournitures, photocopies », « Internet, forfait »).
+    const supplies = screen.getByTestId('sheet-category-supplies');
+    expect(supplies.props.accessibilityRole).toBe('radio');
+    expect(screen.getByText('Fournitures, photocopies')).toBeTruthy();
+    expect(screen.getByText('Internet, forfait')).toBeTruthy();
+    expect(screen.getAllByTestId(/^sheet-category-/)).toHaveLength(16);
+
+    await fireEvent.press(supplies);
+    for (let i = 0; i < 3; i++) await flush();
+    // Choisie dans la liste : elle s'affiche en tête de la ligne, cochée.
+    expect(screen.queryByText('Choisir une catégorie')).toBeNull();
+    expect(screen.getByTestId('category-supplies').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
+    expect(screen.getByRole('button', { name: 'Ajouter · Fournitures, photocopies' })).toBeTruthy();
+
+    // « Nouvelle catégorie » ouvre l'écran de création une fois la fenêtre fermée.
+    await fireEvent.press(screen.getByTestId('category-all'));
+    await fireEvent.press(screen.getByTestId('category-new'));
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/money/category-form',
+      params: { kind: 'expense' },
+    });
+  });
+
+  it('date : « Aujourd’hui » par défaut, « Hier » en un appui ; note repliée', async () => {
+    await renderNew();
+    expect(screen.getByTestId('date-today').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
+    await fireEvent.press(screen.getByTestId('date-yesterday'));
+    expect(screen.getByTestId('date-yesterday').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
+    expect(screen.queryByLabelText(i18n.t('money.note'))).toBeNull();
+    await fireEvent.press(screen.getByText('Ajouter une note'));
+    expect(screen.getByPlaceholderText(i18n.t('common.optional'))).toBeTruthy();
   });
 });

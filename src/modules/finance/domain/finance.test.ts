@@ -1,4 +1,4 @@
-import { amountInput, formatMoney, parseAmount } from './money';
+import { amountInput, currencySymbol, formatAmountTyping, formatMoney, parseAmount } from './money';
 import { daysLeft, periodContaining, shiftPeriod } from './period';
 import { dueItems, occurrencesBetween, type Recurring } from './recurring';
 
@@ -19,6 +19,22 @@ describe('montants', () => {
     expect(parseAmount('0', 'XAF')).toBeNull();
     expect(parseAmount('abc', 'XAF')).toBeNull();
     expect(amountInput(1250, 'EUR')).toBe('12,50');
+  });
+
+  it('groupe le montant tapé sur le pavé par milliers, sans compléter les décimales', () => {
+    expect(formatAmountTyping('')).toBe('0');
+    expect(formatAmountTyping('5')).toBe('5');
+    expect(formatAmountTyping('2500')).toBe('2 500');
+    expect(formatAmountTyping('1250000')).toBe('1 250 000');
+    expect(formatAmountTyping('007')).toBe('7');
+    expect(formatAmountTyping('12,')).toBe('12,');
+    expect(formatAmountTyping('12500,5')).toBe('12 500,5');
+    // Même groupement que les montants enregistrés.
+    expect(`${formatAmountTyping('128400')} ${currencySymbol('XAF')}`).toBe(
+      formatMoney(128400, 'XAF'),
+    );
+    expect(currencySymbol('EUR')).toBe('€');
+    expect(currencySymbol('ZZZ')).toBe('ZZZ');
   });
 });
 
