@@ -192,7 +192,6 @@ export default function NoteScreen() {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, params.id, isNew, reloadKey]);
 
   const fail = (e: unknown) => {
