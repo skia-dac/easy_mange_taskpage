@@ -179,7 +179,8 @@ export type WidgetData = {
   subjects: WidgetSubject[];
   grades: {
     overall: string | null;
-    last: { title: string; subject: string; value: string } | null;
+    /** `line` : « Dernière : 15/20 · Contrôle », déjà traduit (le widget n'a pas i18n). */
+    last: { title: string; subject: string; value: string; line: string } | null;
     subjects: { name: string; average: string; color: string }[];
   };
   month: { title: string; weekdays: string[]; cells: WidgetMonthCell[] };
@@ -373,6 +374,17 @@ function examWhen(date: IsoDate, today: IsoDate, texts: WidgetTexts): string {
     : texts.t(`countdown.${c.kind}`);
 }
 
+function lastGrade(exam: TodayData['exams'][number], texts: WidgetTexts) {
+  const title = exam.title ?? texts.subjectName(exam.subjectId);
+  const value = formatGrade(((exam.grade ?? 0) / exam.gradeMax) * 20, texts.locale);
+  return {
+    title,
+    subject: texts.subjectName(exam.subjectId),
+    value,
+    line: texts.t('widget.lastGradeLine', { value, title }),
+  };
+}
+
 function buildGrades(
   data: TodayData,
   subjects: ReadonlyMap<string, Subject>,
@@ -387,13 +399,7 @@ function buildGrades(
   const last = graded[0];
   return {
     overall: overall === null ? null : formatGrade(overall, texts.locale),
-    last: last
-      ? {
-          title: last.title ?? texts.subjectName(last.subjectId),
-          subject: texts.subjectName(last.subjectId),
-          value: formatGrade(((last.grade ?? 0) / last.gradeMax) * 20, texts.locale),
-        }
-      : null,
+    last: last ? lastGrade(last, texts) : null,
     subjects: by
       .filter((g) => g.average !== null)
       .slice(0, 6)

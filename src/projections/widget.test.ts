@@ -243,7 +243,12 @@ describe('données des widgets', () => {
     expect(mkt.nextDue).toBe('Étude de cas · mar.');
     expect(w.subjects.find((s) => s.id === 'fin')?.nextCourse).toBe('14:00');
     expect(w.grades.overall).toBe('15');
-    expect(w.grades.last).toEqual({ title: 'Contrôle', subject: 'Marketing', value: '15' });
+    expect(w.grades.last).toEqual({
+      title: 'Contrôle',
+      subject: 'Marketing',
+      value: '15',
+      line: 'widget.lastGradeLine{"value":"15","title":"Contrôle"}',
+    });
     expect(w.upcomingExams.map((e) => e.when)).toEqual(['countdown.inDays{"count":2}']);
     expect(w.month.title).toBe('Septembre 2026');
     expect(w.month.cells).toHaveLength(42);

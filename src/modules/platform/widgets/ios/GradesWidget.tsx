@@ -33,7 +33,7 @@ const GradesWidget = (props: WidgetData, environment: WidgetEnvironment) => {
       </Text>
       {g.last ? (
         <Text modifiers={[font({ size: 12 }), foregroundStyle(theme.muted), lineLimit(1)]}>
-          {`${props.labels.lastGrade} : ${g.last.value}/20 · ${g.last.title}`}
+          {g.last.line}
         </Text>
       ) : (
         <Text modifiers={[font({ size: 12 }), foregroundStyle(theme.muted)]}>{props.labels.noGrade}</Text>

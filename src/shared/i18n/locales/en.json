@@ -881,7 +881,8 @@
     "moneyStart": "Open MySky to start",
     "progress": "Progress",
     "progressAll": "My habits",
-    "progressSummary": "{{count}} d done this month"
+    "progressSummary": "{{count}} d done this month",
+    "lastGradeLine": "Latest: {{value}}/20 · {{title}}"
   },
   "habits": {
     "title": "My habits",
@@ -1848,7 +1849,8 @@
       "content": "Content",
       "description": "Description",
       "note": "Note"
-    }
+    },
+    "line": "{{label}}: {{value}}"
   },
   "feedback": {
     "title": "Give feedback",

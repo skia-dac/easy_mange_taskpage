@@ -121,9 +121,15 @@ export default function ConflictsScreen() {
                         accessible
                         accessibilityLabel={[
                           t(`conflicts.field.${f.column}`, { defaultValue: f.column }),
-                          `${t('conflicts.mine')} : ${display(f, f.local, f.localCurrency)}`,
+                          t('conflicts.line', {
+                            label: t('conflicts.mine'),
+                            value: display(f, f.local, f.localCurrency),
+                          }),
                           c.server
-                            ? `${t('conflicts.theirs')} : ${display(f, f.server, f.serverCurrency)}`
+                            ? t('conflicts.line', {
+                                label: t('conflicts.theirs'),
+                                value: display(f, f.server, f.serverCurrency),
+                              })
                             : null,
                           f.differs ? t('conflicts.differs') : null,
                         ]
@@ -136,11 +142,17 @@ export default function ConflictsScreen() {
                           {f.differs ? ` · ${t('conflicts.differs')}` : ''}
                         </AppText>
                         <AppText variant="caption">
-                          {t('conflicts.mine')} : {display(f, f.local, f.localCurrency)}
+                          {t('conflicts.line', {
+                            label: t('conflicts.mine'),
+                            value: display(f, f.local, f.localCurrency),
+                          })}
                         </AppText>
                         {c.server ? (
                           <AppText variant="caption" color="muted">
-                            {t('conflicts.theirs')} : {display(f, f.server, f.serverCurrency)}
+                            {t('conflicts.line', {
+                              label: t('conflicts.theirs'),
+                              value: display(f, f.server, f.serverCurrency),
+                            })}
                           </AppText>
                         ) : null}
                       </View>

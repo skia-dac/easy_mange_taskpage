@@ -881,7 +881,8 @@
     "moneyStart": "Ouvre MySky pour commencer",
     "progress": "Progression",
     "progressAll": "Mes habitudes",
-    "progressSummary": "{{count}} j réussis ce mois"
+    "progressSummary": "{{count}} j réussis ce mois",
+    "lastGradeLine": "Dernière : {{value}}/20 · {{title}}"
   },
   "habits": {
     "title": "Mes habitudes",
@@ -1848,7 +1849,8 @@
       "content": "Contenu",
       "description": "Description",
       "note": "Note"
-    }
+    },
+    "line": "{{label}} : {{value}}"
   },
   "feedback": {
     "title": "Donner mon avis",
