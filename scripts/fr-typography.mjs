@@ -1,6 +1,10 @@
-// Typographie française dans fr.json : espace fine insécable (U+202F) avant ; ? ! et espace
-// insécable (U+00A0) avant : et à l'intérieur des guillemets « ». Ne touche qu'aux VALEURS
-// (jamais aux clés) et jamais à l'intérieur des {{variables}}.
+// Typographie française dans fr.json : espace insécable (U+00A0) avant ; ? ! : et à l'intérieur
+// des guillemets « ». Ne touche qu'aux VALEURS (jamais aux clés) et jamais à l'intérieur des
+// {{variables}}.
+//
+// Pas d'espace fine insécable (U+202F), pourtant la règle typographique avant ; ? ! : la police
+// du texte (Plus Jakarta Sans) n'a pas ce caractère, il s'afficherait avec une police de secours
+// ou un carré. Le script remplace toute U+202F par U+00A0, que la police a.
 //
 //   node scripts/fr-typography.mjs          corrige le fichier
 //   node scripts/fr-typography.mjs --check  échoue s'il reste une espace ordinaire
@@ -15,7 +19,8 @@ const NBSP = ' ';
 /** Corrige un morceau de texte sans variable. */
 function fixText(text) {
   return text
-    .replace(/ +([;?!])/g, `${NARROW}$1`)
+    .replaceAll(NARROW, NBSP)
+    .replace(/ +([;?!])/g, `${NBSP}$1`)
     .replace(/ +:/g, `${NBSP}:`)
     .replace(/« +/g, `«${NBSP}`)
     .replace(/ +»/g, `${NBSP}»`);
