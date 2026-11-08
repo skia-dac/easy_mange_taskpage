@@ -11,13 +11,26 @@ type Props = Omit<PressableProps, 'children' | 'style'> & {
   variant?: 'primary' | 'secondary';
 };
 
-/** Bouton principal. Zone touchable d'au moins 44 pt (accessibilité). */
-export function Button({ label, style, variant = 'primary', ...rest }: Props) {
+/**
+ * Bouton principal. Zone touchable d'au moins 44 pt (accessibilité). Désactivé, il passe au gris
+ * (texte encore lisible, contraste ≥ 4,5:1) et le lecteur d'écran dit « estompé » / « désactivé ».
+ */
+export function Button({
+  label,
+  style,
+  variant = 'primary',
+  disabled,
+  accessibilityState,
+  ...rest
+}: Props) {
   const secondary = variant === 'secondary';
+  const off = !!disabled;
   const { colors, radius, spacing } = useTheme();
   return (
     <PressableScale
       accessibilityRole="button"
+      accessibilityState={{ ...accessibilityState, disabled: off }}
+      disabled={disabled}
       style={[
         {
           minHeight: minTouchSize + 8,
@@ -25,7 +38,7 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
           paddingHorizontal: spacing.xl,
           // Grand texte : le libellé passe à la ligne et le bouton grandit avec lui.
           paddingVertical: spacing.sm,
-          backgroundColor: secondary ? colors.surface : colors.primary,
+          backgroundColor: off ? colors.disabled : secondary ? colors.surface : colors.primary,
           borderWidth: secondary ? 1.5 : 0,
           borderColor: colors.border,
           alignItems: 'center',
@@ -37,7 +50,7 @@ export function Button({ label, style, variant = 'primary', ...rest }: Props) {
     >
       <AppText
         variant="bodyStrong"
-        color={secondary ? 'text' : 'onPrimary'}
+        color={off ? 'muted' : secondary ? 'text' : 'onPrimary'}
         style={{ textAlign: 'center' }}
       >
         {label}

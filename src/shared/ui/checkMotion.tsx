@@ -38,30 +38,27 @@ export function CheckPop({ checked, children }: { checked: boolean; children: Re
 }
 
 /**
- * Une ligne terminée se pose : un peu plus petite, un peu plus douce.
- * Annuler ramène la ligne à sa taille.
+ * Une ligne terminée se pose : un peu plus petite. Annuler ramène la ligne à sa taille.
+ * Pas de transparence : le texte d'une ligne terminée est déjà gris et barré, l'éclaircir encore
+ * le ferait passer sous 4,5:1 (WCAG 1.4.3).
  */
 export function Settle({ done, children }: { done: boolean; children: ReactNode }) {
   const reduced = useReducedMotion();
   const scale = useSharedValue(done && !reduced ? 0.98 : 1);
-  const opacity = useSharedValue(done && !reduced ? 0.72 : 1);
   const prev = useRef(done);
 
   useEffect(() => {
     if (reduced) {
       scale.value = 1;
-      opacity.value = 1;
       prev.current = done;
       return;
     }
     if (prev.current === done) return;
     prev.current = done;
     scale.value = withSpring(done ? 0.98 : 1, SETTLE);
-    opacity.value = withTiming(done ? 0.72 : 1, { duration: 220 });
-  }, [done, opacity, reduced, scale]);
+  }, [done, reduced, scale]);
 
   const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
     transform: [{ scale: scale.value }],
   }));
 

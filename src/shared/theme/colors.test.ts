@@ -57,6 +57,8 @@ const textPairs: [fg: Token, bg: Token, where: string][] = [
   ['onPrimary', 'warning', 'action « Reporter » en glissant'],
   ['onPrimary', 'danger', 'action destructive en glissant'],
   ['background', 'text', 'message bref (toast, couleurs inversées)'],
+  ['primarySoft', 'text', 'bouton « Annuler » du toast'],
+  ['muted', 'disabled', 'libellé d’un bouton désactivé'],
 ];
 
 /** Commandes et icônes : contraste d'au moins 3:1 avec ce qui les entoure. */
@@ -69,6 +71,8 @@ const uiPairs: [fg: Token, bg: Token, where: string][] = [
   ['surface', 'success', 'coche dans une case cochée'],
   ['muted', 'surface', 'case à cocher vide, icônes'],
   ['danger', 'surface', 'bordure d’un champ en erreur'],
+  ['text', 'primarySoft', 'barre « il te reste » : remplissage sur son rail'],
+  ['primarySoft', 'primary', 'barre « il te reste » : rail sur la carte principale'],
 ];
 
 describe.each(
