@@ -145,7 +145,13 @@ export default function NoteScreen() {
     [noteId],
   );
 
+  /** Lien au cours de la note lue : gardé tel quel quand on change sa matière ou sa catégorie. */
+  const courseLink = useRef<{ courseSeriesId: string | null; courseDate: string | null }>({
+    courseSeriesId: params.courseSeriesId ?? null,
+    courseDate: params.courseDate ?? null,
+  });
   const applyNote = (n: Note) => {
+    courseLink.current = { courseSeriesId: n.courseSeriesId, courseDate: n.courseDate };
     setTitle(n.title);
     setContent(n.content);
     setSubjectId(n.subjectId);
@@ -314,8 +320,7 @@ export default function NoteScreen() {
         title: snapshot.title,
         content: snapshot.content,
         subjectId: next.subjectId,
-        courseSeriesId: params.courseSeriesId ?? null,
-        courseDate: params.courseDate ?? null,
+        ...courseLink.current,
         categoryId: next.categoryId,
       });
       persisted.current = snapshot;

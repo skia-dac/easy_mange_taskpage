@@ -71,7 +71,7 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 - **Sauvegarde automatique** : une fois par jour (à l'ouverture ou au retour de l'app), toute la base est copiée en JSON dans `Paths.document/backups/` (dossier privé de l'app, non partagé, non inclus dans la sauvegarde Android désactivée). Les 7 dernières sont gardées. Les fichiers des pièces jointes ne sont **pas** inclus (trop volumineux) : seule leur fiche l'est.
 - **Restauration** : le fichier est vérifié (format, version) avant tout ; une sauvegarde d'une version plus récente de l'app est refusée. La restauration remplace tout dans **une seule transaction** : en cas d'erreur, rien ne change. L'utilisateur confirme avant.
 - **Partage** : l'utilisateur peut envoyer une sauvegarde (Fichiers, mail, AirDrop) ; le fichier contient toutes ses données en clair, l'app le dit avant de partager.
-- **Supprimer toutes mes données** : double confirmation, puis base vidée (réglages compris), pièces jointes et sauvegardes effacées, rappels annulés ; l'app repart au premier lancement. Avec les comptes (phase 2), la même action supprimera aussi les données du serveur.
+- **Supprimer toutes mes données** : double confirmation, puis base vidée (réglages compris), pièces jointes et sauvegardes effacées, rappels annulés ; l'app repart au premier lancement. Avec un compte connecté, les modifications en attente sont d'abord envoyées ; s'il en reste, l'utilisateur choisit de réessayer ou de les perdre. Puis il est déconnecté : le compte et ses données restent sur le serveur (pour les supprimer : « Supprimer mon compte »).
 
 ## 4f. Verrouillage, export et partage
 

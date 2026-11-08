@@ -4,7 +4,13 @@ import { Alert, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createSubject } from '@/modules/academic';
-import { addAttachment, createNote, getNote, listNotes } from '@/modules/productivity';
+import {
+  addAttachment,
+  createNote,
+  createNoteCategory,
+  getNote,
+  listNotes,
+} from '@/modules/productivity';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
@@ -75,6 +81,7 @@ beforeEach(async () => {
   mockFail.save = 0;
   mockToast.mockClear();
   jest.mocked(router.back).mockClear();
+  await mockDb.runAsync('DELETE FROM attachments', []);
   await mockDb.runAsync('DELETE FROM notes', []);
   await mockDb.runAsync('DELETE FROM sync_outbox', []);
 });
@@ -293,5 +300,20 @@ describe('note : pièce jointe', () => {
     expect(style.minWidth).toBeGreaterThanOrEqual(44);
     await view.unmount();
     await flush();
+  });
+});
+
+describe('lien au cours', () => {
+  it('changer la catégorie d’une note garde la date de son cours', async () => {
+    const catId = await createNoteCategory(mockDb, { name: 'Résumés', colorId: 'blue' });
+    const id = await createNote(mockDb, { title: 'Cours', content: 'x', courseDate: '2026-09-22' });
+    await show({ id });
+    await fireEvent.press(screen.getByText(i18n.t('notes.edit')));
+    await flush();
+    await fireEvent.press(screen.getByText('Résumés'));
+    await flush();
+    const note = await getNote(mockDb, id);
+    expect(note?.categoryId).toBe(catId);
+    expect(note?.courseDate).toBe('2026-09-22');
   });
 });
