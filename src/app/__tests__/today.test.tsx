@@ -145,10 +145,24 @@ describe('écran Aujourd’hui', () => {
     mockAgenda = { series: [], exams: [], work: [], events: [] };
     mockSubjects = [];
     await render(<TodayScreen />);
+    // Premier lancement : un seul bloc d'accueil, pas quatre états vides empilés.
     expect(screen.getByText('Ajoute ta première matière pour commencer.')).toBeTruthy();
+    expect(screen.getByText('Ajouter une matière')).toBeTruthy();
+    expect(screen.getByText('Nouvelle tâche')).toBeTruthy();
     expect(screen.getByText('Rien d’autre de prévu à une heure précise aujourd’hui.')).toBeTruthy();
-    expect(screen.getByText('Rien à faire pour le moment.')).toBeTruthy();
+    expect(screen.queryByText('Rien à faire pour le moment.')).toBeNull();
+    expect(screen.queryByText('Aucun examen programmé.')).toBeNull();
+    // Le coup d'œil reste là.
     expect(screen.getByText('Aucun examen prévu')).toBeTruthy();
+  });
+
+  it('dès la première matière, les sections reviennent avec leur état vide', async () => {
+    mockAgenda = { series: [], exams: [], work: [], events: [] };
+    mockSubjects = [subject];
+    await render(<TodayScreen />);
+    expect(screen.queryByText('Ajoute ta première matière pour commencer.')).toBeNull();
+    expect(screen.getByText('Rien à faire pour le moment.')).toBeTruthy();
+    mockSubjects = [];
   });
 
   it('en anglais', async () => {

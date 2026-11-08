@@ -37,6 +37,7 @@ import {
   Button,
   Card,
   EmptyState,
+  FAB_CLEARANCE,
   IconBadge,
   loadStateOf,
   RiseIn,
@@ -94,6 +95,20 @@ export default function TodayScreen() {
     data.work.length === 0 &&
     data.events.length === 0 &&
     (data.habits?.length ?? 0) === 0;
+
+  // Tout premier lancement avec Études : rien du tout encore. Un seul bloc d'accueil (première
+  // matière, ou une tâche) au lieu de quatre ou cinq états vides empilés.
+  const studyWelcome =
+    study &&
+    !loading &&
+    subjects.length === 0 &&
+    !!data &&
+    data.series.length === 0 &&
+    data.exams.length === 0 &&
+    data.work.length === 0 &&
+    data.events.length === 0 &&
+    (data.habits?.length ?? 0) === 0;
+  const welcome = firstStep || studyWelcome;
 
   const sections: Record<TodaySectionId, ReactNode> = view
     ? {
@@ -291,6 +306,12 @@ export default function TodayScreen() {
         exams: null,
       };
 
+  // Bloc d'accueil affiché : les sections encore vides (cours, à faire, examens, habitudes) se
+  // taisent ; elles reviennent dès le premier élément.
+  const shownSections: Record<TodaySectionId, ReactNode> = welcome
+    ? { ...sections, next: null, todo: null, exams: null, habits: null }
+    : sections;
+
   return (
     <View style={{ flex: 1 }}>
       <Screen
@@ -305,7 +326,18 @@ export default function TodayScreen() {
           </>
         }
       >
-        {study && !loading && subjects.length === 0 ? (
+        {studyWelcome ? (
+          <EmptyState
+            icon="book-open"
+            title={t('today.firstSubject')}
+            message={t('today.firstSubjectHint')}
+            action={{
+              label: t('profile.addSubject'),
+              onPress: () => router.push('/subjects/form'),
+            }}
+            secondaryAction={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+          />
+        ) : study && !loading && subjects.length === 0 ? (
           <RiseIn>
             <Card>
               <View style={{ gap: spacing.md }}>
@@ -403,7 +435,7 @@ export default function TodayScreen() {
         {view
           ? layout.order
               .filter((id) => !layout.hidden.includes(id))
-              .map((id) => <Fragment key={id}>{sections[id]}</Fragment>)
+              .map((id) => <Fragment key={id}>{shownSections[id]}</Fragment>)
           : null}
 
         {view ? (
@@ -414,7 +446,7 @@ export default function TodayScreen() {
             />
           </RiseIn>
         ) : null}
-        <View style={{ height: 80 }} />
+        <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
       {habitSheet && view ? (
         <HabitDaySheet
