@@ -8,6 +8,7 @@ import { AppError } from '@/shared/errors';
 import { i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
+import { withSyncPaused } from '../sync/runner';
 import { createSnapshot, parseSnapshot, restoreSnapshot, type BackupSnapshot } from './snapshot';
 
 /** Dossier privé de l'app où vont les sauvegardes automatiques. */
@@ -113,7 +114,8 @@ export async function readBackup(db: Db, uri: string): Promise<BackupSnapshot> {
 /** Remplace les données actuelles par cette sauvegarde (à confirmer avant par l'utilisateur). */
 export async function restoreBackup(db: Db, snapshot: BackupSnapshot): Promise<void> {
   try {
-    await restoreSnapshot(db, snapshot);
+    // Aucune synchronisation ne doit écrire pendant que la base est remplacée.
+    await withSyncPaused(() => restoreSnapshot(db, snapshot));
   } catch (e) {
     logger.error(e, { where: 'restoreBackup' });
     throw new AppError('saveFailed', 'restore failed', { cause: e });

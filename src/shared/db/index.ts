@@ -6,7 +6,12 @@ export { newId, nowIso } from './ids';
 export { migrate, validateMigrations } from './migrate';
 export type { MigrationPreparations } from './migrate';
 export type { MigratableDatabase, Migration } from './migrate';
-export { migrationPreparations, migrations, SYNC_COLUMNS } from './migrations';
+export {
+  MARK_OLD_REJECTED_CONFLICTS,
+  migrationPreparations,
+  migrations,
+  SYNC_COLUMNS,
+} from './migrations';
 export type { Db, SqlValue } from './types';
 export { useDb, useLiveQuery } from './useLiveQuery';
 export { useSharedLiveQuery } from './useSharedLiveQuery';

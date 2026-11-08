@@ -1905,7 +1905,7 @@
     "badge_one": "{{count}} conflit à régler",
     "badge_other": "{{count}} conflits à régler",
     "title": "Conflits de synchronisation",
-    "intro": "Ces modifications faites sur ce téléphone ont été remplacées par une version plus récente d’un autre appareil, ou refusées par le serveur. Rien n’est perdu : tu choisis.",
+    "intro": "Quand deux appareils modifient le même élément, ou qu’une modification ne peut pas être enregistrée, la version écartée est gardée ici. Rien n’est perdu : tu choisis.",
     "empty": "Aucun conflit en attente",
     "replaced": "Remplacée par la version d’un autre appareil",
     "rejected": "Refusée par le serveur",
@@ -1985,7 +1985,18 @@
     },
     "line": "{{label}} : {{value}}",
     "newToastDetail": "Choisis la version à garder.",
-    "restoreConfirm": "Restaurer"
+    "restoreConfirm": "Restaurer",
+    "keptMine": "Ta version a remplacé celle d’un autre appareil",
+    "incomingRejected": "Une modification venue d’un autre appareil n’a pas pu être enregistrée ici",
+    "incomingHint": "Ce téléphone garde sa version de l’élément. Si l’app est plus récente sur l’autre appareil, mets-la à jour ici.",
+    "theirsReplaced": "Autre appareil (remplacée)",
+    "theirsIncoming": "Autre appareil (non enregistrée)",
+    "takeTheirs": "Reprendre l’autre version",
+    "takeTheirsTitle": "Reprendre l’autre version ?",
+    "takeTheirsMessage": "La version de ce téléphone sera remplacée par celle de l’autre appareil, puis envoyée au serveur.",
+    "ignoreTheirsTitle": "Abandonner l’autre version ?",
+    "ignoreTheirsMessage": "La version de l’autre appareil sera abandonnée définitivement ; ta version reste.",
+    "ignoreIncomingMessage": "La modification de l’autre appareil sera abandonnée sur ce téléphone ; l’élément reste tel qu’il est ici."
   },
   "feedback": {
     "title": "Donner mon avis",

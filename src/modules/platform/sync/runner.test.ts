@@ -1,3 +1,4 @@
+import { setAccountOwner } from '@/modules/identity';
 import { createTestDb } from '@/test/memoryDb';
 
 import {
@@ -6,6 +7,7 @@ import {
   RETRY_MAX_MS,
   RETRY_START_MS,
   runSync,
+  withSyncPaused,
 } from './runner';
 import { getSyncStatus } from './status';
 
@@ -44,6 +46,7 @@ describe('reprise de la synchronisation', () => {
 
   it('réessaie avec un délai croissant (30 s, 60 s… 5 min), puis s’arrête dès que ça réussit', async () => {
     const db = await createTestDb();
+    await setAccountOwner(db, 'u1');
     await runSync(db, 'u1');
     expect(getSyncStatus().state).toBe('offline');
     expect(pendingRetryDelay()).toBe(RETRY_START_MS);
@@ -76,6 +79,7 @@ describe('reprise de la synchronisation', () => {
 
   it('un nouveau déclenchement annule la reprise ; un autre compte est refusé pendant un run', async () => {
     const db = await createTestDb();
+    await setAccountOwner(db, 'u1');
     await runSync(db, 'u1');
     expect(pendingRetryDelay()).toBe(RETRY_START_MS);
     const second = runSync(db, 'u1');
@@ -87,6 +91,34 @@ describe('reprise de la synchronisation', () => {
     expect(pendingRetryDelay()).toBeNull();
     await jest.advanceTimersByTimeAsync(RETRY_MAX_MS);
     expect(fake.calls).toBe(2);
+    db.close();
+  });
+
+  it('en pause (effacement, restauration…) : attend la synchro en cours, n’en lance aucune', async () => {
+    const db = await createTestDb();
+    await setAccountOwner(db, 'u1');
+    fake.online = true;
+    const order: string[] = [];
+    const running = runSync(db, 'u1').then(() => order.push('sync'));
+    await withSyncPaused(async () => {
+      order.push('job');
+      const calls = fake.calls;
+      await expect(runSync(db, 'u1')).resolves.toBeNull();
+      expect(fake.calls).toBe(calls);
+    });
+    await running;
+    expect(order).toEqual(['sync', 'job']);
+    expect(pendingRetryDelay()).toBeNull();
+    db.close();
+  });
+
+  it('s’arrête sans erreur si le téléphone n’appartient plus à ce compte', async () => {
+    const db = await createTestDb();
+    await setAccountOwner(db, 'u2');
+    fake.online = true;
+    await expect(runSync(db, 'u1')).resolves.toBeNull();
+    expect(getSyncStatus().state).toBe('idle');
+    expect(pendingRetryDelay()).toBeNull();
     db.close();
   });
 });

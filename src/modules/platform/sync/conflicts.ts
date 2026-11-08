@@ -1,15 +1,20 @@
 import { newId, notifyChange, nowIso, SYNCED_TABLES, type Db, type SqlValue } from '@/shared/db';
 import { AppError } from '@/shared/errors';
 
-import { settleIfNothingPending, type SyncedTable } from './engine';
+import { settleIfNothingPending, type ConflictKind, type SyncedTable } from './engine';
 
 /**
- * Conflits gardés de côté par la synchronisation (`sync_conflicts`) : la version locale d'une
- * ligne remplacée par celle du serveur, ou une modification refusée par le serveur.
- * L'utilisateur peut restaurer sa version (elle repart par la file d'envoi) ou l'ignorer.
+ * Conflits gardés de côté par la synchronisation (`sync_conflicts`), selon `kind` :
+ * - `server_won` : la version du téléphone a été remplacée par celle d'un autre appareil ;
+ * - `local_won` : la version du téléphone a remplacé celle d'un autre appareil ;
+ * - `rejected` : modification du téléphone refusée par le serveur ;
+ * - `incoming_rejected` : modification d'un autre appareil impossible à enregistrer ici.
+ * L'utilisateur peut reprendre la version qui a perdu (elle repart par la file d'envoi) ou l'ignorer.
+ * `local` est toujours la version du téléphone, `server` celle de l'autre appareil.
  */
 export type SyncConflict = {
   id: string;
+  kind: ConflictKind;
   entity: string;
   entityId: string;
   /** Titre lisible de l'élément, si sa ligne en a un (titre, nom, personne…). */
@@ -20,7 +25,7 @@ export type SyncConflict = {
   rejection: RejectionKind | null;
   createdAt: string;
   local: Record<string, SqlValue>;
-  /** Version du serveur qui a gagné ; null pour un refus (le serveur n'a rien gardé). */
+  /** Version de l'autre appareil (serveur) ; null pour un refus (le serveur n'a rien gardé). */
   server: Record<string, SqlValue> | null;
 };
 
@@ -41,6 +46,7 @@ export type ConflictField = {
 
 type ConflictRow = {
   id: string;
+  kind: string;
   entity: string;
   entity_id: string;
   local_payload: string;
@@ -89,9 +95,19 @@ function titleOf(local: Record<string, SqlValue>): string | null {
   return null;
 }
 
-function listReason(row: Pick<ConflictRow, 'server_payload'>): string | null {
+const KINDS: readonly ConflictKind[] = ['server_won', 'local_won', 'rejected', 'incoming_rejected'];
+
+function kindOf(row: Pick<ConflictRow, 'kind'>): ConflictKind {
+  return (KINDS as readonly string[]).includes(row.kind)
+    ? (row.kind as ConflictKind)
+    : 'server_won';
+}
+
+/** Raison technique d'un refus du serveur (seulement pour `rejected`). */
+function listReason(row: Pick<ConflictRow, 'server_payload' | 'kind'>): string | null {
+  if (kindOf(row) !== 'rejected') return null;
   const reason = parse(row.server_payload).reason;
-  return typeof reason === 'string' ? reason : null;
+  return typeof reason === 'string' ? reason : 'other';
 }
 
 /**
@@ -163,14 +179,16 @@ export async function listConflicts(db: Db): Promise<SyncConflict[]> {
     [],
   );
   return rows.map((r) => {
+    const kind = kindOf(r);
     const local = parse(r.local_payload);
     const reason = listReason(r);
-    const server = reason === null ? parse(r.server_payload) : null;
+    const server = kind === 'rejected' ? null : parse(r.server_payload);
     return {
       id: r.id,
+      kind,
       entity: r.entity,
       entityId: r.entity_id,
-      title: titleOf(local),
+      title: titleOf(kind === 'incoming_rejected' && server ? server : local) ?? titleOf(local),
       reason,
       rejection: reason === null ? null : rejectionKindOf(reason),
       createdAt: r.created_at,
@@ -197,27 +215,31 @@ export async function ignoreConflict(db: Db, id: string): Promise<void> {
   notifyChange(row && isSynced(row.entity) ? [row.entity, 'sync_conflicts'] : ['sync_conflicts']);
 }
 
-/** Une modification refusée par le serveur ne se renvoie pas telle quelle : elle serait refusée encore. */
-export function canRestore(conflict: Pick<SyncConflict, 'reason'>): boolean {
-  return conflict.reason === null;
+/**
+ * Une modification refusée (par le serveur ou par ce téléphone) ne se renvoie pas telle quelle :
+ * elle serait refusée encore. Seuls les deux cas où une version a gagné se restaurent.
+ */
+export function canRestore(conflict: Pick<SyncConflict, 'kind'>): boolean {
+  return conflict.kind === 'server_won' || conflict.kind === 'local_won';
 }
 
 /**
- * « Restaurer ma version » : la ligne locale est réécrite avec la version gardée de côté et
- * repart par la file d'envoi (comme toute modification faite sur le téléphone). Si la ligne a
- * disparu entre-temps, elle est recréée.
+ * « Restaurer » : la ligne locale est réécrite avec la version qui avait perdu — celle du téléphone
+ * (`server_won`) ou celle de l'autre appareil (`local_won`) — et repart par la file d'envoi (comme
+ * toute modification faite sur le téléphone). Si la ligne a disparu entre-temps, elle est recréée.
  */
 export async function restoreConflict(db: Db, id: string): Promise<void> {
   const row = await db.getFirstAsync<ConflictRow>('SELECT * FROM sync_conflicts WHERE id = ?', [
     id,
   ]);
   if (!row) return;
-  if (!canRestore({ reason: listReason(row) }))
+  const kind = kindOf(row);
+  if (!canRestore({ kind }))
     throw new AppError('validation', 'rejectedConflict', {
       messageKey: 'conflicts.rejectedCannotRestore',
     });
   const table = row.entity;
-  const local = parse(row.local_payload);
+  const local = parse(kind === 'local_won' ? row.server_payload : row.local_payload);
   if (!isSynced(table) || !local.id) {
     await ignoreConflict(db, id);
     return;
@@ -232,7 +254,17 @@ export async function restoreConflict(db: Db, id: string): Promise<void> {
     );
     const values: Record<string, SqlValue> = {};
     for (const [k, v] of Object.entries(local)) {
-      if (cols.has(k) && !NOT_RESTORED.has(k)) values[k] = v;
+      if (!cols.has(k) || NOT_RESTORED.has(k)) continue;
+      // Version venue du serveur (JSON) : booléens et objets ramenés à des valeurs SQLite.
+      const raw: unknown = v;
+      values[k] =
+        typeof raw === 'boolean'
+          ? raw
+            ? 1
+            : 0
+          : raw !== null && typeof raw === 'object'
+            ? JSON.stringify(raw)
+            : v;
     }
     values.updated_at = now;
     const names = Object.keys(values);

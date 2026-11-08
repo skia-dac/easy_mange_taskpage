@@ -61,6 +61,19 @@ const WORK_COLUMNS_V20 =
   'id, created_at, updated_at, deleted_at, version, sync_status, title, description, subject_id, due_date, due_time, priority, status, completed_at, reminder_at, repeat_rule, estimated_minutes, space, repeat_parent_id';
 
 /**
+ * Avant la migration 21, un refus du serveur se reconnaissait à `server_payload` = `{ reason }`
+ * (sans `id`, contrairement à une vraie ligne). Sert à la migration 21 et à la restauration d'une
+ * sauvegarde plus ancienne (où `kind` n'existe pas encore).
+ */
+export const MARK_OLD_REJECTED_CONFLICTS = `
+  UPDATE sync_conflicts SET kind = 'rejected'
+  WHERE kind = 'server_won'
+    AND json_valid(server_payload)
+    AND json_type(server_payload, '$.reason') = 'text'
+    AND json_type(server_payload, '$.id') IS NULL;
+`;
+
+/**
  * Liste des migrations. Règles :
  * - ne JAMAIS modifier une migration déjà publiée : en ajouter une nouvelle à la fin ;
  * - les numéros se suivent (1, 2, 3…), un test le vérifie.
@@ -592,6 +605,19 @@ export const migrations: readonly Migration[] = [
       ALTER TABLE assignments_new RENAME TO assignments;
       CREATE INDEX idx_assignments_due ON assignments (due_date);
       CREATE INDEX idx_assignments_repeat_parent ON assignments (repeat_parent_id);
+    `,
+  },
+  {
+    version: 21,
+    name: 'conflits de synchronisation : nature du conflit (quelle version a gagné)',
+    // `server_won` : la version du serveur a gagné, celle du téléphone est gardée ici ;
+    // `local_won` : celle du téléphone a gagné, celle de l'autre appareil est gardée ici ;
+    // `rejected` : modification du téléphone refusée par le serveur ;
+    // `incoming_rejected` : modification reçue du serveur impossible à enregistrer ici.
+    // Les refus d'avant se reconnaissaient à une `reason` sans `id` dans `server_payload`.
+    sql: `
+      ALTER TABLE sync_conflicts ADD COLUMN kind TEXT NOT NULL DEFAULT 'server_won';
+      ${MARK_OLD_REJECTED_CONFLICTS}
     `,
   },
 ];

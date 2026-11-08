@@ -86,7 +86,9 @@ describe('exceptions de cours en double', () => {
       "SELECT entity_id, operation FROM sync_outbox WHERE entity = 'course_exceptions' ORDER BY entity_id",
       [],
     );
+    // Restaurer renvoie chaque élément ; les doublons partent comme suppressions.
     expect(pending).toEqual([
+      { entity_id: 'exc-a', operation: 'update' },
       { entity_id: 'exc-b', operation: 'delete' },
       { entity_id: 'exc-c', operation: 'delete' },
     ]);

@@ -59,6 +59,7 @@ export { widgetTaskHandler } from './widgets/android/taskHandler';
 export { SubjectConfigScreen } from './widgets/android/SubjectConfigScreen';
 export { conflictCount, conflictIds, pendingCount, syncOnce } from './sync/engine';
 export type {
+  ConflictKind,
   Mutation,
   PullCursor,
   PushResult,
@@ -67,7 +68,7 @@ export type {
   SyncReport,
 } from './sync/engine';
 export { PULL_MARGIN_MS, withMargin } from './sync/remote';
-export { cancelSyncRetry, pendingRetryDelay, runSync } from './sync/runner';
+export { cancelSyncRetry, pendingRetryDelay, runSync, withSyncPaused } from './sync/runner';
 export {
   canRestore,
   conflictFields,

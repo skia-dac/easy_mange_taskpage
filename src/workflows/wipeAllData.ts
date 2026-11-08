@@ -3,6 +3,7 @@ import {
   clearDatabase,
   deleteAllAttachments,
   deleteAllBackups,
+  withSyncPaused,
 } from '@/modules/platform';
 import type { Db } from '@/shared/db';
 import { logger } from '@/shared/logger';
@@ -11,10 +12,14 @@ import { logger } from '@/shared/logger';
  * « Supprimer toutes mes données » : rappels annulés, base vidée (réglages compris),
  * pièces jointes et sauvegardes locales effacées. L'app repart comme au premier lancement.
  * À n'appeler qu'après confirmation explicite de l'utilisateur.
+ * La synchronisation en cours est arrêtée et attendue d'abord : sinon elle pourrait réécrire des
+ * données du compte juste après l'effacement.
  */
 export async function wipeAllData(db: Db): Promise<void> {
-  await cancelAllReminders().catch((e: unknown) => logger.error(e, { where: 'wipe.reminders' }));
-  await clearDatabase(db);
-  deleteAllAttachments();
-  deleteAllBackups();
+  await withSyncPaused(async () => {
+    await cancelAllReminders().catch((e: unknown) => logger.error(e, { where: 'wipe.reminders' }));
+    await clearDatabase(db);
+    deleteAllAttachments();
+    deleteAllBackups();
+  });
 }

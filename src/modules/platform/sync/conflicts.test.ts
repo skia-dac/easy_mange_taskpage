@@ -57,8 +57,8 @@ describe('conflits de synchronisation (écran)', () => {
 
     // Ignorer : rien ne change, le conflit est classé.
     await a.runAsync(
-      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
-       VALUES ('c2', 'subjects', ?, ?, ?, ?)`,
+      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at, kind)
+       VALUES ('c2', 'subjects', ?, ?, ?, ?, 'rejected')`,
       [id, JSON.stringify({ id, name: 'Rejetée' }), JSON.stringify({ reason: 'not null' }), 'x'],
     );
     const [rejected] = await listConflicts(a);

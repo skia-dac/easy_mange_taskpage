@@ -1905,7 +1905,7 @@
     "badge_one": "{{count}} conflict to resolve",
     "badge_other": "{{count}} conflicts to resolve",
     "title": "Sync conflicts",
-    "intro": "These changes made on this phone were replaced by a newer version from another device, or refused by the server. Nothing is lost: you decide.",
+    "intro": "When two devices change the same item, or a change can’t be saved, the version that was set aside is kept here. Nothing is lost: you decide.",
     "empty": "No pending conflict",
     "replaced": "Replaced by another device’s version",
     "rejected": "Refused by the server",
@@ -1985,7 +1985,18 @@
     },
     "line": "{{label}}: {{value}}",
     "newToastDetail": "Choose which version to keep.",
-    "restoreConfirm": "Restore"
+    "restoreConfirm": "Restore",
+    "keptMine": "Your version replaced another device’s version",
+    "incomingRejected": "A change from another device couldn’t be saved here",
+    "incomingHint": "This phone keeps its version of the item. If the app is newer on the other device, update it here.",
+    "theirsReplaced": "Other device (replaced)",
+    "theirsIncoming": "Other device (not saved)",
+    "takeTheirs": "Use the other version",
+    "takeTheirsTitle": "Use the other version?",
+    "takeTheirsMessage": "The version on this phone will be replaced by the other device’s version, then sent to the server.",
+    "ignoreTheirsTitle": "Discard the other version?",
+    "ignoreTheirsMessage": "The other device’s version will be discarded for good; your version stays.",
+    "ignoreIncomingMessage": "The other device’s change will be discarded on this phone; the item stays as it is here."
   },
   "feedback": {
     "title": "Give feedback",

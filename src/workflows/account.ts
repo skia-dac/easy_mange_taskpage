@@ -8,7 +8,7 @@ import {
   setOnboardingDone,
   signOut,
 } from '@/modules/identity';
-import { conflictCount, pendingCount, runSync } from '@/modules/platform';
+import { conflictCount, pendingCount, runSync, withSyncPaused } from '@/modules/platform';
 import type { Db } from '@/shared/db';
 import { logger } from '@/shared/logger';
 
@@ -32,9 +32,12 @@ export async function claimLocalData(db: Db, userId: string): Promise<ClaimResul
 
 /** Efface les données d'un autre compte présentes sur ce téléphone, puis le relie au compte connecté. */
 export async function replaceLocalDataWithAccount(db: Db, userId: string): Promise<void> {
-  await wipeAllData(db);
-  await setOnboardingDone(db);
-  await setAccountOwner(db, userId);
+  // Aucune synchronisation entre l'effacement et le nouveau propriétaire.
+  await withSyncPaused(async () => {
+    await wipeAllData(db);
+    await setOnboardingDone(db);
+    await setAccountOwner(db, userId);
+  });
 }
 
 /** Pré-remplit le profil avec le prénom et le nom donnés à l'inscription (si le profil est vide). */
@@ -94,8 +97,11 @@ export async function signOutFromPhone(
 ): Promise<void> {
   if (!keepOnPhone && !options.discardUnsynced && (await unsyncedCount(db)) > 0)
     throw new AccountError('account.unsyncedBlocked');
-  await signOut();
-  if (!keepOnPhone) await wipeAllData(db);
+  // La synchronisation en cours se termine avant la déconnexion, et aucune ne repart pendant.
+  await withSyncPaused(async () => {
+    await signOut();
+    if (!keepOnPhone) await wipeAllData(db);
+  });
 }
 
 /**
@@ -104,6 +110,10 @@ export async function signOutFromPhone(
  * locale échoue ; si le vidage échoue, l'erreur le dit clairement (le compte n'existe plus).
  */
 export async function deleteAccountEverywhere(db: Db): Promise<void> {
+  await withSyncPaused(() => deleteAccountAndWipe(db));
+}
+
+async function deleteAccountAndWipe(db: Db): Promise<void> {
   await deleteRemoteAccount();
   try {
     await signOut();

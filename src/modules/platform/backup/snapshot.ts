@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-import { newId, notifyChange, nowIso, type Db, type SqlValue } from '@/shared/db';
+import {
+  MARK_OLD_REJECTED_CONFLICTS,
+  newId,
+  notifyChange,
+  nowIso,
+  SYNCED_TABLES,
+  type Db,
+  type SqlValue,
+} from '@/shared/db';
 import { AppError } from '@/shared/errors';
 
 /**
@@ -142,23 +150,59 @@ export function dedupeCourseExceptions(
 }
 
 /**
+ * Réglages propres à CE téléphone et à son lien avec le compte : jamais repris d'une sauvegarde
+ * (qui peut venir d'un autre téléphone, d'un autre compte ou d'avant). Le propriétaire et la
+ * dernière synchronisation actuels restent ; les curseurs de réception repartent de zéro, pour
+ * que les éléments du compte absents de la sauvegarde reviennent à la prochaine synchronisation.
+ */
+function isDeviceSyncSetting(key: SqlValue | undefined): boolean {
+  return (
+    key === 'account_owner' ||
+    key === 'last_sync_at' ||
+    (typeof key === 'string' && key.startsWith('sync_cursor:'))
+  );
+}
+
+const SYNCED = new Set<string>(SYNCED_TABLES);
+
+/**
  * Remplace TOUT le contenu de la base par la sauvegarde, dans une seule transaction :
  * si quelque chose échoue, la base reste telle qu'elle était.
  * Les colonnes inconnues (sauvegarde plus ancienne ou plus récente) sont ignorées.
+ *
+ * Restaurer = la sauvegarde devient la version actuelle, ici et sur le compte : chaque élément
+ * restauré repart par la file d'envoi (daté de maintenant). Sur le serveur, il remplace la version
+ * qui s'y trouve, et celle-ci est gardée dans les conflits (rien n'est perdu en silence). Sans la
+ * file, la synchronisation suivante aurait défait la restauration sans rien dire.
  */
 export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
+    const kept = await txn.getAllAsync<SnapshotRow>(
+      "SELECT * FROM app_settings WHERE key IN ('account_owner', 'last_sync_at')",
+      [],
+    );
     for (const table of [...BACKUP_TABLES].reverse()) {
       await txn.runAsync(`DELETE FROM ${table}`, []);
     }
     const now = nowIso();
-    let removedExceptions: { id: string; version: number }[] = [];
     for (const table of BACKUP_TABLES) {
+      // Ancienne file d'envoi : remplacée par une entrée par élément restauré (plus bas).
+      if (table === 'sync_outbox') continue;
       let rows = snapshot.tables[table] ?? [];
-      if (table === 'course_exceptions') {
-        const deduped = dedupeCourseExceptions(rows, now);
-        rows = deduped.rows;
-        removedExceptions = deduped.removed;
+      if (table === 'course_exceptions') rows = dedupeCourseExceptions(rows, now).rows;
+      if (table === 'app_settings')
+        rows = [...rows.filter((r) => !isDeviceSyncSetting(r.key)), ...kept];
+      if (SYNCED.has(table)) {
+        rows = rows.map((r) => ({
+          ...r,
+          updated_at: now,
+          sync_status:
+            r.sync_status === 'pending_create'
+              ? 'pending_create'
+              : r.deleted_at !== null && r.deleted_at !== undefined
+                ? 'pending_delete'
+                : 'pending_update',
+        }));
       }
       if (rows.length === 0) continue;
       const columns = (
@@ -172,15 +216,33 @@ export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise
           `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`,
           cols.map((c) => r[c] ?? null),
         );
+        if (SYNCED.has(table) && r.id) {
+          // La ligne complète part à la prochaine synchronisation (le moteur relit la ligne).
+          const payload: SnapshotRow = {};
+          for (const c of cols)
+            if (c !== 'version' && c !== 'sync_status') payload[c] = r[c] ?? null;
+          await txn.runAsync(
+            `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+              newId(),
+              table,
+              String(r.id),
+              r.sync_status === 'pending_create'
+                ? 'create'
+                : r.sync_status === 'pending_delete'
+                  ? 'delete'
+                  : 'update',
+              JSON.stringify(payload),
+              null,
+              now,
+            ],
+          );
+        }
       }
     }
-    for (const r of removedExceptions) {
-      await txn.runAsync(
-        `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
-         VALUES (?, 'course_exceptions', ?, 'delete', ?, ?, ?)`,
-        [newId(), r.id, JSON.stringify({ deleted_at: now, updated_at: now }), r.version, now],
-      );
-    }
+    // Sauvegarde d'avant la migration 21 : les refus du serveur retrouvent leur nature.
+    await txn.execAsync(MARK_OLD_REJECTED_CONFLICTS);
   });
   notifyChange(BACKUP_TABLES);
 }

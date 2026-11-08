@@ -1,9 +1,9 @@
-import { getSupabase, mergeDuplicateProfiles } from '@/modules/identity';
+import { getAccountOwner, getSupabase, mergeDuplicateProfiles } from '@/modules/identity';
 import type { Db } from '@/shared/db';
 import { isAppError } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 
-import { syncOnce, type SyncReport } from './engine';
+import { syncOnce, SyncStopped, type SyncReport } from './engine';
 import { supabaseFileStore, syncFiles } from './files';
 import { supabaseRemote } from './remote';
 import { setSyncStatus } from './status';
@@ -17,6 +17,25 @@ let runningUser: string | null = null;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let retryDelay = RETRY_START_MS;
 let scheduledDelay: number | null = null;
+/** Nombre d'opérations en cours pendant lesquelles aucune synchronisation ne doit écrire. */
+let pauses = 0;
+
+/**
+ * Exécute `job` sans synchronisation : celle qui tourne s'arrête avant sa prochaine écriture et on
+ * attend qu'elle ait fini ; aucune ne démarre avant la fin de `job`. À utiliser pour tout ce qui
+ * vide ou remplace la base (effacement, déconnexion, suppression du compte, restauration) : sinon
+ * une réception en cours pourrait réécrire les données d'un compte après l'effacement.
+ */
+export async function withSyncPaused<T>(job: () => Promise<T>): Promise<T> {
+  pauses++;
+  cancelSyncRetry();
+  try {
+    if (running) await running;
+    return await job();
+  } finally {
+    pauses--;
+  }
+}
 
 function clearRetry(): void {
   if (retryTimer) clearTimeout(retryTimer);
@@ -57,6 +76,7 @@ export function runSync(db: Db, userId: string): Promise<SyncReport | null> {
 }
 
 function start(db: Db, userId: string, fromRetry: boolean): Promise<SyncReport | null> {
+  if (pauses > 0) return Promise.resolve(null);
   if (running) return runningUser === userId ? running : Promise.resolve(null);
   if (fromRetry) clearRetry();
   else cancelSyncRetry();
@@ -67,15 +87,28 @@ function start(db: Db, userId: string, fromRetry: boolean): Promise<SyncReport |
     setSyncStatus({ state: 'syncing' });
     try {
       const remote = supabaseRemote(client);
-      let report = await syncOnce(db, remote);
+      // Avant chaque écriture : pause demandée, ou ce téléphone n'est plus relié à ce compte
+      // (effacé, autre compte) → on s'arrête, jamais deux comptes mêlés.
+      const shouldStop = async () => pauses > 0 || (await getAccountOwner(db)) !== userId;
+      const stopIfAsked = async () => {
+        if (await shouldStop()) throw new SyncStopped();
+      };
+      let report = await syncOnce(db, remote, { shouldStop });
       // Le pull vient de ramener le profil du compte : s'il double un profil créé hors ligne,
       // on fusionne tout de suite et on renvoie le résultat sans attendre la prochaine synchro.
-      if (await mergeDuplicateProfiles(db)) report = await syncOnce(db, remote);
+      await stopIfAsked();
+      if (await mergeDuplicateProfiles(db)) report = await syncOnce(db, remote, { shouldStop });
+      await stopIfAsked();
       await syncFiles(db, userId, supabaseFileStore(client));
       cancelSyncRetry();
       setSyncStatus({ state: 'idle', lastError: null });
       return report;
     } catch (e) {
+      if (e instanceof SyncStopped) {
+        // Arrêt voulu : ni erreur affichée ni reprise programmée.
+        setSyncStatus({ state: 'idle' });
+        return null;
+      }
       const offline = isAppError(e) && e.code === 'network';
       if (!offline) logger.error(e, { where: 'runSync' });
       setSyncStatus({

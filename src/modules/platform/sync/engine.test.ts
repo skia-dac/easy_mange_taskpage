@@ -112,10 +112,81 @@ describe('synchronisation', () => {
     await updateSubject(a, id, { ...subject, name: 'Version A' });
 
     const ra = await syncOnce(a, server.remote());
-    expect(ra.conflicts).toBe(0);
+    expect(ra.conflicts).toBe(1);
     expect(server.rows('subjects')[0]).toMatchObject({ name: 'Version A', version: 3 });
+    // La version de B, remplacée, n'est pas perdue en silence : A la garde de côté.
+    const [kept] = await listConflicts(a);
+    expect(kept).toMatchObject({ kind: 'local_won', local: { name: 'Version A' } });
+    expect(kept!.server).toMatchObject({ name: 'Version B' });
+    expect(canRestore(kept!)).toBe(true);
     await syncOnce(b, server.remote());
     expect((await listSubjects(b)).map((s) => s.name)).toEqual(['Version A']);
+
+    // « Reprendre l'autre version » : B revient partout.
+    jest.setSystemTime(new Date('2026-09-24T11:00:00.000Z'));
+    await restoreConflict(a, kept!.id);
+    expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Version B']);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+    expect((await listSubjects(b)).map((s) => s.name)).toEqual(['Version B']);
+    a.close();
+    b.close();
+  });
+
+  it('conflit sans différence de contenu : rien n’est gardé de côté', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const id = await createSubject(a, subject);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+
+    jest.setSystemTime(new Date('2026-09-24T09:00:00.000Z'));
+    await updateSubject(b, id, { ...subject, name: 'Pareil' });
+    await syncOnce(b, server.remote());
+    jest.setSystemTime(new Date('2026-09-24T10:00:00.000Z'));
+    await updateSubject(a, id, { ...subject, name: 'Pareil' });
+
+    await syncOnce(a, server.remote());
+    expect(await conflictCount(a)).toBe(0);
+    expect(server.rows('subjects')[0]).toMatchObject({ name: 'Pareil' });
+    a.close();
+    b.close();
+  });
+
+  it('une modification faite pendant l’envoi n’est jamais écrasée par la version du serveur', async () => {
+    const server = new FakeServer();
+    const a = await createTestDb();
+    const b = await createTestDb();
+    const id = await createSubject(a, subject);
+    await syncOnce(a, server.remote());
+    await syncOnce(b, server.remote());
+
+    // B modifie à 10 h (gagnerait sur l'heure), A à 9 h, puis A modifie encore pendant l'envoi.
+    jest.setSystemTime(new Date('2026-09-24T10:00:00.000Z'));
+    await updateSubject(b, id, { ...subject, name: 'Version B' });
+    await syncOnce(b, server.remote());
+    jest.setSystemTime(new Date('2026-09-24T09:00:00.000Z'));
+    await updateSubject(a, id, { ...subject, name: 'Version A1' });
+    const remote = server.remote();
+    const pushOnce = remote.push.bind(remote);
+    let edited = false;
+    remote.push = async (mutations) => {
+      const results = await pushOnce(mutations);
+      if (!edited) {
+        edited = true;
+        await updateSubject(a, id, { ...subject, name: 'Version A2' });
+      }
+      return results;
+    };
+
+    await syncOnce(a, remote);
+    // La modification faite pendant l'aller-retour gagne et part ; celle de B est gardée de côté.
+    expect((await listSubjects(a)).map((s) => s.name)).toEqual(['Version A2']);
+    expect(server.rows('subjects')[0]).toMatchObject({ name: 'Version A2' });
+    const [kept] = await listConflicts(a);
+    expect(kept).toMatchObject({ kind: 'local_won' });
+    expect(kept!.server).toMatchObject({ name: 'Version B' });
     a.close();
     b.close();
   });
@@ -141,7 +212,9 @@ describe('synchronisation', () => {
     );
 
     const rb = await syncOnce(b, server.remote());
-    expect(rb.conflicts).toBe(0);
+    expect(rb.conflicts).toBe(1);
+    // La copie du serveur, remplacée, reste disponible sur B.
+    expect((await listConflicts(b))[0]).toMatchObject({ kind: 'local_won' });
     expect(server.rows('subjects')).toHaveLength(1);
     expect(server.rows('subjects')[0]).toMatchObject({ name: 'Depuis sauvegarde', version: 2 });
     await syncOnce(a, server.remote());
@@ -293,8 +366,8 @@ describe('synchronisation', () => {
       [id],
     );
     await a.runAsync(
-      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at)
-       VALUES ('c', 'subjects', ?, ?, ?, 'x')`,
+      `INSERT INTO sync_conflicts (id, entity, entity_id, local_payload, server_payload, created_at, kind)
+       VALUES ('c', 'subjects', ?, ?, ?, 'x', 'rejected')`,
       [id, JSON.stringify({ id, name: 'Figée' }), JSON.stringify({ reason: 'check violation' })],
     );
     const [conflict] = await listConflicts(a);
