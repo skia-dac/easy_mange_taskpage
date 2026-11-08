@@ -135,26 +135,64 @@ export async function hasPermission(): Promise<boolean> {
 }
 
 /**
- * Remplace toutes les notifications programmées par le plan actuel.
+ * Empreinte stable de ce qui serait programmé : chaque rappel (id, heure, textes, catégorie), le
+ * son et la vibration (canal Android) et la langue des textes. Deux plans de même empreinte
+ * donnent exactement les mêmes notifications.
+ */
+export function planKey(
+  plan: readonly PlannedReminder[],
+  prefs: Pick<NotificationPreferences, 'sound' | 'vibrate'>,
+  language: string,
+): string {
+  return JSON.stringify([
+    language,
+    prefs.sound,
+    prefs.vibrate,
+    plan.map((r) => [r.id, r.fireAt.getTime(), r.title, r.body, r.action, r.category ?? null]),
+  ]);
+}
+
+/** Empreinte du dernier plan programmé (null : rien de connu, on reprogramme). */
+let scheduledKey: string | null = null;
+
+/** Oublie le dernier plan (tests, ou notifications effacées par ailleurs). */
+export function resetScheduledPlan(): void {
+  scheduledKey = null;
+}
+
+/**
+ * Remplace toutes les notifications programmées par le plan actuel, **seulement s'il a changé**.
  * Appelé à chaque changement de données (architecture §9.2) : un cours déplacé ou annulé
- * recalcule ses rappels ; un devoir terminé perd le sien.
+ * recalcule ses rappels ; un devoir terminé perd le sien. Une dépense ou une humeur, qui ne
+ * changent aucun rappel, ne font rien annuler ni reprogrammer. Retourne le nombre de rappels du
+ * plan.
  */
 export async function syncScheduledNotifications(
   db: Db,
   data: TodayData,
   now = new Date(),
 ): Promise<number> {
-  if (!(await hasPermission())) return 0;
+  if (!(await hasPermission())) {
+    // Permission retirée : au retour, tout est reprogrammé.
+    scheduledKey = null;
+    return 0;
+  }
   const [prefs, subjects] = await Promise.all([getNotificationPreferences(db), listSubjects(db)]);
   const byId = new Map(subjects.map((s) => [s.id, s.name]));
   const plan = planReminders(data, prefs, now, { subjectName: (id) => byId.get(id) ?? '' });
+  const key = planKey(plan, prefs, i18n.language);
+  if (key === scheduledKey) return plan.length;
+  // Une programmation interrompue doit être refaite au prochain appel.
+  scheduledKey = null;
   await Notifications.cancelAllScheduledNotificationsAsync();
   await Promise.all(plan.map((r) => scheduleOne(r, prefs)));
+  scheduledKey = key;
   return plan.length;
 }
 
 /** Annule tous les rappels programmés (suppression des données). */
 export async function cancelAllReminders(): Promise<void> {
+  scheduledKey = null;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
