@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { AccessibilityInfo, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Keyboard, StyleSheet, type KeyboardEvent } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { i18n } from '../i18n';
@@ -56,6 +56,64 @@ describe('Toast', () => {
     }
     // Barre pas encore mesurée : sa hauteur par défaut (56), plus la place du bouton +.
     expect(bottom).toBe(56 + FAB_CLEARANCE);
+  });
+});
+
+/** Position `bottom` posée sur le conteneur du message. */
+function toastBottom(): number | undefined {
+  let node = screen.getByTestId('toast').parent;
+  while (node) {
+    const style = StyleSheet.flatten(node.props.style) as { bottom?: number } | undefined;
+    if (style?.bottom !== undefined) return style.bottom;
+    node = node.parent;
+  }
+  return undefined;
+}
+
+describe('Toast : clavier et grand texte', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
+
+  it('clavier ouvert : le message se pose au-dessus, puis redescend', async () => {
+    const handlers = new Map<string, (e: KeyboardEvent) => void>();
+    jest.spyOn(Keyboard, 'addListener').mockImplementation((name, handler) => {
+      handlers.set(name, handler as (e: KeyboardEvent) => void);
+      return { remove: () => {} } as ReturnType<typeof Keyboard.addListener>;
+    });
+    await render(<Host />);
+    await act(async () => showToast('Enregistré'));
+    const resting = toastBottom()!;
+
+    const show = handlers.get('keyboardWillShow') ?? handlers.get('keyboardDidShow');
+    const hide = handlers.get('keyboardWillHide') ?? handlers.get('keyboardDidHide');
+    await act(async () =>
+      show?.({
+        endCoordinates: { height: 336, screenX: 0, screenY: 508, width: 390 },
+      } as KeyboardEvent),
+    );
+    expect(toastBottom()).toBeGreaterThan(336);
+    await act(async () => hide?.({} as KeyboardEvent));
+    expect(toastBottom()).toBe(resting);
+  });
+
+  it('texte très grand : le message n’est plus coupé à 2 lignes', async () => {
+    const dimensions = jest.spyOn(require('react-native'), 'useWindowDimensions');
+    dimensions.mockReturnValue({ width: 390, height: 844, scale: 3, fontScale: 1 });
+    await render(<Host />);
+    await act(async () => showToast('Texte normal'));
+    expect(screen.getByText('Texte normal').props.numberOfLines).toBe(2);
+    await screen.unmount();
+
+    dimensions.mockReturnValue({ width: 390, height: 844, scale: 3, fontScale: 2 });
+    await render(<Host />);
+    await act(async () => showToast('Un message assez long pour passer sur plusieurs lignes'));
+    expect(
+      screen.getByText('Un message assez long pour passer sur plusieurs lignes').props
+        .numberOfLines,
+    ).toBeUndefined();
   });
 });
 

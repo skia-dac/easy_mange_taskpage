@@ -14,6 +14,8 @@ import { AppText } from './AppText';
 import { showError } from './dialogs';
 import { FAB_CLEARANCE } from './PlusButton';
 import { Tappable } from './Tappable';
+import { useKeyboardHeight } from './useKeyboardHeight';
+import { useLineLimit } from './useLargeText';
 import { useScreenReader } from './useScreenReader';
 
 export type ToastAction = { label: string; onPress: () => void };
@@ -66,6 +68,9 @@ export function ToastHost() {
   const onTabs = useSegments()[0] === '(tabs)';
   const measuredTabBar = useMeasuredTabBarHeight();
   const reader = useScreenReader();
+  const keyboard = useKeyboardHeight();
+  // Très grand texte : le message entier, sur autant de lignes qu'il faut.
+  const lines = useLineLimit(2);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [opacity] = useState(() => new Animated.Value(0));
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -119,6 +124,9 @@ export function ToastHost() {
   // avoir terminé une tâche ne doit jamais tomber sur « Annuler ».
   const tabBar = measuredTabBar > 0 ? measuredTabBar : insets.bottom + TAB_BAR_FALLBACK;
   const sticky = reader && !!entry.action;
+  // Clavier ouvert : le message se pose juste au-dessus, jamais dessous.
+  const resting = (onTabs ? tabBar : insets.bottom) + FAB_CLEARANCE;
+  const bottom = keyboard > 0 ? Math.max(resting, keyboard + spacing.md) : resting;
   return (
     <View
       pointerEvents="box-none"
@@ -126,7 +134,7 @@ export function ToastHost() {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: (onTabs ? tabBar : insets.bottom) + FAB_CLEARANCE,
+        bottom,
         alignItems: 'center',
         paddingHorizontal: spacing.xl,
       }}
@@ -144,7 +152,7 @@ export function ToastHost() {
           borderRadius: radius.lg,
           paddingLeft: spacing.lg,
           paddingRight: entry.action ? spacing.xs : spacing.lg,
-          paddingVertical: entry.action ? 0 : spacing.md,
+          paddingVertical: entry.action ? spacing.xxs : spacing.md,
           minHeight: minTouchSize,
           shadowColor: colors.shadow,
           shadowOpacity: 0.2,
@@ -153,7 +161,7 @@ export function ToastHost() {
           elevation: 4,
         }}
       >
-        <AppText numberOfLines={2} style={{ color: colors.background, flexShrink: 1 }}>
+        <AppText numberOfLines={lines} style={{ color: colors.background, flexShrink: 1 }}>
           {entry.message}
         </AppText>
         {entry.action ? (
