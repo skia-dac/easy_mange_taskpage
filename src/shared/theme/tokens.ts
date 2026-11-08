@@ -33,8 +33,9 @@ export const textVariants = {
   /** Titre d'une carte mise en avant (« Prochain cours »). */
   headline: { fontFamily: fonts.display, fontSize: 24, lineHeight: 30, letterSpacing: -0.4 },
   heading: { fontFamily: fonts.display, fontSize: 19, lineHeight: 24, letterSpacing: -0.3 },
-  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
-  bodyStrong: { fontFamily: fonts.bodySemiBold, fontSize: 15, lineHeight: 22 },
+  /** Texte courant : 16 pt (lisible sans zoom ; iOS propose 17 par défaut). */
+  body: { fontFamily: fonts.body, fontSize: 16, lineHeight: 23 },
+  bodyStrong: { fontFamily: fonts.bodySemiBold, fontSize: 16, lineHeight: 23 },
   /** Texte saisi dans un champ (un peu plus grand : iOS ne zoome pas, se lit mieux). */
   input: { fontFamily: fonts.body, fontSize: 16, lineHeight: 22 },
   caption: { fontFamily: fonts.bodyMedium, fontSize: 13, lineHeight: 18 },

@@ -239,6 +239,7 @@ export default function PlanningScreen() {
       </ScrollView>
       <Fab
         accessibilityLabel={t('planning.addMenu')}
+        menuOpen={addOptions.length > 1 ? menu : undefined}
         onPress={() => (addOptions.length > 1 ? setMenu(true) : addSlot())}
       />
       <ChoiceSheet

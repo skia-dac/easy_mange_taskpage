@@ -89,51 +89,7 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
           paddingVertical: spacing.sm,
         }}
       >
-        <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={habit.name}
-          onPress={() => router.push({ pathname: '/habits/[id]', params: { id: habit.id } })}
-          onLongPress={() => onMore(habit)}
-          style={() => ({
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: spacing.md,
-          })}
-        >
-          <HabitIcon icon={habit.icon} colorId={habit.colorId} />
-          <View style={{ flex: 1, gap: spacing.xxs }}>
-            <AppText
-              variant="bodyStrong"
-              numberOfLines={lines}
-              style={done ? { textDecorationLine: 'line-through', color: colors.muted } : undefined}
-            >
-              {habit.name}
-            </AppText>
-            {subtitle ? (
-              <AppText
-                variant="caption"
-                color={state === 'missed' ? 'danger' : 'muted'}
-                numberOfLines={lines}
-              >
-                {subtitle}
-              </AppText>
-            ) : null}
-          </View>
-        </Tappable>
-        <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={t('habits.more', { name: habit.name })}
-          onPress={() => onMore(habit)}
-          style={{
-            width: minTouchSize,
-            height: minTouchSize,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Feather name="more-horizontal" size={20} color={colors.muted} />
-        </Tappable>
+        {/* La case à gauche, comme pour les tâches ; à côté du bouton de la ligne, jamais dedans. */}
         {habit.target > 1 ? (
           <Tappable
             accessibilityRole="button"
@@ -177,6 +133,51 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
             onToggle={() => setHabitDone(db, habit.id, day, !done).catch(fail)}
           />
         )}
+        <Tappable
+          accessibilityRole="button"
+          accessibilityLabel={[habit.name, subtitle].filter(Boolean).join(', ')}
+          onPress={() => router.push({ pathname: '/habits/[id]', params: { id: habit.id } })}
+          onLongPress={() => onMore(habit)}
+          style={() => ({
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.md,
+          })}
+        >
+          <HabitIcon icon={habit.icon} colorId={habit.colorId} />
+          <View style={{ flex: 1, gap: spacing.xxs }}>
+            <AppText
+              variant="bodyStrong"
+              numberOfLines={lines}
+              style={done ? { textDecorationLine: 'line-through', color: colors.muted } : undefined}
+            >
+              {habit.name}
+            </AppText>
+            {subtitle ? (
+              <AppText
+                variant="caption"
+                color={state === 'missed' ? 'danger' : 'muted'}
+                numberOfLines={lines}
+              >
+                {subtitle}
+              </AppText>
+            ) : null}
+          </View>
+        </Tappable>
+        <Tappable
+          accessibilityRole="button"
+          accessibilityLabel={t('habits.more', { name: habit.name })}
+          onPress={() => onMore(habit)}
+          style={{
+            width: minTouchSize,
+            height: minTouchSize,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Feather name="more-horizontal" size={20} color={colors.muted} />
+        </Tappable>
       </View>
     </Settle>
   );

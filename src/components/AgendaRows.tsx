@@ -21,13 +21,18 @@ import {
   Checkbox,
   Chip,
   IconBadge,
+  itemTypes,
   ListRow,
   Settle,
   SubjectBar,
   SwipeRow,
+  type ItemTypeStyle,
+  type SwipeAccessibility,
 } from '@/shared/ui';
 
 type SubjectMap = ReadonlyMap<string, Subject>;
+
+const badge = ({ icon, color, background }: ItemTypeStyle) => ({ icon, color, background });
 
 export function CourseRow({
   occurrence,
@@ -108,8 +113,19 @@ export function WorkRow({
     .join(' · ');
   const toggle = () => void actions.setDone(item, !done);
 
-  const line = (
+  const swipe = {
+    right: { label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle },
+    left: {
+      label: t('postpone.action'),
+      icon: 'clock',
+      color: 'warning',
+      onAction: () => onPostpone?.(item),
+    },
+  } as const;
+
+  const line = (a11y?: SwipeAccessibility) => (
     <ListRow
+      {...a11y}
       title={item.title}
       struck={done}
       subtitle={[
@@ -123,7 +139,7 @@ export function WorkRow({
       ]
         .filter(Boolean)
         .join(' · ')}
-      leading={<Checkbox checked={done} onToggle={toggle} accessibilityLabel={item.title} />}
+      control={<Checkbox checked={done} onToggle={toggle} accessibilityLabel={item.title} />}
       trailing={
         late ? (
           <Chip label={t('status.overdue')} tone="danger" />
@@ -136,19 +152,10 @@ export function WorkRow({
       }
     />
   );
-  if (!onPostpone) return <Settle done={done}>{line}</Settle>;
+  if (!onPostpone) return <Settle done={done}>{line()}</Settle>;
   return (
     <Settle done={done}>
-      <SwipeRow
-        enabled={!done}
-        right={{ label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle }}
-        left={{
-          label: t('postpone.action'),
-          icon: 'clock',
-          color: 'warning',
-          onAction: () => onPostpone(item),
-        }}
-      >
+      <SwipeRow enabled={!done} right={swipe.right} left={swipe.left}>
         {line}
       </SwipeRow>
     </Settle>
@@ -166,7 +173,7 @@ export function ExamRow({ exam, subjects, now }: { exam: Exam; subjects: Subject
       subtitle={[exam.title, formatShortDate(exam.date, labels.lang), exam.time, exam.room]
         .filter(Boolean)
         .join(' · ')}
-      leading={<IconBadge icon="award" color="danger" background="dangerSoft" />}
+      leading={<IconBadge {...badge(itemTypes.exam)} />}
       trailing={
         c.kind === 'past' ? undefined : (
           <Chip label={labels.countdown(c)} tone={c.kind === 'inDays' ? 'primary' : 'warning'} />
@@ -188,13 +195,7 @@ export function EventRow({ event }: { event: PersonalEvent }) {
       subtitle={[isSlotEvent(event) ? t('planning.slot') : t('calendarItem.event'), time].join(
         ' · ',
       )}
-      leading={
-        <IconBadge
-          icon={isSlotEvent(event) ? 'repeat' : 'star'}
-          color="warning"
-          background="warningSoft"
-        />
-      }
+      leading={<IconBadge {...badge(isSlotEvent(event) ? itemTypes.slot : itemTypes.event)} />}
       onPress={() => router.push(eventHref(event))}
     />
   );
@@ -216,11 +217,11 @@ export function RevisionRow({ block, subjects }: { block: RevisionBlock; subject
         .join(' · ')}
       struck={block.status === 'skipped'}
       leading={
-        <IconBadge
-          icon={done ? 'check' : 'book-open'}
-          color={done ? 'success' : 'primary'}
-          background={done ? 'successSoft' : 'primarySoft'}
-        />
+        done ? (
+          <IconBadge icon="check" color="success" background="successSoft" />
+        ) : (
+          <IconBadge {...badge(itemTypes.revision)} />
+        )
       }
       trailing={done ? <Chip label={t('revision.status.done')} tone="success" /> : undefined}
       onPress={() => router.push({ pathname: '/revision/[id]', params: { id: block.id } })}

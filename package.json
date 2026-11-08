@@ -94,7 +94,7 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.expo/",
-      "/.claude/"
+      "<rootDir>/.claude/"
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.ts"

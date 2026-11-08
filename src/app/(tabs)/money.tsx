@@ -68,6 +68,7 @@ export default function MoneyScreen() {
     o.income + Math.max(0, o.carryOver) > 0
       ? Math.min(1, o.expense / (o.income + Math.max(0, o.carryOver)))
       : 0;
+  const leftPercent = Math.round((1 - spentShare) * 100);
 
   const togglePaid = (d: DueItem) => {
     if (!d.paid) {
@@ -181,6 +182,15 @@ export default function MoneyScreen() {
               format={(n) => formatMoney(n, cur)}
             />
             <View
+              accessible
+              accessibilityRole="progressbar"
+              accessibilityLabel={t('money.leftBar')}
+              accessibilityValue={{
+                min: 0,
+                max: 100,
+                now: leftPercent,
+                text: t('money.leftBarValue', { percent: leftPercent }),
+              }}
               style={{
                 height: 8,
                 borderRadius: 4,
@@ -190,9 +200,10 @@ export default function MoneyScreen() {
             >
               <View
                 style={{
-                  width: `${Math.round((1 - spentShare) * 100)}%`,
+                  width: `${leftPercent}%`,
                   height: 8,
-                  backgroundColor: colors.onPrimary,
+                  // Remplissage foncé sur rail clair : il se voit (≥ 3:1), en clair comme en sombre.
+                  backgroundColor: colors.text,
                 }}
               />
             </View>
@@ -335,7 +346,7 @@ export default function MoneyScreen() {
                   ]
                     .filter(Boolean)
                     .join(' · ')}
-                  leading={
+                  control={
                     <Checkbox
                       checked={d.paid}
                       accessibilityLabel={t('money.markPaid', { name: d.recurring.name })}

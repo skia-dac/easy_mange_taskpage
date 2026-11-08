@@ -458,7 +458,12 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
     ) : null;
 
   return (
-    <Animated.View entering={reduced ? undefined : easeNextCard}>
+    // La carte et « Prendre des notes » sont deux boutons FRÈRES : un bouton dans un bouton
+    // serait inatteignable avec VoiceOver (il lit la carte comme un seul élément).
+    <Animated.View
+      entering={reduced ? undefined : easeNextCard}
+      style={{ backgroundColor: colors.primary, borderRadius: radius.xl, overflow: 'hidden' }}
+    >
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={`${ongoing ? t('today.ongoing') : t('today.nextCourse')} : ${subjectName}, ${o.startTime} – ${o.endTime}`}
@@ -469,9 +474,8 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
           })
         }
         style={() => ({
-          backgroundColor: colors.primary,
-          borderRadius: radius.xl,
           padding: spacing.xl,
+          paddingBottom: spacing.sm,
           gap: spacing.sm,
         })}
       >
@@ -498,6 +502,8 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
           {info('map-pin', o.room)}
           {info('user', o.teacher)}
         </View>
+      </Tappable>
+      <View style={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xl }}>
         <Tappable
           accessibilityRole="button"
           onPress={() =>
@@ -527,7 +533,7 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
             {t('notes.takeNotes')}
           </AppText>
         </Tappable>
-      </Tappable>
+      </View>
     </Animated.View>
   );
 }

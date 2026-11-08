@@ -1,12 +1,13 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { atTime, fromIsoDate, toIsoDate, toTime, type IsoDate, type Time } from '../dates';
 import { formatShortDate } from '../format';
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
+import { BottomSheet } from './BottomSheet';
 import { FieldShell } from './FieldShell';
 import { Tappable } from './Tappable';
 
@@ -53,6 +54,15 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
     setOpen(true);
   };
 
+  // Bouton texte (« Effacer », « Annuler », « OK ») : zone touchable de 44 pt, pas un simple hitSlop.
+  const textTarget = {
+    minHeight: minTouchSize,
+    minWidth: minTouchSize,
+    paddingHorizontal: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as const;
+
   const display = value
     ? mode === 'date'
       ? formatShortDate(value, i18n.language)
@@ -81,7 +91,12 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
           <AppText color={value ? 'text' : 'muted'}>{display}</AppText>
         </Tappable>
         {clearable && value ? (
-          <Tappable accessibilityRole="button" onPress={() => onChange(null)} hitSlop={12}>
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.clearField', { label })}
+            onPress={() => onChange(null)}
+            style={textTarget}
+          >
             <AppText variant="bodyStrong" color="primary">
               {t('common.clear')}
             </AppText>
@@ -90,66 +105,50 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
       </View>
 
       {Platform.OS === 'ios' ? (
-        <Modal
+        <BottomSheet
           visible={open}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setOpen(false)}
+          onClose={() => setOpen(false)}
+          style={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
         >
-          <Pressable
-            onPress={() => setOpen(false)}
-            style={{ flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' }}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
           >
-            <Pressable
-              onPress={(e) => e.stopPropagation()}
-              style={{
-                backgroundColor: colors.surface,
-                borderTopLeftRadius: radius.xl,
-                borderTopRightRadius: radius.xl,
-                padding: spacing.lg,
-                paddingBottom: spacing.xxl,
-                gap: spacing.sm,
+            <Tappable accessibilityRole="button" onPress={() => setOpen(false)} style={textTarget}>
+              <AppText variant="bodyStrong" color="muted">
+                {t('common.cancel')}
+              </AppText>
+            </Tappable>
+            <AppText variant="bodyStrong" accessibilityRole="header">
+              {label}
+            </AppText>
+            <Tappable
+              accessibilityRole="button"
+              onPress={() => {
+                onChange(toValue(draft));
+                setOpen(false);
               }}
+              style={textTarget}
             >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Tappable accessibilityRole="button" onPress={() => setOpen(false)} hitSlop={10}>
-                  <AppText variant="bodyStrong" color="muted">
-                    {t('common.cancel')}
-                  </AppText>
-                </Tappable>
-                <AppText variant="bodyStrong">{label}</AppText>
-                <Tappable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    onChange(toValue(draft));
-                    setOpen(false);
-                  }}
-                  hitSlop={10}
-                >
-                  <AppText variant="bodyStrong" color="primary">
-                    {t('common.ok')}
-                  </AppText>
-                </Tappable>
-              </View>
-              <DateTimePicker
-                value={draft}
-                mode={mode}
-                display={mode === 'date' ? 'inline' : 'spinner'}
-                locale={i18n.language}
-                themeVariant={scheme}
-                accentColor={colors.primary}
-                minuteInterval={5}
-                onChange={(_e, d) => d && setDraft(d)}
-              />
-            </Pressable>
-          </Pressable>
-        </Modal>
+              <AppText variant="bodyStrong" color="primary">
+                {t('common.ok')}
+              </AppText>
+            </Tappable>
+          </View>
+          <DateTimePicker
+            value={draft}
+            mode={mode}
+            display={mode === 'date' ? 'inline' : 'spinner'}
+            locale={i18n.language}
+            themeVariant={scheme}
+            accentColor={colors.primary}
+            minuteInterval={5}
+            onChange={(_e, d) => d && setDraft(d)}
+          />
+        </BottomSheet>
       ) : null}
     </FieldShell>
   );

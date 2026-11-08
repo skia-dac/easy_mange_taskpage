@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withRepeat,
   withSequence,
   withSpring,
   withTiming,
@@ -43,8 +42,9 @@ const SLIDE = Easing.bezier(0.33, 1, 0.68, 1);
 const PRESS_IN = { damping: 20, stiffness: 520 };
 const PRESS_OUT = { damping: 11, stiffness: 300 };
 const PRESSED_SCALE = 0.9;
-/** Le bouton « respire » quelques fois à l'arrivée pour se faire voir, puis se tient tranquille. */
-const BREATHS = 3;
+/** Une seule arrivée, discrète : le bouton grandit un peu jusqu'à sa taille (rien si animations coupées). */
+const ARRIVE_FROM = 0.85;
+const ARRIVE = { damping: 18, stiffness: 200 };
 
 const Mark = Animated.createAnimatedComponent(G);
 
@@ -71,11 +71,6 @@ function slideY(shift: { value: number }, to: number, duration: number) {
   shift.value = withTiming(to, { duration, easing: SLIDE });
 }
 
-/** Arrête la respiration : sous le doigt, seul l'enfoncement compte. */
-function rest(breathe: { value: number }) {
-  breathe.value = withTiming(1, { duration: 120 });
-}
-
 function pressTo(scale: { value: number }, to: number) {
   scale.value = withSpring(to, to < 1 ? PRESS_IN : PRESS_OUT);
 }
@@ -83,16 +78,23 @@ function pressTo(scale: { value: number }, to: number) {
 /**
  * Bouton rond « + », au même endroit sur tous les écrans. `open` le fait tourner d'un quart de
  * tour pour fermer le menu.
+ *
+ * Le lecteur d'écran n'entend « replié / déployé » que si le bouton ouvre un menu (`open` ou
+ * `menuOpen` donné). Un + qui crée directement reste un simple bouton.
  */
 export function PlusButton({
   onPress,
   accessibilityLabel,
-  open = false,
+  open: openProp,
+  menuOpen,
   bottomInset: requestedInset,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
+  /** Menu attaché au bouton (il tourne en croix quand le menu est ouvert). */
   open?: boolean;
+  /** Le bouton ouvre une fenêtre de choix, sans tourner : état annoncé au lecteur d'écran. */
+  menuOpen?: boolean;
   /**
    * Espace laissé sous le bouton, pour rester au-dessus de la barre d'onglets. Par défaut :
    * la hauteur de cette barre dans les onglets, la barre d'accueil de l'iPhone ailleurs.
@@ -103,8 +105,9 @@ export function PlusButton({
   const reduced = useReducedMotion();
   const hidden = useTabBarHidden();
   const bottomInset = usePlusButtonInset(requestedInset);
-  const arrive = useSharedValue(reduced ? 1 : 0);
-  const breathe = useSharedValue(1);
+  const open = openProp ?? false;
+  const expanded = openProp ?? menuOpen;
+  const arrive = useSharedValue(reduced ? 1 : ARRIVE_FROM);
   const pop = useSharedValue(1);
   const press = useSharedValue(1);
   const turn = useSharedValue(open ? 1 : 0);
@@ -118,18 +121,8 @@ export function PlusButton({
   }, [away, bottomInset, reduced, shift, spacing.xl]);
 
   useEffect(() => {
-    if (reduced) return;
-    arrive.value = withSpring(1, { damping: 12, stiffness: 170 });
+    arrive.value = reduced ? 1 : withSpring(1, ARRIVE);
   }, [arrive, reduced]);
-
-  useEffect(() => {
-    if (reduced || open) {
-      breathe.value = withTiming(1, { duration: 180 });
-      return;
-    }
-    // Un nombre pair d'allers-retours : il finit à sa taille normale.
-    breathe.value = withRepeat(withTiming(1.06, { duration: 1400 }), BREATHS * 2, true);
-  }, [breathe, open, reduced]);
 
   useEffect(() => {
     const to = open ? 1 : 0;
@@ -143,7 +136,7 @@ export function PlusButton({
   }, [open, pop, reduced, turn]);
 
   const scaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: arrive.value * breathe.value * pop.value * press.value }],
+    transform: [{ scale: arrive.value * pop.value * press.value }],
   }));
   const colorStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(turn.value, [0, 1], [colors.primary, colors.text]),
@@ -170,16 +163,13 @@ export function PlusButton({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ expanded: open }}
+        accessibilityState={expanded === undefined ? undefined : { expanded }}
         onPress={() => {
           haptic('selection');
           onPress();
         }}
         onPressIn={() => {
-          if (!reduced) {
-            rest(breathe);
-            pressTo(press, PRESSED_SCALE);
-          }
+          if (!reduced) pressTo(press, PRESSED_SCALE);
         }}
         onPressOut={() => pressTo(press, 1)}
         style={({ pressed }) => ({

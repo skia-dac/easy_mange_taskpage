@@ -1,15 +1,20 @@
+import Feather from '@expo/vector-icons/Feather';
 import { useSegments } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { userMessageKey } from '../errors';
 import { i18n } from '../i18n';
 import { logger } from '../logger';
+import { useMeasuredTabBarHeight } from '../tabBarVisibility';
 import { minTouchSize, useTheme } from '../theme';
 import { AppText } from './AppText';
 import { showError } from './dialogs';
+import { FAB_CLEARANCE } from './PlusButton';
 import { Tappable } from './Tappable';
+import { useScreenReader } from './useScreenReader';
 
 export type ToastAction = { label: string; onPress: () => void };
 type Entry = { id: number; message: string; action?: ToastAction };
@@ -17,8 +22,14 @@ type Entry = { id: number; message: string; action?: ToastAction };
 /** Durée d'affichage : plus longue quand il y a un bouton (le temps de le lire et d'appuyer). */
 const SHOW_MS = 3500;
 const SHOW_WITH_ACTION_MS = 6000;
-/** Hauteur de la barre d'onglets (sans l'inset), pour afficher le message au-dessus sur les onglets. */
-const TAB_BAR_HEIGHT = 56;
+/**
+ * Lecteur d'écran allumé : il faut le temps d'entendre le message puis d'aller jusqu'au bouton.
+ * Un message seul reste 20 s ; un message avec bouton ne part plus tout seul (WCAG 2.2.1) :
+ * il attend « Annuler », « Fermer » ou le message suivant.
+ */
+export const SCREEN_READER_SHOW_MS = 20000;
+/** Hauteur de la barre d'onglets (sans l'inset) tant qu'elle n'a pas été mesurée. */
+const TAB_BAR_FALLBACK = 56;
 
 let listener: ((entry: Entry) => void) | null = null;
 let seq = 0;
@@ -48,10 +59,13 @@ export function showUndoToast(message: string, undo: () => Promise<unknown> | vo
 
 /** À monter une fois, à la racine de l'app (au-dessus des écrans). */
 export function ToastHost() {
+  const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   // Sur un écran de pile (réglages, formulaire…), pas de barre d'onglets : le message descend.
   const onTabs = useSegments()[0] === '(tabs)';
+  const measuredTabBar = useMeasuredTabBarHeight();
+  const reader = useScreenReader();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [opacity] = useState(() => new Animated.Value(0));
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,30 +79,46 @@ export function ToastHost() {
 
   useEffect(() => {
     if (!entry) return;
-    if (timer.current) clearTimeout(timer.current);
     opacity.setValue(0);
     // iOS ne lit pas un « alert » qui apparaît : on l'annonce explicitement (Android aussi, sans double).
     AccessibilityInfo.announceForAccessibility(
       entry.action ? `${entry.message} ${entry.action.label}` : entry.message,
     );
     Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: false }).start();
+  }, [entry, opacity]);
+
+  useEffect(() => {
+    if (!entry) return;
+    if (timer.current) clearTimeout(timer.current);
+    const duration = reader
+      ? entry.action
+        ? null
+        : SCREEN_READER_SHOW_MS
+      : entry.action
+        ? SHOW_WITH_ACTION_MS
+        : SHOW_MS;
+    if (duration === null) return;
     timer.current = setTimeout(
       () =>
         Animated.timing(opacity, { toValue: 0, duration: 220, useNativeDriver: false }).start(() =>
           setEntry((e) => (e?.id === entry.id ? null : e)),
         ),
-      entry.action ? SHOW_WITH_ACTION_MS : SHOW_MS,
+      duration,
     );
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [entry, opacity]);
+  }, [entry, opacity, reader]);
 
   if (!entry) return null;
   const act = () => {
     entry.action?.onPress();
     setEntry(null);
   };
+  // Toujours au-dessus du bouton + (et de la barre d'onglets) : un toucher sur + juste après
+  // avoir terminé une tâche ne doit jamais tomber sur « Annuler ».
+  const tabBar = measuredTabBar > 0 ? measuredTabBar : insets.bottom + TAB_BAR_FALLBACK;
+  const sticky = reader && !!entry.action;
   return (
     <View
       pointerEvents="box-none"
@@ -96,13 +126,14 @@ export function ToastHost() {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: insets.bottom + (onTabs ? TAB_BAR_HEIGHT : spacing.lg),
+        bottom: (onTabs ? tabBar : insets.bottom) + FAB_CLEARANCE,
         alignItems: 'center',
         paddingHorizontal: spacing.xl,
       }}
     >
       <Animated.View
         accessibilityRole="alert"
+        testID="toast"
         style={{
           opacity,
           flexDirection: 'row',
@@ -139,6 +170,21 @@ export function ToastHost() {
             <AppText variant="bodyStrong" style={{ color: colors.primarySoft }}>
               {entry.action.label}
             </AppText>
+          </Tappable>
+        ) : null}
+        {sticky ? (
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            onPress={() => setEntry(null)}
+            style={{
+              width: minTouchSize,
+              height: minTouchSize,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Feather name="x" size={18} color={colors.background} />
           </Tappable>
         ) : null}
       </Animated.View>

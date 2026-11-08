@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 
 import {
   missReasons,
@@ -20,10 +19,10 @@ import { formatDuration, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import {
   AppText,
+  BottomSheet,
   Button,
   ChoiceChips,
   confirmDestructive,
-  KeyboardAvoiding,
   showError,
   TextButton,
   TextField,
@@ -48,7 +47,6 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const db = useDb();
   const { colors, radius, spacing } = useTheme();
-  const insets = useSafeAreaInsets();
   const initial: Choice | null =
     log?.status === 'missed'
       ? 'missed'
@@ -121,90 +119,62 @@ export function HabitDaySheet({ habit, date, log, onClose }: Props) {
   };
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoiding>
-        <Pressable
-          accessibilityLabel={t('common.cancel')}
-          onPress={onClose}
-          style={{ flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' }}
-        >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: colors.surface,
-              borderTopLeftRadius: radius.xl,
-              borderTopRightRadius: radius.xl,
-              padding: spacing.xl,
-              paddingBottom: spacing.xl + insets.bottom,
-              gap: spacing.md,
-            }}
-          >
-            <View style={{ gap: spacing.xxs }}>
-              <AppText variant="heading" accessibilityRole="header">
-                {habit.name}
-              </AppText>
-              <AppText color="muted">{formatShortDate(date, i18n.language)}</AppText>
-            </View>
-            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-              {option('done', t('habits.done'), 'success')}
-              {option('missed', t('habits.missed'), 'danger')}
-              {option('excused', t('habits.excused'), 'muted')}
-            </View>
-            {choice === 'done' ? (
-              <ChoiceChips
-                label={t('habits.durationOptional')}
-                options={[
-                  { value: null as number | null, label: t('habits.noDuration') },
-                  ...sessionDurationPresets.map((m) => ({
-                    value: m as number | null,
-                    label: formatDuration(m),
-                  })),
-                ]}
-                selected={[duration]}
-                onToggle={setDuration}
-              />
-            ) : null}
-            {choice === 'missed' || choice === 'excused' ? (
-              <>
-                <ChoiceChips
-                  label={t('habits.reasonOptional')}
-                  options={missReasons.map((r) => ({
-                    value: r as MissReason | null,
-                    label: t(`habits.reason.${r}`),
-                  }))}
-                  selected={[reasonCode]}
-                  onToggle={(r) => setReasonCode(reasonCode === r ? null : r)}
-                />
-                <TextField
-                  label={t('habits.reasonText')}
-                  value={reason}
-                  onChangeText={setReason}
-                  placeholder={t('common.optional')}
-                  limit={fieldLimits.note200}
-                />
-                {choice === 'excused' ? (
-                  <AppText variant="caption" color="muted">
-                    {t('habits.excusedHint')}
-                  </AppText>
-                ) : null}
-              </>
-            ) : null}
-            <Button
-              label={t('common.save')}
-              onPress={() => void save()}
-              disabled={choice === null}
-            />
-            {log ? (
-              <TextButton
-                label={t('habits.clearDay')}
-                color="danger"
-                onPress={() => void clear()}
-              />
-            ) : null}
-            <TextButton label={t('common.cancel')} onPress={onClose} />
-          </Pressable>
-        </Pressable>
-      </KeyboardAvoiding>
-    </Modal>
+    <BottomSheet visible onClose={onClose} avoidKeyboard style={{ gap: spacing.md }}>
+      <View style={{ gap: spacing.xxs }}>
+        <AppText variant="heading" accessibilityRole="header">
+          {habit.name}
+        </AppText>
+        <AppText color="muted">{formatShortDate(date, i18n.language)}</AppText>
+      </View>
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+        {option('done', t('habits.done'), 'success')}
+        {option('missed', t('habits.missed'), 'danger')}
+        {option('excused', t('habits.excused'), 'muted')}
+      </View>
+      {choice === 'done' ? (
+        <ChoiceChips
+          label={t('habits.durationOptional')}
+          options={[
+            { value: null as number | null, label: t('habits.noDuration') },
+            ...sessionDurationPresets.map((m) => ({
+              value: m as number | null,
+              label: formatDuration(m),
+            })),
+          ]}
+          selected={[duration]}
+          onToggle={setDuration}
+        />
+      ) : null}
+      {choice === 'missed' || choice === 'excused' ? (
+        <>
+          <ChoiceChips
+            label={t('habits.reasonOptional')}
+            options={missReasons.map((r) => ({
+              value: r as MissReason | null,
+              label: t(`habits.reason.${r}`),
+            }))}
+            selected={[reasonCode]}
+            onToggle={(r) => setReasonCode(reasonCode === r ? null : r)}
+          />
+          <TextField
+            label={t('habits.reasonText')}
+            value={reason}
+            onChangeText={setReason}
+            placeholder={t('common.optional')}
+            limit={fieldLimits.note200}
+          />
+          {choice === 'excused' ? (
+            <AppText variant="caption" color="muted">
+              {t('habits.excusedHint')}
+            </AppText>
+          ) : null}
+        </>
+      ) : null}
+      <Button label={t('common.save')} onPress={() => void save()} disabled={choice === null} />
+      {log ? (
+        <TextButton label={t('habits.clearDay')} color="danger" onPress={() => void clear()} />
+      ) : null}
+      <TextButton label={t('common.cancel')} onPress={onClose} />
+    </BottomSheet>
   );
 }

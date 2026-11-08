@@ -304,7 +304,11 @@ export default function SubjectDetailScreen() {
 
         <TextButton label={t('subjects.delete')} color="danger" onPress={() => void askDelete()} />
       </ScrollView>
-      <Fab accessibilityLabel={t('subjects.addToSubject')} onPress={() => setAddSheet(true)} />
+      <Fab
+        accessibilityLabel={t('subjects.addToSubject')}
+        menuOpen={addSheet}
+        onPress={() => setAddSheet(true)}
+      />
       <ChoiceSheet
         visible={addSheet}
         title={t('subjects.addForSubject', { name: s.name })}

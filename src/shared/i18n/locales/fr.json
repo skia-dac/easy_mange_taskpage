@@ -28,7 +28,8 @@
     "seeAll": "Tout voir",
     "optional": "Facultatif",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "clearField": "Effacer {{label}}"
   },
   "tabs": {
     "today": "Aujourd’hui",
@@ -163,7 +164,17 @@
     "moveCourseTitle": "Déplacer ce cours ?",
     "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
     "moveConfirm": "Déplacer",
-    "viewMode": "Affichage du calendrier"
+    "viewMode": "Affichage du calendrier",
+    "previousStep": {
+      "day": "Jour précédent",
+      "week": "Semaine précédente",
+      "month": "Mois précédent"
+    },
+    "nextStep": {
+      "day": "Jour suivant",
+      "week": "Semaine suivante",
+      "month": "Mois suivant"
+    }
   },
   "calendarItem": {
     "exam": "Examen",
@@ -1262,7 +1273,7 @@
     "tontine": "Tontine",
     "paid": "Payé",
     "late": "En retard",
-    "markPaid": "{{name}} payé",
+    "markPaid": "Marquer {{name}} comme payé",
     "myTurn": "Ton tour : {{name}}",
     "myTurnHint": "Le {{date}} · tu reçois {{amount}}",
     "recent": "Dernières opérations",
@@ -1482,7 +1493,9 @@
     "tontineOption": "Tontine",
     "paidToast": "{{name}} : payé",
     "recurringKindLabel": "Charge fixe ou tontine",
-    "frequency": "Fréquence"
+    "frequency": "Fréquence",
+    "leftBar": "Part du budget restante",
+    "leftBarValue": "{{percent}} % restant"
   },
   "glance": {
     "money": "Argent",
@@ -1833,5 +1846,19 @@
   "state": {
     "errorTitle": "Impossible d’afficher cette liste",
     "loading": "Chargement…"
+  },
+  "itemType": {
+    "task": "Tâche",
+    "assignment": "Tâche",
+    "exam": "Examen",
+    "event": "Rendez-vous",
+    "slot": "Créneau",
+    "course": "Cours",
+    "note": "Note",
+    "revision": "Révision",
+    "subject": "Matière",
+    "habit": "Habitude",
+    "expense": "Dépense",
+    "income": "Revenu"
   }
 }

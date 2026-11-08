@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { AccessibilityInfo } from 'react-native';
@@ -41,6 +42,30 @@ export function useTabBarHidden() {
 
 export function useSetTabBarScrolling() {
   return useContext(SetScrollingContext);
+}
+
+let measuredHeight = 0;
+const heightListeners = new Set<() => void>();
+
+/**
+ * La barre d'onglets annonce sa hauteur mesurée. Ce qui vit au-dessus du navigateur (le toast,
+ * monté à la racine) n'a pas accès au contexte des onglets : il la lit avec `useMeasuredTabBarHeight`.
+ */
+export function reportTabBarHeight(height: number) {
+  if (height === measuredHeight) return;
+  measuredHeight = height;
+  heightListeners.forEach((l) => l());
+}
+
+/** Dernière hauteur mesurée de la barre d'onglets (0 tant qu'elle n'a pas été affichée). */
+export function useMeasuredTabBarHeight() {
+  return useSyncExternalStore(
+    (listener) => {
+      heightListeners.add(listener);
+      return () => heightListeners.delete(listener);
+    },
+    () => measuredHeight,
+  );
 }
 
 /** Hauteur de la barre, ou 0 hors des onglets. Le contenu peut défiler dessous. */

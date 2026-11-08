@@ -171,7 +171,7 @@ export default function LoansScreen() {
         {section('lent')}
         {section('borrowed')}
       </ScrollView>
-      <Fab accessibilityLabel={t('money.newLoan')} onPress={() => setMenu(true)} />
+      <Fab accessibilityLabel={t('money.newLoan')} menuOpen={menu} onPress={() => setMenu(true)} />
       <ChoiceSheet
         visible={menu}
         title={t('money.newLoan')}

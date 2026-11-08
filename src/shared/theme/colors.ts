@@ -38,6 +38,8 @@ export type ColorTokens = {
   /** « Terminé », « Enregistré » */
   success: string;
   successSoft: string;
+  /** Fond d'un bouton désactivé ; son texte est `muted` (contraste ≥ 4,5:1, testé). */
+  disabled: string;
   /** Voile derrière les fenêtres (bottom sheets, dialogues) */
   scrim: string;
   /** Ombre portée (bouton +, toast). En sombre, noire : une ombre claire ferait un halo. */
@@ -71,6 +73,7 @@ export const lightColors: ColorTokens = {
   dangerSoft: '#FDE8E6',
   success: '#0E7555',
   successSoft: '#E2F3EC',
+  disabled: '#E4E9F1',
   scrim: 'rgba(20, 33, 61, 0.45)',
   shadow: '#14213D',
   ripple: 'rgba(20, 33, 61, 0.12)',
@@ -99,6 +102,7 @@ export const darkColors: ColorTokens = {
   dangerSoft: '#3D2124',
   success: '#4CC79A',
   successSoft: '#17362C',
+  disabled: '#222D45',
   scrim: 'rgba(0, 0, 0, 0.6)',
   shadow: '#000000',
   ripple: 'rgba(234, 240, 250, 0.16)',
