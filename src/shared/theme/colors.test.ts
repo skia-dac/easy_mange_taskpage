@@ -52,6 +52,7 @@ const textPairs: [fg: Token, bg: Token, where: string][] = [
   ['danger', 'background', 'erreur sous un champ'],
   ['danger', 'dangerSoft', 'étiquette « en retard »'],
   ['success', 'surface', 'texte « enregistré »'],
+  ['success', 'background', 'montant d’une entrée d’argent, en haut de la saisie'],
   ['success', 'successSoft', 'étiquette « terminé »'],
   ['onPrimary', 'success', 'action « Terminer » en glissant'],
   ['onPrimary', 'warning', 'action « Reporter » en glissant'],
