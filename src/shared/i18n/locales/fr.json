@@ -224,7 +224,11 @@
     "pdfFooter": "Exporté de MySky le {{date}}",
     "screenTitle": "Note",
     "saveFailed": "La note n’a pas pu être enregistrée. Rouvre-la pour vérifier ton texte.",
-    "attachmentCannotOpen": "Ce fichier ne peut pas être ouvert sur ce téléphone."
+    "attachmentCannotOpen": "Ce fichier ne peut pas être ouvert sur ce téléphone.",
+    "unsavedRetry": "Non enregistré · Réessayer",
+    "unsavedRetryLabel": "Note non enregistrée. Réessayer l’enregistrement",
+    "notFound": "Note introuvable",
+    "notFoundHint": "Cette note a peut-être été supprimée."
   },
   "editor": {
     "heading": "Titre",
