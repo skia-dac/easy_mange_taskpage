@@ -28,7 +28,8 @@
     "seeAll": "See all",
     "optional": "Optional",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "clearField": "Clear {{label}}"
   },
   "tabs": {
     "today": "Today",
@@ -163,7 +164,17 @@
     "moveCourseTitle": "Move this class?",
     "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
     "moveConfirm": "Move",
-    "viewMode": "Calendar view"
+    "viewMode": "Calendar view",
+    "previousStep": {
+      "day": "Previous day",
+      "week": "Previous week",
+      "month": "Previous month"
+    },
+    "nextStep": {
+      "day": "Next day",
+      "week": "Next week",
+      "month": "Next month"
+    }
   },
   "calendarItem": {
     "exam": "Exam",
@@ -1262,7 +1273,7 @@
     "tontine": "Tontine",
     "paid": "Paid",
     "late": "Overdue",
-    "markPaid": "{{name}} paid",
+    "markPaid": "Mark {{name}} as paid",
     "myTurn": "Your turn: {{name}}",
     "myTurnHint": "On {{date}} · you receive {{amount}}",
     "recent": "Recent activity",
@@ -1482,7 +1493,9 @@
     "tontineOption": "Tontine",
     "paidToast": "{{name}}: paid",
     "recurringKindLabel": "Fixed cost or tontine",
-    "frequency": "Frequency"
+    "frequency": "Frequency",
+    "leftBar": "Share of budget left",
+    "leftBarValue": "{{percent}}% left"
   },
   "glance": {
     "money": "Money",
@@ -1833,5 +1846,19 @@
   "state": {
     "errorTitle": "Couldn’t show this list",
     "loading": "Loading…"
+  },
+  "itemType": {
+    "task": "Task",
+    "assignment": "Task",
+    "exam": "Exam",
+    "event": "Appointment",
+    "slot": "Slot",
+    "course": "Class",
+    "note": "Note",
+    "revision": "Revision",
+    "subject": "Subject",
+    "habit": "Habit",
+    "expense": "Expense",
+    "income": "Income"
   }
 }

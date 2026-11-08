@@ -179,10 +179,12 @@ export default function CalendarScreen() {
     );
   };
 
+  const stepUnit = mode === 'day' ? 'day' : mode === 'month' ? 'month' : 'week';
   const navButton = (icon: 'chevron-left' | 'chevron-right', dir: 1 | -1) => (
     <Tappable
       accessibilityRole="button"
-      accessibilityLabel={dir === -1 ? t('calendar.previous') : t('calendar.next')}
+      // Le libellé dit le pas : « Jour précédent », « Semaine suivante », « Mois précédent ».
+      accessibilityLabel={t(`calendar.${dir === -1 ? 'previous' : 'next'}Step.${stepUnit}`)}
       onPress={() => step(dir)}
       style={{
         width: minTouchSize,
@@ -254,7 +256,16 @@ export default function CalendarScreen() {
         >
           {navButton('chevron-left', -1)}
           {selected !== today ? (
-            <Tappable accessibilityRole="button" onPress={() => setSelected(today)} hitSlop={10}>
+            <Tappable
+              accessibilityRole="button"
+              onPress={() => setSelected(today)}
+              style={{
+                minHeight: minTouchSize,
+                paddingHorizontal: spacing.md,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <AppText variant="bodyStrong" color="primary">
                 {t('calendar.goToday')}
               </AppText>
