@@ -978,7 +978,8 @@
       "edit-3": "Pencil",
       "map-pin": "Map pin",
       "smartphone": "Phone"
-    }
+    },
+    "doneToast": "Done: {{name}}"
   },
   "account": {
     "title": "Account and sync",

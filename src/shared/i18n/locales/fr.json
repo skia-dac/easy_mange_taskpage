@@ -978,7 +978,8 @@
       "edit-3": "Crayon",
       "map-pin": "Repère",
       "smartphone": "Téléphone"
-    }
+    },
+    "doneToast": "Fait : {{name}}"
   },
   "account": {
     "title": "Compte et synchronisation",
