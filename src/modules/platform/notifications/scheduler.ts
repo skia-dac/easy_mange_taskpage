@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { listSubjects } from '@/modules/academic';
+import { getMoneyPrefs } from '@/modules/finance';
 import { getNotificationPreferences, type NotificationPreferences } from '@/modules/identity';
 import type { TodayData } from '@/projections';
 import { isIsoDate } from '@/shared/dates';
@@ -31,13 +32,22 @@ let configured = false;
 /**
  * Canaux Android : un canal ne peut plus être modifié une fois créé (c'est le système qui décide),
  * on en crée donc un par combinaison son / vibration et on choisit le bon à chaque rappel.
+ * Version 2 : contenu masqué sur l'écran verrouillé (titres de tâches, montants). Les canaux de la
+ * version 1 (sans ce réglage, qu'on ne peut plus changer) sont supprimés.
  */
 const CHANNELS = {
-  full: 'reminders',
-  silent: 'reminders-silent',
-  noVibration: 'reminders-novibration',
-  quiet: 'reminders-quiet',
+  full: 'reminders-v2',
+  silent: 'reminders-silent-v2',
+  noVibration: 'reminders-novibration-v2',
+  quiet: 'reminders-quiet-v2',
 } as const;
+
+const OLD_CHANNELS = [
+  'reminders',
+  'reminders-silent',
+  'reminders-novibration',
+  'reminders-quiet',
+] as const;
 
 export function channelFor(prefs: Pick<NotificationPreferences, 'sound' | 'vibrate'>): string {
   if (prefs.sound && prefs.vibrate) return CHANNELS.full;
@@ -49,27 +59,36 @@ export function channelFor(prefs: Pick<NotificationPreferences, 'sound' | 'vibra
 async function createChannels(): Promise<void> {
   const name = i18n.t('notif.channel');
   const importance = Notifications.AndroidImportance.HIGH;
+  // Écran verrouillé : « contenu masqué » tant que le téléphone n'est pas déverrouillé.
+  const lockscreenVisibility = Notifications.AndroidNotificationVisibility.PRIVATE;
+  await Promise.all(
+    OLD_CHANNELS.map((id) => Notifications.deleteNotificationChannelAsync(id).catch(() => null)),
+  );
   await Promise.all([
     Notifications.setNotificationChannelAsync(CHANNELS.full, {
       name,
       importance,
+      lockscreenVisibility,
       enableVibrate: true,
     }),
     Notifications.setNotificationChannelAsync(CHANNELS.noVibration, {
       name: `${name} · ${i18n.t('settings.noVibration')}`,
       importance,
+      lockscreenVisibility,
       enableVibrate: false,
       vibrationPattern: [0],
     }),
     Notifications.setNotificationChannelAsync(CHANNELS.silent, {
       name: `${name} · ${i18n.t('settings.noSound')}`,
       importance,
+      lockscreenVisibility,
       sound: null,
       enableVibrate: true,
     }),
     Notifications.setNotificationChannelAsync(CHANNELS.quiet, {
       name: `${name} · ${i18n.t('settings.quiet')}`,
       importance,
+      lockscreenVisibility,
       sound: null,
       enableVibrate: false,
       vibrationPattern: [0],
@@ -209,9 +228,16 @@ async function runSync({ db, data, now = new Date() }: SyncArgs): Promise<number
     scheduledKey = null;
     return 0;
   }
-  const [prefs, subjects] = await Promise.all([getNotificationPreferences(db), listSubjects(db)]);
+  const [prefs, subjects, money] = await Promise.all([
+    getNotificationPreferences(db),
+    listSubjects(db),
+    getMoneyPrefs(db),
+  ]);
   const byId = new Map(subjects.map((s) => [s.id, s.name]));
-  const plan = planReminders(data, prefs, now, { subjectName: (id) => byId.get(id) ?? '' });
+  const plan = planReminders(data, prefs, now, {
+    subjectName: (id) => byId.get(id) ?? '',
+    hideAmounts: money.hideWidgetAmounts,
+  });
   const key = planKey(plan, prefs, i18n.language);
   if (key === scheduledKey) return plan.length;
   // Une programmation interrompue (erreur, rappel refusé) doit être refaite au prochain appel :

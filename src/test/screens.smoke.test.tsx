@@ -512,7 +512,11 @@ const cases: Case[] = [
   {
     name: 'Réglages argent',
     load: () => require('@/app/money/settings') as { default: ComponentType },
-    expect: ['Ta période de budget', 'Masquer les montants dans les widgets', 'Nouvelle catégorie'],
+    expect: [
+      'Ta période de budget',
+      'Masquer les montants (widgets et rappels)',
+      'Nouvelle catégorie',
+    ],
   },
   {
     name: 'Nouvelle catégorie d’argent',

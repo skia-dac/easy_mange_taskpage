@@ -9,6 +9,6 @@ describe('canal Android selon son / vibration', () => {
       channelFor({ sound: false, vibrate: false }),
     ]);
     expect(all.size).toBe(4);
-    expect(channelFor({ sound: true, vibrate: true })).toBe('reminders');
+    expect(channelFor({ sound: true, vibrate: true })).toBe('reminders-v2');
   });
 });

@@ -22,7 +22,7 @@ import {
   type TodayView,
 } from '@/projections';
 import { startOfWeekOn } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { formatDuration } from '@/shared/format';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme, type ColorTokens, fonts } from '@/shared/theme';
@@ -57,7 +57,7 @@ export function TodayGlance({
   const weekStart = useWeekStart();
   const moneyQ = useMoneyData(0);
   const money = moneyQ.data?.overview;
-  const hoursQ = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
+  const hoursQ = useLiveQuery(getWorkWeekHours, [settingTable('work_week_hours')], []);
   const weekFrom = startOfWeekOn(view.today, weekStart);
 
   const doneHabits = habits.filter((h) => isDone(h, logOn(habitLogs, h.id, view.today))).length;

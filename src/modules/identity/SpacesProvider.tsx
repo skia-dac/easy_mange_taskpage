@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { SpacesContext, spacesValue } from '@/shared/SpacesContext';
 import { LEGACY_SPACES } from '@/shared/spaces';
 
@@ -11,10 +11,13 @@ import { getActiveSpaces } from './data/settings';
  * (quelques millisecondes) : on ne montre jamais un espace désactivé, même un instant.
  */
 export function SpacesProvider({ children }: { children: ReactNode }) {
-  const q = useLiveQuery(getActiveSpaces, ['app_settings'], []);
+  const q = useLiveQuery(getActiveSpaces, [settingTable('spaces')], []);
   // Réglage illisible : on affiche Études + Perso plutôt qu'un écran vide.
   const active = q.data ?? (q.error ? LEGACY_SPACES : null);
-  const value = useMemo(() => (active ? spacesValue(active) : null), [active]);
+  // Mémo sur le contenu : relire les mêmes espaces ne refait pas rendre toute l'app.
+  const activeKey = active ? JSON.stringify(active) : null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const value = useMemo(() => (active ? spacesValue(active) : null), [activeKey]);
   if (!value) return null;
   return <SpacesContext.Provider value={value}>{children}</SpacesContext.Provider>;
 }

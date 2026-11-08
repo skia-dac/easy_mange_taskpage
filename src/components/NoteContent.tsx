@@ -85,7 +85,7 @@ export function NoteContent({ content, onToggleCheck }: Props) {
                   flexDirection: 'row',
                   alignItems: 'flex-start',
                   gap: spacing.sm,
-                  minHeight: minTouchSize - 12,
+                  minHeight: minTouchSize,
                 }}
               >
                 <View

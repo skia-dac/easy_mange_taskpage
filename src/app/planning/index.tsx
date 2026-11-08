@@ -25,7 +25,7 @@ import {
 } from '@/modules/productivity';
 import { useAgendaData, workWeek } from '@/projections';
 import { addDaysIso, startOfWeekOn, toIsoDate, weekdayOrder } from '@/shared/dates';
-import { useDb, useLiveQuery } from '@/shared/db';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDuration } from '@/shared/format';
 import { useSpaces } from '@/shared/SpacesContext';
@@ -66,8 +66,8 @@ export default function PlanningScreen() {
   const thisWeek = startOfWeekOn(today, weekStart);
   // Les créneaux sont communs à Pro et Perso : on les montre tous, sans choisir d'espace.
   const slots = useLiveQuery(listSlots, ['work_slots'], []);
-  const anchor = useLiveQuery(getRotationAnchor, ['app_settings'], []);
-  const hours = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
+  const anchor = useLiveQuery(getRotationAnchor, [settingTable('rotation_anchor')], []);
+  const hours = useLiveQuery(getWorkWeekHours, [settingTable('work_week_hours')], []);
   const agenda = useAgendaData();
   const [copying, setCopying] = useState(false);
   const [menu, setMenu] = useState(false);

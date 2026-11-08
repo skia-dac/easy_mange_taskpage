@@ -1,4 +1,4 @@
-export { notifyChange, subscribeToChanges } from './changes';
+export { affects, notifyChange, subscribeToChanges } from './changes';
 export { DATABASE_NAME, setupDatabase } from './database';
 export { EntityWriter, SYNCED_TABLES, write } from './entityWriter';
 export type { EntityTable, Values } from './entityWriter';

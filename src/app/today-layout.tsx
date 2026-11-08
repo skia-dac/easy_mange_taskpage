@@ -11,7 +11,7 @@ import {
   type TodaySectionId,
 } from '@/modules/identity';
 import { useSpaces } from '@/shared/SpacesContext';
-import { useDb, useLiveQuery } from '@/shared/db';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { AppText, Card, confirmAction, showError, TextButton, Tappable, Toggle } from '@/shared/ui';
@@ -31,7 +31,7 @@ export default function TodayLayoutScreen() {
   const { t } = useTranslation();
   const db = useDb();
   const { colors, spacing } = useTheme();
-  const query = useLiveQuery(getTodayLayout, ['app_settings'], []);
+  const query = useLiveQuery(getTodayLayout, [settingTable('today_layout')], []);
   const layout = query.data ?? normalizeTodayLayout(null);
 
   const save = (next: TodayLayout) =>
@@ -59,7 +59,12 @@ export default function TodayLayoutScreen() {
       accessibilityState={{ disabled: !enabled }}
       disabled={!enabled}
       onPress={() => move(id, dir)}
-      style={{ width: 36, height: minTouchSize, alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: minTouchSize,
+        height: minTouchSize,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <Feather
         name={dir === -1 ? 'arrow-up' : 'arrow-down'}

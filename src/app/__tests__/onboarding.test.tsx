@@ -38,7 +38,11 @@ beforeEach(async () => {
   jest.mocked(router.replace).mockClear();
   jest.mocked(router.push).mockClear();
 });
-afterEach(() => {
+afterEach(async () => {
+  // Le focus du titre part 150 ms après un changement d'étape : on laisse ce délai finir dans son
+  // propre test, sinon, machine chargée, il tombe pendant le test suivant (et fausse son compte).
+  jest.useRealTimers();
+  await act(() => new Promise((resolve) => setTimeout(resolve, 200)));
   jest.restoreAllMocks();
   mockDb.close();
 });

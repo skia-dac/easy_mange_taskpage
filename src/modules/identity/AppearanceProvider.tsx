@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { AppearanceContext, defaultThemePrefs, type ThemePrefs } from '@/shared/theme';
 
 import {
@@ -18,9 +18,13 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       accent: await getAccentPreference(db),
       textScale: await getTextScalePreference(db),
     }),
-    ['app_settings'],
+    [settingTable('appearance'), settingTable('accent'), settingTable('text_scale')],
     [],
   );
-  const value = useMemo<ThemePrefs>(() => pref.data ?? defaultThemePrefs, [pref.data]);
+  // Mémo sur les valeurs, pas sur l'objet relu : un rechargement identique ne refait rien rendre.
+  const mode = pref.data?.mode ?? defaultThemePrefs.mode;
+  const accent = pref.data?.accent ?? defaultThemePrefs.accent;
+  const textScale = pref.data?.textScale ?? defaultThemePrefs.textScale;
+  const value = useMemo<ThemePrefs>(() => ({ mode, accent, textScale }), [mode, accent, textScale]);
   return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>;
 }

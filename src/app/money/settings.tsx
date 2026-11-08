@@ -18,7 +18,7 @@ import {
   setMoneyPrefs,
   type MoneyPrefs,
 } from '@/modules/finance';
-import { useDb, useLiveQuery } from '@/shared/db';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { toIsoDate } from '@/shared/dates';
 import { formatShortDate } from '@/shared/format';
@@ -44,7 +44,7 @@ export default function MoneySettingsScreen() {
   const db = useDb();
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
-  const prefsQ = useLiveQuery(getMoneyPrefs, ['app_settings'], []);
+  const prefsQ = useLiveQuery(getMoneyPrefs, [settingTable('money_prefs')], []);
   const prefs = prefsQ.data ?? defaultMoneyPrefs;
   const cats = useLiveQuery(listCategories, ['money_categories'], []);
   const money = useMoneyLabels(cats.data ?? []);

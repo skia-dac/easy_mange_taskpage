@@ -3,7 +3,13 @@ import { defaultNotificationPreferences } from '@/modules/identity';
 import type { WorkItem } from '@/modules/productivity';
 import { atTime, toIsoDate } from '@/shared/dates';
 
-import { HABIT_HORIZON_DAYS, MAX_COURSE_REMINDERS, MAX_SCHEDULED, planReminders } from './plan';
+import {
+  HABIT_HORIZON_DAYS,
+  HIDDEN_AMOUNT,
+  MAX_COURSE_REMINDERS,
+  MAX_SCHEDULED,
+  planReminders,
+} from './plan';
 
 const series: CourseSeries = {
   id: 's1',
@@ -326,5 +332,16 @@ describe('argent : charges fixes et tontines', () => {
         names,
       ),
     ).toEqual([]);
+  });
+
+  it('« Masquer les montants » : aucun montant dans les rappels (écran verrouillé)', () => {
+    const data = { ...empty, money: { recurring: [tontine], payments: [] } };
+    const amounts = (hideAmounts: boolean) =>
+      planReminders(data, prefs, now, { ...names, hideAmounts })
+        .filter((p) => p.action.kind === 'money')
+        .map((p) => p.body.params?.amount);
+    expect(amounts(false).every((a) => typeof a === 'string' && a !== HIDDEN_AMOUNT)).toBe(true);
+    expect(amounts(true).length).toBeGreaterThan(0);
+    expect(amounts(true).every((a) => a === HIDDEN_AMOUNT)).toBe(true);
   });
 });

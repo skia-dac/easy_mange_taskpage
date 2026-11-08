@@ -55,7 +55,10 @@ export function SelectField({
     <FieldShell label={label} required={required} error={error}>
       <Tappable
         accessibilityRole="button"
-        accessibilityLabel={`${label} : ${current?.label ?? placeholder ?? ''}`}
+        accessibilityLabel={t('common.labelValue', {
+          label,
+          value: current?.label ?? placeholder ?? '',
+        })}
         onPress={() => setOpen(true)}
         style={{
           minHeight: minTouchSize + 6,

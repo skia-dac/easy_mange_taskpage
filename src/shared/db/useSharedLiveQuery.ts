@@ -4,7 +4,7 @@ import { AppState } from 'react-native';
 
 import { toIsoDate } from '../dates';
 import { logger } from '../logger';
-import { subscribeToChanges } from './changes';
+import { affects, subscribeToChanges } from './changes';
 import { asDb } from './compat';
 import { notifyLoadError } from './loadErrors';
 import type { Db } from './types';
@@ -118,12 +118,7 @@ export function useSharedLiveQuery<T>(
       entry.listeners.add(onChange);
       if (!entry.unsubscribe) {
         const unsubscribeChanges = subscribeToChanges((changed) => {
-          for (const t of changed) {
-            if (entry.tables.has(t)) {
-              reload(db, entry);
-              return;
-            }
-          }
+          if (affects(entry.tables, changed)) reload(db, entry);
         });
         const appState = refreshOnForeground
           ? AppState.addEventListener('change', (s) => {

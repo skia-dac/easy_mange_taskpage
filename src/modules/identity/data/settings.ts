@@ -1,4 +1,4 @@
-import { readAppSetting, writeAppSetting, type Db } from '@/shared/db';
+import { type Db, notifyChange, readAppSetting, settingTable, writeAppSetting } from '@/shared/db';
 import { AppError } from '@/shared/errors';
 import { normalizeSpaces, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 
@@ -34,6 +34,7 @@ const writeSetting = writeAppSetting;
 
 async function deleteSetting(db: Db, key: string): Promise<void> {
   await db.runAsync('DELETE FROM app_settings WHERE key = ?', [key]);
+  notifyChange([settingTable(key)]);
 }
 
 export async function getNotificationPreferences(db: Db): Promise<NotificationPreferences> {

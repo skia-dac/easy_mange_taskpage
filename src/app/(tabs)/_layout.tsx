@@ -4,7 +4,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { isOnboardingDone } from '@/modules/identity';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import { SlidingTabBar } from '@/components/SlidingTabBar';
 import { tabIcon } from '@/components/TabIcon';
@@ -22,7 +22,7 @@ export default function TabsLayout() {
   const reduced = useReducedMotion();
   // Relu à chaque changement des réglages : l'accueil tout juste terminé est vu tout de suite,
   // même si cet écran est resté monté pendant l'accueil (jamais de retour en boucle).
-  const onboarding = useLiveQuery(isOnboardingDone, ['app_settings'], []);
+  const onboarding = useLiveQuery(isOnboardingDone, [settingTable('onboarding_done')], []);
   const spaces = useSpaces();
   // Un seul nom, quels que soient les espaces : « Calendrier » (onglet et titre de l'écran).
   // « Mon planning » reste le nom des créneaux fixes (/planning), ouvert depuis le calendrier.

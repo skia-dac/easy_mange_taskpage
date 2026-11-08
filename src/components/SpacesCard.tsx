@@ -10,7 +10,7 @@ import {
   setWorkWeekHours,
   workWeekHourChoices,
 } from '@/modules/identity';
-import { useDb, useLiveQuery } from '@/shared/db';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { useSpaces } from '@/shared/SpacesContext';
 import { spaceIds, toggleSpace, type SpaceId } from '@/shared/spaces';
@@ -42,7 +42,7 @@ export function SpacesCard() {
   const db = useDb();
   const { colors, radius, spacing, scheme } = useTheme();
   const { active, has } = useSpaces();
-  const hoursQ = useLiveQuery(getWorkWeekHours, ['app_settings'], []);
+  const hoursQ = useLiveQuery(getWorkWeekHours, [settingTable('work_week_hours')], []);
   const hours = hoursQ.data ?? DEFAULT_WORK_WEEK_HOURS;
   const [pickHours, setPickHours] = useState(false);
 

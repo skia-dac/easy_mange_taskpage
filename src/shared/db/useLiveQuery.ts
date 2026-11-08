@@ -2,7 +2,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useRef, useState, type DependencyList } from 'react';
 
 import { logger } from '../logger';
-import { subscribeToChanges } from './changes';
+import { affects, subscribeToChanges } from './changes';
 import { asDb } from './compat';
 import { notifyLoadError } from './loadErrors';
 import type { Db } from './types';
@@ -31,12 +31,7 @@ export function useLiveQuery<T>(
   useEffect(() => {
     const watched = new Set(tablesKey.split(','));
     return subscribeToChanges((changed) => {
-      for (const t of changed) {
-        if (watched.has(t)) {
-          setVersion((v) => v + 1);
-          return;
-        }
-      }
+      if (affects(watched, changed)) setVersion((v) => v + 1);
     });
   }, [tablesKey]);
 

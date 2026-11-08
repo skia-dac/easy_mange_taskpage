@@ -11,6 +11,14 @@ describe('montants', () => {
     expect(formatMoney(5000, 'XAF', { symbol: false })).toBe('5 000');
   });
 
+  it('suit la langue : point décimal et symbole devant en anglais', () => {
+    expect(formatMoney(1250, 'USD', { locale: 'en' })).toBe('$12.50');
+    expect(formatMoney(-1250, 'EUR', { locale: 'en' })).toBe('−€12.50');
+    expect(formatMoney(128400, 'XAF', { locale: 'en' })).toBe('128 400 FCFA');
+    expect(formatMoney(1250, 'MAD', { locale: 'en' })).toBe('12.50 DH');
+    expect(formatMoney(1250, 'USD', { locale: 'fr' })).toBe('12,50 $');
+  });
+
   it('lit un montant saisi, refuse le reste', () => {
     expect(parseAmount('12 500', 'XAF')).toBe(12500);
     expect(parseAmount('12,5', 'EUR')).toBe(1250);

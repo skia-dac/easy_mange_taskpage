@@ -69,9 +69,13 @@ export function SubtaskList({ kind, workId }: { kind: WorkKind; workId: string }
     <Tappable
       accessibilityRole="button"
       accessibilityLabel={label}
-      hitSlop={6}
       onPress={onPress}
-      style={{ width: 32, height: minTouchSize, alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: minTouchSize,
+        height: minTouchSize,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <Feather name={name} size={18} color={colors.muted} />
     </Tappable>

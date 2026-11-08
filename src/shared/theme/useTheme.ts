@@ -14,11 +14,26 @@ export type Theme = {
   text: typeof textVariants;
 };
 
+/**
+ * Thèmes déjà calculés, un par (mode, couleur, taille de texte) : le même objet est rendu à chaque
+ * appel, pour que `colors` ne change pas d'identité à chaque rendu (mémos, listes, styles).
+ */
+const themes = new Map<string, Theme>();
+
 export function getTheme(
   scheme: ColorScheme,
   accent: AccentId = 'blue',
   textScale: TextScale = 'normal',
 ): Theme {
+  const key = `${scheme}|${accent}|${textScale}`;
+  const cached = themes.get(key);
+  if (cached) return cached;
+  const theme = buildTheme(scheme, accent, textScale);
+  themes.set(key, theme);
+  return theme;
+}
+
+function buildTheme(scheme: ColorScheme, accent: AccentId, textScale: TextScale): Theme {
   const base = scheme === 'dark' ? darkColors : lightColors;
   const a = (accentColors[accent] ?? accentColors.blue)[scheme];
   return {

@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { NoteCard } from '@/components/NoteCard';
 import { ProfileButton } from '@/components/ProfileButton';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
 import { listNoteCategories, listNoteSummaries, type Note } from '@/modules/productivity';
@@ -54,7 +55,8 @@ export function NotesPane({ title, switcher }: Props) {
     [categories.data],
   );
   const { subjects, byId } = useSubjects();
-  const trimmed = query.trim();
+  // Recherche lancée quand la saisie se calme (pas à chaque lettre : elle lit le contenu des notes).
+  const trimmed = useDebouncedValue(query.trim());
   // Vignettes : le début du contenu seulement, jamais les longues notes en entier.
   const notes = useLiveQuery((db) => listNoteSummaries(db, trimmed), ['notes'], [trimmed]);
 

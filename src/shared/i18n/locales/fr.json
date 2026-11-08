@@ -32,7 +32,8 @@
     "clearField": "Effacer {{label}}",
     "showMore": "Voir plus ({{count}})",
     "today": "Aujourd’hui",
-    "remove": "Retirer"
+    "remove": "Retirer",
+    "labelValue": "{{label}} : {{value}}"
   },
   "tabs": {
     "today": "Aujourd’hui",
@@ -112,8 +113,9 @@
   "countdown": {
     "today": "Aujourd’hui",
     "tomorrow": "Demain",
-    "inDays": "Dans {{count}} jours",
-    "past": "Passé"
+    "past": "Passé",
+    "inDays_one": "Dans {{count}} jour",
+    "inDays_other": "Dans {{count}} jours"
   },
   "status": {
     "overdue": "En retard",
@@ -246,7 +248,8 @@
     "removeAttachmentTitle": "Retirer « {{name}} » ?",
     "removeAttachmentMessage": "Le fichier sera retiré de la note et effacé de ce téléphone.",
     "saveFailedDetail": "Rouvre-la pour vérifier ton texte.",
-    "attachmentCannotOpenDetail": "Aucune app de ce téléphone ne sait le lire."
+    "attachmentCannotOpenDetail": "Aucune app de ce téléphone ne sait le lire.",
+    "removeAttachmentNamed": "Retirer {{name}}"
   },
   "editor": {
     "heading": "Titre",
@@ -362,7 +365,6 @@
     "save": "Enregistrer",
     "delete": "Supprimer cet emploi du temps",
     "deleteTitle": "Supprimer « {{name}} » ?",
-    "deleteMessage": "Ses {{count}} cours seront aussi supprimés.",
     "empty": "Aucun emploi du temps pour le moment.",
     "emptyHint": "Crée ton emploi du temps (ex. Semestre 1, du 1er septembre au 20 décembre), puis ajoute tes cours.",
     "noCourses": "Aucun cours dans cet emploi du temps.",
@@ -378,7 +380,9 @@
     "noExams": "Aucun examen dans cette session.",
     "noRevisions": "Aucune révision prévue.",
     "addExam": "Ajouter un examen",
-    "addRevision": "Ajouter une révision"
+    "addRevision": "Ajouter une révision",
+    "deleteMessage_one": "Son cours sera aussi supprimé.",
+    "deleteMessage_other": "Ses {{count}} cours seront aussi supprimés."
   },
   "courses": {
     "new": "Nouveau cours",
@@ -400,7 +404,6 @@
     "teacher": "Professeur",
     "titleField": "Titre",
     "description": "Description",
-    "countWeekly": "{{count}} cours dans ton calendrier : chaque {{weekday}}, de {{start}} à {{end}}.",
     "save": "Enregistrer le cours",
     "delete": "Supprimer ce cours",
     "deleteTitle": "Supprimer ce cours ?",
@@ -409,7 +412,9 @@
     "detailTitle": "Cours",
     "every": "Chaque {{weekday}}",
     "editSeriesHint": "La modification s’applique à toutes les séances de ce cours.",
-    "notesTitle": "Notes de ce cours"
+    "notesTitle": "Notes de ce cours",
+    "countWeekly_one": "{{count}} cours dans ton calendrier : le {{weekday}}, de {{start}} à {{end}}.",
+    "countWeekly_other": "{{count}} cours dans ton calendrier : chaque {{weekday}}, de {{start}} à {{end}}."
   },
   "work": {
     "reminderPast": "Rappel (passé)",
@@ -494,7 +499,10 @@
     "exam": "Examen",
     "event": "Rendez-vous",
     "course": "Cours",
-    "subject": "Matière"
+    "subject": "Matière",
+    "emptyTitle": "Rien d’autre à ajouter ici",
+    "emptyMessage": "Examens, cours et matières font partie de l’espace Études. Active-le dans Profil, Mes espaces.",
+    "emptyAction": "Retour"
   },
   "occurrence": {
     "cancelled": "Annulé",
@@ -651,7 +659,7 @@
     "pastError": "Ce moment est déjà passé : choisis une heure à venir pour que le rappel sonne.",
     "settingOff": {
       "task": "Les rappels de tâches sont coupés dans Réglages : ce rappel ne sonnera pas.",
-      "assignment": "Les rappels de devoirs sont coupés dans Réglages : ce rappel ne sonnera pas.",
+      "assignment": "Les rappels des tâches d’une matière sont coupés dans Réglages : ce rappel ne sonnera pas.",
       "event": "Les rappels de rendez-vous sont coupés dans Réglages : ce rappel ne sonnera pas."
     },
     "openAppSettings": "Ouvrir Réglages",
@@ -1128,7 +1136,7 @@
     },
     "data": {
       "title": "Les données que tu enregistres",
-      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes devoirs, tâches, examens, notes obtenues et événements ;\n• tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n’est pas faite (facultatif), et ton journal d’humeur et d’énergie (facultatif) ;\n• ton suivi sportif, si tu l’actives sur une habitude : la durée de tes séances, ton poids et tes photos de progression (facultatif). Ces photos restent uniquement sur ton téléphone : elles ne sont jamais envoyées au serveur, même avec un compte ;\n• ton argent, si tu utilises l’onglet Argent : les dépenses et entrées que tu notes (montant, catégorie, date, note), tes charges fixes, tontines, objectifs d’épargne et prêts (avec le nom de la personne que tu indiques). MySky n’est relié à aucune banque ni à aucun compte Mobile Money : tout est saisi par toi ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l’espace privé de l’app, auquel les autres applications n’ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
+      "body": "Tu choisis ce que tu enregistres dans MySky :\n\n• ton profil : prénom, nom, photo, établissement, filière, niveau et année (tout est facultatif sauf ce que tu veux afficher) ;\n• tes matières, emplois du temps, cours, vacances et jours sans cours ;\n• tes notes de cours et leurs pièces jointes (photos, documents) ;\n• tes tâches, examens, notes obtenues et rendez-vous ;\n• tes sessions et séances de révision, tes habitudes, avec les raisons que tu notes quand une habitude n’est pas faite (facultatif), et ton journal d’humeur et d’énergie (facultatif) ;\n• ton suivi sportif, si tu l’actives sur une habitude : la durée de tes séances, ton poids et tes photos de progression (facultatif). Ces photos restent uniquement sur ton téléphone : elles ne sont jamais envoyées au serveur, même avec un compte ;\n• ton argent, si tu utilises l’onglet Argent : les dépenses et entrées que tu notes (montant, catégorie, date, note), tes charges fixes, tontines, objectifs d’épargne et prêts (avec le nom de la personne que tu indiques). MySky n’est relié à aucune banque ni à aucun compte Mobile Money : tout est saisi par toi ;\n• tes réglages.\n\nCes données sont enregistrées sur ton téléphone, dans l’espace privé de l’app, auquel les autres applications n’ont pas accès. Si tu as un compte, elles sont aussi copiées sur le serveur (voir « Compte et synchronisation »). Elles servent seulement à faire fonctionner MySky : afficher ta journée, ton calendrier, tes rappels, tes statistiques, et les retrouver sur tes appareils."
     },
     "permissions": {
       "title": "Autorisations du téléphone",
@@ -1441,7 +1449,6 @@
     "insights": "À retenir",
     "insightWeekday": "Tu dépenses le plus le {{day}} ({{percent}} % de tes dépenses).",
     "insightUp": "{{category}} : +{{percent}} % par rapport à la période d’avant.",
-    "insightRepeat": "« {{note}} » revient souvent ({{count}} fois, environ {{amount}}).",
     "makeRecurring": "En faire une charge fixe",
     "recurringTitle": "Charges fixes et tontines",
     "recurringIntro": "Ce qui revient chaque mois ou chaque semaine. Coche « payé » quand c’est fait : la dépense est notée toute seule.",
@@ -1557,8 +1564,8 @@
     "periodCurrent": "Ta période en cours : du {{from}} au {{to}}.",
     "periodHint": "Ex. le 25 si c’est le jour où ton argent arrive. Les bilans suivent ce choix.",
     "widgets": "Widgets",
-    "hideAmounts": "Masquer les montants dans les widgets",
-    "hideAmountsHint": "Les widgets se voient sur l’écran verrouillé. Les montants sont remplacés par •••.",
+    "hideAmounts": "Masquer les montants (widgets et rappels)",
+    "hideAmountsHint": "Widgets et rappels se voient sur l’écran verrouillé. Les montants sont remplacés par •••.",
     "myCategories": "Mes catégories",
     "noCustomCategories": "Tu utilises les catégories de l’app. Ajoute les tiennes ci-dessous.",
     "newCategory": "Nouvelle catégorie",
@@ -1683,7 +1690,9 @@
     "duePaidOf": "Payé {{paid}}/{{total}}",
     "dueSeeAll": "Voir tout ({{more}} de plus)",
     "noItemsHint": "Note une dépense ou une entrée avec les boutons « − Dépense » et « + Entrée » en haut.",
-    "noItemsHintOther": "Rien n’a été noté pendant cette période."
+    "noItemsHintOther": "Rien n’a été noté pendant cette période.",
+    "insightRepeat_one": "« {{note}} » revient souvent ({{count}} fois, environ {{amount}}).",
+    "insightRepeat_other": "« {{note}} » revient souvent ({{count}} fois, environ {{amount}})."
   },
   "glance": {
     "money": "Argent",

@@ -8,7 +8,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.skiadac.mysky"
+      "bundleIdentifier": "com.skiadac.mysky",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "android": {
       "package": "com.skiadac.mysky",
@@ -150,7 +153,7 @@
             {
               "name": "QuickAddWidget",
               "displayName": "Notes rapides",
-              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "description": "Crée une note ou une tâche en un geste.",
               "ios": {
                 "supportedFamilies": ["systemMedium"]
               }
@@ -299,7 +302,7 @@
             {
               "name": "QuickAdd",
               "label": "MySky · Notes rapides",
-              "description": "Crée une note, une tâche ou un devoir en un geste.",
+              "description": "Crée une note ou une tâche en un geste.",
               "minWidth": "320dp",
               "minHeight": "60dp",
               "targetCellWidth": 4,
@@ -394,6 +397,10 @@
     "scheme": "mysky",
     "experiments": {
       "typedRoutes": true
+    },
+    "locales": {
+      "fr": "./languages/fr.json",
+      "en": "./languages/en.json"
     }
   }
 }

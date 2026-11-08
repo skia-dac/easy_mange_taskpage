@@ -154,7 +154,7 @@ export function DateTimeField({ label, mode, value, onChange, required, error, c
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <Tappable
           accessibilityRole="button"
-          accessibilityLabel={`${label} : ${display}`}
+          accessibilityLabel={t('common.labelValue', { label, value: display })}
           onPress={() => picker.open(value, onChange)}
           style={{
             flex: 1,

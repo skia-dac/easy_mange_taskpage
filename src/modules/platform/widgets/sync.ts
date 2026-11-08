@@ -67,9 +67,24 @@ function syncStudyActivity(StudyActivity: IosRegistry['StudyActivity'], current:
  * iPhone : une chronologie (le widget change seul aux heures de début / fin de séance).
  * Android : rendu immédiat de chaque widget posé, plus la chronologie pour la tâche de fond.
  */
+let lastPushed: string | null = null;
+
+/** Empreinte d'une chronologie : la date de la première entrée (« maintenant ») n'y compte pas. */
+function fingerprint(timeline: readonly WidgetTimelineEntry[]): string {
+  return JSON.stringify(timeline.map((e, i) => [i === 0 ? null : e.date.getTime(), e.props]));
+}
+
+/** Pour les tests : oublie la dernière chronologie envoyée. */
+export function resetWidgetSyncCache(): void {
+  lastPushed = null;
+}
+
 export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void> {
   const current = timeline[0]?.props;
   if (!current) return;
+  // Rien n'a changé depuis le dernier envoi : ni fichier réécrit, ni widget redessiné.
+  const print = fingerprint(timeline);
+  if (print === lastPushed) return;
   try {
     if (Platform.OS === 'ios') {
       const ios = loadIosRegistry();
@@ -91,6 +106,7 @@ export async function syncWidgets(timeline: WidgetTimelineEntry[]): Promise<void
         ),
       );
     }
+    lastPushed = print;
   } catch (e) {
     // Sans build de développement (Expo Go), les modules natifs des widgets n'existent pas.
     logger.warn('Widgets non mis à jour', { where: 'syncWidgets' });

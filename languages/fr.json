@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "MySky",
+    "NSPhotoLibraryUsageDescription": "MySky accède à tes photos pour les joindre à tes notes ou à ton suivi sportif.",
+    "NSCameraUsageDescription": "MySky utilise l’appareil photo pour tes notes et tes photos de progression (elles restent sur ton téléphone).",
+    "NSFaceIDUsageDescription": "MySky utilise Face ID pour déverrouiller l’application."
+  },
+  "android": {
+    "app_name": "MySky"
+  }
+}

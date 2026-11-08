@@ -30,7 +30,7 @@ import {
   type IsoDate,
 } from '@/shared/dates';
 import { getProgressWidgetHabit, setProgressWidgetHabit } from '@/modules/identity';
-import { useDb, useLiveQuery } from '@/shared/db';
+import { settingTable, useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { formatDuration, formatMonthYear, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
@@ -68,7 +68,11 @@ export default function HabitDetailScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const widgetHabit = useLiveQuery(getProgressWidgetHabit, ['app_settings'], []);
+  const widgetHabit = useLiveQuery(
+    getProgressWidgetHabit,
+    [settingTable('progress_widget_habit')],
+    [],
+  );
   const { colors, radius, spacing } = useTheme();
   const weekStart = useWeekStart();
   const { id } = useLocalSearchParams<{ id: string }>();

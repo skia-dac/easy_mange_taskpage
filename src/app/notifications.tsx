@@ -18,7 +18,7 @@ import {
 } from '@/modules/platform';
 import { useAgendaData } from '@/projections';
 import { toIsoDate } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
@@ -49,7 +49,7 @@ export default function NotificationsScreen() {
   const { spacing } = useTheme();
   const agenda = useAgendaData();
   const { byId } = useSubjects();
-  const prefs = useLiveQuery(getNotificationPreferences, ['app_settings'], []);
+  const prefs = useLiveQuery(getNotificationPreferences, [settingTable('notifications')], []);
   // Permission pas encore demandée : on la demande ici (explication puis système) ; refusée :
   // seul le réglage du téléphone peut la rendre.
   const permission = useNotificationPermission();

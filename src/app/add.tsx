@@ -6,7 +6,7 @@ import { ScrollView, View } from 'react-native';
 import { itemLooks, type ItemLook } from '@/components/itemTypes';
 import { minTouchSize, useTheme } from '@/shared/theme';
 import { useSpaces } from '@/shared/SpacesContext';
-import { AppText, Tappable } from '@/shared/ui';
+import { AppText, EmptyState, Tappable } from '@/shared/ui';
 
 type Tile = ItemLook & {
   label: string;
@@ -45,46 +45,55 @@ export default function AddScreen() {
     },
   ];
 
+  const shown = tiles.filter((tile) => study || !tile.study);
+
   return (
     <ScrollView
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ padding: spacing.xl }}
     >
+      {/* Lien ou widget ancien sans l'espace Études : jamais une grille vide sans explication. */}
+      {shown.length === 0 ? (
+        <EmptyState
+          icon="plus-circle"
+          title={t('add.emptyTitle')}
+          message={t('add.emptyMessage')}
+          action={{ label: t('add.emptyAction'), onPress: () => router.back() }}
+        />
+      ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-        {tiles
-          .filter((tile) => study || !tile.study)
-          .map((tile) => (
-            <Tappable
-              key={tile.label}
-              accessibilityRole="button"
-              onPress={() => router.replace(tile.href)}
-              style={() => ({
-                width: '30.5%',
-                minHeight: minTouchSize * 2.4,
-                borderRadius: radius.lg,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
+        {shown.map((tile) => (
+          <Tappable
+            key={tile.label}
+            accessibilityRole="button"
+            onPress={() => router.replace(tile.href)}
+            style={() => ({
+              width: '30.5%',
+              minHeight: minTouchSize * 2.4,
+              borderRadius: radius.lg,
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: spacing.sm,
+            })}
+          >
+            <View
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: radius.md,
+                backgroundColor: colors[tile.background],
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: spacing.sm,
-              })}
+              }}
             >
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: radius.md,
-                  backgroundColor: colors[tile.background],
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Feather name={tile.icon} size={24} color={colors[tile.color]} />
-              </View>
-              <AppText variant="bodyStrong">{tile.label}</AppText>
-            </Tappable>
-          ))}
+              <Feather name={tile.icon} size={24} color={colors[tile.color]} />
+            </View>
+            <AppText variant="bodyStrong">{tile.label}</AppText>
+          </Tappable>
+        ))}
       </View>
     </ScrollView>
   );

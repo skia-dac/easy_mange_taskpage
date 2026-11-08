@@ -18,7 +18,7 @@ import {
   type Recurring,
 } from '@/modules/finance';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
@@ -56,7 +56,7 @@ export default function RecurringScreen() {
     router.push({ pathname: '/money/recurring-form', params: { kind } });
   const list = useLiveQuery(listRecurring, ['money_recurring'], []);
   const cats = useLiveQuery(listCategories, ['money_categories'], []);
-  const prefs = useLiveQuery(getMoneyPrefs, ['app_settings'], []);
+  const prefs = useLiveQuery(getMoneyPrefs, [settingTable('money_prefs')], []);
   const money = useMoneyLabels(cats.data ?? []);
   const today = toIsoDate(new Date());
   const all = list.data ?? [];

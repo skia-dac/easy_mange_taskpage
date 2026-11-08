@@ -529,7 +529,10 @@ function NextCourseCard({ next, subjectName }: { next: NextCourse; subjectName: 
     >
       <Tappable
         accessibilityRole="button"
-        accessibilityLabel={`${ongoing ? t('today.ongoing') : t('today.nextCourse')} : ${subjectName}, ${o.startTime} – ${o.endTime}`}
+        accessibilityLabel={t('common.labelValue', {
+          label: ongoing ? t('today.ongoing') : t('today.nextCourse'),
+          value: `${subjectName}, ${o.startTime} – ${o.endTime}`,
+        })}
         onPress={() =>
           router.push({
             pathname: '/courses/[id]',

@@ -215,16 +215,16 @@ export default function NoteScreen() {
   /**
    * Enregistrement (crée la note au premier contenu). Retourne l'id de la note, ou `null` si
    * rien n'est à enregistrer. `explicit` : l'utilisateur agit sur la note (favori…), le titre
-   * pré-rempli suffit alors à la créer.
+   * pré-rempli suffit alors à la créer. `always` : la note est créée même vide (pièce jointe).
    */
   const persist = useCallback(
-    async (explicit = false): Promise<string | null> => {
+    async (explicit = false, always = false): Promise<string | null> => {
       if (deleted.current) return null;
       if (!noteIdRef.current && !creating.current) {
         const snapshot = { ...latest.current };
         const { title: tt, content: cc } = snapshot;
         const typedTitle = tt.trim() !== '' && (explicit || tt !== prefilledTitle.current);
-        if (cc.trim() === '' && !typedTitle) return null;
+        if (!always && cc.trim() === '' && !typedTitle) return null;
         setStatus('saving');
         creating.current = createNote(db, {
           title: tt,
@@ -359,16 +359,9 @@ export default function NoteScreen() {
 
   const attach = async (kind: 'image' | 'file') => {
     try {
-      const id = noteId ?? (await persist(true));
-      const target =
-        id ??
-        (await createNote(db, {
-          title: latest.current.title,
-          content: latest.current.content,
-          subjectId,
-          categoryId,
-        }));
-      if (!noteId) setNoteId(target);
+      // Même chemin que l'enregistrement automatique (pas de double création, lien au cours gardé).
+      const target = noteId ?? (await persist(true, true));
+      if (!target) return;
       const picked = kind === 'image' ? await pickImage(target) : await pickDocument(target);
       if (picked) await addAttachment(db, target, picked);
     } catch (e) {
@@ -748,7 +741,7 @@ function AttachmentTile({
         {onRemove ? (
           <Tappable
             accessibilityRole="button"
-            accessibilityLabel={`${t('notes.removeAttachment')} ${a.name}`}
+            accessibilityLabel={t('notes.removeAttachmentNamed', { name: a.name })}
             onPress={onRemove}
             // Zone tactile d'au moins 44 pt, même si le texte est petit.
             style={{

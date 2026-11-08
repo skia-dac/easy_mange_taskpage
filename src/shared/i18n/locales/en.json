@@ -32,7 +32,8 @@
     "clearField": "Clear {{label}}",
     "showMore": "Show more ({{count}})",
     "today": "Today",
-    "remove": "Remove"
+    "remove": "Remove",
+    "labelValue": "{{label}}: {{value}}"
   },
   "tabs": {
     "today": "Today",
@@ -112,8 +113,9 @@
   "countdown": {
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "inDays": "In {{count}} days",
-    "past": "Past"
+    "past": "Past",
+    "inDays_one": "In {{count}} day",
+    "inDays_other": "In {{count}} days"
   },
   "status": {
     "overdue": "Overdue",
@@ -246,7 +248,8 @@
     "removeAttachmentTitle": "Remove “{{name}}”?",
     "removeAttachmentMessage": "The file will be removed from the note and erased from this phone.",
     "saveFailedDetail": "Open it again to check your text.",
-    "attachmentCannotOpenDetail": "No app on this phone can read it."
+    "attachmentCannotOpenDetail": "No app on this phone can read it.",
+    "removeAttachmentNamed": "Remove {{name}}"
   },
   "editor": {
     "heading": "Heading",
@@ -362,7 +365,6 @@
     "save": "Save",
     "delete": "Delete this timetable",
     "deleteTitle": "Delete “{{name}}”?",
-    "deleteMessage": "Its {{count}} class(es) will also be deleted.",
     "empty": "No timetable yet.",
     "emptyHint": "Create your timetable (e.g. Semester 1, 1 September to 20 December), then add your classes.",
     "noCourses": "No classes in this timetable.",
@@ -378,7 +380,9 @@
     "noExams": "No exams in this session.",
     "noRevisions": "No revision planned.",
     "addExam": "Add an exam",
-    "addRevision": "Add a revision session"
+    "addRevision": "Add a revision session",
+    "deleteMessage_one": "Its class will also be deleted.",
+    "deleteMessage_other": "Its {{count}} classes will also be deleted."
   },
   "courses": {
     "new": "New class",
@@ -400,7 +404,6 @@
     "teacher": "Teacher",
     "titleField": "Title",
     "description": "Description",
-    "countWeekly": "{{count}} classes in your calendar: every {{weekday}}, {{start}} to {{end}}.",
     "save": "Save class",
     "delete": "Delete this class",
     "deleteTitle": "Delete this class?",
@@ -409,7 +412,9 @@
     "detailTitle": "Class",
     "every": "Every {{weekday}}",
     "editSeriesHint": "Changes apply to all sessions of this class.",
-    "notesTitle": "Notes for this class"
+    "notesTitle": "Notes for this class",
+    "countWeekly_one": "{{count}} class in your calendar: every {{weekday}}, {{start}} to {{end}}.",
+    "countWeekly_other": "{{count}} classes in your calendar: every {{weekday}}, {{start}} to {{end}}."
   },
   "work": {
     "reminderPast": "Reminder (passed)",
@@ -494,7 +499,10 @@
     "exam": "Exam",
     "event": "Appointment",
     "course": "Class",
-    "subject": "Subject"
+    "subject": "Subject",
+    "emptyTitle": "Nothing else to add here",
+    "emptyMessage": "Exams, classes and subjects belong to the Study space. Turn it on in Profile, My spaces.",
+    "emptyAction": "Back"
   },
   "occurrence": {
     "cancelled": "Cancelled",
@@ -651,7 +659,7 @@
     "pastError": "This time has already passed: pick a time to come so the reminder can ring.",
     "settingOff": {
       "task": "Task reminders are turned off in Settings: this reminder won’t ring.",
-      "assignment": "Homework reminders are turned off in Settings: this reminder won’t ring.",
+      "assignment": "Reminders for subject tasks are turned off in Settings: this reminder won’t ring.",
       "event": "Appointment reminders are turned off in Settings: this reminder won’t ring."
     },
     "openAppSettings": "Open Settings",
@@ -1128,7 +1136,7 @@
     },
     "data": {
       "title": "The data you enter",
-      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your homework, tasks, exams, grades and events;\n• your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);\n• your sport tracking, if you turn it on for a habit: the duration of your sessions, your weight and your progress photos (optional). These photos stay only on your phone: they are never sent to the server, even with an account;\n• your money, if you use the Money tab: the expenses and income you note (amount, category, date, note), your fixed costs, tontines, savings goals and loans (with the person’s name you give). MySky is not connected to any bank or Mobile Money account: you enter everything yourself;\n• your settings.\n\nThis data is stored on your phone, in the app’s private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
+      "body": "You choose what you enter in MySky:\n\n• your profile: first name, last name, photo, school, field, level and year (all optional);\n• your subjects, timetables, classes, holidays and days off;\n• your class notes and their attachments (photos, documents);\n• your tasks, exams, grades and appointments;\n• your study and revision sessions, your habits, with the reasons you note when a habit is not done (optional), and your mood and energy journal (optional);\n• your sport tracking, if you turn it on for a habit: the duration of your sessions, your weight and your progress photos (optional). These photos stay only on your phone: they are never sent to the server, even with an account;\n• your money, if you use the Money tab: the expenses and income you note (amount, category, date, note), your fixed costs, tontines, savings goals and loans (with the person’s name you give). MySky is not connected to any bank or Mobile Money account: you enter everything yourself;\n• your settings.\n\nThis data is stored on your phone, in the app’s private space, which other apps cannot access. If you have an account, it is also copied to the server (see “Account and sync”). It is only used to make MySky work: show your day, your calendar, your reminders, your statistics, and find them on your devices."
     },
     "permissions": {
       "title": "Phone permissions",
@@ -1441,7 +1449,6 @@
     "insights": "Worth knowing",
     "insightWeekday": "You spend the most on {{day}} ({{percent}}% of your spending).",
     "insightUp": "{{category}}: +{{percent}}% compared with the previous period.",
-    "insightRepeat": "“{{note}}” comes up often ({{count}} times, about {{amount}}).",
     "makeRecurring": "Make it a fixed cost",
     "recurringTitle": "Fixed costs and tontines",
     "recurringIntro": "What comes back every month or week. Tick “paid” when it’s done: the expense is noted for you.",
@@ -1557,8 +1564,8 @@
     "periodCurrent": "Current period: {{from}} to {{to}}.",
     "periodHint": "E.g. the 25th if that’s when your money arrives. Reports follow this choice.",
     "widgets": "Widgets",
-    "hideAmounts": "Hide amounts in widgets",
-    "hideAmountsHint": "Widgets can be seen on the lock screen. Amounts are replaced by •••.",
+    "hideAmounts": "Hide amounts (widgets and reminders)",
+    "hideAmountsHint": "Widgets and reminders can be seen on the lock screen. Amounts are replaced by •••.",
     "myCategories": "My categories",
     "noCustomCategories": "You’re using the app’s categories. Add your own below.",
     "newCategory": "New category",
@@ -1683,7 +1690,9 @@
     "duePaidOf": "Paid {{paid}}/{{total}}",
     "dueSeeAll": "See all ({{more}} more)",
     "noItemsHint": "Add an expense or income with the “− Expense” and “+ Income” buttons at the top.",
-    "noItemsHintOther": "Nothing was recorded in this period."
+    "noItemsHintOther": "Nothing was recorded in this period.",
+    "insightRepeat_one": "“{{note}}” comes up often ({{count}} time, about {{amount}}).",
+    "insightRepeat_other": "“{{note}}” comes up often ({{count}} times, about {{amount}})."
   },
   "glance": {
     "money": "Money",

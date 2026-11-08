@@ -21,7 +21,11 @@ export async function readAppSetting(db: Db, key: string): Promise<unknown> {
 /** Pseudo-table signalée avec `app_settings` : permet de n'écouter qu'un réglage précis. */
 export const settingTable = (key: string) => `app_settings:${key}`;
 
-/** `silent` : n'avertit pas les écrans (données techniques de synchronisation, écrites souvent). */
+/**
+ * `silent` : n'avertit pas les écrans (données techniques de synchronisation, écrites souvent).
+ * Sinon seul ce réglage est annoncé (`app_settings:<clé>`) : les écrans qui lisent d'autres
+ * réglages ne se rechargent pas (voir `affects`).
+ */
 export async function writeAppSetting(
   db: Db,
   key: string,
@@ -33,5 +37,5 @@ export async function writeAppSetting(
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
     [key, JSON.stringify(value), nowIso()],
   );
-  if (!silent) notifyChange(['app_settings', settingTable(key)]);
+  if (!silent) notifyChange([settingTable(key)]);
 }

@@ -51,7 +51,14 @@ export const HABIT_HORIZON_DAYS = 7;
 /** Rappel avant une séance de révision. */
 export const REVISION_REMINDER_MINUTES = 10;
 
-type Named = { subjectName: (id: string) => string };
+type Named = {
+  subjectName: (id: string) => string;
+  /** « Masquer les montants » : un rappel se lit sur l'écran verrouillé, le montant devient •••. */
+  hideAmounts?: boolean;
+};
+
+/** Ce qui remplace un montant masqué (même signe que dans les widgets). */
+export const HIDDEN_AMOUNT = '•••';
 
 /**
  * Calcule tous les rappels à venir (dans les prochains jours), triés par date, limités à
@@ -237,7 +244,7 @@ export function planReminders(
         .map((p) => `${p.recurringId}|${p.occurrenceDate}`),
     );
     for (const r of data.money.recurring) {
-      const amount = formatMoney(r.amountMinor, r.currency);
+      const amount = names.hideAmounts ? HIDDEN_AMOUNT : formatMoney(r.amountMinor, r.currency);
       const time = r.time ?? '09:00';
       for (const date of occurrencesBetween(r, today, until)) {
         if (paid.has(`${r.id}|${date}`)) continue;
@@ -274,7 +281,9 @@ export function planReminders(
             title: { key: 'notif.payoutTitle', params: { name: r.name } },
             body: {
               key: 'notif.payoutBody',
-              params: { amount: formatMoney(r.payoutMinor, r.currency) },
+              params: {
+                amount: names.hideAmounts ? HIDDEN_AMOUNT : formatMoney(r.payoutMinor, r.currency),
+              },
             },
             action: { kind: 'money', id: r.id },
           });

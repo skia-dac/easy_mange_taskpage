@@ -335,7 +335,7 @@ function NextRow({
       >
         <Tappable
           accessibilityRole="button"
-          accessibilityLabel={`${when} : ${name}, ${where}`}
+          accessibilityLabel={t('common.labelValue', { label: when, value: `${name}, ${where}` })}
           onPress={() =>
             router.push({
               pathname: '/courses/[id]',

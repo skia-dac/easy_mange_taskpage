@@ -33,21 +33,40 @@ export const currencySymbol = (code: string) => (isCurrency(code) ? currencies[c
 /** Chiffres groupés par milliers avec une espace simple (« 12 500 »). */
 const groupThousands = (digits: string) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-/** « 12 500 FCFA », « 12,50 € » (séparateur de milliers : espace simple, lisible partout). */
+/** Langue des montants : virgule décimale et symbole après (fr), point et symbole devant (en). */
+export type MoneyLocale = 'fr' | 'en';
+let moneyLocale: MoneyLocale = 'fr';
+
+/** Suit la langue de l'app (appelé quand elle change, voir `finance/locale.ts`). */
+export function setMoneyLocale(language: string): void {
+  moneyLocale = language.toLowerCase().startsWith('en') ? 'en' : 'fr';
+}
+
+/** En anglais, ces symboles se placent devant le nombre (« $12.50 ») ; les autres restent après. */
+const PREFIX_SYMBOLS_EN = new Set(['USD', 'EUR', 'GBP', 'NGN', 'GHS', 'CNY']);
+
+/**
+ * « 12 500 FCFA », « 12,50 € » en français ; « 12 500 FCFA », « €12.50 » en anglais.
+ * Séparateur de milliers : espace simple dans les deux langues (lisible partout).
+ */
 export function formatMoney(
   minor: number,
   currency: string,
-  options: { signed?: boolean; symbol?: boolean } = {},
+  options: { signed?: boolean; symbol?: boolean; locale?: MoneyLocale } = {},
 ): string {
+  const locale = options.locale ?? moneyLocale;
   const d = decimalsOf(currency);
   const abs = Math.abs(Math.round(minor));
   const units = Math.floor(abs / 10 ** d);
   const cents = abs % 10 ** d;
   const grouped = groupThousands(String(units));
-  const number = d > 0 ? `${grouped},${String(cents).padStart(d, '0')}` : grouped;
+  const mark = locale === 'en' ? '.' : ',';
+  const number = d > 0 ? `${grouped}${mark}${String(cents).padStart(d, '0')}` : grouped;
   const sign = minor < 0 ? '−' : options.signed && minor > 0 ? '+' : '';
-  const symbol = options.symbol === false ? '' : ` ${currencySymbol(currency)}`;
-  return `${sign}${number}${symbol}`;
+  if (options.symbol === false) return `${sign}${number}`;
+  if (locale === 'en' && PREFIX_SYMBOLS_EN.has(currency))
+    return `${sign}${currencySymbol(currency)}${number}`;
+  return `${sign}${number} ${currencySymbol(currency)}`;
 }
 
 /**

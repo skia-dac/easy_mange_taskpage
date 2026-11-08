@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 
 import { listSubjects, type Subject } from '@/modules/academic';
-import { useLiveQuery } from '@/shared/db';
+import { useSharedLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 
 const none: Subject[] = [];
+const SUBJECT_TABLES = ['subjects'] as const;
 
 /**
  * Liste des matières (rechargée automatiquement) + accès rapide par id.
@@ -13,7 +14,8 @@ const none: Subject[] = [];
  */
 export function useSubjects() {
   const study = useSpaces().has('study');
-  const query = useLiveQuery(listSubjects, ['subjects'], []);
+  // Une seule lecture partagée par tous les écrans montés (onglets compris).
+  const query = useSharedLiveQuery('subjects:all', listSubjects, SUBJECT_TABLES);
   const subjects = study ? (query.data ?? none) : none;
   const byId = useMemo(() => {
     const map = new Map<string, Subject>();

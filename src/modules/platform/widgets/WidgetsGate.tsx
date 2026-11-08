@@ -9,7 +9,7 @@ import { getProgressWidgetHabit } from '@/modules/identity';
 import { listStudySessions } from '@/modules/productivity';
 import { buildWidgetMoney, buildWidgetTimeline, useAgendaData, useMoneyData } from '@/projections';
 import { addDaysIso, toIsoDate } from '@/shared/dates';
-import { useLiveQuery } from '@/shared/db';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import {
   formatDuration,
   formatLongDate,
@@ -43,7 +43,11 @@ export function WidgetsGate() {
   const sessionList = sessions.data;
   const money = useMoneyData(0);
   const moneyData = money.data;
-  const progressQ = useLiveQuery(getProgressWidgetHabit, ['app_settings'], []);
+  const progressQ = useLiveQuery(
+    getProgressWidgetHabit,
+    [settingTable('progress_widget_habit')],
+    [],
+  );
   const progressHabitId = progressQ.data ?? null;
   // Un espace coupé n'apparaît pas non plus sur l'écran d'accueil : ni argent, ni révision, ni matières.
   const spaces = useSpaces();

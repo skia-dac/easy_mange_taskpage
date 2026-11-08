@@ -1,5 +1,8 @@
 // Module finance : argent de l'étudiant (dépenses, entrées, charges fixes, tontines, épargne, prêts).
 // Point d'entrée unique du module : les autres parties de l'app importent uniquement depuis ce fichier.
+// Les montants suivent la langue de l'app.
+import './locale';
+
 export * from './domain/money';
 export * from './domain/category';
 export * from './domain/transaction';
