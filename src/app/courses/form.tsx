@@ -2,6 +2,9 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import { takePickedSubject } from '@/components/pickerResult';
 import { goBack, backToList } from '@/components/navigation';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +13,7 @@ import { View } from 'react-native';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
-import { courseReminderOptions } from '@/modules/identity';
+import { courseReminderOptions, getNotificationPreferences } from '@/modules/identity';
 import {
   activeTimetable,
   courseInputSchema,
@@ -25,6 +28,7 @@ import {
 import { addDaysIso, isoWeekday, toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { logger } from '@/shared/logger';
 import { formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
@@ -83,21 +87,23 @@ export default function CourseFormScreen() {
   });
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
-  // État de départ connu une fois le cours (ou l'emploi du temps) chargé.
-  const [ready, setReady] = useState(false);
+  // Modification : les champs n'apparaissent qu'une fois le cours lu (jamais écrasés).
+  const load = useEditLoad(
+    params.id,
+    (id) => getCourseSeries(db, id),
+    (c) => setForm({ ...c, startDate: c.validFrom, endDate: c.validUntil }),
+  );
+  // Création : état de départ connu une fois l'emploi du temps choisi.
+  const [createReady, setCreateReady] = useState(false);
+  const ready = params.id ? load.state === 'ready' : createReady;
   const { dirty } = useDirty(form, ready);
   const leave = useUnsavedGuard(dirty);
 
-  // Modification : on charge le cours. Création : on part de l'emploi du temps choisi ou actif.
+  // Création : on part de l'emploi du temps choisi ou actif.
   useEffect(() => {
+    if (params.id) return;
     let active = true;
     void (async () => {
-      if (params.id) {
-        const c = await getCourseSeries(db, params.id);
-        if (active && c) setForm({ ...c, startDate: c.validFrom, endDate: c.validUntil });
-        if (active) setReady(true);
-        return;
-      }
       const all = await listTimetables(db);
       const tt = all.find((x) => x.id === params.timetableId) ?? activeTimetable(all, baseDay);
       if (active && tt) {
@@ -108,8 +114,11 @@ export default function CourseFormScreen() {
           endDate: tt.validUntil,
         }));
       }
-      if (active) setReady(true);
-    })();
+      if (active) setCreateReady(true);
+    })().catch((e: unknown) => {
+      logger.error(e, { where: 'courseFormTimetable' });
+      if (active) setCreateReady(true);
+    });
     return () => {
       active = false;
     };
@@ -169,6 +178,14 @@ export default function CourseFormScreen() {
       else if (params.id) await updateCourse(db, params.id, form);
       else await createCourse(db, form);
       leave(goBack);
+      // Rappel avant le cours (le sien ou celui des réglages) ou fin de cours : sans permission,
+      // ils ne sonneraient jamais.
+      void getNotificationPreferences(db)
+        .then((prefs) => {
+          const before = prefs.courses && (form.reminderMinutes ?? prefs.courseReminderMinutes) > 0;
+          if (before || prefs.endOfCourse) return askNotificationPermission();
+        })
+        .catch((e: unknown) => logger.error(e, { where: 'coursePermission' }));
     });
 
   const remove = async () => {
@@ -191,6 +208,9 @@ export default function CourseFormScreen() {
   };
 
   const weekly = form.recurrence === 'weekly';
+
+  if (params.id && load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('courses.edit')} />;
 
   return (
     <FormScreen

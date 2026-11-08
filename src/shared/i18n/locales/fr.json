@@ -623,6 +623,13 @@
     "moneyHint": "Aux moments choisis sur chaque charge ou tontine."
   },
   "reminder": {
+    "pastError": "Ce moment est déjà passé : choisis une heure à venir pour que le rappel sonne.",
+    "settingOff": {
+      "task": "Les rappels de tâches sont coupés dans Réglages : ce rappel ne sonnera pas.",
+      "assignment": "Les rappels de devoirs sont coupés dans Réglages : ce rappel ne sonnera pas.",
+      "event": "Les rappels de rendez-vous sont coupés dans Réglages : ce rappel ne sonnera pas."
+    },
+    "openAppSettings": "Ouvrir Réglages",
     "none": "Aucun",
     "default": "Par défaut",
     "minutes": "{{count}} min",
@@ -682,6 +689,7 @@
     "firstTaskHint": "Une chose à faire, petite ou grande."
   },
   "notifications": {
+    "ask": "Autorise les notifications pour que tes rappels sonnent, même hors connexion.",
     "title": "Notifications",
     "upcoming": "Rappels à venir",
     "empty": "Aucun rappel programmé.",

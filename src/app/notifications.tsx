@@ -1,12 +1,15 @@
 import { router, Stack } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
+import {
+  openNotificationSettings,
+  useNotificationPermission,
+} from '@/hooks/useNotificationPermission';
 import { useSubjects } from '@/hooks/useSubjects';
 import { getNotificationPreferences, type NotificationPreferences } from '@/modules/identity';
 import {
-  hasPermission,
   HORIZON_DAYS,
   planReminders,
   readableParams,
@@ -20,6 +23,7 @@ import { formatLongDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import {
   AppText,
+  Button,
   Card,
   EmptyState,
   IconBadge,
@@ -46,11 +50,9 @@ export default function NotificationsScreen() {
   const agenda = useAgendaData();
   const { byId } = useSubjects();
   const prefs = useLiveQuery(getNotificationPreferences, ['app_settings'], []);
-  const [granted, setGranted] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    void hasPermission().then(setGranted);
-  }, []);
+  // Permission pas encore demandée : on la demande ici (explication puis système) ; refusée :
+  // seul le réglage du téléphone peut la rendre.
+  const permission = useNotificationPermission();
 
   const plan = useMemo(() => {
     if (!agenda.data || !prefs.data) return [];
@@ -88,13 +90,18 @@ export default function NotificationsScreen() {
           ),
         }}
       />
-      {granted === false ? (
+      {permission.state === 'undetermined' || permission.state === 'denied' ? (
         <Card>
-          <AppText>{t('notifications.off')}</AppText>
-          <TextButton
-            label={t('notifications.settings')}
-            onPress={() => router.push('/settings')}
-          />
+          <View style={{ gap: spacing.md }} testID="notifications-permission">
+            <AppText>
+              {permission.state === 'denied' ? t('notifications.off') : t('notifications.ask')}
+            </AppText>
+            {permission.state === 'denied' ? (
+              <Button label={t('reminder.permissionSettings')} onPress={openNotificationSettings} />
+            ) : (
+              <Button label={t('reminder.permissionAllow')} onPress={() => void permission.ask()} />
+            )}
+          </View>
         </Card>
       ) : null}
       {plan.length === 0 && !agenda.loading ? (

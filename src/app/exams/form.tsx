@@ -2,7 +2,11 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import { takePickedSubject } from '@/components/pickerResult';
 import { goBack, backToList } from '@/components/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -33,7 +37,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 
 type Form = Omit<ExamInput, 'durationMinutes' | 'grade' | 'gradeMax' | 'coefficient'> & {
@@ -74,22 +77,21 @@ export default function ExamFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    if (!params.id) return;
-    void getExam(db, params.id)
-      .then(
-        (e) =>
-          e &&
-          setForm({
-            ...e,
-            duration: e.durationMinutes ? String(e.durationMinutes) : '',
-            grade: e.grade === null ? '' : String(e.grade),
-            gradeMax: String(e.gradeMax),
-            coefficient: String(e.coefficient),
-          }),
-      )
-      .catch(reportLoadError);
-  }, [db, params.id]);
+  // Modification : les champs n'apparaissent qu'une fois l'examen lu (jamais écrasés).
+  const load = useEditLoad(
+    params.id,
+    (id) => getExam(db, id),
+    (e) =>
+      setForm({
+        ...e,
+        duration: e.durationMinutes ? String(e.durationMinutes) : '',
+        grade: e.grade === null ? '' : String(e.grade),
+        gradeMax: String(e.gradeMax),
+        coefficient: String(e.coefficient),
+      }),
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const toInput = (): ExamInput => {
     const { duration, grade, gradeMax, coefficient, ...rest } = form;
@@ -119,13 +121,16 @@ export default function ExamFormScreen() {
 
   const submit = () =>
     run(async () => {
+      const input = toInput();
       if (params.id) {
-        await updateExam(db, params.id, toInput());
-        goBack();
+        await updateExam(db, params.id, input);
+        leave(goBack);
       } else {
-        const id = await createExam(db, toInput());
-        router.replace({ pathname: '/exams/[id]', params: { id } });
+        const id = await createExam(db, input);
+        leave(() => router.replace({ pathname: '/exams/[id]', params: { id } }));
       }
+      // Rappels « 7 jours / 1 jour avant » : sans permission, ils ne sonneraient jamais.
+      if ((input.reminderDays ?? []).length > 0) void askNotificationPermission();
     });
 
   const remove = async () => {
@@ -139,11 +144,14 @@ export default function ExamFormScreen() {
     try {
       await deleteExam(db, params.id);
       // Revient à l'onglet d'où l'on vient (l'élément n'existe plus).
-      backToList();
+      leave(backToList);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('exams.edit')} />;
 
   return (
     <FormScreen

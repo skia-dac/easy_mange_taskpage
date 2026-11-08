@@ -623,6 +623,13 @@
     "moneyHint": "At the times chosen on each cost or tontine."
   },
   "reminder": {
+    "pastError": "This time has already passed: pick a time to come so the reminder can ring.",
+    "settingOff": {
+      "task": "Task reminders are turned off in Settings: this reminder won’t ring.",
+      "assignment": "Homework reminders are turned off in Settings: this reminder won’t ring.",
+      "event": "Appointment reminders are turned off in Settings: this reminder won’t ring."
+    },
+    "openAppSettings": "Open Settings",
     "none": "None",
     "default": "Default",
     "minutes": "{{count}} min",
@@ -682,6 +689,7 @@
     "firstTaskHint": "Something to do, big or small."
   },
   "notifications": {
+    "ask": "Allow notifications so your reminders can ring, even offline.",
     "title": "Notifications",
     "upcoming": "Upcoming reminders",
     "empty": "No reminder scheduled.",
