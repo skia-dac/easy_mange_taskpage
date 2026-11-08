@@ -103,9 +103,16 @@ export class EntityWriter {
     return id;
   }
 
+  /**
+   * Modifie une ligne. Si chaque valeur donnée est déjà celle de la ligne, rien n'est écrit : pas
+   * de nouvelle date `updated_at`, pas d'entrée dans la file, aucun écran prévenu. Sinon, relire
+   * une note puis la quitter la ferait remonter en tête de liste, et un téléphone hors ligne qui
+   * n'a fait que relire une vieille version l'enverrait plus tard comme la plus récente.
+   */
   async update(table: EntityTable, id: string, values: Values): Promise<void> {
     const columns = assertSafeColumns(values);
-    const current = await this.current(table, id);
+    const current = await this.current(table, id, columns);
+    if (columns.every((c) => sameValue(current.values[c], values[c] ?? null))) return;
     const now = nowIso();
     const status = current.sync_status === 'pending_create' ? 'pending_create' : 'pending_update';
     const sets = [...columns.map((c) => `${c} = ?`), 'updated_at = ?', 'sync_status = ?'];
@@ -129,13 +136,25 @@ export class EntityWriter {
     await this.enqueue(table, id, 'delete', { deleted_at: now, updated_at: now }, current.version);
   }
 
-  private async current(table: EntityTable, id: string): Promise<SyncState> {
-    const row = await this.txn.getFirstAsync<SyncState>(
-      `SELECT version, sync_status FROM ${table} WHERE id = ? AND deleted_at IS NULL`,
+  /** État de synchronisation de la ligne, et la valeur actuelle des colonnes demandées. */
+  private async current(
+    table: EntityTable,
+    id: string,
+    columns: string[] = [],
+  ): Promise<SyncState & { values: Record<string, unknown> }> {
+    // Colonnes déjà vérifiées par `assertSafeColumns`. Les alias évitent toute collision avec
+    // `version` ou `sync_status` si l'appelant les écrit lui-même.
+    const extra = columns.map((c, i) => `, ${c} AS v${i}`).join('');
+    const row = await this.txn.getFirstAsync<SyncState & Record<string, unknown>>(
+      `SELECT version, sync_status${extra} FROM ${table} WHERE id = ? AND deleted_at IS NULL`,
       [id],
     );
     if (!row) throw new AppError('notFound', `${table}/${id}`);
-    return row;
+    const values: Record<string, unknown> = {};
+    columns.forEach((c, i) => {
+      values[c] = row[`v${i}`];
+    });
+    return { version: row.version, sync_status: row.sync_status, values };
   }
 
   private async enqueue(
@@ -152,6 +171,14 @@ export class EntityWriter {
     );
     this.changed.add(table);
   }
+}
+
+/**
+ * Même valeur en base et dans la modification. Une différence de type (texte « 5 » contre le
+ * nombre 5) compte comme un changement : dans le doute, on écrit.
+ */
+function sameValue(stored: unknown, next: SqlValue): boolean {
+  return (stored ?? null) === next;
 }
 
 /**
