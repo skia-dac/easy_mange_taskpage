@@ -181,9 +181,9 @@ describe('retours : envoi', () => {
     const url = String(open.mock.calls[0]![0]);
     expect(url.startsWith('mailto:kamgayvanarmel@gmail.com?subject=')).toBe(true);
     const body = decodeURIComponent(url.split('&body=')[1]!);
-    expect(body).toContain('Type : Un problème');
-    expect(body).toContain('Partie : Carnet – À faire');
-    expect(body).toContain('Bloquant : oui');
+    expect(body).toContain(i18n.t('feedback.mail.kind', { value: 'Un problème' }));
+    expect(body).toContain(i18n.t('feedback.mail.area', { value: 'Carnet – À faire' }));
+    expect(body).toContain(i18n.t('feedback.mail.blocking'));
     expect(body).toContain(input.message);
     expect((await listFeedback(db))[0]?.status).toBe('sent');
     open.mockRestore();
