@@ -152,8 +152,20 @@ export default function MoneyScreen() {
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
             {nav('chevron-left', -1)}
-            <Tappable accessibilityRole="button" onPress={() => setOffset(0)} hitSlop={8}>
-              <AppText variant="bodyStrong">
+            <Tappable
+              accessibilityRole="button"
+              accessibilityHint={offset !== 0 ? t('money.backToCurrent') : undefined}
+              onPress={() => setOffset(0)}
+              style={{
+                flexShrink: 1,
+                minHeight: minTouchSize,
+                minWidth: minTouchSize,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: spacing.sm,
+              }}
+            >
+              <AppText variant="bodyStrong" style={{ textAlign: 'center' }}>
                 {t('money.periodRange', {
                   from: formatShortDate(o.range.from, labels.lang),
                   to: formatShortDate(o.range.to, labels.lang),

@@ -1528,7 +1528,8 @@
     "recurringKindLabel": "Charge fixe ou tontine",
     "frequency": "Fréquence",
     "leftBar": "Part du budget restante",
-    "leftBarValue": "{{percent}} % restant"
+    "leftBarValue": "{{percent}} % restant",
+    "backToCurrent": "Revient à la période en cours"
   },
   "glance": {
     "money": "Argent",

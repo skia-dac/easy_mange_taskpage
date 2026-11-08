@@ -1528,7 +1528,8 @@
     "recurringKindLabel": "Fixed cost or tontine",
     "frequency": "Frequency",
     "leftBar": "Share of budget left",
-    "leftBarValue": "{{percent}}% left"
+    "leftBarValue": "{{percent}}% left",
+    "backToCurrent": "Goes back to the current period"
   },
   "glance": {
     "money": "Money",
