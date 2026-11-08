@@ -1,5 +1,8 @@
 import { act, renderHook } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
+
+import { tabIcon } from '@/components/TabIcon';
 
 import {
   HIDE_DELTA,
@@ -31,7 +34,10 @@ describe('barre d’onglets au défilement', () => {
     expect(s.hidden).toBe(false);
   });
 
-  it('le hook cache la barre en descendant et la montre au défilement vers le haut', async () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it('Android : le hook cache la barre en descendant et la montre au défilement vers le haut', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
     const wrapper = ({ children }: { children: ReactNode }) => (
       <TabBarVisibility>{children}</TabBarVisibility>
     );
@@ -47,5 +53,25 @@ describe('barre d’onglets au défilement', () => {
     expect(h.result.current.hidden).toBe(true);
     await act(async () => h.result.current.handlers.onScroll(scrollTo(150)));
     expect(h.result.current.hidden).toBe(false);
+  });
+
+  it('iPhone : la barre reste visible au défilement (iOS 26 la réduit, ne la retire pas)', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TabBarVisibility>{children}</TabBarVisibility>
+    );
+    const h = await renderHook(
+      () => ({ handlers: useTabBarScrollHandlers(), hidden: useTabBarHidden() }),
+      { wrapper },
+    );
+    await act(async () => h.result.current.handlers.onScroll(scrollTo(200)));
+    expect(h.result.current.hidden).toBe(false);
+  });
+});
+
+describe('icônes des onglets', () => {
+  it('une seule fonction par icône : pas de composant recréé à chaque rendu', () => {
+    expect(tabIcon('sun')).toBe(tabIcon('sun'));
+    expect(tabIcon('sun')).not.toBe(tabIcon('calendar'));
   });
 });

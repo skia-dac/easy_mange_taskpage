@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
-import { BottomTabBarHeightContext } from 'expo-router/build/react-navigation/bottom-tabs';
+import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
