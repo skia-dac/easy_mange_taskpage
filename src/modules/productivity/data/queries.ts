@@ -98,12 +98,13 @@ export async function searchPersonalEvents(db: Db, query: string) {
 /**
  * Tâches ou devoirs de l'agenda : tout ce qui reste à faire (même sans date ou très ancien),
  * et les éléments terminés seulement à partir de `from` (échéance ou date de fin). Les vieux
- * éléments terminés ne sont plus relus à chaque modification.
+ * éléments terminés, avec ou sans date, ne sont plus relus à chaque modification.
+ * (`due_date` NULL ne passe pas `due_date >= ?` : un terminé sans date compte par sa date de fin.)
  */
 export async function listWorkItemsSince(db: Db, kind: WorkKind, from: string) {
   const rows = await db.getAllAsync<WorkItemRow>(
     `SELECT * FROM ${tableOf(kind)} WHERE ${ALIVE}
-       AND (status <> 'done' OR due_date IS NULL OR due_date >= ? OR completed_at >= ?)
+       AND (status <> 'done' OR due_date >= ? OR completed_at >= ?)
      ORDER BY due_date, due_time`,
     [from, from],
   );
