@@ -669,6 +669,7 @@ const cases: Case[] = [
       'Mode focus',
       'Verrouiller MySky',
       'Politique de confidentialité',
+      'Donner mon avis',
       'Couleur principale',
       'Taille du texte',
       'Bilan du soir',

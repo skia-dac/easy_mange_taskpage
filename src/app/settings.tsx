@@ -46,9 +46,11 @@ import {
   writeBackup,
   type BackupFile,
   type BackupSnapshot,
+  FEEDBACK_TABLE,
+  feedbackCounts,
 } from '@/modules/platform';
 import { useSpaces } from '@/shared/SpacesContext';
-import { useDb } from '@/shared/db';
+import { useDb, useLiveQuery } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
 import { formatDateTime } from '@/shared/format';
 import { detectLanguage, i18n } from '@/shared/i18n';
@@ -94,6 +96,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
+  const feedback = useLiveQuery(feedbackCounts, [FEEDBACK_TABLE], []);
   const { spacing } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
@@ -449,6 +452,24 @@ export default function SettingsScreen() {
         <AppText variant="caption" color="muted">
           {t('settings.widgetsHint')}
         </AppText>
+      </Card>
+
+      <SectionHeader title={t('feedback.title')} />
+      <Card>
+        <ListRow
+          title={t('feedback.title')}
+          subtitle={t('feedback.profileHint')}
+          leading={<IconBadge icon="message-square" />}
+          onPress={() => router.push('/feedback')}
+        />
+        {(feedback.data?.total ?? 0) > 0 ? (
+          <ListRow
+            title={t('feedback.historyTitle')}
+            subtitle={t('feedback.historyCount', { count: feedback.data?.total ?? 0 })}
+            leading={<IconBadge icon="inbox" />}
+            onPress={() => router.push('/feedback/history')}
+          />
+        ) : null}
       </Card>
 
       <SectionHeader title={t('data.title')} />
