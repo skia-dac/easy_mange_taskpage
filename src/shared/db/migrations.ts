@@ -20,7 +20,7 @@ export const SYNC_COLUMNS = `
  * petit id — la même règle que la synchronisation (engine.ts) — et la suppression part par la file
  * d'envoi pour que le serveur et les autres appareils l'apprennent.
  */
-const DEDUPE_ALIVE_COURSE_EXCEPTIONS = `
+export const DEDUPE_ALIVE_COURSE_EXCEPTIONS = `
   INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
   SELECT lower(hex(randomblob(16))), 'course_exceptions', d.id, 'delete',
     json_object(
