@@ -80,6 +80,9 @@ describe('menu « Reporter »', () => {
     const late = await task('2026-09-20');
     await show(late);
     await fireEvent.press(screen.getByText(i18n.t('postpone.today')));
+    await act(async () => {
+      jest.advanceTimersByTime(1500);
+    });
     await flush();
     expect((await getWorkItem(mockDb, 'task', late.id))?.dueDate).toBe('2026-09-23');
   });
@@ -88,6 +91,9 @@ describe('menu « Reporter »', () => {
     const dated = await task('2026-09-25');
     await show(dated);
     await fireEvent.press(screen.getByText(i18n.t('postpone.removeDate')));
+    await act(async () => {
+      jest.advanceTimersByTime(1500);
+    });
     await flush();
     expect((await getWorkItem(mockDb, 'task', dated.id))?.dueDate).toBeNull();
   });

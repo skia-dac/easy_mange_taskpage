@@ -67,7 +67,7 @@ describe('écran Rappels : la permission se demande ici', () => {
     await fireEvent.press(screen.getByText('Autoriser les notifications'));
     await flush();
     expect(alert).toHaveBeenCalledWith(
-      'Recevoir tes rappels ?',
+      i18n.t('reminder.permissionTitle'),
       expect.any(String),
       expect.any(Array),
       expect.any(Object),

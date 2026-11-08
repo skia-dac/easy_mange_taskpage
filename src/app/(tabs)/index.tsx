@@ -346,7 +346,14 @@ export default function TodayScreen() {
               label: t('profile.addSubject'),
               onPress: () => router.push('/subjects/form'),
             }}
-            secondaryAction={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+            secondaryAction={{
+              label: t('work.newTask'),
+              onPress: () =>
+                router.push({
+                  pathname: '/work/form',
+                  params: view ? { date: view.today } : {},
+                }),
+            }}
           />
         ) : study && !loading && subjects.length === 0 ? (
           <RiseIn>
@@ -369,7 +376,14 @@ export default function TodayScreen() {
               icon="briefcase"
               title={t('today.firstStep.workTitle')}
               message={t('today.firstStep.workHint')}
-              action={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+              action={{
+                label: t('work.newTask'),
+                onPress: () =>
+                  router.push({
+                    pathname: '/work/form',
+                    params: view ? { date: view.today } : {},
+                  }),
+              }}
               secondaryAction={{
                 label: t('events.new'),
                 onPress: () => router.push({ pathname: '/events/form', params: {} }),
@@ -380,7 +394,14 @@ export default function TodayScreen() {
               icon="home"
               title={t('today.firstStep.personalTitle')}
               message={t('today.firstStep.personalHint')}
-              action={{ label: t('work.newTask'), onPress: () => router.push('/work/form') }}
+              action={{
+                label: t('work.newTask'),
+                onPress: () =>
+                  router.push({
+                    pathname: '/work/form',
+                    params: view ? { date: view.today } : {},
+                  }),
+              }}
               secondaryAction={{
                 label: t('habits.new'),
                 onPress: () => router.push('/habits/form'),

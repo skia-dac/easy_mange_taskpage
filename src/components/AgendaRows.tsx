@@ -127,12 +127,15 @@ export function WorkRow({
 
   const swipe = {
     right: { label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle },
-    left: {
-      label: t('postpone.action'),
-      icon: 'clock',
-      color: 'warning',
-      onAction: () => onPostpone?.(item),
-    },
+    // Sans date, il n'y a rien à reporter : pas de glisser à gauche.
+    left: item.dueDate
+      ? {
+          label: t('postpone.action'),
+          icon: 'clock' as const,
+          color: 'warning' as const,
+          onAction: () => onPostpone?.(item),
+        }
+      : undefined,
   } as const;
 
   const line = (a11y?: SwipeAccessibility) => (
