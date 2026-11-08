@@ -27,6 +27,13 @@ type Props = {
   onPress?: () => void;
   /** Titre barré et grisé (élément terminé ou annulé). */
   struck?: boolean;
+  /** Lignes du titre avant « … » (2 par défaut ; sans limite avec un très grand texte). */
+  titleLines?: number;
+  /**
+   * Chevron « › » d'une ligne touchable (affiché par défaut). À couper quand la ligne a déjà
+   * une commande et un montant : l'effet au toucher suffit à montrer qu'elle s'ouvre.
+   */
+  chevron?: boolean;
   /** Libellé lu par le lecteur d'écran à la place de « titre, sous-titre ». */
   accessibilityLabel?: string;
   /** Actions sans geste pour le lecteur d'écran (ex. celles d'un glisser). */
@@ -63,6 +70,8 @@ export function ListRow({
   trailingLabel,
   onPress,
   struck,
+  titleLines = 2,
+  chevron = true,
   accessibilityLabel,
   accessibilityActions,
   onAccessibilityAction,
@@ -87,7 +96,7 @@ export function ListRow({
           variant="bodyStrong"
           color={struck ? 'muted' : 'text'}
           style={struck ? { textDecorationLine: 'line-through' } : undefined}
-          numberOfLines={lines}
+          numberOfLines={large ? undefined : titleLines}
         >
           {title}
         </AppText>
@@ -101,7 +110,7 @@ export function ListRow({
         ) : null}
       </View>
       {large ? null : trailing}
-      {onPress ? <Feather name="chevron-right" size={18} color={colors.muted} /> : null}
+      {onPress && chevron ? <Feather name="chevron-right" size={18} color={colors.muted} /> : null}
     </View>
   );
   const body = onPress ? (
