@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -17,11 +17,37 @@ import {
   type TimedBlock,
 } from '@/projections';
 import { addDaysIso, isoWeekday, minutesToTime, type IsoDate } from '@/shared/dates';
-import { useTheme } from '@/shared/theme';
+import { minTouchSize, useTheme } from '@/shared/theme';
 import { AppText, Tappable } from '@/shared/ui';
+
+import { calendarItemKey } from './CalendarItemRow';
 
 const HOUR_HEIGHT = 52;
 const GUTTER = 36;
+/** Après un déplacement, le bloc attend la nouvelle position au plus ce temps, puis revient. */
+export const DROP_FALLBACK_MS = 1500;
+
+/**
+ * Marge de toucher autour d'un bloc pour atteindre 44 pt sans changer l'échelle des heures :
+ * en hauteur toujours ; en largeur seulement s'il est seul sur sa colonne (une voisine sinon
+ * perdrait une partie de sa surface).
+ */
+export function blockHitSlop(width: number, height: number, alone: boolean) {
+  const v = Math.max(0, Math.ceil((minTouchSize - height) / 2));
+  const h = alone ? Math.max(0, Math.ceil((minTouchSize - width) / 2)) : 0;
+  return { top: v, bottom: v, left: h, right: h };
+}
+
+/** Clés stables (l'élément, pas sa place) : un bloc déplacé garde son composant. */
+export function blockKeys(items: readonly CalendarItem[]): string[] {
+  const seen = new Map<string, number>();
+  return items.map((item) => {
+    const base = calendarItemKey(item);
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    return n === 0 ? base : `${base}#${n}`;
+  });
+}
 
 type Props = {
   weekStart: IsoDate;
@@ -29,7 +55,11 @@ type Props = {
   days: ReadonlyMap<IsoDate, CalendarItem[]>;
   subjects: ReadonlyMap<string, Subject>;
   onOpen: (item: CalendarItem) => void;
-  onMove: (item: CalendarItem, to: MoveTarget) => void;
+  /**
+   * Déplacer un élément. Résout `false` si rien n'a bougé (annulé, refusé) : le bloc revient
+   * aussitôt. Sinon il reste où on l'a posé jusqu'à ce que les données arrivent.
+   */
+  onMove: (item: CalendarItem, to: MoveTarget) => Promise<boolean> | void;
 };
 
 function itemTitle(
@@ -93,6 +123,14 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
   const colWidth = width > 0 ? (width - GUTTER) / 7 : 0;
   const height = (hours.to - hours.from) * HOUR_HEIGHT;
   const hasUntimed = layouts.some((l) => l.untimed.length > 0);
+  // Clés par élément (et non par rang) : un bloc qui change de jour ou d'heure reste le même.
+  const timed = useMemo(() => {
+    const flat = layouts.flatMap((l, col) => l.timed.map((b) => ({ b, day: l.day, col })));
+    const keys = blockKeys(flat.map((x) => x.b.item));
+    return flat.map((x, i) => ({ ...x, key: keys[i] as string }));
+  }, [layouts]);
+  // Hauteur réelle (échelle des heures), 18 pt au moins pour lire le titre.
+  const blockHeight = (b: TimedBlock) => Math.max(18, ((b.end - b.start) / 60) * HOUR_HEIGHT - 2);
   const title = (item: CalendarItem) => itemTitle(item, subjects, (k) => t(`calendarItem.${k}`));
 
   const tone = (item: CalendarItem) => {
@@ -128,7 +166,7 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
             <View key={l.day} style={{ flex: 1, gap: spacing.xxs }}>
               {l.untimed.map((item, i) => (
                 <Tappable
-                  key={i}
+                  key={blockKeys(l.untimed)[i]}
                   accessibilityRole="button"
                   accessibilityLabel={title(item)}
                   onPress={() => onOpen(item)}
@@ -137,6 +175,9 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
                     borderRadius: 6,
                     paddingHorizontal: 3,
                     paddingVertical: 2,
+                    // Toute la journée : la rangée n'a pas d'échelle, la pastille a sa vraie taille.
+                    minHeight: minTouchSize,
+                    justifyContent: 'center',
                   }}
                 >
                   <AppText variant="caption" numberOfLines={1} style={{ color: tone(item).fg }}>
@@ -158,7 +199,7 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
               color="muted"
               style={{ position: 'absolute', top: i * HOUR_HEIGHT - 6, right: 6 }}
             >
-              {`${hours.from + i}h`}
+              {t('calendar.hourMark', { hour: hours.from + i })}
             </AppText>
           ))}
         </View>
@@ -194,39 +235,39 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
             ) : null,
           )}
           {colWidth > 0
-            ? layouts.flatMap((l, col) =>
-                l.timed.map((b, i) => (
-                  <Block
-                    key={`${l.day}-${i}`}
-                    block={b}
-                    day={l.day}
-                    left={col * colWidth + (b.lane * colWidth) / b.lanes}
-                    width={colWidth / b.lanes - 2}
-                    top={((b.start - hours.from * 60) / 60) * HOUR_HEIGHT}
-                    height={Math.max(18, ((b.end - b.start) / 60) * HOUR_HEIGHT - 2)}
-                    colWidth={colWidth}
-                    title={title(b.item)}
-                    accessibilityLabel={[
-                      title(b.item),
-                      `${labels.weekday(isoWeekday(l.day))} ${Number(l.day.slice(8))}`,
-                      `${minutesToTime(b.start)} – ${minutesToTime(b.end)}`,
-                      b.item.kind === 'course' && b.item.occurrence.status === 'cancelled'
-                        ? t('occurrence.cancelled')
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                    tone={tone(b.item)}
-                    struck={
-                      (b.item.kind === 'course' && b.item.occurrence.status === 'cancelled') ||
-                      (b.item.kind === 'revision' && b.item.block.status === 'skipped')
-                    }
-                    moveHint={t('calendar.moveHint')}
-                    onOpen={onOpen}
-                    onMove={onMove}
-                  />
-                )),
-              )
+            ? timed.map(({ b, day, col, key }) => (
+                <Block
+                  key={key}
+                  block={b}
+                  day={day}
+                  left={col * colWidth + (b.lane * colWidth) / b.lanes}
+                  width={colWidth / b.lanes - 2}
+                  top={((b.start - hours.from * 60) / 60) * HOUR_HEIGHT}
+                  height={blockHeight(b)}
+                  hitSlop={blockHitSlop(colWidth / b.lanes - 2, blockHeight(b), b.lanes === 1)}
+                  gestureId={`block-${key}`}
+                  colWidth={colWidth}
+                  title={title(b.item)}
+                  accessibilityLabel={[
+                    title(b.item),
+                    `${labels.weekday(isoWeekday(day))} ${Number(day.slice(8))}`,
+                    `${minutesToTime(b.start)} – ${minutesToTime(b.end)}`,
+                    b.item.kind === 'course' && b.item.occurrence.status === 'cancelled'
+                      ? t('occurrence.cancelled')
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
+                  tone={tone(b.item)}
+                  struck={
+                    (b.item.kind === 'course' && b.item.occurrence.status === 'cancelled') ||
+                    (b.item.kind === 'revision' && b.item.block.status === 'skipped')
+                  }
+                  moveHint={t('calendar.moveHint')}
+                  onOpen={onOpen}
+                  onMove={onMove}
+                />
+              ))
             : null}
         </View>
       </View>
@@ -273,6 +314,10 @@ type BlockProps = {
   width: number;
   top: number;
   height: number;
+  /** Zone de toucher autour du bloc (44 pt au moins, voir `blockHitSlop`). */
+  hitSlop: { top: number; bottom: number; left: number; right: number };
+  /** Identifiant des gestes du bloc (tests). */
+  gestureId: string;
   colWidth: number;
   title: string;
   /** Ce que lit le lecteur d'écran : titre, jour, heures, état. */
@@ -281,13 +326,52 @@ type BlockProps = {
   struck: boolean;
   moveHint: string;
   onOpen: (item: CalendarItem) => void;
-  onMove: (item: CalendarItem, to: MoveTarget) => void;
+  onMove: (item: CalendarItem, to: MoveTarget) => Promise<boolean> | void;
 };
 
-function Block(p: BlockProps) {
+/**
+ * Décalage du bloc pendant et après le glisser. Posé ailleurs, le bloc reste à l'endroit du
+ * lâcher (décalage optimiste) jusqu'à ce que sa nouvelle place (`placed`) arrive des données :
+ * le décalage s'efface alors d'un coup, le bloc y est déjà. Sinon (refus, échec, rien reçu à
+ * temps) il revient à sa place.
+ */
+function useDropOffset(placed: string) {
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settle = useCallback(
+    (animate: boolean) => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      tx.set(animate ? withSpring(0) : 0);
+      ty.set(animate ? withSpring(0) : 0);
+    },
+    [tx, ty],
+  );
+  /** Attendre la nouvelle place, avec un filet de sécurité. */
+  const hold = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => settle(true), DROP_FALLBACK_MS);
+  }, [settle]);
+  const last = useRef(placed);
+  useEffect(() => {
+    if (last.current === placed) return;
+    last.current = placed;
+    if (timer.current) settle(false);
+  }, [placed, settle]);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  return { tx, ty, settle, hold };
+}
+
+function Block(p: BlockProps) {
   const lifted = useSharedValue(0);
+  /** Le geste s'est terminé par un lâcher : le décalage reste (voir `drop`). */
+  const dropped = useSharedValue(0);
   // Dernier pas d'un quart d'heure montré : l'heure affichée ne change (et React ne refait un
   // rendu) que quand ce pas change, pas à chaque image du glisser.
   const shownStep = useSharedValue(Number.NaN);
@@ -317,59 +401,89 @@ function Block(p: BlockProps) {
     if (to) p.onMove(p.block.item, to);
   };
 
+  const placed = `${p.day}|${p.top}|${p.left}`;
+  const { tx, ty, settle, hold } = useDropOffset(placed);
+
   const drop = (dx: number, dy: number) => {
     setLabel(null);
     const dayDelta = Math.round(dx / p.colWidth);
     const minuteDelta = (dy / HOUR_HEIGHT) * 60;
     const to = moveTarget(p.block, p.day, dayDelta, minuteDelta);
     const same = dayDelta === 0 && to.startTime === minutesToTime(p.block.start);
-    if (!same) p.onMove(p.block.item, to);
+    if (same) {
+      settle(true);
+      return;
+    }
+    hold();
+    void Promise.resolve(p.onMove(p.block.item, to)).then(
+      (moved) => {
+        if (moved === false) settle(true);
+      },
+      () => settle(true),
+    );
   };
   const preview = (minuteDelta: number) => {
     setLabel(moveTarget(p.block, p.day, 0, minuteDelta).startTime);
   };
 
   const pan = Gesture.Pan()
+    .withTestId(`${p.gestureId}-drag`)
+    .hitSlop(p.hitSlop)
     .enabled(p.block.movable)
     .activateAfterLongPress(350)
     .onStart(() => {
       'worklet';
-      lifted.value = withSpring(1);
+      lifted.set(withSpring(1));
     })
     .onUpdate((e) => {
       'worklet';
-      tx.value = e.translationX;
-      ty.value = e.translationY;
+      tx.set(e.translationX);
+      ty.set(e.translationY);
       const step = Math.round(((e.translationY / HOUR_HEIGHT) * 60) / SNAP_MINUTES);
-      if (step !== shownStep.value) {
-        shownStep.value = step;
+      if (step !== shownStep.get()) {
+        shownStep.set(step);
         scheduleOnRN(preview, step * SNAP_MINUTES);
       }
     })
-    .onEnd((e) => {
+    .onEnd((e, success) => {
       'worklet';
+      if (!success) return;
+      dropped.set(1);
+      // Le bloc se cale sur la case visée (jour, quart d'heure) et y reste.
+      const days = Math.round(e.translationX / p.colWidth);
+      const minutes =
+        Math.round(((e.translationY / HOUR_HEIGHT) * 60) / SNAP_MINUTES) * SNAP_MINUTES;
+      tx.set(withSpring(days * p.colWidth));
+      ty.set(withSpring((minutes / 60) * HOUR_HEIGHT));
       scheduleOnRN(drop, e.translationX, e.translationY);
     })
     .onFinalize(() => {
       'worklet';
-      shownStep.value = Number.NaN;
-      tx.value = withSpring(0);
-      ty.value = withSpring(0);
-      lifted.value = withSpring(0);
+      shownStep.set(Number.NaN);
+      lifted.set(withSpring(0));
+      if (dropped.get() === 1) {
+        dropped.set(0);
+        return;
+      }
+      tx.set(withSpring(0));
+      ty.set(withSpring(0));
     });
-  const tap = Gesture.Tap().onEnd(() => {
-    'worklet';
-    scheduleOnRN(p.onOpen, p.block.item);
-  });
+  const tap = Gesture.Tap()
+    .withTestId(`${p.gestureId}-tap`)
+    .hitSlop(p.hitSlop)
+    .onEnd(() => {
+      'worklet';
+      scheduleOnRN(p.onOpen, p.block.item);
+    });
 
   const style = useAnimatedStyle(() => ({
     transform: [
-      { translateX: tx.value },
-      { translateY: ty.value },
-      { scale: 1 + lifted.value * 0.04 },
+      { translateX: tx.get() },
+      { translateY: ty.get() },
+      { scale: 1 + lifted.get() * 0.04 },
     ],
-    zIndex: lifted.value > 0 ? 10 : 1,
-    opacity: 1 - lifted.value * 0.1,
+    zIndex: lifted.get() > 0 ? 10 : 1,
+    opacity: 1 - lifted.get() * 0.1,
   }));
 
   return (

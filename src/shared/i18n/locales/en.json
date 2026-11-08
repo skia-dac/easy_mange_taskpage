@@ -185,7 +185,8 @@
     "moveNextDay": "Move to the next day",
     "todayCell": "today",
     "offCell": "holiday, no classes",
-    "hasItemsCell": "has items"
+    "hasItemsCell": "has items",
+    "hourMark": "{{hour}}:00"
   },
   "calendarItem": {
     "exam": "Exam",
