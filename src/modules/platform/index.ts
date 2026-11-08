@@ -51,6 +51,18 @@ export type { BackupFile } from './backup/files';
 export { clearDatabase, snapshotSummary } from './backup/snapshot';
 export type { BackupSnapshot } from './backup/snapshot';
 export { BackupGate } from './backup/BackupGate';
+export {
+  ACCOUNT_REMINDER_MIN_ITEMS,
+  ACCOUNT_REMINDER_SNOOZE_DAYS,
+  ACCOUNT_REMINDER_SNOOZE_KEY,
+  COUNTED_TABLES,
+  countUserItems,
+  getAccountReminderSnoozedAt,
+  isAccountReminderSnoozed,
+  setAccountReminderSnoozedAt,
+  shouldShowAccountReminder,
+} from './backup/accountReminder';
+export type { AccountReminderInput } from './backup/accountReminder';
 export { canUseAppLock, LockGate } from './lock/LockGate';
 export { buildIcs } from './export/ics';
 export { openLocalFile, safeFileName, shareIcs, sharePdf } from './export/share';

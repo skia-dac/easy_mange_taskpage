@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, View } from 'react-native';
 
 import { AccentPicker } from '@/components/AccentPicker';
+import { AccountBackupCard } from '@/components/backup/AccountBackupCard';
 import { useErasePhone } from '@/hooks/useErasePhone';
 import { useLabels } from '@/hooks/useLabels';
 import {
@@ -34,14 +35,13 @@ import {
   type WeekStart,
 } from '@/modules/identity';
 import {
+  backupMessageKey,
   canUseAppLock,
   ensurePermission,
   hasPermission,
   listBackups,
-  pickBackupFile,
   readBackup,
   restoreBackup,
-  shareBackup,
   snapshotSummary,
   writeBackup,
   type BackupFile,
@@ -51,7 +51,7 @@ import {
 } from '@/modules/platform';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useDb, useLiveQuery } from '@/shared/db';
-import { AppError, userMessageKey } from '@/shared/errors';
+import { userMessageKey } from '@/shared/errors';
 import { formatDateTime } from '@/shared/format';
 import { detectLanguage, i18n } from '@/shared/i18n';
 import { useTheme } from '@/shared/theme';
@@ -76,13 +76,7 @@ import {
   Toggle,
 } from '@/shared/ui';
 
-type SheetKind = 'share' | 'restore' | null;
-
-function backupErrorKey(e: unknown): string {
-  if (e instanceof AppError && e.message === 'backupUnreadable') return 'backup.unreadable';
-  if (e instanceof AppError && e.message === 'backupTooRecent') return 'backup.tooRecent';
-  return userMessageKey(e);
-}
+type SheetKind = 'restore' | null;
 
 /** Effacement refusé (modifications pas encore envoyées) : message du compte, sinon générique. */
 function wipeErrorKey(e: unknown): string {
@@ -193,11 +187,6 @@ export default function SettingsScreen() {
       );
     });
 
-  const share = (file: BackupFile) =>
-    run(async () => {
-      if (!(await shareBackup(file.uri))) showError('backup.shareUnavailable');
-    });
-
   const restore = (uri: string) =>
     run(async () => {
       const snapshot: BackupSnapshot = await readBackup(db, uri);
@@ -213,13 +202,7 @@ export default function SettingsScreen() {
       if (!ok) return;
       await restoreBackup(db, snapshot);
       showInfo(t('backup.restoredTitle'), t('backup.restoredMessage'));
-    }, backupErrorKey);
-
-  const restoreFromPicker = () =>
-    run(async () => {
-      const uri = await pickBackupFile();
-      if (uri) await restore(uri);
-    });
+    }, backupMessageKey);
 
   const wipe = () =>
     run(async () => {
@@ -293,7 +276,7 @@ export default function SettingsScreen() {
         b.size === null
           ? undefined
           : t('backup.size', { kb: Math.max(1, Math.round(b.size / 1024)) }),
-      // Partager ouvre la feuille du système, restaurer demande confirmation : après la fermeture.
+      // Restaurer demande confirmation : après la fermeture de la feuille.
       afterDismiss: true,
       onPress: () => onPick(b),
     }));
@@ -473,6 +456,8 @@ export default function SettingsScreen() {
       </Card>
 
       <SectionHeader title={t('data.title')} />
+      {/* Avec un compte, la sauvegarde est le compte ; sans compte, tout est sur ce téléphone. */}
+      <AccountBackupCard />
       <Card>
         <View style={{ gap: spacing.md }}>
           <View style={{ gap: spacing.xxs }}>
@@ -486,11 +471,16 @@ export default function SettingsScreen() {
               {t('backup.hint')}
             </AppText>
           </View>
-          <Button label={t('backup.now')} onPress={() => void backupNow()} disabled={busy} />
+          <Button
+            variant="secondary"
+            label={t('backup.now')}
+            onPress={() => void backupNow()}
+            disabled={busy}
+          />
+          {/* Copies de ce téléphone seulement : le partage d'un fichier n'est plus proposé. */}
           {backups.length > 0 ? (
-            <TextButton label={t('backup.share')} onPress={() => setSheet('share')} />
+            <TextButton label={t('backup.restore')} onPress={() => setSheet('restore')} />
           ) : null}
-          <TextButton label={t('backup.restore')} onPress={() => setSheet('restore')} />
         </View>
       </Card>
       <Card>
@@ -504,24 +494,10 @@ export default function SettingsScreen() {
       </Card>
 
       <ChoiceSheet
-        visible={sheet === 'share'}
-        title={t('backup.share')}
-        message={t('backup.shareMessage')}
-        options={backupOptions((b) => void share(b))}
-        onClose={() => setSheet(null)}
-      />
-      <ChoiceSheet
         visible={sheet === 'restore'}
         title={t('backup.restore')}
         message={t('backup.restoreHint')}
-        options={[
-          ...backupOptions((b) => void restore(b.uri)),
-          {
-            label: t('backup.chooseFile'),
-            afterDismiss: true,
-            onPress: () => void restoreFromPicker(),
-          },
-        ]}
+        options={backupOptions((b) => void restore(b.uri))}
         onClose={() => setSheet(null)}
       />
     </ScrollView>

@@ -23,3 +23,5 @@ export {
   endCourseSeriesEverywhere,
   splitSeriesEverywhere,
 } from './deleteCourse';
+export { backupNow } from './backupNow';
+export type { BackupNowDeps, BackupNowResult } from './backupNow';

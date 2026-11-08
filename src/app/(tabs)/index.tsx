@@ -13,6 +13,7 @@ import { HabitRow } from '@/components/HabitRow';
 import { TodayMoneyCard } from '@/components/money/TodayMoneyCard';
 import { ProfileButton } from '@/components/ProfileButton';
 import { QuickAddMenu } from '@/components/QuickAddMenu';
+import { AccountReminderCard } from '@/components/today/AccountReminderCard';
 import { DayLineCard } from '@/components/today/DayLineCard';
 import { TodayGlance } from '@/components/today/TodayGlance';
 import { useProfile } from '@/hooks/useProfile';
@@ -444,6 +445,8 @@ export default function TodayScreen() {
             </Card>
           </RiseIn>
         ) : null}
+
+        <AccountReminderCard />
 
         {view && eveningCard ? (
           <RiseIn>
