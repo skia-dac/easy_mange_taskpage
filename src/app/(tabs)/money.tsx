@@ -1,49 +1,39 @@
-import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
+import { DueList } from '@/components/money/DueList';
+import { MoneyHero } from '@/components/money/MoneyHero';
+import { MoneyTiles } from '@/components/money/MoneyTiles';
+import { PeriodNav } from '@/components/money/PeriodNav';
 import { TransactionRow } from '@/components/money/TransactionRow';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { ProfileButton } from '@/components/ProfileButton';
 import { HeaderButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
-import { formatMoney, payDue, unpayDue, type DueItem } from '@/modules/finance';
-import { dueKey, forgetPaidLate, rememberPaidLate, useMoneyData } from '@/projections';
+import { formatMoney } from '@/modules/finance';
+import { useMoneyData } from '@/projections';
 import { toIsoDate } from '@/shared/dates';
-import { useDb } from '@/shared/db';
-import { userMessageKey } from '@/shared/errors';
 import { formatShortDate } from '@/shared/format';
-import { minTouchSize, useTheme } from '@/shared/theme';
 import {
-  AppText,
-  Button,
   Card,
-  Checkbox,
   EmptyState,
   Fab,
-  FAB_CLEARANCE,
   IconBadge,
-  CountUpText,
   ListRow,
   loadStateOf,
   RiseIn,
   Screen,
   SectionHeader,
-  showError,
-  showUndoToast,
   StateView,
-  Tappable,
 } from '@/shared/ui';
 
 /** Onglet Argent : ce qu'il te reste, ce qui est à payer, tes dernières opérations. */
 export default function MoneyScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
-  const db = useDb();
-  const { colors, spacing, radius } = useTheme();
   const [offset, setOffset] = useState(0);
   const data = useMoneyData(offset);
   const money = useMoneyLabels(data.data?.input.categories ?? []);
@@ -60,201 +50,41 @@ export default function MoneyScreen() {
     );
   }
   const { overview: o, input } = data.data;
-  const cur = o.currency;
-  const fmt = (v: number) => formatMoney(v, cur);
+  const fmt = (v: number) => formatMoney(v, o.currency);
   const today = toIsoDate(new Date());
   const current = offset === 0;
-  const empty = o.items.length === 0 && o.carryOver === 0;
-  const spentShare =
-    o.income + Math.max(0, o.carryOver) > 0
-      ? Math.min(1, o.expense / (o.income + Math.max(0, o.carryOver)))
-      : 0;
-  const leftPercent = Math.round((1 - spentShare) * 100);
-
-  const togglePaid = (d: DueItem) => {
-    if (!d.paid) {
-      // Une échéance en retard payée reste visible (cochée) dans la période, pour pouvoir la décocher.
-      const late = current && d.date < input.range.from;
-      if (late) rememberPaidLate(input.range.from, dueKey(d));
-      payDue(db, d.recurring.id, d.date, current ? today : d.date).then(
-        () =>
-          showUndoToast(t('money.paidToast', { name: d.recurring.name }), () =>
-            unpayDue(db, d.recurring.id, d.date),
-          ),
-        (e: unknown) => {
-          if (late) forgetPaidLate(input.range.from, dueKey(d));
-          showError(userMessageKey(e));
-        },
-      );
-      return;
-    }
-    // Décocher supprime la dépense : « Annuler » la recrée telle quelle (même date, même montant).
-    const paidTx = input.transactions.find((x) => x.id === d.transactionId);
-    unpayDue(db, d.recurring.id, d.date).then(
-      () =>
-        showUndoToast(t('money.unpaidToast', { name: d.recurring.name }), () =>
-          payDue(db, d.recurring.id, d.date, paidTx?.date ?? d.date, paidTx?.amountMinor),
-        ),
-      (e: unknown) => showError(userMessageKey(e)),
-    );
-  };
-
-  const nav = (icon: 'chevron-left' | 'chevron-right', dir: -1 | 1) => (
-    <Tappable
-      accessibilityRole="button"
-      accessibilityLabel={dir === -1 ? t('money.previous') : t('money.next')}
-      onPress={() => setOffset(offset + dir)}
-      style={{
-        width: minTouchSize,
-        height: minTouchSize,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Feather name={icon} size={24} color={colors.primary} />
-    </Tappable>
-  );
-
-  const tile = (label: string, value: ReactNode, onPress?: () => void) => (
-    <Tappable
-      accessibilityRole={onPress ? 'button' : undefined}
-      onPress={onPress}
-      disabled={!onPress}
-      style={{ flexGrow: 1 }}
-    >
-      <Card>
-        <AppText variant="caption" color="muted">
-          {label}
-        </AppText>
-        {value}
-      </Card>
-    </Tappable>
-  );
-
-  const unpaid = o.due.filter((d) => !d.paid);
-  const shownDue = [...unpaid, ...o.due.filter((d) => d.paid)].slice(0, 6);
+  // Rien du tout (ni opération, ni report) : on guide le premier pas, sous la carte principale.
+  // Une autre période vide dit seulement qu'il n'y a rien (plus bas, « Dernières opérations »).
+  const empty = current && o.items.length === 0 && o.carryOver === 0;
 
   return (
     <View style={{ flex: 1 }}>
       <Screen
         stagger
+        fab
         title={t('money.title')}
         actions={
           <>
-            <HeaderButton icon="bar-chart-2" label={t('money.report')} href="/money/report" />
-            <HeaderButton icon="sliders" label={t('money.settings')} href="/money/settings" />
+            {/* Deux accès directs, chacun son icône et son libellé lu ; ils ne se cachent pas dans un menu. */}
+            <HeaderButton icon="pie-chart" label={t('money.report')} href="/money/report" />
+            <HeaderButton icon="settings" label={t('money.settings')} href="/money/settings" />
             <ProfileButton />
           </>
         }
       >
         <RiseIn>
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            {nav('chevron-left', -1)}
-            <Tappable
-              accessibilityRole="button"
-              accessibilityHint={offset !== 0 ? t('money.backToCurrent') : undefined}
-              onPress={() => setOffset(0)}
-              style={{
-                flexShrink: 1,
-                minHeight: minTouchSize,
-                minWidth: minTouchSize,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: spacing.sm,
-              }}
-            >
-              <AppText variant="bodyStrong" style={{ textAlign: 'center' }}>
-                {t('money.periodRange', {
-                  from: formatShortDate(o.range.from, labels.lang),
-                  to: formatShortDate(o.range.to, labels.lang),
-                })}
-              </AppText>
-            </Tappable>
-            {nav('chevron-right', 1)}
-          </View>
+          <PeriodNav
+            range={o.range}
+            period={input.period}
+            offset={offset}
+            onChange={setOffset}
+            lang={labels.lang}
+            today={today}
+          />
         </RiseIn>
 
         <RiseIn>
-          <View
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: radius.xl,
-              padding: spacing.xl,
-              gap: spacing.sm,
-            }}
-          >
-            <AppText variant="label" color="onPrimary" style={{ letterSpacing: 1 }}>
-              {(current ? t('money.left') : t('money.leftAtEnd')).toLocaleUpperCase()}
-            </AppText>
-            <CountUpText
-              variant="display"
-              color="onPrimary"
-              value={o.balance}
-              format={(n) => formatMoney(n, cur)}
-            />
-            <View
-              accessible
-              accessibilityRole="progressbar"
-              accessibilityLabel={t('money.leftBar')}
-              accessibilityValue={{
-                min: 0,
-                max: 100,
-                now: leftPercent,
-                text: t('money.leftBarValue', { percent: leftPercent }),
-              }}
-              style={{
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: colors.primarySoft,
-                overflow: 'hidden',
-              }}
-            >
-              <View
-                style={{
-                  width: `${leftPercent}%`,
-                  height: 8,
-                  // Remplissage foncé sur rail clair : il se voit (≥ 3:1), en clair comme en sombre.
-                  backgroundColor: colors.text,
-                }}
-              />
-            </View>
-            {current && o.unpaidTotal > 0 ? (
-              <AppText color="onPrimary">
-                {t('money.afterCharges', { amount: fmt(o.afterCharges), perDay: fmt(o.perDay) })}
-              </AppText>
-            ) : current ? (
-              <AppText color="onPrimary">
-                {t('money.perDay', { perDay: fmt(o.perDay), days: o.daysLeft })}
-              </AppText>
-            ) : null}
-            {o.carryOver !== 0 ? (
-              <AppText variant="caption" color="onPrimary">
-                {t('money.carryOver', { amount: fmt(o.carryOver) })}
-              </AppText>
-            ) : null}
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
-              <View style={{ flex: 1 }}>
-                <Button
-                  variant="secondary"
-                  label={`− ${t('money.expense')}`}
-                  onPress={() =>
-                    router.push({ pathname: '/money/add', params: { kind: 'expense' } })
-                  }
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  variant="secondary"
-                  label={`+ ${t('money.income')}`}
-                  onPress={() =>
-                    router.push({ pathname: '/money/add', params: { kind: 'income' } })
-                  }
-                />
-              </View>
-            </View>
-          </View>
+          <MoneyHero overview={o} today={today} />
         </RiseIn>
 
         {empty ? (
@@ -265,79 +95,7 @@ export default function MoneyScreen() {
           />
         ) : null}
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-          <RiseIn style={{ width: '48%', flexGrow: 1 }}>
-            {tile(
-              t('money.incomes'),
-              <CountUpText
-                variant="heading"
-                color="success"
-                value={o.income}
-                format={(n) => formatMoney(n, cur, { signed: true })}
-              />,
-              () =>
-                router.push({
-                  pathname: '/money/history',
-                  params: { filter: 'income', offset: String(offset) },
-                }),
-            )}
-          </RiseIn>
-          <RiseIn style={{ width: '48%', flexGrow: 1 }}>
-            {tile(
-              t('money.expenses'),
-              <CountUpText
-                variant="heading"
-                color="danger"
-                value={-o.expense}
-                format={(n) => formatMoney(n, cur)}
-              />,
-              () =>
-                router.push({
-                  pathname: '/money/history',
-                  params: { filter: 'expense', offset: String(offset) },
-                }),
-            )}
-          </RiseIn>
-          <RiseIn style={{ width: '48%', flexGrow: 1 }}>
-            {tile(
-              t('money.savings'),
-              <>
-                <CountUpText
-                  variant="heading"
-                  value={o.savingsByCurrency.find((x) => x.currency === cur)?.savedMinor ?? 0}
-                  format={(n) => formatMoney(n, cur)}
-                />
-                {o.savingsByCurrency
-                  .filter((x) => x.currency !== cur && x.savedMinor > 0)
-                  .map((x) => (
-                    <AppText key={x.currency} variant="caption" color="muted">
-                      + {formatMoney(x.savedMinor, x.currency)}
-                    </AppText>
-                  ))}
-              </>,
-              () => router.push('/money/goals'),
-            )}
-          </RiseIn>
-          <RiseIn style={{ width: '48%', flexGrow: 1 }}>
-            {tile(
-              t('money.loans'),
-              <>
-                <CountUpText
-                  variant="heading"
-                  color="warning"
-                  value={o.loanTotals.owedToMeMinor}
-                  format={(n) => formatMoney(n, cur)}
-                />
-                {o.loanTotals.iOweMinor > 0 ? (
-                  <AppText variant="caption" color="muted">
-                    {t('money.iOwe', { amount: formatMoney(o.loanTotals.iOweMinor, cur) })}
-                  </AppText>
-                ) : null}
-              </>,
-              () => router.push('/money/loans'),
-            )}
-          </RiseIn>
-        </View>
+        <MoneyTiles overview={o} offset={offset} />
 
         <RiseIn>
           <SectionHeader
@@ -361,42 +119,7 @@ export default function MoneyScreen() {
             </Card>
           </RiseIn>
         ) : (
-          <Card>
-            {shownDue.map((d) => (
-              <RiseIn row key={`${d.recurring.id}-${d.date}`}>
-                <ListRow
-                  title={d.recurring.name}
-                  struck={d.paid}
-                  subtitle={[
-                    d.recurring.kind === 'tontine' ? t('money.tontine') : null,
-                    formatShortDate(d.date, labels.lang),
-                    d.recurring.time,
-                    d.paid ? t('money.paid') : d.date < today ? t('money.late') : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                  control={
-                    <Checkbox
-                      checked={d.paid}
-                      accessibilityLabel={t('money.markPaid', { name: d.recurring.name })}
-                      onToggle={() => togglePaid(d)}
-                    />
-                  }
-                  trailing={
-                    <AppText variant="bodyStrong">
-                      {formatMoney(d.amountMinor, cur, { symbol: false })}
-                    </AppText>
-                  }
-                  onPress={() =>
-                    router.push({
-                      pathname: '/money/recurring-form',
-                      params: { id: d.recurring.id },
-                    })
-                  }
-                />
-              </RiseIn>
-            ))}
-          </Card>
+          <DueList overview={o} input={input} current={current} today={today} lang={labels.lang} />
         )}
 
         {o.tontines.some((x) => x.payoutDate) ? (
@@ -424,42 +147,49 @@ export default function MoneyScreen() {
           </Card>
         ) : null}
 
-        <RiseIn>
-          <SectionHeader
-            title={t('money.recent')}
-            action={
-              o.items.length > 0
-                ? {
-                    label: t('common.seeAll'),
-                    onPress: () =>
-                      router.push({
-                        pathname: '/money/history',
-                        params: { offset: String(offset) },
-                      }),
-                  }
-                : undefined
-            }
-          />
-        </RiseIn>
-        {o.items.length === 0 ? (
-          <RiseIn>
-            <AppText color="muted">{t('money.noItems')}</AppText>
-          </RiseIn>
-        ) : (
-          <Card>
-            {o.items.slice(0, 8).map((item) => (
-              <RiseIn row key={item.id}>
-                <TransactionRow
-                  item={item}
-                  categories={input.categories}
-                  lang={labels.lang}
-                  showDate
-                />
-              </RiseIn>
-            ))}
-          </Card>
+        {/* Premier pas : la carte « Commence par… » ci-dessus suffit, pas de second état vide. */}
+        {empty ? null : (
+          <>
+            <RiseIn>
+              <SectionHeader
+                title={t('money.recent')}
+                action={
+                  o.items.length > 0
+                    ? {
+                        label: t('common.seeAll'),
+                        onPress: () =>
+                          router.push({
+                            pathname: '/money/history',
+                            params: { offset: String(offset) },
+                          }),
+                      }
+                    : undefined
+                }
+              />
+            </RiseIn>
+            {o.items.length === 0 ? (
+              // Les boutons « − Dépense » / « + Entrée » de la carte principale suffisent : on y renvoie.
+              <EmptyState
+                icon="list"
+                title={t('money.noItems')}
+                message={current ? t('money.noItemsHint') : t('money.noItemsHintOther')}
+              />
+            ) : (
+              <Card>
+                {o.items.slice(0, 8).map((item) => (
+                  <RiseIn row key={item.id}>
+                    <TransactionRow
+                      item={item}
+                      categories={input.categories}
+                      lang={labels.lang}
+                      showDate
+                    />
+                  </RiseIn>
+                ))}
+              </Card>
+            )}
+          </>
         )}
-        <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
       <Fab accessibilityLabel={t('money.addExpense')} onPress={() => router.push('/money/add')} />
     </View>

@@ -51,8 +51,25 @@ export { buildEveningReview } from './review';
 export type { EveningReview } from './review';
 export { moodInsights } from './mood';
 export type { HabitMoodInsight, MoodInsights } from './mood';
-export { dueKey, LATE_PERIODS, moneyOverview, openLoans } from './money';
-export type { CategoryTotal, MoneyInput, MoneyInsight, MoneyOverview } from './money';
+export {
+  dueKey,
+  groupDue,
+  LATE_PERIODS,
+  moneyHero,
+  moneyOverview,
+  openLoans,
+  periodLabel,
+  periodTense,
+} from './money';
+export type {
+  CategoryTotal,
+  DueGroup,
+  MoneyHero,
+  MoneyInput,
+  MoneyInsight,
+  MoneyOverview,
+  PeriodTense,
+} from './money';
 export { forgetPaidLate, loadMoney, rememberPaidLate, useMoneyData } from './useMoneyData';
 export type { MoneyData } from './useMoneyData';
 export { buildWidgetMoney, EMPTY_WIDGET_MONEY } from './widgetMoney';

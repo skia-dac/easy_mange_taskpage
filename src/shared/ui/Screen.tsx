@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarInset, useTabBarScrollHandlers } from '../tabBarVisibility';
 import { useTheme } from '../theme';
 import { AppText } from './AppText';
+import { FAB_CLEARANCE } from './PlusButton';
 import { RiseIn, StaggerGroup } from './RiseIn';
 
 type Props = {
@@ -17,10 +18,12 @@ type Props = {
    * juste après le précédent.
    */
   stagger?: boolean;
+  /** L'écran a un bouton « + » : le bas du défilement lui laisse sa place (`FAB_CLEARANCE`). */
+  fab?: boolean;
 };
 
 /** Squelette d'un écran principal : titre + contenu qui défile, sur le fond du thème. */
-export function Screen({ title, subtitle, children, actions, stagger }: Props) {
+export function Screen({ title, subtitle, children, actions, stagger, fab }: Props) {
   const { colors, spacing } = useTheme();
   const scroll = useTabBarScrollHandlers();
   const tabBarInset = useTabBarInset();
@@ -30,7 +33,7 @@ export function Screen({ title, subtitle, children, actions, stagger }: Props) {
         {...scroll}
         contentContainerStyle={{
           padding: spacing.xl,
-          paddingBottom: spacing.xl + tabBarInset,
+          paddingBottom: spacing.xl + tabBarInset + (fab ? FAB_CLEARANCE : 0),
           gap: spacing.lg,
         }}
       >
