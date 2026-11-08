@@ -4,6 +4,8 @@ Tout ce qu'il faut pour les comptes et la synchronisation. **Aucune clé secrèt
 
 ## Mise en place (une seule fois)
 
+Guide détaillé pas à pas (Windows, PowerShell) : [`docs/GUIDE-SUPABASE.md`](../docs/GUIDE-SUPABASE.md). Résumé :
+
 1. Crée un projet sur [supabase.com](https://supabase.com). Choisis la région avec soin : elle ne peut plus changer et elle doit figurer dans la politique de confidentialité (`src/shared/legal.ts`, `serverRegion`).
 2. **SQL Editor** : colle et exécute `migrations/20260924000000_mysky.sql`. Il crée les tables (une par type de donnée, chacune protégée par RLS : chaque utilisateur ne voit que ses lignes), la fonction `mysky_push` et le bucket privé `mysky-files`.
 3. **Edge Functions** : déploie `functions/delete-account` (`supabase functions deploy delete-account`). Elle utilise la clé service_role **côté serveur** pour supprimer un compte et ses fichiers.

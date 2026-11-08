@@ -49,6 +49,9 @@ export const BACKUP_TABLES = [
  */
 export const LOCAL_ONLY_TABLES = ['feedback'] as const;
 
+/** Préfixe des curseurs de réception de la synchronisation dans `app_settings`. */
+export const SYNC_CURSOR_PREFIX = 'sync_cursor:';
+
 export const BACKUP_FORMAT = 'mysky-backup';
 export const BACKUP_VERSION = 1;
 
@@ -145,6 +148,7 @@ export function dedupeCourseExceptions(
  * Remplace TOUT le contenu de la base par la sauvegarde, dans une seule transaction :
  * si quelque chose échoue, la base reste telle qu'elle était.
  * Les colonnes inconnues (sauvegarde plus ancienne ou plus récente) sont ignorées.
+ * Les curseurs de synchronisation ne sont pas restaurés (voir plus bas).
  */
 export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
@@ -174,6 +178,11 @@ export async function restoreSnapshot(db: Db, snapshot: BackupSnapshot): Promise
         );
       }
     }
+    // Curseurs de réception remis à zéro : la prochaine synchronisation relit tout le compte.
+    // Ceux de la sauvegarde ne valent que pour les lignes qu'elle contient vraiment ; une table
+    // absente ou incomplète (sauvegarde partielle, ancienne version) ne serait jamais redemandée.
+    // Relire tout est sans risque : même version = ignorée, modification locale en attente = gardée.
+    await txn.runAsync(`DELETE FROM app_settings WHERE key LIKE ?`, [`${SYNC_CURSOR_PREFIX}%`]);
     for (const r of removedExceptions) {
       await txn.runAsync(
         `INSERT INTO sync_outbox (mutation_id, entity, entity_id, operation, payload, base_version, created_at)
