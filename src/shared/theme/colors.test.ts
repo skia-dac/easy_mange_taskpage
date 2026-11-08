@@ -59,6 +59,9 @@ const textPairs: [fg: Token, bg: Token, where: string][] = [
   ['background', 'text', 'message bref (toast, couleurs inversées)'],
   ['primarySoft', 'text', 'bouton « Annuler » du toast'],
   ['muted', 'disabled', 'libellé d’un bouton désactivé'],
+  ['text', 'warningSoft', 'carte Argent « découvert » : libellé et phrase'],
+  ['warning', 'warningSoft', 'carte Argent « découvert » : montant du solde'],
+  ['primary', 'primarySoft', 'pastille « Aujourd’hui » de la période'],
 ];
 
 /** Commandes et icônes : contraste d'au moins 3:1 avec ce qui les entoure. */
@@ -73,6 +76,12 @@ const uiPairs: [fg: Token, bg: Token, where: string][] = [
   ['danger', 'surface', 'bordure d’un champ en erreur'],
   ['text', 'primarySoft', 'barre « il te reste » : remplissage sur son rail'],
   ['primarySoft', 'primary', 'barre « il te reste » : rail sur la carte principale'],
+  ['warning', 'warningSoft', 'carte Argent « découvert » : icône d’alerte'],
+  ['warning', 'background', 'carte Argent « découvert » : bordure sur l’écran'],
+  ['success', 'successSoft', 'icône de la tuile « Entrées »'],
+  ['danger', 'dangerSoft', 'icône de la tuile « Dépenses »'],
+  ['primary', 'primarySoft', 'icône de la tuile « Épargne »'],
+  ['warning', 'warningSoft', 'icône de la tuile « Prêté »'],
 ];
 
 describe.each(

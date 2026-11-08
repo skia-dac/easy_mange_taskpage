@@ -407,6 +407,13 @@ Three modes (spaces): Études, Pro, Perso. At least one stays on. The mode is ch
 - **Toucher** : `Tappable` (s'éclaircit sur iOS, onde Material sur Android) et `PressableScale` (cartes, boutons) partout ; lignes des listes qui s'effacent et glissent (`RiseIn row`) ; bouton + qui s'enfonce et rebondit, et ne respire plus que trois fois à l'arrivée.
 - **Retours tactiles** (`expo-haptics`, `src/shared/ui/haptics.ts`) : sélection (interrupteurs `Toggle`, segments, pastilles, bouton +), léger choc (cocher une tâche ou une habitude, glisser pour terminer), succès (formulaire enregistré), avertissement (avant une confirmation de suppression). Rien sur le web.
 
+## 5p. Onglet Argent plus lisible (8 Nov 2026)
+
+- **Carte principale** (`MoneyHero`, `moneyHero()`) : « Il te reste » (période en cours), « Solde fin de période » (passée), « Solde prévu » (à venir). Solde négatif : carte au ton « attention » (orangé, jamais rouge) et « Tu es à découvert de X ». La barre montre ce qui reste de l'argent disponible (report positif + entrées) ; cachée sans entrée, en découvert ou pour une période à venir. « Report de la période précédente : ±X », caché quand il est nul.
+- **Période** (`PeriodNav`, `periodLabel()`) : « Janvier 2027 » pour un mois qui commence le 1er, sinon « 25 déc. – 24 janv. » (mois décalé, semaine), l'année seulement hors de l'année en cours ; le lecteur d'écran lit aussi les dates exactes. Hors de la période en cours, une pastille « Aujourd'hui » y ramène.
+- **À payer** (`DueList`, `groupDue()`) : une ligne par charge fixe ou tontine (« 5 × 5 000 · prochaine sam. 2 janv. », total de la période, « Payé x/5 »), en retard d'abord avec l'étiquette « En retard ». La case paie la prochaine échéance ; tout payé, elle annule le dernier paiement (toasts « Annuler » inchangés). Titre sur une ligne, pas de chevron ; 6 lignes puis « Voir tout ». Pas de glisser : la case fait déjà l'action.
+- **Tuiles** avec une icône chacune ; **en-tête** : Bilan (`pie-chart`) et Réglages (`settings`) restent deux boutons directs de 44 pt, avec leur libellé. **Dernières opérations** vide : `EmptyState` qui renvoie aux boutons de la carte.
+
 ## 6. Open questions for the product owner
 
 **Decided:** backend = Supabase · languages = French + English · working name = **MySky** (check the name is free before the store release) · bundle id / package = `com.skiadac.mysky` · minimum OS = iOS 16.4+ (Expo SDK 57 minimum), Android 8.0+ (API 26) · tabs = Aujourd'hui · Calendrier · Carnet (tâches + notes) · Argent (Profil via the photo at the top right, 25 Sep 2026; Carnet 26 Sep 2026) · import AI budget OK (a few cents per page).
