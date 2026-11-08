@@ -5,9 +5,10 @@ import { goBack } from '@/components/navigation';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, ScrollView, View } from 'react-native';
+import { Keyboard, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { amountPadMode } from '@/components/money/amountPadLayout';
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { haptic } from '@/shared/ui/haptics';
 import { MONEY_INTEGER_DIGITS } from '@/shared/fieldLimits';
@@ -52,6 +53,7 @@ import {
   fieldLimits,
   KeyboardAvoiding,
   Tappable,
+  useTextScale,
 } from '@/shared/ui';
 
 type Params = {
@@ -76,6 +78,8 @@ export default function MoneyAddScreen() {
   const db = useDb();
   const { colors, spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
+  const windowSize = useWindowDimensions();
+  const textScale = useTextScale();
   const params = useLocalSearchParams<Params>();
   const today = toIsoDate(new Date());
   const [kind, setKind] = useState<TransactionKind>(
@@ -247,6 +251,78 @@ export default function MoneyAddScreen() {
     'back',
   ];
 
+  // Petit écran ou grand texte : pavé compact ; s'il prend encore trop de place, le montant et
+  // le pavé défilent avec le reste et seul « Enregistrer » reste fixé en bas.
+  const padMode = amountPadMode({
+    windowHeight: windowSize.height,
+    scale: textScale,
+    hasDelete: existing !== null,
+    bottomInset: insets.bottom,
+  });
+  const compact = padMode !== 'regular';
+  const inline = padMode === 'inline';
+  const amountAndPad = (
+    <View
+      style={
+        inline
+          ? { gap: spacing.md }
+          : {
+              paddingHorizontal: spacing.xl,
+              paddingTop: compact ? spacing.sm : spacing.md,
+              paddingBottom: compact ? spacing.sm : spacing.md,
+              gap: compact ? spacing.sm : spacing.md,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              backgroundColor: colors.background,
+            }
+      }
+    >
+      <View style={{ alignItems: 'center', gap: spacing.xs }}>
+        <AppText
+          variant={compact ? 'title' : 'display'}
+          color={kind === 'income' ? 'success' : 'text'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          accessibilityLiveRegion="polite"
+        >
+          {amount
+            ? formatMoney(amount, currency)
+            : `0 ${isCurrency(currency) ? currencies[currency].symbol : currency}`}
+        </AppText>
+        {error ? <AppText color="danger">{error}</AppText> : null}
+      </View>
+      {keyboardOpen ? null : (
+        <View
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: compact ? spacing.xs : spacing.sm }}
+        >
+          {keys.map((k) => (
+            <Tappable
+              key={k}
+              accessibilityRole="button"
+              accessibilityLabel={k === 'back' ? t('money.erase') : k}
+              onPress={() => press(k)}
+              style={({ pressed }) => ({
+                width: '31%',
+                flexGrow: 1,
+                minHeight: compact ? minTouchSize : minTouchSize + 4,
+                borderRadius: radius.md,
+                backgroundColor: pressed ? colors.primarySoft : colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
+            >
+              {k === 'back' ? (
+                <Feather name="delete" size={22} color={colors.text} />
+              ) : (
+                <AppText variant="heading">{k}</AppText>
+              )}
+            </Tappable>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
   if (loadState === 'missing')
     return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
   if (loadState === 'loading') return <LoadingScreen />;
@@ -337,61 +413,22 @@ export default function MoneyAddScreen() {
           placeholder={t('common.optional')}
           limit={fieldLimits.note120}
         />
+        {inline ? amountAndPad : null}
       </ScrollView>
-      {/* Pied fixe : montant, pavé et bouton restent visibles, quelle que soit la taille d'écran. */}
+      {inline ? null : amountAndPad}
+      {/* Pied fixe : le bouton Enregistrer reste visible, quelle que soit la taille d'écran ;
+          le montant et le pavé aussi, sauf s'ils ne laissent plus de place (voir `padMode`). */}
       <View
         style={{
           paddingHorizontal: spacing.xl,
-          paddingTop: spacing.md,
-          paddingBottom: spacing.md + insets.bottom,
-          gap: spacing.md,
-          borderTopWidth: 1,
+          paddingTop: inline ? spacing.sm : 0,
+          paddingBottom: (compact ? spacing.sm : spacing.md) + insets.bottom,
+          gap: compact ? spacing.sm : spacing.md,
+          borderTopWidth: inline ? 1 : 0,
           borderTopColor: colors.border,
           backgroundColor: colors.background,
         }}
       >
-        <View style={{ alignItems: 'center', gap: spacing.xs }}>
-          <AppText
-            variant="display"
-            color={kind === 'income' ? 'success' : 'text'}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            accessibilityLiveRegion="polite"
-          >
-            {amount
-              ? formatMoney(amount, currency)
-              : `0 ${isCurrency(currency) ? currencies[currency].symbol : currency}`}
-          </AppText>
-          {error ? <AppText color="danger">{error}</AppText> : null}
-        </View>
-        {keyboardOpen ? null : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {keys.map((k) => (
-              <Tappable
-                key={k}
-                accessibilityRole="button"
-                accessibilityLabel={k === 'back' ? t('money.erase') : k}
-                onPress={() => press(k)}
-                style={({ pressed }) => ({
-                  width: '31%',
-                  flexGrow: 1,
-                  minHeight: minTouchSize + 4,
-                  borderRadius: radius.md,
-                  backgroundColor: pressed ? colors.primarySoft : colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                })}
-              >
-                {k === 'back' ? (
-                  <Feather name="delete" size={22} color={colors.text} />
-                ) : (
-                  <AppText variant="heading">{k}</AppText>
-                )}
-              </Tappable>
-            ))}
-          </View>
-        )}
-
         <Button
           label={
             plain && selected
