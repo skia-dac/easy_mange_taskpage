@@ -19,6 +19,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AccountGate } from '@/components/AccountGate';
+import { ConflictsGate } from '@/components/ConflictsGate';
+import { goBack } from '@/components/navigation';
 import { MoneyGate } from '@/components/MoneyGate';
 import { AppearanceProvider, AuthProvider, LanguageGate, SpacesProvider } from '@/modules/identity';
 import {
@@ -33,7 +35,7 @@ import { DATABASE_NAME, setupDatabase } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 import { fonts, useTheme } from '@/shared/theme';
-import { AppText, Button, LoadingScreen, ToastHost } from '@/shared/ui';
+import { AppText, Button, LoadingScreen, TextButton, ToastHost } from '@/shared/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -72,9 +74,12 @@ export default function RootLayout() {
               <BackupGate />
               <FeedbackGate />
               <MoneyGate />
-              <WidgetsGate />
               <AppearanceProvider>
                 <SpacesProvider>
+                  {/* Dans les deux providers : les widgets suivent les espaces actifs (pas d'argent
+                      sans Perso) et le thème choisi dans l'app, pas les valeurs par défaut. */}
+                  <WidgetsGate />
+                  <ConflictsGate />
                   <ThemedStack />
                 </SpacesProvider>
                 <ToastHost />
@@ -147,7 +152,15 @@ function ThemedStack() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="add" options={{ presentation: 'modal', title: t('add.title') }} />
+        <Stack.Screen
+          name="add"
+          options={{
+            presentation: 'modal',
+            title: t('add.title'),
+            // Une fenêtre se ferme aussi par un bouton (pas seulement par le geste ou le retour).
+            headerRight: () => <TextButton label={t('common.close')} onPress={() => goBack()} />,
+          }}
+        />
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
         <Stack.Screen name="search" options={{ title: t('search.title') }} />
         <Stack.Screen name="notifications" options={{ title: t('notifications.title') }} />
