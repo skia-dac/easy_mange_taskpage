@@ -995,7 +995,8 @@
       "map-pin": "Map pin",
       "smartphone": "Phone"
     },
-    "doneToast": "Done: {{name}}"
+    "doneToast": "Done: {{name}}",
+    "plusOne": "+1"
   },
   "account": {
     "title": "Account and sync",

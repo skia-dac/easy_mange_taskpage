@@ -75,6 +75,19 @@ describe('libellé composé des lignes', () => {
     expect(row).toBeTruthy();
   });
 
+  it('le type « Tâche » n’ouvre le sous-titre que dans une liste mêlée (showKind)', async () => {
+    const task = work({ subjectId: 's' });
+    const view = await show(<WorkRow item={task} subjects={subjects} now={now} />);
+    expect(screen.getByRole('button', { name: /^Exposé, Maths/ })).toBeTruthy();
+    await view.unmount();
+    await show(<WorkRow item={task} subjects={subjects} now={now} showKind />);
+    expect(
+      screen.getByRole('button', {
+        name: new RegExp(`^Exposé, ${i18n.t('calendarItem.task')} · Maths`),
+      }),
+    ).toBeTruthy();
+  });
+
   it('tâche urgente : la priorité est annoncée', async () => {
     await show(<WorkRow item={work({ priority: 'urgent' })} subjects={subjects} now={now} />);
     expect(

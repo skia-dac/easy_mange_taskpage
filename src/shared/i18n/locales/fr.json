@@ -995,7 +995,8 @@
       "map-pin": "Repère",
       "smartphone": "Téléphone"
     },
-    "doneToast": "Fait : {{name}}"
+    "doneToast": "Fait : {{name}}",
+    "plusOne": "+1"
   },
   "account": {
     "title": "Compte et synchronisation",

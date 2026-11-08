@@ -80,6 +80,41 @@ describe('Carnet — tâches', () => {
     expect(screen.queryByText(/Voir plus/)).toBeNull();
     expect(screen.getByText('Masquer les terminées')).toBeTruthy();
   });
+
+  it('l’aide du glisser n’apparaît que si une ligne peut se reporter', async () => {
+    await createWorkItem(mockDb, 'task', {
+      title: 'Lire un article',
+      dueDate: null,
+      priority: 'normal',
+      status: 'todo',
+    });
+    const view = await show(<TodoPane title="Carnet" />);
+    expect(await screen.findByText('Lire un article')).toBeTruthy();
+    expect(screen.queryByText(i18n.t('tasks.swipeHint'))).toBeNull();
+    await view.unmount();
+
+    await createWorkItem(mockDb, 'task', {
+      title: 'Datée',
+      dueDate: '2026-09-24',
+      priority: 'normal',
+      status: 'todo',
+    });
+    await show(<TodoPane title="Carnet" />);
+    expect(await screen.findByText('Datée')).toBeTruthy();
+    expect(screen.getByText(i18n.t('tasks.swipeHint'))).toBeTruthy();
+  });
+
+  it('liste de tâches : pas de « Tâche · » répété dans chaque sous-titre', async () => {
+    await createWorkItem(mockDb, 'task', {
+      title: 'Rendre le rapport',
+      dueDate: '2026-09-24',
+      priority: 'normal',
+      status: 'todo',
+    });
+    await show(<TodoPane title="Carnet" />);
+    const row = await screen.findByRole('button', { name: /^Rendre le rapport, / });
+    expect(row.props.accessibilityLabel).not.toContain(`${i18n.t('calendarItem.task')} ·`);
+  });
 });
 
 describe('Carnet — notes', () => {
