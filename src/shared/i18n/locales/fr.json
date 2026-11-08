@@ -403,6 +403,9 @@
     "notesTitle": "Notes de ce cours"
   },
   "work": {
+    "reminderPast": "Rappel (passé)",
+    "todayChip": "Aujourd’hui",
+    "quickDate": "Date rapide",
     "newTask": "Nouvelle tâche",
     "editTask": "Modifier la tâche",
     "editAssignment": "Modifier la tâche",
@@ -636,6 +639,13 @@
     "moneyHint": "Aux moments choisis sur chaque charge ou tontine."
   },
   "reminder": {
+    "pastError": "Ce moment est déjà passé : choisis une heure à venir pour que le rappel sonne.",
+    "settingOff": {
+      "task": "Les rappels de tâches sont coupés dans Réglages : ce rappel ne sonnera pas.",
+      "assignment": "Les rappels de devoirs sont coupés dans Réglages : ce rappel ne sonnera pas.",
+      "event": "Les rappels de rendez-vous sont coupés dans Réglages : ce rappel ne sonnera pas."
+    },
+    "openAppSettings": "Ouvrir Réglages",
     "none": "Aucun",
     "default": "Par défaut",
     "minutes": "{{count}} min",
@@ -695,6 +705,7 @@
     "firstTaskHint": "Une chose à faire, petite ou grande."
   },
   "notifications": {
+    "ask": "Autorise les notifications pour que tes rappels sonnent, même hors connexion.",
     "title": "Notifications",
     "upcoming": "Rappels à venir",
     "empty": "Aucun rappel programmé.",
@@ -1199,6 +1210,9 @@
     "removeMessage": "Cette étape sera supprimée."
   },
   "postpone": {
+    "today": "Aujourd’hui",
+    "removeDate": "Retirer la date",
+    "removedToast": "Date retirée : la tâche est « Sans date ».",
     "action": "Reporter",
     "title": "Reporter à quand ?",
     "tomorrow": "Demain",
@@ -1749,6 +1763,11 @@
     "withPhoto": "avec photo"
   },
   "conflicts": {
+    "newToast_one": "Un conflit de synchronisation est à régler.",
+    "newToast_other": "{{count}} conflits de synchronisation sont à régler.",
+    "see": "Voir",
+    "badge_one": "{{count}} conflit à régler",
+    "badge_other": "{{count}} conflits à régler",
     "title": "Conflits de synchronisation",
     "intro": "Ces modifications faites sur ce téléphone ont été remplacées par une version plus récente d’un autre appareil, ou refusées par le serveur. Rien n’est perdu : tu choisis.",
     "empty": "Aucun conflit en attente",
@@ -1917,6 +1936,7 @@
     "keepEditing": "Continuer la saisie"
   },
   "state": {
+    "itemErrorTitle": "Impossible d’afficher cet élément",
     "errorTitle": "Impossible d’afficher cette liste",
     "loading": "Chargement…"
   },

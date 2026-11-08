@@ -2,8 +2,11 @@ import Feather from '@expo/vector-icons/Feather';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 
 import { backToList, goBack } from '@/components/navigation';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import type { ComponentProps } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -32,7 +35,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
   Tappable,
   Toggle,
 } from '@/shared/ui';
@@ -63,21 +65,20 @@ export default function HabitFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    if (!params.id) return;
-    void getHabit(db, params.id)
-      .then(
-        (h) =>
-          h &&
-          setForm({
-            ...h,
-            weekdays: h.weekdays.length > 0 ? h.weekdays : [1, 2, 3, 4, 5],
-            target: String(h.target),
-            unit: h.unit ?? '',
-          }),
-      )
-      .catch(reportLoadError);
-  }, [db, params.id]);
+  // Modification : les champs n'apparaissent qu'une fois l'habitude lue (jamais écrasés).
+  const load = useEditLoad(
+    params.id,
+    (id) => getHabit(db, id),
+    (h) =>
+      setForm({
+        ...h,
+        weekdays: h.weekdays.length > 0 ? h.weekdays : [1, 2, 3, 4, 5],
+        target: String(h.target),
+        unit: h.unit ?? '',
+      }),
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const toInput = (): HabitInput => {
     const n = Number(form.target.trim() || '1');
@@ -88,14 +89,16 @@ export default function HabitFormScreen() {
     run(async () => {
       if (params.id) {
         await updateHabit(db, params.id, toInput());
-        goBack();
+        leave(goBack);
       } else {
         const input = toInput();
         const id = await createHabit(db, input);
-        router.replace({ pathname: '/habits/[id]', params: { id } });
-        // Suivi physique : on propose tout de suite la photo et le poids de départ.
-        if (input.tracksBody)
-          router.push({ pathname: '/habits/checkpoint', params: { habitId: id } });
+        leave(() => {
+          router.replace({ pathname: '/habits/[id]', params: { id } });
+          // Suivi physique : on propose tout de suite la photo et le poids de départ.
+          if (input.tracksBody)
+            router.push({ pathname: '/habits/checkpoint', params: { habitId: id } });
+        });
       }
     });
 
@@ -109,11 +112,14 @@ export default function HabitFormScreen() {
     if (!ok) return;
     try {
       await deleteHabitEverywhere(db, params.id);
-      backToList('/(tabs)');
+      leave(() => backToList('/(tabs)'));
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('habits.edit')} />;
 
   return (
     <FormScreen

@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { itemLooks, type ItemLook } from '@/components/itemTypes';
 
-import type { IsoDate } from '@/shared/dates';
+import { toIsoDate, type IsoDate } from '@/shared/dates';
 import { useSpaces } from '@/shared/SpacesContext';
 import type { SpaceId } from '@/shared/spaces';
 import { useTabBarInset } from '@/shared/tabBarVisibility';
@@ -88,8 +88,9 @@ export function QuickAddMenu({ note, date }: Props) {
       key: 'task',
       label: t('add.task'),
       ...itemLooks.task,
-      // Une seule fiche : avec une matière, la tâche est rangée dans les études.
-      href: { pathname: '/work/form', params: withDate },
+      // Une seule fiche : avec une matière, la tâche est rangée dans les études. Depuis Aujourd'hui
+      // (sans jour choisi), la tâche est pour aujourd'hui : elle apparaît tout de suite dans la liste.
+      href: { pathname: '/work/form', params: { date: date ?? toIsoDate(new Date()) } },
     },
     {
       key: 'note',

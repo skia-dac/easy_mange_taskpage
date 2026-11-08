@@ -1,18 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Linking, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
-  ensurePermission,
-  notificationPermission,
-  type NotificationPermission,
-} from '@/modules/platform';
+  openNotificationSettings,
+  useNotificationPermission,
+} from '@/hooks/useNotificationPermission';
+import { getNotificationPreferences, type NotificationPreferences } from '@/modules/identity';
 import { addDaysIso, atTime, toIsoDate, toTime, type IsoDate } from '@/shared/dates';
-import { logger } from '@/shared/logger';
+import { settingTable, useLiveQuery } from '@/shared/db';
 import { useTheme } from '@/shared/theme';
-import { AppText, ChoiceChips, confirmAction, DateTimeField, TextButton } from '@/shared/ui';
+import { AppText, ChoiceChips, DateTimeField, TextButton } from '@/shared/ui';
 
 type Preset = 'none' | 'dayBefore' | 'sameDay' | 'custom';
+
+/** Ce que le rappel accompagne : chaque type a son interrupteur dans Réglages › Rappels. */
+export type ReminderKind = 'task' | 'assignment' | 'event';
+
+const SETTING: Record<ReminderKind, keyof NotificationPreferences> = {
+  task: 'tasks',
+  assignment: 'assignments',
+  event: 'events',
+};
 
 type Props = {
   /** Échéance ; null = sans date (seul un rappel « Personnalisé » a du sens). */
@@ -21,75 +31,52 @@ type Props = {
   value: string | null;
   onChange: (value: string | null) => void;
   error?: string;
+  /** Type d'élément : une note s'affiche si ses rappels sont coupés dans Réglages. */
+  kind?: ReminderKind;
 };
 
-function presetValue(preset: Preset, dueDate: IsoDate | null): string | null {
+export function presetValue(preset: Preset, dueDate: IsoDate | null): string | null {
   if (!dueDate) return null;
   if (preset === 'dayBefore') return atTime(addDaysIso(dueDate, -1), '18:00').toISOString();
   if (preset === 'sameDay') return atTime(dueDate, '09:00').toISOString();
   return null;
 }
 
+/** Un rappel dans le passé ne sonnerait jamais (le planificateur l'ignore). */
+export function isPast(value: string | null, now: Date = new Date()): boolean {
+  return !!value && new Date(value).getTime() <= now.getTime();
+}
+
 /**
- * Permission des notifications, demandée au moment où l'on choisit un rappel : d'abord une courte
- * explication (dans l'app), puis la demande du système. Refusée : le champ le dit, avec un bouton
- * vers les réglages du téléphone. `null` tant que l'état n'est pas connu (ou illisible).
+ * Préréglages proposés : « La veille à 18:00 » et « Le jour même à 09:00 » seulement avec une
+ * échéance, et seulement s'ils sont encore à venir (une tâche pour aujourd'hui n'a plus de
+ * « veille » ; à 11:00, « le jour même à 09:00 » est passé).
  */
-export function useReminderPermission(active: boolean) {
-  const { t } = useTranslation();
-  const [state, setState] = useState<NotificationPermission | null>(null);
+export function availablePresets(dueDate: IsoDate | null, now: Date = new Date()): Preset[] {
+  const timed = (['dayBefore', 'sameDay'] as const).filter(
+    (p) => !isPast(presetValue(p, dueDate), now) && presetValue(p, dueDate) !== null,
+  );
+  return ['none', ...timed, 'custom'];
+}
 
-  useEffect(() => {
-    if (!active) return;
-    let alive = true;
-    const refresh = () =>
-      notificationPermission().then(
-        (p) => alive && setState(p),
-        (e: unknown) => logger.error(e, { where: 'reminderPermission' }),
-      );
-    void refresh();
-    // Retour des réglages du téléphone : l'état a peut-être changé.
-    const sub = AppState.addEventListener('change', (s) => {
-      if (s === 'active') void refresh();
-    });
-    return () => {
-      alive = false;
-      sub.remove();
-    };
-  }, [active]);
-
-  /** Demande la permission si elle n'est pas encore décidée (après l'explication). */
-  const ask = useCallback(async () => {
-    try {
-      const current = await notificationPermission();
-      if (current !== 'undetermined') {
-        setState(current);
-        return;
-      }
-      const ok = await confirmAction(
-        t('reminder.permissionTitle'),
-        t('reminder.permissionMessage'),
-        t('reminder.permissionContinue'),
-      );
-      if (!ok) {
-        setState('undetermined');
-        return;
-      }
-      await ensurePermission();
-      setState(await notificationPermission());
-    } catch (e) {
-      logger.error(e, { where: 'reminderPermission' });
-    }
-  }, [t]);
-
-  return { state, ask };
+/**
+ * Premier rappel « Personnalisé » : le jour de l'échéance (ou demain sans date) à 09:00, ou, si
+ * c'est déjà passé, la prochaine heure pile.
+ */
+export function defaultCustom(dueDate: IsoDate | null, now: Date = new Date()): string {
+  const base = atTime(dueDate ?? addDaysIso(toIsoDate(now), 1), '09:00');
+  if (base.getTime() > now.getTime()) return base.toISOString();
+  const next = new Date(now);
+  next.setHours(now.getHours() + 1, 0, 0, 0);
+  return next.toISOString();
 }
 
 /** Rappel d'un devoir ou d'une tâche (§73, §75) : préréglages simples ou date + heure au choix. */
-export function ReminderField({ dueDate, value, onChange, error }: Props) {
+export function ReminderField({ dueDate, value, onChange, error, kind }: Props) {
   const { t } = useTranslation();
   const { spacing } = useTheme();
-  const permission = useReminderPermission(!!value);
+  const permission = useNotificationPermission(!!value);
+  const prefs = useLiveQuery(getNotificationPreferences, [settingTable('notifications')], []);
   const detected = useMemo<Preset>(() => {
     if (!value) return 'none';
     if (value === presetValue('dayBefore', dueDate)) return 'dayBefore';
@@ -97,36 +84,45 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
     return 'custom';
   }, [value, dueDate]);
   const [preset, setPreset] = useState<Preset>(detected);
+  // Heure personnalisée refusée parce qu'elle est passée : le message reste jusqu'au prochain choix.
+  const [rejected, setRejected] = useState(false);
   const current = preset === 'custom' && value ? new Date(value) : null;
+  const shown = preset === detected || preset === 'custom' ? preset : detected;
+  const available = availablePresets(dueDate);
+  // Un préréglage déjà enregistré mais passé reste visible (sélectionné) : rien ne disparaît.
+  const options = (['none', 'dayBefore', 'sameDay', 'custom'] as const).filter(
+    (p) => available.includes(p) || p === shown,
+  );
 
   const choose = (p: Preset) => {
     setPreset(p);
-    // Sans date : le rappel personnalisé propose demain à 09:00.
-    const base = dueDate ?? addDaysIso(toIsoDate(new Date()), 1);
-    if (p === 'custom') onChange(value ?? atTime(base, '09:00').toISOString());
+    setRejected(false);
+    if (p === 'custom') onChange(value && !isPast(value) ? value : defaultCustom(dueDate));
     else onChange(presetValue(p, dueDate));
     // Premier rappel choisi : c'est le bon moment pour demander la permission.
     if (p !== 'none' && !value) void permission.ask();
   };
 
+  /** Date ou heure personnalisée : un moment passé est refusé, avec un message clair. */
+  const chooseCustom = (next: Date) => {
+    if (isPast(next.toISOString())) {
+      setRejected(true);
+      return;
+    }
+    setRejected(false);
+    onChange(next.toISOString());
+  };
+
   const off = !!value && (permission.state === 'undetermined' || permission.state === 'denied');
+  const settingOff = !!value && !!kind && prefs.data?.[SETTING[kind]] === false;
+  const past = rejected || isPast(value);
 
   return (
     <View style={{ gap: spacing.md }}>
       <ChoiceChips
         label={t('reminder.label')}
-        options={[
-          { value: 'none' as Preset, label: t('reminder.none') },
-          // « La veille » et « le jour même » n'existent qu'avec une date.
-          ...(dueDate
-            ? [
-                { value: 'dayBefore' as Preset, label: t('reminder.dayBefore') },
-                { value: 'sameDay' as Preset, label: t('reminder.sameDay') },
-              ]
-            : []),
-          { value: 'custom' as Preset, label: t('reminder.custom') },
-        ]}
-        selected={[preset === detected || preset === 'custom' ? preset : detected]}
+        options={options.map((p) => ({ value: p, label: t(`reminder.${p}`) }))}
+        selected={[shown]}
         onToggle={choose}
       />
       {preset === 'custom' && current ? (
@@ -137,7 +133,7 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
               mode="date"
               required
               value={toIsoDate(current)}
-              onChange={(d) => d && onChange(atTime(d, toTime(current)).toISOString())}
+              onChange={(d) => d && chooseCustom(atTime(d, toTime(current)))}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -146,15 +142,31 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
               mode="time"
               required
               value={toTime(current)}
-              onChange={(tm) => tm && onChange(atTime(toIsoDate(current), tm).toISOString())}
+              onChange={(tm) => tm && chooseCustom(atTime(toIsoDate(current), tm))}
             />
           </View>
         </View>
+      ) : null}
+      {past ? (
+        <AppText variant="caption" color="danger" accessibilityRole="alert" testID="reminder-past">
+          {t('reminder.pastError')}
+        </AppText>
       ) : null}
       {error ? (
         <AppText variant="caption" color="danger" accessibilityRole="alert">
           {error}
         </AppText>
+      ) : null}
+      {settingOff && kind ? (
+        <View style={{ gap: spacing.xs }} testID="reminder-setting-off">
+          <AppText variant="caption" color="warning">
+            {t(`reminder.settingOff.${kind}`)}
+          </AppText>
+          <TextButton
+            label={t('reminder.openAppSettings')}
+            onPress={() => router.push('/settings')}
+          />
+        </View>
       ) : null}
       {off ? (
         <View style={{ gap: spacing.xs }} testID="reminder-permission-off">
@@ -164,7 +176,7 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
           {permission.state === 'denied' ? (
             <TextButton
               label={t('reminder.permissionSettings')}
-              onPress={() => void Linking.openSettings().catch(() => undefined)}
+              onPress={openNotificationSettings}
             />
           ) : (
             <TextButton

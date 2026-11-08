@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -33,7 +36,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
   Toggle,
 } from '@/shared/ui';
 
@@ -65,18 +67,16 @@ export default function OffPeriodFormScreen() {
         })
       : 0;
 
-  useEffect(() => {
-    if (!id) return;
-    void getOffPeriod(db, id)
-      .then((p) => p && setForm(p))
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois la période lue (jamais écrasés).
+  const load = useEditLoad(id, (periodId) => getOffPeriod(db, periodId), setForm);
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       if (id) await updateOffPeriod(db, id, form);
       else await createOffPeriod(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -89,13 +89,16 @@ export default function OffPeriodFormScreen() {
     if (!ok) return;
     try {
       await deleteOffPeriod(db, id);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
 
   const single = form.kind === 'day_off';
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('offPeriods.edit')} />;
 
   return (
     <FormScreen

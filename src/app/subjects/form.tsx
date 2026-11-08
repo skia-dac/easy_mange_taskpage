@@ -2,22 +2,17 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
 import { setPickedSubject } from '@/components/pickerResult';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { createSubject, getSubject, updateSubject, type SubjectInput } from '@/modules/academic';
 import { useDb } from '@/shared/db';
 import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
-import {
-  FieldShell,
-  FormScreen,
-  TextField,
-  fieldLimits,
-  useSave,
-  reportLoadError,
-  Tappable,
-} from '@/shared/ui';
+import { FieldShell, FormScreen, TextField, fieldLimits, useSave, Tappable } from '@/shared/ui';
 
 const empty: SubjectInput = {
   name: '',
@@ -37,12 +32,14 @@ export default function SubjectFormScreen() {
   const [form, setForm] = useState<SubjectInput>(empty);
   const { errors, saving, run } = useSave();
 
-  useEffect(() => {
-    if (!id) return;
-    void getSubject(db, id)
-      .then((s) => s && setForm({ ...s }))
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois la matière lue (jamais écrasés).
+  const load = useEditLoad(
+    id,
+    (subjectId) => getSubject(db, subjectId),
+    (s) => setForm({ ...s }),
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const set = (patch: Partial<SubjectInput>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -50,16 +47,19 @@ export default function SubjectFormScreen() {
     run(async () => {
       if (id) {
         await updateSubject(db, id, form);
-        goBack();
+        leave(goBack);
       } else {
         const newId = await createSubject(db, form);
         // Créée depuis un autre formulaire (ex. un cours) : on y revient directement.
         if (from === 'picker') {
           setPickedSubject(newId);
-          goBack();
-        } else router.replace({ pathname: '/subjects/[id]', params: { id: newId } });
+          leave(goBack);
+        } else leave(() => router.replace({ pathname: '/subjects/[id]', params: { id: newId } }));
       }
     });
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('subjects.edit')} />;
 
   return (
     <FormScreen submitLabel={t('subjects.save')} onSubmit={submit} saving={saving}>

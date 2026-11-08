@@ -76,4 +76,19 @@ describe('le + qui ouvre un menu (Aujourd’hui, Calendrier)', () => {
     });
     expect(screen.queryByTestId('quick-add-menu')).toBeNull();
   });
+
+  it('sur Aujourd’hui (sans jour choisi), la tâche est pour aujourd’hui : elle y apparaît', async () => {
+    jest.useFakeTimers({ now: new Date(2026, 8, 23, 10, 18) });
+    try {
+      await show(['work']);
+      await fireEvent.press(screen.getByLabelText('Ajouter'));
+      await fireEvent.press(screen.getByText('Tâche'));
+      expect(router.push).toHaveBeenCalledWith({
+        pathname: '/work/form',
+        params: { date: '2026-09-23' },
+      });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

@@ -34,6 +34,10 @@ type Props = {
   onRetry?: () => void;
   /** Nombre de lignes fantômes pendant le chargement. */
   rows?: number;
+  /** Titre de l'erreur (par défaut : « Impossible d'afficher cette liste »). */
+  errorTitle?: string;
+  /** Seconde action de l'erreur, plus discrète (ex. « Retour »). */
+  secondaryAction?: { label: string; onPress: () => void };
 };
 
 /** Largeurs des titres fantômes, pour que les lignes ne soient pas toutes pareilles. */
@@ -61,7 +65,7 @@ function stop(opacity: SharedValue<number>) {
  * Chargement (une carte de lignes fantômes à la taille des vraies lignes, jamais une liste vide
  * trompeuse) ou erreur (message clair et « Réessayer »), au même endroit qu'une liste.
  */
-export function StateView({ state, onRetry, rows = 3 }: Props) {
+export function StateView({ state, onRetry, rows = 3, errorTitle, secondaryAction }: Props) {
   const { t } = useTranslation();
   const { colors, radius, spacing, text } = useTheme();
   const reduced = useReducedMotion();
@@ -86,9 +90,10 @@ export function StateView({ state, onRetry, rows = 3 }: Props) {
       <EmptyState
         icon="alert-circle"
         tone="danger"
-        title={t('state.errorTitle')}
+        title={errorTitle ?? t('state.errorTitle')}
         message={t('errors.loadFailed')}
         action={onRetry ? { label: t('errors.retry'), onPress: onRetry } : undefined}
+        secondaryAction={secondaryAction}
       />
     );
   }

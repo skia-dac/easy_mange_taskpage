@@ -1,13 +1,15 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
+import { EditLoadView } from '@/components/EditLoadView';
 import { goBack, backToList } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ReminderField } from '@/components/ReminderField';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useEditLoad } from '@/hooks/useEditLoad';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import {
   createWorkItem,
@@ -32,16 +34,13 @@ import {
   confirmDestructive,
   DateTimeField,
   Disclosure,
-  EmptyState,
   FormScreen,
-  LoadingScreen,
   SelectField,
   showError,
   TextButton,
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 
 /** Champs de « Plus d'options » déjà remplis : la section s'ouvre seule à la modification. */
@@ -80,16 +79,14 @@ export default function WorkFormScreen() {
   // le lien, il vient de la table où l'élément est trouvé.
   const [foundKind, setFoundKind] = useState<WorkKind | null>(null);
   const savedKind: WorkKind = foundKind ?? (params.kind === 'task' ? 'task' : 'assignment');
-  // Modification : 'loading' jusqu'à la lecture, 'missing' si l'élément n'existe plus.
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>(
-    params.id ? 'loading' : 'ready',
-  );
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
     title: params.title ?? '',
     description: '',
     subjectId: study ? (params.subjectId ?? null) : null,
-    dueDate: params.date ?? toIsoDate(new Date()),
+    // Sans date dans le lien (Carnet, recherche, fin de cours…) : « Sans date ». Aujourd'hui et un
+    // jour du calendrier passent leur date.
+    dueDate: params.date ?? null,
     dueTime: null,
     priority: 'normal',
     status: 'todo',
@@ -106,32 +103,30 @@ export default function WorkFormScreen() {
   const isTask = kind === 'task';
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<WorkItemInput>) => setForm((f) => ({ ...f, ...patch }));
-  const { dirty, markClean } = useDirty(form);
+  const today = toIsoDate(new Date());
+  // Le rappel suit l'échéance (« la veille à 18:00 » reste la veille).
+  const setDueDate = (dueDate: string | null) =>
+    setForm((f) => ({
+      ...f,
+      dueDate,
+      reminderAt: shiftReminder(f.reminderAt, f.dueDate, dueDate),
+    }));
+  // Modification : les champs n'apparaissent qu'une fois l'élément lu (jamais écrasés).
+  const load = useEditLoad(
+    params.id,
+    (id) => getWorkItemOfKind(db, params.kind, id),
+    (w) => {
+      setFoundKind(w.kind);
+      setForm(w);
+    },
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
   const leave = useUnsavedGuard(dirty);
   // null : pas encore touché ; ouvert d'office si la tâche modifiée a déjà ces champs.
   const [moreOpen, setMoreOpen] = useState<boolean | null>(null);
   const showMore =
     (moreOpen ?? (editing && hasMoreOptions(form))) ||
     !!(errors.dueTime || errors.reminderAt || errors.description);
-
-  useEffect(() => {
-    if (!params.id) return;
-    void getWorkItemOfKind(db, params.kind, params.id)
-      .then((w) => {
-        if (!w) {
-          setLoadState('missing');
-          return;
-        }
-        setFoundKind(w.kind);
-        setForm(w);
-        markClean(w);
-        setLoadState('ready');
-      })
-      .catch((e: unknown) => {
-        reportLoadError(e);
-        setLoadState('missing');
-      });
-  }, [db, params.kind, params.id, markClean]);
 
   const submit = () =>
     run(async () => {
@@ -163,18 +158,8 @@ export default function WorkFormScreen() {
       : t('work.editAssignment')
     : t('work.newTask');
 
-  if (loadState === 'loading') return <LoadingScreen />;
-  if (loadState === 'missing')
-    return (
-      <>
-        <Stack.Screen options={{ title }} />
-        <EmptyState
-          icon="alert-circle"
-          title={t('errors.itemNotFound')}
-          action={{ label: t('common.back'), onPress: () => goBack() }}
-        />
-      </>
-    );
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={title} />;
 
   return (
     <FormScreen
@@ -226,17 +211,15 @@ export default function WorkFormScreen() {
         mode="date"
         clearable
         value={form.dueDate ?? null}
-        onChange={(v) => {
-          // « Effacer » retire vraiment la date : la tâche passe « Sans date » (jamais en retard).
-          const dueDate = v ?? null;
-          // Le rappel suit l'échéance (« la veille à 18:00 » reste la veille).
-          setForm((f) => ({
-            ...f,
-            dueDate,
-            reminderAt: shiftReminder(f.reminderAt, f.dueDate, dueDate),
-          }));
-        }}
+        // « Effacer » retire vraiment la date : la tâche passe « Sans date » (jamais en retard).
+        onChange={(v) => setDueDate(v ?? null)}
         error={errors.dueDate}
+      />
+      <ChoiceChips
+        accessibilityLabel={t('work.quickDate')}
+        options={[{ value: today, label: t('work.todayChip') }]}
+        selected={form.dueDate ? [form.dueDate] : []}
+        onToggle={setDueDate}
       />
       {!form.dueDate ? (
         <AppText variant="caption" color="muted">
@@ -270,6 +253,7 @@ export default function WorkFormScreen() {
           value={form.reminderAt ?? null}
           onChange={(reminderAt) => set({ reminderAt })}
           error={errors.reminderAt}
+          kind={kind}
         />
         <ChoiceChips
           label={t('work.estimate')}

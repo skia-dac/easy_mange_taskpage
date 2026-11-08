@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -50,18 +53,30 @@ export default function LoanFormScreen() {
   const [note, setNote] = useState('');
   const { errors, saving, run } = useSave();
 
-  useEffect(() => {
-    void (async () => {
-      setCurrency((await getMoneyPrefs(db)).currency);
-      if (!params.id) return;
-      const l = await getLoan(db, params.id);
+  // Devise des réglages, et le prêt à la modification : les champs n'apparaissent qu'une fois lus,
+  // jamais écrasés pendant la saisie.
+  const load = useEditLoad(
+    params.id ?? 'new',
+    async () => {
+      const prefs = await getMoneyPrefs(db);
+      if (!params.id) return { currency: prefs.currency, loan: null };
+      const loan = await getLoan(db, params.id);
+      return loan ? { currency: prefs.currency, loan } : null;
+    },
+    ({ currency: c, loan: l }) => {
+      setCurrency(c);
       if (!l) return;
       setDirection(l.direction);
       setPerson(l.person);
       setDueDate(l.dueDate);
       setNote(l.note ?? '');
-    })();
-  }, [db, params.id]);
+    },
+  );
+  const { dirty } = useDirty(
+    { direction, person, amount, date, dueDate, note },
+    load.state === 'ready',
+  );
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
@@ -72,7 +87,7 @@ export default function LoanFormScreen() {
         if (!minor) throw new ValidationError({ amount: 'money.invalidAmount' });
         await createLoan(db, input, { amountMinor: minor, currency, date });
       }
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -84,10 +99,19 @@ export default function LoanFormScreen() {
     );
     if (ok)
       deleteLoan(db, params.id).then(
-        () => goBack(),
+        () => leave(goBack),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };
+
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView
+        state={load.state}
+        onRetry={load.retry}
+        title={params.id ? t('money.editLoan') : t('money.newLoan')}
+      />
+    );
 
   return (
     <FormScreen

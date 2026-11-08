@@ -403,6 +403,9 @@
     "notesTitle": "Notes for this class"
   },
   "work": {
+    "reminderPast": "Reminder (passed)",
+    "todayChip": "Today",
+    "quickDate": "Quick date",
     "newTask": "New task",
     "editTask": "Edit task",
     "editAssignment": "Edit task",
@@ -636,6 +639,13 @@
     "moneyHint": "At the times chosen on each cost or tontine."
   },
   "reminder": {
+    "pastError": "This time has already passed: pick a time to come so the reminder can ring.",
+    "settingOff": {
+      "task": "Task reminders are turned off in Settings: this reminder won’t ring.",
+      "assignment": "Homework reminders are turned off in Settings: this reminder won’t ring.",
+      "event": "Appointment reminders are turned off in Settings: this reminder won’t ring."
+    },
+    "openAppSettings": "Open Settings",
     "none": "None",
     "default": "Default",
     "minutes": "{{count}} min",
@@ -695,6 +705,7 @@
     "firstTaskHint": "Something to do, big or small."
   },
   "notifications": {
+    "ask": "Allow notifications so your reminders can ring, even offline.",
     "title": "Notifications",
     "upcoming": "Upcoming reminders",
     "empty": "No reminder scheduled.",
@@ -1199,6 +1210,9 @@
     "removeMessage": "This step will be deleted."
   },
   "postpone": {
+    "today": "Today",
+    "removeDate": "Remove the date",
+    "removedToast": "Date removed: the task is now “No date”.",
     "action": "Postpone",
     "title": "Postpone until when?",
     "tomorrow": "Tomorrow",
@@ -1749,6 +1763,11 @@
     "withPhoto": "with photo"
   },
   "conflicts": {
+    "newToast_one": "A sync conflict needs your attention.",
+    "newToast_other": "{{count}} sync conflicts need your attention.",
+    "see": "View",
+    "badge_one": "{{count}} conflict to resolve",
+    "badge_other": "{{count}} conflicts to resolve",
     "title": "Sync conflicts",
     "intro": "These changes made on this phone were replaced by a newer version from another device, or refused by the server. Nothing is lost: you decide.",
     "empty": "No pending conflict",
@@ -1917,6 +1936,7 @@
     "keepEditing": "Keep editing"
   },
   "state": {
+    "itemErrorTitle": "Couldn’t show this item",
     "errorTitle": "Couldn’t show this list",
     "loading": "Loading…"
   },

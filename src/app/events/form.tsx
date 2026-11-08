@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
+import { EditLoadView } from '@/components/EditLoadView';
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -27,7 +30,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 
 export default function EventFormScreen() {
@@ -46,18 +48,16 @@ export default function EventFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<PersonalEventInput>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    if (!params.id) return;
-    void getPersonalEvent(db, params.id)
-      .then((e) => e && setForm(e))
-      .catch(reportLoadError);
-  }, [db, params.id]);
+  // Modification : les champs n'apparaissent qu'une fois l'événement lu (jamais écrasés).
+  const load = useEditLoad(params.id, (id) => getPersonalEvent(db, id), setForm);
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       if (params.id) await updatePersonalEvent(db, params.id, form);
       else await createPersonalEvent(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -70,11 +70,14 @@ export default function EventFormScreen() {
     if (!ok) return;
     try {
       await deletePersonalEvent(db, params.id);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('events.edit')} />;
 
   return (
     <FormScreen
@@ -137,6 +140,7 @@ export default function EventFormScreen() {
         value={form.reminderAt ?? null}
         onChange={(reminderAt) => set({ reminderAt })}
         error={errors.reminderAt}
+        kind="event"
       />
       <TextField
         label={t('events.description')}

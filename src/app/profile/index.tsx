@@ -2,7 +2,9 @@ import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { ConflictBadge } from '@/components/ProfileButton';
 import { SpacesCard } from '@/components/SpacesCard';
+import { useConflictCount } from '@/hooks/useConflictCount';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubjects } from '@/hooks/useSubjects';
 import { fullName, initials, useAuth } from '@/modules/identity';
@@ -32,6 +34,8 @@ export default function ProfileScreen() {
   const auth = useAuth();
   const spaces = useSpaces();
   const feedback = useLiveQuery(feedbackCounts, [FEEDBACK_TABLE], []);
+  // Conflits de synchronisation à régler : signalés sur « Compte et synchronisation ».
+  const conflicts = useConflictCount() ?? 0;
   const details = [profile?.field, profile?.level, profile?.university, profile?.academicYear]
     .filter(Boolean)
     .join(' · ');
@@ -99,8 +103,14 @@ export default function ProfileScreen() {
                 background={auth.userId ? 'successSoft' : 'primarySoft'}
               />
             }
+            trailing={<ConflictBadge count={conflicts} />}
             onPress={() => router.push('/account')}
           />
+          {conflicts > 0 ? (
+            <AppText variant="caption" color="danger" testID="profile-conflicts">
+              {t('conflicts.badge', { count: conflicts })}
+            </AppText>
+          ) : null}
         </Card>
       ) : null}
       <SectionHeader title={t('spaces.title')} />

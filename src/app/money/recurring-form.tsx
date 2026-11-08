@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -103,14 +106,19 @@ export default function RecurringFormScreen() {
   const cats = useLiveQuery(listCategories, ['money_categories'], []);
   const money = useMoneyLabels(cats.data ?? []);
 
-  useEffect(() => {
-    void (async () => {
+  // Devise des réglages (création) ou de la charge (modification) : les champs n'apparaissent
+  // qu'une fois lus, jamais écrasés pendant la saisie.
+  const load = useEditLoad(
+    params.id ?? 'new',
+    async () => {
       const prefs = await getMoneyPrefs(db);
-      setCurrency(prefs.currency);
-      if (!params.id) return;
-      const r = await getRecurring(db, params.id);
+      if (!params.id) return { currency: prefs.currency, recurring: null };
+      const recurring = await getRecurring(db, params.id);
+      return recurring ? { currency: recurring.currency, recurring } : null;
+    },
+    ({ currency: c, recurring: r }) => {
+      setCurrency(c);
       if (!r) return;
-      setCurrency(r.currency);
       setForm({
         kind: r.kind,
         name: r.name,
@@ -129,8 +137,10 @@ export default function RecurringFormScreen() {
         payoutAuto: r.payoutAuto,
         note: r.note ?? '',
       });
-    })();
-  }, [db, params.id]);
+    },
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
@@ -158,7 +168,7 @@ export default function RecurringFormScreen() {
       };
       if (params.id) await updateRecurring(db, params.id, input);
       else await createRecurring(db, input);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -170,7 +180,7 @@ export default function RecurringFormScreen() {
     );
     if (ok)
       deleteRecurring(db, params.id).then(
-        () => goBack(),
+        () => leave(goBack),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };
@@ -201,6 +211,15 @@ export default function RecurringFormScreen() {
   );
 
   const tontine = form.kind === 'tontine';
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView
+        state={load.state}
+        onRetry={load.retry}
+        title={params.id ? t('money.editRecurring') : undefined}
+      />
+    );
+
   return (
     <FormScreen
       submitLabel={t('money.saveRecurring')}

@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -24,7 +27,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
   Tappable,
 } from '@/shared/ui';
 
@@ -37,18 +39,20 @@ export default function NoteCategoryFormScreen() {
   const [form, setForm] = useState<NoteCategoryInput>({ name: '', colorId: 'blue' });
   const { errors, saving, run } = useSave();
 
-  useEffect(() => {
-    if (!id) return;
-    void getNoteCategory(db, id)
-      .then((c) => c && setForm({ name: c.name, colorId: c.colorId }))
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois la catégorie lue (jamais écrasés).
+  const load = useEditLoad(
+    id,
+    (categoryId) => getNoteCategory(db, categoryId),
+    (c) => setForm({ name: c.name, colorId: c.colorId }),
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       if (id) await updateNoteCategory(db, id, form);
       else await createNoteCategory(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -61,11 +65,16 @@ export default function NoteCategoryFormScreen() {
     if (!ok) return;
     try {
       await deleteNoteCategory(db, id);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView state={load.state} onRetry={load.retry} title={t('noteCategories.edit')} />
+    );
 
   return (
     <FormScreen

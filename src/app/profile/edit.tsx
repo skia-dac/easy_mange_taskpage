@@ -3,7 +3,10 @@ import { Image } from 'expo-image';
 import { Stack } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -28,7 +31,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
   Tappable,
 } from '@/shared/ui';
 
@@ -50,27 +52,32 @@ export default function ProfileEditScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<ProfileInput>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    void getProfile(db)
-      .then((p) => {
-        if (!p) return;
-        setForm({
-          firstName: p.firstName,
-          lastName: p.lastName,
-          university: p.university,
-          field: p.field,
-          level: p.level,
-          academicYear: p.academicYear,
-        });
-        setPhoto(p.photoPath);
-      })
-      .catch(reportLoadError);
-  }, [db]);
+  // Le profil est toujours « modifié » : les champs n'apparaissent qu'une fois lu. Pas encore de
+  // profil : le formulaire vide est le bon point de départ (ce n'est pas « introuvable »).
+  const load = useEditLoad(
+    'profile',
+    async () => (await getProfile(db)) ?? false,
+    (p) => {
+      if (!p) return;
+      setForm({
+        firstName: p.firstName,
+        lastName: p.lastName,
+        university: p.university,
+        field: p.field,
+        level: p.level,
+        academicYear: p.academicYear,
+      });
+      setPhoto(p.photoPath);
+    },
+  );
+  // La photo est enregistrée tout de suite : seuls les champs comptent comme modifiés.
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       await saveProfile(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const changePhoto = async () => {
@@ -100,6 +107,9 @@ export default function ProfileEditScreen() {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('profile.edit')} />;
 
   return (
     <FormScreen submitLabel={t('profile.save')} onSubmit={submit} saving={saving}>
