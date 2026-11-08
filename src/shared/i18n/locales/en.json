@@ -238,7 +238,10 @@
     "unsavedRetry": "Not saved · Retry",
     "unsavedRetryLabel": "Note not saved. Try saving again",
     "notFound": "Note not found",
-    "notFoundHint": "This note may have been deleted."
+    "notFoundHint": "This note may have been deleted.",
+    "more": "More actions",
+    "removeAttachmentTitle": "Remove “{{name}}”?",
+    "removeAttachmentMessage": "The file will be removed from the note and erased from this phone."
   },
   "editor": {
     "heading": "Heading",

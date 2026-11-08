@@ -238,7 +238,10 @@
     "unsavedRetry": "Non enregistré · Réessayer",
     "unsavedRetryLabel": "Note non enregistrée. Réessayer l’enregistrement",
     "notFound": "Note introuvable",
-    "notFoundHint": "Cette note a peut-être été supprimée."
+    "notFoundHint": "Cette note a peut-être été supprimée.",
+    "more": "Plus d’actions",
+    "removeAttachmentTitle": "Retirer « {{name}} » ?",
+    "removeAttachmentMessage": "Le fichier sera retiré de la note et effacé de ce téléphone."
   },
   "editor": {
     "heading": "Titre",

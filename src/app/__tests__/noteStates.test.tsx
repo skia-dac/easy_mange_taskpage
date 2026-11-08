@@ -135,7 +135,8 @@ describe('note : rien n’est réécrit sans changement', () => {
   it('lire une note puis la quitter ne change ni sa date ni la file', async () => {
     const id = await syncedNote('Chimie', 'Formules');
     const view = await show({ id });
-    expect(screen.getByDisplayValue('Chimie')).toBeTruthy();
+    // Lecture : le titre est un vrai titre (pas un champ figé).
+    expect(screen.getByRole('header', { name: 'Chimie' })).toBeTruthy();
     await view.unmount();
     await flush();
     expect(await updatedAt(id)).toBe(OLD);
@@ -210,7 +211,7 @@ describe('note : états de l’écran', () => {
     expect(screen.queryByTestId('state-loading')).toBeNull();
     await fireEvent.press(screen.getByText(i18n.t('errors.retry')));
     await flush();
-    expect(screen.getByDisplayValue('Histoire')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Histoire' })).toBeTruthy();
     await view.unmount();
     await flush();
     expect(await getNote(mockDb, id)).toMatchObject({ title: 'Histoire', content: 'Dates' });
@@ -315,5 +316,64 @@ describe('lien au cours', () => {
     const note = await getNote(mockDb, id);
     expect(note?.categoryId).toBe(catId);
     expect(note?.courseDate).toBe('2026-09-22');
+  });
+});
+
+describe('note : en-tête et suppression', () => {
+  const confirmAll = () =>
+    jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => {
+      buttons?.find((b) => b.style === 'destructive')?.onPress?.();
+    });
+
+  it('deux commandes au plus dans l’en-tête, le reste dans « … »', async () => {
+    const id = await syncedNote('Chimie', 'Formules');
+    await show({ id });
+    expect(screen.getByText(i18n.t('notes.edit'))).toBeTruthy();
+    expect(screen.getByLabelText(i18n.t('notes.more'))).toBeTruthy();
+    expect(screen.queryByLabelText(i18n.t('notes.favorite'))).toBeNull();
+    expect(screen.queryByLabelText(i18n.t('notes.sharePdf'))).toBeNull();
+    await fireEvent.press(screen.getByLabelText(i18n.t('notes.more')));
+    expect(screen.getByText(i18n.t('notes.favorite'))).toBeTruthy();
+    expect(screen.getByText(i18n.t('notes.sharePdf'))).toBeTruthy();
+  });
+
+  it('en modification aussi, « Supprimer » est dans « … » ; pas de « Note introuvable » après', async () => {
+    const id = await syncedNote('Brouillon', 'À jeter');
+    await show({ id });
+    await fireEvent.press(screen.getByText(i18n.t('notes.edit')));
+    const alert = confirmAll();
+    await fireEvent.press(screen.getByLabelText(i18n.t('notes.more')));
+    await fireEvent.press(screen.getByText(i18n.t('notes.delete')));
+    // La confirmation attend la fermeture du menu.
+    await wait(1000);
+    await flush();
+    expect(alert).toHaveBeenCalledWith(
+      i18n.t('notes.deleteTitle'),
+      i18n.t('notes.deleteMessage'),
+      expect.any(Array),
+      expect.any(Object),
+    );
+    expect(await getNote(mockDb, id)).toBeNull();
+    expect(router.back).toHaveBeenCalled();
+    expect(screen.queryByText(i18n.t('notes.notFound'))).toBeNull();
+  });
+
+  it('retirer une pièce jointe : une question, un message, un bouton, sans répétition', async () => {
+    const id = await syncedNote('TD', 'Voir le PDF');
+    await addAttachment(mockDb, id, {
+      kind: 'file',
+      name: 'td1.pdf',
+      mimeType: 'application/pdf',
+      size: 1200,
+      localPath: `attachments/${id}/a.pdf`,
+    });
+    await show({ id });
+    await fireEvent.press(screen.getByText(i18n.t('notes.edit')));
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await fireEvent.press(screen.getByLabelText(`${i18n.t('notes.removeAttachment')} td1.pdf`));
+    const [title, message, buttons] = alert.mock.calls[0] ?? [];
+    expect(title).toBe(i18n.t('notes.removeAttachmentTitle', { name: 'td1.pdf' }));
+    expect(message).toBe(i18n.t('notes.removeAttachmentMessage'));
+    expect(message).not.toBe(buttons?.[1]?.text);
   });
 });
