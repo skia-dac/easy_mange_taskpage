@@ -80,3 +80,27 @@ export async function searchPersonalEvents(db: Db, query: string) {
   );
   return rows.map(toPersonalEvent);
 }
+
+/**
+ * Tâches ou devoirs de l'agenda : tout ce qui reste à faire (même sans date ou très ancien),
+ * et les éléments terminés seulement à partir de `from` (échéance ou date de fin). Les vieux
+ * éléments terminés ne sont plus relus à chaque modification.
+ */
+export async function listWorkItemsSince(db: Db, kind: WorkKind, from: string) {
+  const rows = await db.getAllAsync<WorkItemRow>(
+    `SELECT * FROM ${tableOf(kind)} WHERE ${ALIVE}
+       AND (status <> 'done' OR due_date IS NULL OR due_date >= ? OR completed_at >= ?)
+     ORDER BY due_date, due_time`,
+    [from, from],
+  );
+  return rows.map(toWorkItem(kind));
+}
+
+/** Rendez-vous à partir de `from` (agenda : les anciens ne sont pas relus). */
+export async function listPersonalEventsSince(db: Db, from: string) {
+  const rows = await db.getAllAsync<PersonalEventRow>(
+    `SELECT * FROM personal_events WHERE ${ALIVE} AND date >= ? ORDER BY date, start_time`,
+    [from],
+  );
+  return rows.map(toPersonalEvent);
+}

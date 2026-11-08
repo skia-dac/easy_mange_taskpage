@@ -67,6 +67,8 @@ export default function WorkFormScreen() {
     subjectId?: string;
     date?: string;
     fromCourse?: string;
+    /** Titre proposé (ex. « Créer la tâche » depuis une recherche sans résultat). */
+    title?: string;
   }>();
   const spaces = useSpaces();
   const study = spaces.has('study');
@@ -75,7 +77,7 @@ export default function WorkFormScreen() {
   const savedKind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
-    title: '',
+    title: params.title ?? '',
     description: '',
     subjectId: study ? (params.subjectId ?? null) : null,
     dueDate: params.date ?? toIsoDate(new Date()),

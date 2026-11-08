@@ -638,7 +638,8 @@ const cases: Case[] = [
   {
     name: 'Ajout rapide',
     load: () => require('@/app/add') as { default: ComponentType },
-    expect: ['Tâche', 'Examen', 'Note', 'Cours'],
+    // « Autre » du + : sans la note, la tâche ni le rendez-vous, déjà dans le menu.
+    expect: ['Examen', 'Cours', 'Matière'],
   },
   {
     name: 'Recherche',

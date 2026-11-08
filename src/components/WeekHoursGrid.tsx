@@ -10,6 +10,7 @@ import { colorOf, type Subject } from '@/modules/academic';
 import {
   layoutDay,
   moveTarget,
+  SNAP_MINUTES,
   visibleHours,
   type CalendarItem,
   type MoveTarget,
@@ -134,7 +135,7 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
                     paddingVertical: 2,
                   }}
                 >
-                  <AppText variant="label" numberOfLines={1} style={{ color: tone(item).fg }}>
+                  <AppText variant="caption" numberOfLines={1} style={{ color: tone(item).fg }}>
                     {title(item)}
                   </AppText>
                 </Tappable>
@@ -239,7 +240,11 @@ function Block(p: BlockProps) {
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
   const lifted = useSharedValue(0);
+  // Dernier pas d'un quart d'heure montré : l'heure affichée ne change (et React ne refait un
+  // rendu) que quand ce pas change, pas à chaque image du glisser.
+  const shownStep = useSharedValue(Number.NaN);
   const [label, setLabel] = useState<string | null>(null);
+  const { text } = useTheme();
 
   const drop = (dx: number, dy: number) => {
     setLabel(null);
@@ -249,8 +254,8 @@ function Block(p: BlockProps) {
     const same = dayDelta === 0 && to.startTime === minutesToTime(p.block.start);
     if (!same) p.onMove(p.block.item, to);
   };
-  const preview = (dy: number) => {
-    setLabel(moveTarget(p.block, p.day, 0, (dy / HOUR_HEIGHT) * 60).startTime);
+  const preview = (minuteDelta: number) => {
+    setLabel(moveTarget(p.block, p.day, 0, minuteDelta).startTime);
   };
 
   const pan = Gesture.Pan()
@@ -264,7 +269,11 @@ function Block(p: BlockProps) {
       'worklet';
       tx.value = e.translationX;
       ty.value = e.translationY;
-      scheduleOnRN(preview, e.translationY);
+      const step = Math.round(((e.translationY / HOUR_HEIGHT) * 60) / SNAP_MINUTES);
+      if (step !== shownStep.value) {
+        shownStep.value = step;
+        scheduleOnRN(preview, step * SNAP_MINUTES);
+      }
     })
     .onEnd((e) => {
       'worklet';
@@ -272,6 +281,7 @@ function Block(p: BlockProps) {
     })
     .onFinalize(() => {
       'worklet';
+      shownStep.value = Number.NaN;
       tx.value = withSpring(0);
       ty.value = withSpring(0);
       lifted.value = withSpring(0);
@@ -317,8 +327,8 @@ function Block(p: BlockProps) {
         ]}
       >
         <AppText
-          variant="label"
-          numberOfLines={p.height > 40 ? 3 : 1}
+          variant="caption"
+          numberOfLines={Math.max(1, Math.floor((p.height - 2) / text.caption.lineHeight))}
           style={[{ color: p.tone.fg }, p.struck ? { textDecorationLine: 'line-through' } : null]}
         >
           {label ?? p.title}

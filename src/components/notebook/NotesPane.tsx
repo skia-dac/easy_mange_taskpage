@@ -7,7 +7,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { ProfileButton } from '@/components/ProfileButton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { colorOf } from '@/modules/academic';
-import { listNoteCategories, listNotes, searchNotes } from '@/modules/productivity';
+import { listNoteCategories, listNoteSummaries, type Note } from '@/modules/productivity';
 import { useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
 import { useTheme } from '@/shared/theme';
@@ -16,9 +16,10 @@ import {
   ChoiceSheet,
   EmptyState,
   Fab,
+  FAB_CLEARANCE,
+  ListItemMotion,
+  ListScreen,
   loadStateOf,
-  RiseIn,
-  Screen,
   SearchInput,
   SectionHeader,
   StateView,
@@ -32,6 +33,10 @@ type Props = {
   /** Sélecteur de vue affiché en haut du contenu. */
   switcher?: ReactNode;
 };
+
+/** Une ligne de la liste virtualisée : un titre de groupe, ou une rangée de vignettes. */
+type Entry =
+  { kind: 'header'; key: string; title: string } | { kind: 'notes'; key: string; notes: Note[] };
 
 /** Vue « Notes » du Carnet : notes communes aux trois espaces. */
 export function NotesPane({ title, switcher }: Props) {
@@ -50,11 +55,8 @@ export function NotesPane({ title, switcher }: Props) {
   );
   const { subjects, byId } = useSubjects();
   const trimmed = query.trim();
-  const notes = useLiveQuery(
-    (db) => (trimmed ? searchNotes(db, trimmed) : listNotes(db)),
-    ['notes'],
-    [trimmed],
-  );
+  // Vignettes : le début du contenu seulement, jamais les longues notes en entier.
+  const notes = useLiveQuery((db) => listNoteSummaries(db, trimmed), ['notes'], [trimmed]);
 
   const list = useMemo(
     () =>
@@ -67,95 +69,119 @@ export function NotesPane({ title, switcher }: Props) {
   const notesState = loadStateOf(notes);
   const subjectFilter = spaces.has('study') && subjects.length > 0;
   const subject = subjectId ? byId.get(subjectId) : undefined;
-  const favorites = list.filter((n) => n.isFavorite);
-  const recent = trimmed ? list : list.filter((n) => !n.isFavorite);
 
   // Très grand texte : une note par ligne, pour que le titre et l'aperçu restent lisibles.
   const large = useLargeText();
-  const grid = (items: typeof list) => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-      {items.map((n) => (
-        <RiseIn row key={n.id} style={{ width: large ? '100%' : '48%', flexGrow: 1 }}>
-          <NoteCard
-            note={n}
-            subject={n.subjectId ? byId.get(n.subjectId) : undefined}
-            category={n.categoryId ? catById.get(n.categoryId) : undefined}
-          />
-        </RiseIn>
-      ))}
-    </View>
-  );
+  const perRow = large ? 1 : 2;
+  const entries = useMemo(() => {
+    const out: Entry[] = [];
+    const group = (key: string, heading: string, items: Note[]) => {
+      if (items.length === 0) return;
+      out.push({ kind: 'header', key: `h:${key}`, title: heading });
+      for (let i = 0; i < items.length; i += perRow) {
+        const row = items.slice(i, i + perRow);
+        out.push({ kind: 'notes', key: `${key}:${row.map((n) => n.id).join(':')}`, notes: row });
+      }
+    };
+    if (!trimmed)
+      group(
+        'favorites',
+        t('notes.favorites'),
+        list.filter((n) => n.isFavorite),
+      );
+    group(
+      'recent',
+      trimmed ? t('notes.title') : t('notes.recent'),
+      trimmed ? list : list.filter((n) => !n.isFavorite),
+    );
+    return out;
+  }, [list, trimmed, perRow, t]);
+
+  const renderItem = ({ item: e, index }: { item: Entry; index: number }) =>
+    e.kind === 'header' ? (
+      <View style={{ marginTop: spacing.lg }}>
+        <ListItemMotion index={index}>
+          <SectionHeader title={e.title} />
+        </ListItemMotion>
+      </View>
+    ) : (
+      <View style={{ marginTop: spacing.md }}>
+        <ListItemMotion index={index} row>
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            {e.notes.map((n) => (
+              // Une note seule sur sa rangée prend toute la largeur, comme dans l'ancienne grille.
+              <View key={n.id} style={{ flex: 1 }}>
+                <NoteCard
+                  note={n}
+                  subject={n.subjectId ? byId.get(n.subjectId) : undefined}
+                  category={n.categoryId ? catById.get(n.categoryId) : undefined}
+                />
+              </View>
+            ))}
+          </View>
+        </ListItemMotion>
+      </View>
+    );
+
+  const empty =
+    notesState !== 'ready' ? (
+      <StateView state={notesState} onRetry={notes.retry} />
+    ) : trimmed ? (
+      <EmptyState icon="search" title={t('notes.noResults')} />
+    ) : (
+      <EmptyState icon="file-text" title={t('notes.empty')} message={t('notes.emptyHint')} />
+    );
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen stagger title={title} actions={<ProfileButton />}>
-        {switcher ? <RiseIn>{switcher}</RiseIn> : null}
-        <RiseIn>
-          <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
-        </RiseIn>
-        <RiseIn>
-          {/* Une seule rangée : la matière (menu, Études) puis les catégories. */}
-          <ChoiceChips
-            scroll
-            accessibilityLabel={t('noteCategories.title')}
-            options={[
-              ...(subjectFilter
-                ? [
-                    {
-                      value: '__subject' as string | null,
-                      label: subject
-                        ? t('tasks.subjectChip', { name: subject.name })
-                        : t('tasks.subjectAll'),
-                      leading: subject ? <SubjectDot color={colorOf(subject)} size={10} /> : null,
-                    },
-                  ]
-                : []),
-              { value: null as string | null, label: t('noteCategories.all') },
-              ...(categories.data ?? []).map((c) => ({
-                value: c.id as string | null,
-                label: c.name,
-                leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
-              })),
-              { value: '__manage', label: t('noteCategories.manage') },
-            ]}
-            selected={[categoryId, ...(subject ? ['__subject'] : [])]}
-            onToggle={(v) =>
-              v === '__manage'
-                ? router.push('/notes/categories')
-                : v === '__subject'
-                  ? setSubjectSheet(true)
-                  : setCategoryId(v)
-            }
-          />
-        </RiseIn>
-
-        {notesState !== 'ready' ? (
-          <StateView state={notesState} onRetry={notes.retry} />
-        ) : list.length === 0 ? (
-          trimmed ? (
-            <EmptyState icon="search" title={t('notes.noResults')} />
-          ) : (
-            <EmptyState icon="file-text" title={t('notes.empty')} message={t('notes.emptyHint')} />
-          )
-        ) : null}
-        {favorites.length > 0 && !trimmed ? (
+      <ListScreen
+        title={title}
+        actions={<ProfileButton />}
+        header={
           <>
-            <RiseIn>
-              <SectionHeader title={t('notes.favorites')} />
-            </RiseIn>
-            {grid(favorites)}
+            {switcher}
+            <SearchInput value={query} onChangeText={setQuery} placeholder={t('notes.search')} />
+            {/* Une seule rangée : la matière (menu, Études) puis les catégories. */}
+            <ChoiceChips
+              scroll
+              accessibilityLabel={t('noteCategories.title')}
+              options={[
+                ...(subjectFilter
+                  ? [
+                      {
+                        value: '__subject' as string | null,
+                        label: subject
+                          ? t('tasks.subjectChip', { name: subject.name })
+                          : t('tasks.subjectAll'),
+                        leading: subject ? <SubjectDot color={colorOf(subject)} size={10} /> : null,
+                      },
+                    ]
+                  : []),
+                { value: null as string | null, label: t('noteCategories.all') },
+                ...(categories.data ?? []).map((c) => ({
+                  value: c.id as string | null,
+                  label: c.name,
+                  leading: <SubjectDot color={colorOf({ colorId: c.colorId })} size={10} />,
+                })),
+                { value: '__manage', label: t('noteCategories.manage') },
+              ]}
+              selected={[categoryId, ...(subject ? ['__subject'] : [])]}
+              onToggle={(v) =>
+                v === '__manage'
+                  ? router.push('/notes/categories')
+                  : v === '__subject'
+                    ? setSubjectSheet(true)
+                    : setCategoryId(v)
+              }
+            />
           </>
-        ) : null}
-        {recent.length > 0 ? (
-          <>
-            <RiseIn>
-              <SectionHeader title={trimmed ? t('notes.title') : t('notes.recent')} />
-            </RiseIn>
-            {grid(recent)}
-          </>
-        ) : null}
-        <View style={{ height: 80 }} />
-      </Screen>
+        }
+        data={notesState === 'ready' ? entries : []}
+        keyExtractor={(e) => e.key}
+        renderItem={renderItem}
+        empty={empty}
+        bottomSpace={FAB_CLEARANCE}
+      />
       <Fab
         accessibilityLabel={t('notes.new')}
         onPress={() =>
