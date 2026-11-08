@@ -72,6 +72,15 @@ export async function listCategories(db: Db) {
   return rows.map(toCategory);
 }
 
+/** Une catégorie personnelle (pour la modifier), ou `null` si elle a été supprimée. */
+export async function getCategory(db: Db, id: string) {
+  const row = await db.getFirstAsync<CategoryRow>(
+    `SELECT * FROM money_categories WHERE ${ALIVE} AND id = ?`,
+    [id],
+  );
+  return row ? toCategory(row) : null;
+}
+
 export async function listRecurring(db: Db) {
   const rows = await db.getAllAsync<RecurringRow>(
     `SELECT * FROM money_recurring WHERE ${ALIVE} ORDER BY kind, name`,

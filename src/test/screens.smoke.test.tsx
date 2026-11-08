@@ -519,6 +519,18 @@ const cases: Case[] = [
     expect: ['Ta période de budget', 'Masquer les montants dans les widgets', 'Nouvelle catégorie'],
   },
   {
+    name: 'Nouvelle catégorie d’argent',
+    load: () => require('@/app/money/category-form') as { default: ComponentType },
+    expect: [
+      'Ta catégorie',
+      'Idées',
+      'Crédit téléphone',
+      'Icône',
+      'Couleur',
+      'Ajouter la catégorie',
+    ],
+  },
+  {
     name: 'Bilan du soir',
     load: () => require('@/app/review') as { default: ComponentType },
     expect: ['Ce qui reste', 'Réviser le chapitre 3', 'Tout reporter à demain (2)', 'Humeur'],

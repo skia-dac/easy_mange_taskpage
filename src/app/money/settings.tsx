@@ -1,50 +1,38 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Stack } from 'expo-router';
-import { useState, type ComponentProps } from 'react';
+import { router, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
-import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import {
-  categoryIcons,
-  createCategory,
+  categoryKinds,
   currencies,
   currencyCodes,
   defaultMoneyPrefs,
-  deleteCategory,
   getMoneyPrefs,
   listCategories,
   periodContaining,
   setMoneyPrefs,
-  updateCategory,
-  type CategoryKind,
-  type MoneyCategory,
   type MoneyPrefs,
 } from '@/modules/finance';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
 import { toIsoDate } from '@/shared/dates';
 import { formatShortDate } from '@/shared/format';
-import { isValidationError } from '@/shared/validation';
-import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
+import { minTouchSize, useTheme } from '@/shared/theme';
 import {
   AppText,
-  Button,
   Card,
   ChoiceChips,
   DayOfMonthPicker,
-  confirmDestructive,
   ListRow,
   SectionHeader,
   Segmented,
   SelectField,
   showError,
-  TextField,
-  fieldLimits,
-  KeyboardAvoiding,
   Tappable,
   Toggle,
 } from '@/shared/ui';
@@ -54,264 +42,166 @@ export default function MoneySettingsScreen() {
   const { t, i18n } = useTranslation();
   const labels = useLabels();
   const db = useDb();
-  const { colors, spacing, radius, scheme } = useTheme();
+  const { colors, spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const prefsQ = useLiveQuery(getMoneyPrefs, ['app_settings'], []);
   const prefs = prefsQ.data ?? defaultMoneyPrefs;
   const cats = useLiveQuery(listCategories, ['money_categories'], []);
   const money = useMoneyLabels(cats.data ?? []);
-  const [kind, setKind] = useState<CategoryKind>('expense');
-  const [name, setName] = useState('');
-  const [icon, setIcon] = useState<string>('tag');
-  const [colorId, setColorId] = useState('slate');
-  const [nameError, setNameError] = useState<string | undefined>();
-  /** Catégorie en cours de modification (le formulaire du bas sert alors au renommage). */
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const custom = cats.data ?? [];
   const fail = (e: unknown) => showError(userMessageKey(e));
-  // Catégorie en cours de saisie (nouvelle ou renommée) : quitter demande confirmation.
-  const { dirty, markClean } = useDirty({ name, icon, colorId, editingId });
-  useUnsavedGuard(dirty);
+  const openCategory = (id?: string) =>
+    router.push(id ? { pathname: '/money/category-form', params: { id } } : '/money/category-form');
 
   const save = (patch: Partial<MoneyPrefs>) =>
     setMoneyPrefs(db, { ...prefs, ...patch }).catch(fail);
   const period = prefs.period;
   const currentPeriod = periodContaining(toIsoDate(new Date()), period);
 
-  const resetForm = () => {
-    setEditingId(null);
-    setName('');
-    setIcon('tag');
-    setColorId('slate');
-    setNameError(undefined);
-    markClean({ name: '', icon: 'tag', colorId: 'slate', editingId: null });
-  };
-
-  const startEdit = (c: MoneyCategory) => {
-    setEditingId(c.id);
-    setKind(c.kind);
-    setName(c.name ?? '');
-    setIcon(c.icon);
-    setColorId(c.colorId);
-    setNameError(undefined);
-    markClean({ name: c.name ?? '', icon: c.icon, colorId: c.colorId, editingId: c.id });
-  };
-
-  const submit = () => {
-    setNameError(undefined);
-    if (!name.trim()) {
-      setNameError('validation.required');
-      return;
-    }
-    const input = { kind, name, icon, colorId };
-    const saving = editingId ? updateCategory(db, editingId, input) : createCategory(db, input);
-    saving.then(
-      () => resetForm(),
-      // Erreur de saisie (ex. nom trop long) sous le champ, le reste en message.
-      (e: unknown) => (isValidationError(e) ? setNameError(e.fields.name) : fail(e)),
-    );
-  };
-
-  const remove = async (id: string, label: string) => {
-    const ok = await confirmDestructive(
-      t('money.deleteCategoryTitle', { name: label }),
-      t('money.deleteCategoryMessage'),
-      t('common.delete'),
-    );
-    if (!ok) return;
-    if (editingId === id) resetForm();
-    deleteCategory(db, id).catch(fail);
-  };
-
   return (
-    <KeyboardAvoiding>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}
-      >
-        <Stack.Screen options={{ title: t('money.settings') }} />
+    <ScrollView
+      contentContainerStyle={{
+        padding: spacing.xl,
+        gap: spacing.lg,
+        paddingBottom: spacing.xxl + insets.bottom,
+      }}
+    >
+      <Stack.Screen options={{ title: t('money.settings') }} />
 
-        <SectionHeader title={t('money.currency')} />
-        <SelectField
-          label={t('money.currency')}
-          value={prefs.currency}
-          options={currencyCodes.map((c) => ({
-            value: c,
-            label: `${t(`money.currencies.${c}`)} (${currencies[c].symbol})`,
-          }))}
-          onChange={(v) => v && void save({ currency: v as MoneyPrefs['currency'] })}
-        />
-        <AppText variant="caption" color="muted">
-          {t('money.currencyHint')}
-        </AppText>
+      <SectionHeader title={t('money.currency')} />
+      <SelectField
+        label={t('money.currency')}
+        value={prefs.currency}
+        options={currencyCodes.map((c) => ({
+          value: c,
+          label: `${t(`money.currencies.${c}`)} (${currencies[c].symbol})`,
+        }))}
+        onChange={(v) => v && void save({ currency: v as MoneyPrefs['currency'] })}
+      />
+      <AppText variant="caption" color="muted">
+        {t('money.currencyHint')}
+      </AppText>
 
-        <SectionHeader title={t('money.periodTitle')} />
-        <Segmented
-          accessibilityLabel={t('money.periodTitle')}
-          value={period.kind}
-          onChange={(k) =>
-            void save({
-              period:
-                k === 'month' ? { kind: 'month', startDay: 1 } : { kind: 'week', startWeekday: 1 },
-            })
-          }
-          options={[
-            { value: 'month', label: t('money.periodMonth') },
-            { value: 'week', label: t('money.periodWeek') },
-          ]}
-        />
-        {period.kind === 'month' ? (
-          <Card>
-            <View style={{ gap: spacing.sm }}>
-              <AppText variant="bodyStrong">{t('money.periodStartDay')}</AppText>
-              <DayOfMonthPicker
-                accessibilityLabel={t('money.periodStartDay')}
-                value={period.startDay}
-                dayLabel={(day) => t('money.dayN', { day })}
-                onChange={(day) => void save({ period: { kind: 'month', startDay: day } })}
-              />
-            </View>
-          </Card>
-        ) : (
-          <ChoiceChips
-            label={t('money.periodStartWeekday')}
-            options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({
-              value: n,
-              label: labels.weekday(n, 'short'),
-            }))}
-            selected={[period.startWeekday]}
-            onToggle={(n) => void save({ period: { kind: 'week', startWeekday: n } })}
-          />
-        )}
-        <AppText variant="caption" color="muted">
-          {t('money.periodCurrent', {
-            from: formatShortDate(currentPeriod.from, i18n.language),
-            to: formatShortDate(currentPeriod.to, i18n.language),
-          })}{' '}
-          {t('money.periodHint')}
-        </AppText>
-
-        <SectionHeader title={t('money.widgets')} />
+      <SectionHeader title={t('money.periodTitle')} />
+      <Segmented
+        accessibilityLabel={t('money.periodTitle')}
+        value={period.kind}
+        onChange={(k) =>
+          void save({
+            period:
+              k === 'month' ? { kind: 'month', startDay: 1 } : { kind: 'week', startWeekday: 1 },
+          })
+        }
+        options={[
+          { value: 'month', label: t('money.periodMonth') },
+          { value: 'week', label: t('money.periodWeek') },
+        ]}
+      />
+      {period.kind === 'month' ? (
         <Card>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            <View style={{ flex: 1, gap: spacing.xxs }}>
-              <AppText variant="bodyStrong">{t('money.hideAmounts')}</AppText>
-              <AppText variant="caption" color="muted">
-                {t('money.hideAmountsHint')}
-              </AppText>
-            </View>
-            <Toggle
-              accessibilityLabel={t('money.hideAmounts')}
-              value={prefs.hideWidgetAmounts}
-              onValueChange={(v) => void save({ hideWidgetAmounts: v })}
+          <View style={{ gap: spacing.sm }}>
+            <AppText variant="bodyStrong">{t('money.periodStartDay')}</AppText>
+            <DayOfMonthPicker
+              accessibilityLabel={t('money.periodStartDay')}
+              value={period.startDay}
+              dayLabel={(day) => t('money.dayN', { day })}
+              onChange={(day) => void save({ period: { kind: 'month', startDay: day } })}
             />
           </View>
         </Card>
+      ) : (
+        <ChoiceChips
+          label={t('money.periodStartWeekday')}
+          options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({
+            value: n,
+            label: labels.weekday(n, 'short'),
+          }))}
+          selected={[period.startWeekday]}
+          onToggle={(n) => void save({ period: { kind: 'week', startWeekday: n } })}
+        />
+      )}
+      <AppText variant="caption" color="muted">
+        {t('money.periodCurrent', {
+          from: formatShortDate(currentPeriod.from, i18n.language),
+          to: formatShortDate(currentPeriod.to, i18n.language),
+        })}{' '}
+        {t('money.periodHint')}
+      </AppText>
 
-        <SectionHeader title={t('money.myCategories')} />
-        {(cats.data ?? []).length > 0 ? (
-          <Card>
-            {(cats.data ?? []).map((c) => (
-              <ListRow
-                key={c.id}
-                title={money.categoryName(c)}
-                subtitle={c.kind === 'income' ? t('money.income') : t('money.expense')}
-                leading={<CategoryBadge category={c} />}
-                onPress={() => startEdit(c)}
-                trailing={
-                  <Tappable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('common.delete')}
-                    hitSlop={10}
-                    onPress={() => void remove(c.id, money.categoryName(c))}
-                  >
-                    <Feather name="trash-2" size={20} color={colors.danger} />
-                  </Tappable>
-                }
-              />
-            ))}
-          </Card>
-        ) : (
-          <AppText color="muted">{t('money.noCustomCategories')}</AppText>
-        )}
-        <Card>
-          <View style={{ gap: spacing.md }}>
-            <AppText variant="bodyStrong">
-              {editingId ? t('money.editCategory') : t('money.newCategory')}
+      <SectionHeader title={t('money.widgets')} />
+      <Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+          <View style={{ flex: 1, gap: spacing.xxs }}>
+            <AppText variant="bodyStrong">{t('money.hideAmounts')}</AppText>
+            <AppText variant="caption" color="muted">
+              {t('money.hideAmountsHint')}
             </AppText>
-            {editingId ? null : (
-              <Segmented
-                accessibilityLabel={t('money.categoryKind')}
-                value={kind}
-                onChange={setKind}
-                options={[
-                  { value: 'expense', label: t('money.expense') },
-                  { value: 'income', label: t('money.income') },
-                ]}
-              />
-            )}
-            <TextField
-              label={t('money.categoryName')}
-              required
-              value={name}
-              onChangeText={setName}
-              error={nameError}
-              limit={fieldLimits.category}
-              placeholder={t('money.categoryPlaceholder')}
-            />
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-              {categoryIcons.map((i) => (
-                <Tappable
-                  key={i}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: i === icon }}
-                  accessibilityLabel={i}
-                  onPress={() => setIcon(i)}
-                  style={{
-                    width: minTouchSize,
-                    height: minTouchSize,
-                    borderRadius: radius.md,
-                    borderWidth: i === icon ? 2 : 1,
-                    borderColor: i === icon ? colors.primary : colors.border,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Feather
-                    name={i as ComponentProps<typeof Feather>['name']}
-                    size={20}
-                    color={colors.text}
-                  />
-                </Tappable>
-              ))}
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-              {subjectColors.map((c) => (
-                <Tappable
+          </View>
+          <Toggle
+            accessibilityLabel={t('money.hideAmounts')}
+            value={prefs.hideWidgetAmounts}
+            onValueChange={(v) => void save({ hideWidgetAmounts: v })}
+          />
+        </View>
+      </Card>
+
+      <SectionHeader title={t('money.myCategories')} />
+      {custom.length === 0 ? (
+        <AppText color="muted">{t('money.noCustomCategories')}</AppText>
+      ) : null}
+      <Card>
+        {categoryKinds.map((kind) => {
+          const list = custom.filter((c) => c.kind === kind);
+          if (list.length === 0) return null;
+          return (
+            <View key={kind}>
+              <AppText
+                variant="caption"
+                color="muted"
+                accessibilityRole="header"
+                style={{ marginTop: spacing.xs }}
+              >
+                {kind === 'income' ? t('money.incomes') : t('money.expenses')}
+              </AppText>
+              {list.map((c) => (
+                <ListRow
                   key={c.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: c.id === colorId }}
-                  accessibilityLabel={c.id}
-                  onPress={() => setColorId(c.id)}
-                  style={{
-                    width: minTouchSize,
-                    height: minTouchSize,
-                    borderRadius: minTouchSize / 2,
-                    backgroundColor: scheme === 'dark' ? c.strongDark : c.strong,
-                    borderWidth: c.id === colorId ? 3 : 0,
-                    borderColor: colors.text,
-                  }}
+                  title={money.categoryName(c)}
+                  leading={<CategoryBadge category={c} />}
+                  onPress={() => openCategory(c.id)}
                 />
               ))}
             </View>
-            <Button
-              label={editingId ? t('money.saveCategory') : t('money.addCategory')}
-              onPress={submit}
-            />
-            {editingId ? (
-              <Button variant="secondary" label={t('common.cancel')} onPress={resetForm} />
-            ) : null}
+          );
+        })}
+        <Tappable
+          accessibilityRole="button"
+          accessibilityLabel={t('money.newCategory')}
+          onPress={() => openCategory()}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.md,
+            minHeight: minTouchSize + 8,
+          }}
+        >
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 40 * 0.32,
+              backgroundColor: colors.primarySoft,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Feather name="plus" size={20} color={colors.primary} />
           </View>
-        </Card>
-      </ScrollView>
-    </KeyboardAvoiding>
+          <AppText variant="bodyStrong" color="primary">
+            {t('money.newCategory')}
+          </AppText>
+        </Tappable>
+      </Card>
+    </ScrollView>
   );
 }
