@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -26,7 +29,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 import { deleteTimetableEverywhere } from '@/workflows';
 
@@ -43,12 +45,10 @@ export default function TimetableFormScreen() {
   });
   const { errors, saving, run } = useSave();
 
-  useEffect(() => {
-    if (!id) return;
-    void getTimetable(db, id)
-      .then((tt) => tt && setForm(tt))
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois l'emploi du temps lu (jamais écrasés).
+  const load = useEditLoad(id, (timetableId) => getTimetable(db, timetableId), setForm);
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const set = (patch: Partial<TimetableInput>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -56,7 +56,7 @@ export default function TimetableFormScreen() {
     run(async () => {
       if (id) await updateTimetable(db, id, form);
       else await createTimetable(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -72,11 +72,14 @@ export default function TimetableFormScreen() {
     if (!ok) return;
     try {
       await deleteTimetableEverywhere(db, id);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('timetables.edit')} />;
 
   return (
     <FormScreen

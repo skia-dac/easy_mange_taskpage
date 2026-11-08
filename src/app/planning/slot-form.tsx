@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -32,7 +35,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
   Tappable,
 } from '@/shared/ui';
 
@@ -59,18 +61,16 @@ export default function SlotFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<SlotInput>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    if (!id) return;
-    void getSlot(db, id)
-      .then((s) => s && setForm(s))
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois le créneau lu (jamais écrasés).
+  const load = useEditLoad(id, (slotId) => getSlot(db, slotId), setForm);
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       if (id) await updateSlot(db, id, form);
       else await createSlot(db, form);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -83,7 +83,7 @@ export default function SlotFormScreen() {
     if (!ok) return;
     try {
       await deleteSlot(db, id);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
@@ -92,6 +92,9 @@ export default function SlotFormScreen() {
   const days = form.weekdays ?? [];
   const toggleDay = (d: number) =>
     set({ weekdays: days.includes(d) ? days.filter((x) => x !== d) : [...days, d] });
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('planning.editSlot')} />;
 
   return (
     <FormScreen

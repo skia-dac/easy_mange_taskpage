@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -23,7 +26,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 
 /** Ajouter ou modifier une séance de révision à la main. */
@@ -50,19 +52,20 @@ export default function RevisionFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<RevisionBlockInput>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    if (!params.id) return;
-    void getRevisionBlock(db, params.id)
-      .then((b) => b && setForm(b))
-      .catch(reportLoadError);
-  }, [db, params.id]);
+  // Modification : les champs n'apparaissent qu'une fois la séance lue (jamais écrasés).
+  const load = useEditLoad(params.id, (id) => getRevisionBlock(db, id), setForm);
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       if (params.id) await updateRevisionBlock(db, params.id, form);
       else await createRevisionBlock(db, form);
-      goBack();
+      leave(goBack);
     });
+
+  if (load.state !== 'ready')
+    return <EditLoadView state={load.state} onRetry={load.retry} title={t('revision.edit')} />;
 
   return (
     <FormScreen submitLabel={t('revision.save')} onSubmit={submit} saving={saving}>

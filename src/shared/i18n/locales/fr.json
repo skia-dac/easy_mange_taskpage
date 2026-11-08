@@ -1902,6 +1902,7 @@
     "keepEditing": "Continuer la saisie"
   },
   "state": {
+    "itemErrorTitle": "Impossible d’afficher cet élément",
     "errorTitle": "Impossible d’afficher cette liste",
     "loading": "Chargement…"
   },

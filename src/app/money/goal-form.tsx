@@ -1,7 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -40,18 +43,26 @@ export default function GoalFormScreen() {
   const [deadline, setDeadline] = useState<string | null>(null);
   const { errors, saving, run } = useSave();
 
-  useEffect(() => {
-    void (async () => {
-      setCurrency((await getMoneyPrefs(db)).currency);
-      if (!id) return;
-      const g = await getGoal(db, id);
+  // La devise vient des réglages (création) ou de l'objectif (modification) : les champs
+  // n'apparaissent qu'une fois lus, jamais écrasés pendant la saisie.
+  const load = useEditLoad(
+    id ?? 'new',
+    async () => {
+      const prefs = await getMoneyPrefs(db);
+      if (!id) return { currency: prefs.currency, goal: null };
+      const goal = await getGoal(db, id);
+      return goal ? { currency: goal.currency, goal } : null;
+    },
+    ({ currency: c, goal: g }) => {
+      setCurrency(c);
       if (!g) return;
-      setCurrency(g.currency);
       setName(g.name);
       setTarget(amountInput(g.targetMinor, g.currency));
       setDeadline(g.deadline);
-    })();
-  }, [db, id]);
+    },
+  );
+  const { dirty } = useDirty({ name, target, deadline }, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
@@ -63,7 +74,7 @@ export default function GoalFormScreen() {
       };
       if (id) await updateGoal(db, id, input);
       else await createGoal(db, input);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -75,10 +86,19 @@ export default function GoalFormScreen() {
     );
     if (ok)
       deleteGoal(db, id).then(
-        () => goBack(),
+        () => leave(goBack),
         (e: unknown) => showError(userMessageKey(e)),
       );
   };
+
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView
+        state={load.state}
+        onRetry={load.retry}
+        title={id ? t('money.editGoal') : t('money.newGoal')}
+      />
+    );
 
   return (
     <FormScreen

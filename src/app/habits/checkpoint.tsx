@@ -2,6 +2,9 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -36,7 +39,6 @@ import {
   TextField,
   fieldLimits,
   useSave,
-  reportLoadError,
 } from '@/shared/ui';
 
 /** Lit « 72,5 » ou « 72.5 » ; texte vide = pas de poids. */
@@ -85,19 +87,20 @@ export default function CheckpointScreen() {
     [],
   );
 
-  useEffect(() => {
-    if (!id) return;
-    void getCheckpoint(db, id)
-      .then((c) => {
-        if (!c) return;
-        setDate(c.date);
-        setWeight(c.weightKg === null ? '' : String(c.weightKg).replace('.', ','));
-        setPhotoPath(c.photoPath);
-        setInitialPhoto(c.photoPath);
-        setNote(c.note ?? '');
-      })
-      .catch(reportLoadError);
-  }, [db, id]);
+  // Modification : les champs n'apparaissent qu'une fois le point lu (jamais écrasés).
+  const load = useEditLoad(
+    id,
+    (checkpointId) => getCheckpoint(db, checkpointId),
+    (c) => {
+      setDate(c.date);
+      setWeight(c.weightKg === null ? '' : String(c.weightKg).replace('.', ','));
+      setPhotoPath(c.photoPath);
+      setInitialPhoto(c.photoPath);
+      setNote(c.note ?? '');
+    },
+  );
+  const { dirty } = useDirty({ date, weight, photoPath, note }, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const isStart = !id && (existing.data ?? []).length === 0;
   const folder = `progress/${habitId}`;
@@ -125,7 +128,7 @@ export default function CheckpointScreen() {
       else await createCheckpoint(db, input);
       pending.current.saved = true;
       if (initialPhoto && initialPhoto !== photoPath) deleteLocalFile(initialPhoto);
-      goBack();
+      leave(goBack);
     });
 
   const remove = async () => {
@@ -141,13 +144,18 @@ export default function CheckpointScreen() {
       pending.current.saved = true;
       if (initialPhoto) deleteLocalFile(initialPhoto);
       if (photoPath && photoPath !== initialPhoto) deleteLocalFile(photoPath);
-      goBack();
+      leave(goBack);
     } catch (e) {
       showError(userMessageKey(e));
     }
   };
 
   const hasPhoto = !!photoPath && attachmentExists(photoPath);
+
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView state={load.state} onRetry={load.retry} title={t('bodyProgress.editTitle')} />
+    );
 
   return (
     <FormScreen

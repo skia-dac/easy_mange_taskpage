@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
+import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
@@ -66,6 +67,8 @@ export default function RevisionPlanScreen() {
   const [chosen, setChosen] = useState<Partial<Options>>({});
   const [removed, setRemoved] = useState<ReadonlySet<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  // Réglages changés ou séances retirées : quitter sans enregistrer demande confirmation.
+  const leave = useUnsavedGuard(Object.keys(chosen).length > 0 || removed.size > 0);
 
   const e = exam.data;
   const defaults = e ? defaultPlanOptions(e.date, today) : null;
@@ -136,7 +139,7 @@ export default function RevisionPlanScreen() {
       blocks: kept,
       replacePlanned: true,
     }).then(
-      () => goBack(),
+      () => leave(goBack),
       (err: unknown) => {
         setSaving(false);
         showError(userMessageKey(err));

@@ -1,12 +1,16 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
-import { useEffect, useState } from 'react';
+import { EditLoadView } from '@/components/EditLoadView';
+import { useEditLoad } from '@/hooks/useEditLoad';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import {
   getCourseException,
+  getCourseSeries,
   overrideOccurrence,
   type OccurrenceOverrideInput,
 } from '@/modules/academic';
@@ -14,15 +18,7 @@ import { useDb } from '@/shared/db';
 import { formatLongDate } from '@/shared/format';
 import { fromIsoDate } from '@/shared/dates';
 import { useTheme } from '@/shared/theme';
-import {
-  AppText,
-  DateTimeField,
-  FormScreen,
-  TextField,
-  fieldLimits,
-  useSave,
-  reportLoadError,
-} from '@/shared/ui';
+import { AppText, DateTimeField, FormScreen, TextField, fieldLimits, useSave } from '@/shared/ui';
 
 /** « Modifier uniquement ce cours » (§27 option 1) : un champ vide garde la valeur de la série. */
 export default function OccurrenceFormScreen() {
@@ -43,19 +39,35 @@ export default function OccurrenceFormScreen() {
   const { errors, saving, run } = useSave();
   const set = (patch: Partial<OccurrenceOverrideInput>) => setForm((f) => ({ ...f, ...patch }));
 
-  useEffect(() => {
-    void getCourseException(db, seriesId, date)
-      .then((ex) => {
-        if (ex && ex.kind === 'modified') set({ ...ex });
-      })
-      .catch(reportLoadError);
-  }, [db, seriesId, date]);
+  // Les champs n'apparaissent qu'une fois la séance lue : un cours supprimé est « introuvable »,
+  // une modification déjà faite remplit le formulaire (jamais par-dessus une saisie).
+  const load = useEditLoad(
+    seriesId ? `${seriesId}:${date}` : undefined,
+    async () => {
+      const [series, ex] = await Promise.all([
+        getCourseSeries(db, seriesId),
+        getCourseException(db, seriesId, date),
+      ]);
+      if (!series) return null;
+      return { ex: ex && ex.kind === 'modified' ? ex : null };
+    },
+    ({ ex }) => {
+      if (ex) set({ ...ex });
+    },
+  );
+  const { dirty } = useDirty(form, load.state === 'ready');
+  const leave = useUnsavedGuard(dirty);
 
   const submit = () =>
     run(async () => {
       await overrideOccurrence(db, form);
-      goBack();
+      leave(goBack);
     });
+
+  if (load.state !== 'ready')
+    return (
+      <EditLoadView state={load.state} onRetry={load.retry} title={t('occurrence.editTitle')} />
+    );
 
   return (
     <FormScreen submitLabel={t('occurrence.save')} onSubmit={submit} saving={saving}>

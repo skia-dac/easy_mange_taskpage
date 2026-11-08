@@ -1902,6 +1902,7 @@
     "keepEditing": "Keep editing"
   },
   "state": {
+    "itemErrorTitle": "Couldn’t show this item",
     "errorTitle": "Couldn’t show this list",
     "loading": "Loading…"
   },

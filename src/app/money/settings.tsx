@@ -7,6 +7,7 @@ import { ScrollView, View } from 'react-native';
 import { CategoryBadge } from '@/components/money/CategoryBadge';
 import { useMoneyLabels } from '@/components/money/useMoneyLabels';
 import { useLabels } from '@/hooks/useLabels';
+import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import {
   categoryIcons,
   createCategory,
@@ -62,6 +63,9 @@ export default function MoneySettingsScreen() {
   /** Catégorie en cours de modification (le formulaire du bas sert alors au renommage). */
   const [editingId, setEditingId] = useState<string | null>(null);
   const fail = (e: unknown) => showError(userMessageKey(e));
+  // Catégorie en cours de saisie (nouvelle ou renommée) : quitter demande confirmation.
+  const { dirty, markClean } = useDirty({ name, icon, colorId, editingId });
+  useUnsavedGuard(dirty);
 
   const save = (patch: Partial<MoneyPrefs>) =>
     setMoneyPrefs(db, { ...prefs, ...patch }).catch(fail);
@@ -73,6 +77,7 @@ export default function MoneySettingsScreen() {
     setIcon('tag');
     setColorId('slate');
     setNameError(undefined);
+    markClean({ name: '', icon: 'tag', colorId: 'slate', editingId: null });
   };
 
   const startEdit = (c: MoneyCategory) => {
@@ -82,6 +87,7 @@ export default function MoneySettingsScreen() {
     setIcon(c.icon);
     setColorId(c.colorId);
     setNameError(undefined);
+    markClean({ name: c.name ?? '', icon: c.icon, colorId: c.colorId, editingId: c.id });
   };
 
   const submit = () => {
