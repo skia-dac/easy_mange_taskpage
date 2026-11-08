@@ -11,7 +11,7 @@ import { ProfileButton } from '@/components/ProfileButton';
 import { HeaderButton } from '@/components/SearchButton';
 import { useLabels } from '@/hooks/useLabels';
 import { formatMoney, payDue, unpayDue, type DueItem } from '@/modules/finance';
-import { dueKey, forgetPaidLate, openLoans, rememberPaidLate, useMoneyData } from '@/projections';
+import { dueKey, forgetPaidLate, rememberPaidLate, useMoneyData } from '@/projections';
 import { toIsoDate } from '@/shared/dates';
 import { useDb } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
@@ -289,23 +289,39 @@ export default function MoneyScreen() {
           <RiseIn style={{ width: '48%', flexGrow: 1 }}>
             {tile(
               t('money.savings'),
-              <CountUpText
-                variant="heading"
-                value={o.goals.reduce((s, g) => s + g.savedMinor, 0)}
-                format={(n) => formatMoney(n, cur)}
-              />,
+              <>
+                <CountUpText
+                  variant="heading"
+                  value={o.savingsByCurrency.find((x) => x.currency === cur)?.savedMinor ?? 0}
+                  format={(n) => formatMoney(n, cur)}
+                />
+                {o.savingsByCurrency
+                  .filter((x) => x.currency !== cur && x.savedMinor > 0)
+                  .map((x) => (
+                    <AppText key={x.currency} variant="caption" color="muted">
+                      + {formatMoney(x.savedMinor, x.currency)}
+                    </AppText>
+                  ))}
+              </>,
               () => router.push('/money/goals'),
             )}
           </RiseIn>
           <RiseIn style={{ width: '48%', flexGrow: 1 }}>
             {tile(
               t('money.loans'),
-              <CountUpText
-                variant="heading"
-                color="warning"
-                value={openLoans(o.loans, 'lent').reduce((s, l) => s + l.outstandingMinor, 0)}
-                format={(n) => formatMoney(n, cur)}
-              />,
+              <>
+                <CountUpText
+                  variant="heading"
+                  color="warning"
+                  value={o.loanTotals.owedToMeMinor}
+                  format={(n) => formatMoney(n, cur)}
+                />
+                {o.loanTotals.iOweMinor > 0 ? (
+                  <AppText variant="caption" color="muted">
+                    {t('money.iOwe', { amount: formatMoney(o.loanTotals.iOweMinor, cur) })}
+                  </AppText>
+                ) : null}
+              </>,
               () => router.push('/money/loans'),
             )}
           </RiseIn>
