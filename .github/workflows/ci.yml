@@ -19,24 +19,27 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      # Node exécute Jest, Expo et ESLint ; Bun installe les dépendances et lance les scripts.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - name: Types TypeScript
-        run: npm run typecheck
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: Types TypeScript (compilateur TypeScript 7)
+        run: bun run typecheck
       - name: Lint (règles MySky, 0 avertissement)
-        run: npm run lint
+        run: bun run lint
       - name: Formatage
-        run: npm run format:check
+        run: bun run format:check
       - name: Tests
-        run: npm test -- --ci
+        run: bun run test --ci
       - name: Server schema on Postgres
-        run: npm run test:server
+        run: bun run test:server
       - name: Audit sécurité des dépendances (niveau élevé et critique)
-        run: npm run audit:prod
+        run: bun run audit:prod
       - name: Diagnostic Expo
-        run: npx expo-doctor
+        run: bunx expo-doctor
       - name: Bundle iOS et Android (ce qu'Expo Go charge)
-        run: npm run check:bundle
+        run: bun run check:bundle

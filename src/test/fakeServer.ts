@@ -10,7 +10,7 @@ import {
 /**
  * Faux serveur pour les tests : même logique que la fonction SQL `mysky_push`
  * (versions, modifications déjà appliquées, conflits) et que la lecture par curseur.
- * Le vrai SQL est vérifié à part sur Postgres (npm run test:server).
+ * Le vrai SQL est vérifié à part sur Postgres (bun run test:server).
  */
 export class FakeServer {
   tables = new Map<string, Map<string, Record<string, unknown>>>();

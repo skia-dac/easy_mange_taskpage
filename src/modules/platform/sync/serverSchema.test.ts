@@ -9,7 +9,7 @@ import { generateServerSql } from './serverSchema';
 const FILE = join(__dirname, '../../../../supabase/migrations/20260924000000_mysky.sql');
 
 describe('schéma du serveur', () => {
-  it('correspond au schéma du téléphone (sinon : UPDATE_SERVER_SCHEMA=1 npx jest serverSchema)', async () => {
+  it('correspond au schéma du téléphone (sinon : UPDATE_SERVER_SCHEMA=1 bun run test serverSchema)', async () => {
     const db = await createTestDb();
     const sql = await generateServerSql(db);
     db.close();

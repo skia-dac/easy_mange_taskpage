@@ -13,12 +13,12 @@ Expo ships breaking changes every SDK release. APIs you remember are likely rena
 Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
 
 ```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npm run typecheck           # typecheck (TypeScript 7 compiler; `npx tsc` would run TypeScript 6)
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+bunx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+bunx expo start              # start the dev server
+bunx expo lint               # lint
+bun run typecheck            # typecheck (TypeScript 7 compiler; `bunx tsc` would run TypeScript 6)
+bunx expo-doctor             # diagnose dependency and config issues
+bunx expo install --fix      # fix incompatible package versions
 ```
 
 Run lint and typecheck before declaring any task done.
@@ -37,7 +37,7 @@ Docs: https://docs.expo.dev/eas/index.md
 ## Rules
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `bunx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
 
 ## MySky project rules
@@ -52,4 +52,4 @@ Read `docs/PLANNING.md` (plan, architecture, phases) and `docs/SECURITY.md` befo
 - Errors: never show technical messages; map errors with `userMessageKey()`. Log only through `src/shared/logger.ts`, never personal data.
 - Secrets: nothing secret in `EXPO_PUBLIC_*` or in the app bundle.
 - Destructive actions always ask for confirmation. AI-extracted data is never saved without user validation.
-- Before declaring a task done: `npm run check` must pass.
+- Before declaring a task done: `bun run check` must pass.

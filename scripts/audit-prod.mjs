@@ -1,4 +1,4 @@
-// Audit des dépendances de production (étape CI `npm run audit:prod`).
+// Audit des dépendances de production (étape CI `bun run audit:prod`).
 //
 // Échoue (code 1) dès qu'une faille de niveau élevé ou critique est trouvée,
 // SAUF les advisories listées dans IGNORED, et les alertes qui n'existent
@@ -12,74 +12,26 @@
 // À RETIRER au passage au SDK 58 (voir docs/SECURITY.md, section 6).
 import { spawnSync } from 'node:child_process';
 
-const IGNORED = new Set([
+const IGNORED = [
   'GHSA-vcc3-ghjq-m6fr', // decode-uri-component : décodage exponentiel
   'GHSA-qr28-fpjm-wq7f', // decode-uri-component : remplacement quadratique
-]);
-const LEVELS = { info: 0, low: 1, moderate: 2, high: 3, critical: 4 };
-const THRESHOLD = LEVELS.high;
+];
 
-const run = spawnSync('npm', ['audit', '--omit=dev', '--json'], {
-  encoding: 'utf8',
-  maxBuffer: 64 * 1024 * 1024,
-  shell: process.platform === 'win32',
-});
-
-let report;
-try {
-  report = JSON.parse(run.stdout);
-} catch {
-  console.error('audit:prod : réponse illisible de `npm audit`.');
-  console.error(run.stderr);
+// `bun audit` : dépendances de production seulement, niveau élevé ou critique, exceptions ignorées.
+// Code de sortie différent de 0 dès qu'une autre faille élevée ou critique est trouvée.
+const run = spawnSync(
+  'bun',
+  ['audit', '--prod', '--audit-level=high', ...IGNORED.map((id) => `--ignore=${id}`)],
+  { encoding: 'utf8', stdio: 'inherit' },
+);
+if (run.error) {
+  console.error('audit:prod : `bun audit` n’a pas pu être lancé :', run.error.message);
   process.exit(1);
 }
-if (report.error) {
-  console.error('audit:prod : `npm audit` a échoué :', report.error.summary ?? report.error);
-  process.exit(1);
+if (run.status !== 0) {
+  console.error('audit:prod : failles élevées ou critiques à corriger (voir ci-dessus).');
+  process.exit(run.status ?? 1);
 }
-
-const vulns = report.vulnerabilities ?? {};
-
-function advisoryId(via) {
-  const match = /GHSA(-[0-9a-z]{4}){3}/i.exec(via.url ?? '');
-  return match ? `GHSA${match[0].slice(4).toLowerCase()}` : null;
-}
-
-// Niveau « réel » d'un paquet : ses advisories non ignorées et, récursivement,
-// le niveau réel des paquets dont il hérite la faille.
-const memo = new Map();
-function effectiveLevel(name, stack = new Set()) {
-  if (memo.has(name)) return memo.get(name);
-  const vuln = vulns[name];
-  if (!vuln || stack.has(name)) return LEVELS.info;
-  stack.add(name);
-  let level = LEVELS.info;
-  for (const via of vuln.via ?? []) {
-    if (typeof via === 'string') {
-      level = Math.max(level, effectiveLevel(via, stack));
-    } else if (!IGNORED.has(advisoryId(via))) {
-      level = Math.max(level, LEVELS[via.severity] ?? LEVELS.critical);
-    }
-  }
-  stack.delete(name);
-  memo.set(name, level);
-  return level;
-}
-
-const blocking = [];
-const ignored = [];
-for (const [name, vuln] of Object.entries(vulns)) {
-  const reported = LEVELS[vuln.severity] ?? LEVELS.critical;
-  if (reported < THRESHOLD) continue;
-  if (effectiveLevel(name) >= THRESHOLD) blocking.push(`${name} (${vuln.severity})`);
-  else ignored.push(`${name} (${vuln.severity})`);
-}
-
-if (ignored.length > 0) {
-  console.log(`Exceptions documentées (docs/SECURITY.md §6) : ${ignored.join(', ')}`);
-}
-if (blocking.length > 0) {
-  console.error(`Failles élevées ou critiques à corriger : ${blocking.join(', ')}`);
-  process.exit(1);
-}
-console.log('audit:prod : aucune faille élevée ou critique hors exceptions documentées.');
+console.log(
+  `audit:prod : aucune faille élevée ou critique hors exceptions documentées (${IGNORED.join(', ')}).`,
+);

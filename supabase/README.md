@@ -16,6 +16,6 @@ Tout ce qu'il faut pour les comptes et la synchronisation. **Aucune clé secrèt
 
 ## Vérifier le schéma
 
-`npm run test:server` exécute le SQL sur un Postgres embarqué (PGlite) et vérifie : versions, modifications renvoyées comptées une fois, conflits, isolation entre deux utilisateurs, suppression en cascade.
+`bun run test:server` exécute le SQL sur un Postgres embarqué (PGlite) et vérifie : versions, modifications renvoyées comptées une fois, conflits, isolation entre deux utilisateurs, suppression en cascade.
 
-Le fichier SQL est **généré** à partir du schéma du téléphone. Après une nouvelle migration locale : `UPDATE_SERVER_SCHEMA=1 npx jest serverSchema`, puis relance tout le fichier dans le SQL Editor du projet : il est idempotent (tables, colonnes ajoutées, fonctions, règles RLS) et met à jour un projet déjà créé.
+Le fichier SQL est **généré** à partir du schéma du téléphone. Après une nouvelle migration locale : `UPDATE_SERVER_SCHEMA=1 bunx jest serverSchema`, puis relance tout le fichier dans le SQL Editor du projet : il est idempotent (tables, colonnes ajoutées, fonctions, règles RLS) et met à jour un projet déjà créé.

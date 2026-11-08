@@ -7,13 +7,13 @@ Plusieurs sont **vérifiées automatiquement** (ESLint, tests, CI) : le code qui
 
 | Contrôle | Commande | Ce qu'il empêche |
 |---|---|---|
-| Types TypeScript stricts (`strict`, `noUncheckedIndexedAccess`) | `npm run typecheck` | Valeurs `undefined` oubliées, erreurs de type |
-| ESLint, 0 avertissement | `npm run lint` | Bugs courants (`==`, hooks mal utilisés), `eval`, `console.log`, couleurs en dur, imports internes d'un module |
-| Formatage Prettier | `npm run format:check` | Code illisible ou incohérent |
-| Tests Jest | `npm test` | Régressions : migrations de la base, contraste des couleurs, traductions FR/EN complètes (et clés utilisées existantes), messages d'erreur, **chaque écran affiché avec de vraies données** |
-| Audit des dépendances | `npm run audit:prod` | Bibliothèques avec failles connues de niveau élevé ou critique |
-| Diagnostic Expo | `npm run doctor` | Dépendances incompatibles avec le SDK |
-| **Tout d'un coup** | `npm run check` | À lancer avant chaque commit |
+| Types TypeScript stricts (`strict`, `noUncheckedIndexedAccess`) | `bun run typecheck` | Valeurs `undefined` oubliées, erreurs de type |
+| ESLint, 0 avertissement | `bun run lint` | Bugs courants (`==`, hooks mal utilisés), `eval`, `console.log`, couleurs en dur, imports internes d'un module |
+| Formatage Prettier | `bun run format:check` | Code illisible ou incohérent |
+| Tests Jest | `bun run test` | Régressions : migrations de la base, contraste des couleurs, traductions FR/EN complètes (et clés utilisées existantes), messages d'erreur, **chaque écran affiché avec de vraies données** |
+| Audit des dépendances | `bun run audit:prod` | Bibliothèques avec failles connues de niveau élevé ou critique |
+| Diagnostic Expo | `bun run doctor` | Dépendances incompatibles avec le SDK |
+| **Tout d'un coup** | `bun run check` | À lancer avant chaque commit |
 
 La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull request.
 
@@ -26,7 +26,7 @@ La CI GitHub (`.github/workflows/ci.yml`) relance tout à chaque push et pull re
 
 ## 3. Données de l'utilisateur
 
-- **Serveur** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS. Le schéma est généré depuis celui du téléphone et vérifié sur un vrai Postgres (`npm run test:server`) : un utilisateur ne peut ni lire ni modifier les lignes d'un autre.
+- **Serveur** : chaque table a la sécurité par ligne (RLS) activée, avec la règle `user_id = auth.uid()`. Aucune table sans RLS. Le schéma est généré depuis celui du téléphone et vérifié sur un vrai Postgres (`bun run test:server`) : un utilisateur ne peut ni lire ni modifier les lignes d'un autre.
 - **Règle serveur (26 septembre 2026)** : les écritures passent **uniquement** par la fonction `mysky_push` (`security definer`) ; le rôle `authenticated` n'a que `grant select` sur les tables (plus d'`insert`, `update` ni `delete` directs), la lecture reste filtrée par RLS. Après une mise à jour du dépôt, rejouer `supabase/migrations/20260924000000_mysky.sql` sur le projet.
 - **Écritures serveur** : uniquement par la fonction `mysky_push` (liste blanche des tables, versions pour détecter les conflits, identifiant de modification pour ne jamais appliquer deux fois la même, purgé après 30 jours). Les utilisateurs n'ont que le droit de lecture sur les tables : la fonction est `security definer` et limite chaque lecture et écriture à `user_id = auth.uid()`. Une modification invalide est rejetée seule (`rejected`) sans bloquer les autres ; le téléphone la garde dans l'écran « Conflits de synchronisation », où l'utilisateur restaure sa version ou l'ignore.
 - **Fichiers** : bucket privé `mysky-files` (25 Mo max par fichier), chaque utilisateur limité à son dossier `<id>/`.
@@ -135,11 +135,11 @@ Au 7 novembre 2026 (Expo SDK 57.0.32, après `npx expo install --fix` et `npm au
 | `decode-uri-component@0.2` (via `expo-router@57` → `query-string@7`) — advisories **GHSA-vcc3-ghjq-m6fr** et **GHSA-qr28-fpjm-wq7f** (élevé) | Risque de lenteur (déni de service) sur un lien profond mal formé, sur le seul téléphone qui l'ouvre ; aucune donnée exposée. La version corrigée (`0.5.1`) est un module ESM que `query-string@7` charge avec `require` : un `overrides` a été essayé et casse Node et Jest (`decodeComponent is not a function`, `Unexpected token 'export'`). La correction arrive avec `expo-router` 58. |
 | `glob`, `minimatch` (via `@expo/fingerprint`, outils Expo) ; `deepmerge` (via Jest) | Modérés ou faibles, utilisés uniquement par les outils de construction ou de test, pas dans l'app installée. |
 
-`npm run audit:prod` lance `scripts/audit-prod.mjs` : il lit `npm audit --omit=dev --json`, ignore **uniquement** les deux advisories ci-dessus et les alertes qui n'existent qu'à cause d'elles (`query-string`, `expo-router`), et **échoue sur toute autre faille élevée ou critique**. La CI reste donc bloquante au niveau élevé.
+`bun run audit:prod` lance `scripts/audit-prod.mjs` : il exécute `bun audit --prod --audit-level=high` en ignorant **uniquement** les deux advisories ci-dessus (`--ignore=GHSA-…`), et **échoue sur toute autre faille élevée ou critique**. La CI reste donc bloquante au niveau élevé. (Avant le passage à Bun, le 8 novembre 2026, le script lisait `npm audit --omit=dev --json`.)
 
-**À retirer au passage au SDK 58** : supprimer les deux identifiants de `IGNORED` dans `scripts/audit-prod.mjs` (ou revenir à `npm audit --omit=dev --audit-level=high`) et mettre à jour ce tableau.
+**À retirer au passage au SDK 58** : supprimer les deux identifiants de `IGNORED` dans `scripts/audit-prod.mjs` (ou revenir à `bun audit --prod --audit-level=high`) et mettre à jour ce tableau.
 
-`npm audit fix --force` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `npx expo install --fix` à chaque nouveau SDK.
+`bun audit fix --latest` n'est **pas** une solution : il installerait des versions d'Expo incompatibles. On met à jour avec `bunx expo install --fix` à chaque nouveau SDK.
 
 ## 7. Permissions du téléphone
 

@@ -23,11 +23,11 @@ Statut au **26 septembre 2026** : **MVP complet, audits A → F faits**, en atte
 
 ## Lancer l'app
 
-Prérequis : [Node.js](https://nodejs.org) 20 ou plus.
+Prérequis : [Node.js](https://nodejs.org) 20 ou plus (il exécute Expo, Jest et ESLint) et [Bun](https://bun.sh) 1.4 ou plus (il installe les dépendances et lance les scripts : `bun.lock`).
 
 ```bash
-npm install        # une seule fois
-npm start          # lance le serveur de développement
+bun install        # une seule fois
+bun run start      # lance le serveur de développement
 ```
 
 Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et scanne le QR code affiché.
@@ -35,22 +35,22 @@ Puis, sur ton téléphone, installe **Expo Go** (App Store / Google Play) et sca
 ## Avant chaque commit
 
 ```bash
-npm run check      # types + lint + formatage + tests + schéma serveur
+bun run check      # types + lint + formatage + tests + schéma serveur
 ```
 
 | Commande | Rôle |
 |---|---|
-| `npm run typecheck` | Vérifie les types avec TypeScript 7 (compilateur natif, paquet `typescript7`) |
-| `npm run lint` | Règles de code (0 avertissement autorisé) |
-| `npm run format` | Formate le code automatiquement |
-| `npm test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |
-| `npm run test:server` | Vérifie le schéma serveur sur un vrai Postgres (PGlite) : RLS, `mysky_push`, isolation entre comptes |
-| `npm run audit:prod` | Cherche les failles connues dans les dépendances |
-| `npm run doctor` | Diagnostic Expo |
+| `bun run typecheck` | Vérifie les types avec TypeScript 7 (compilateur natif, paquet `typescript7`) |
+| `bun run lint` | Règles de code (0 avertissement autorisé) |
+| `bun run format` | Formate le code automatiquement |
+| `bun run test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |
+| `bun run test:server` | Vérifie le schéma serveur sur un vrai Postgres (PGlite) : RLS, `mysky_push`, isolation entre comptes |
+| `bun run audit:prod` | Cherche les failles connues dans les dépendances |
+| `bun run doctor` | Diagnostic Expo |
 
 Comptes et synchronisation : sans `.env.local`, l’app fonctionne sans compte. Pour les activer, suivre [`supabase/README.md`](supabase/README.md).
 
-Pour ajouter une bibliothèque : `npx expo install <nom>` (et non `npm install`), pour qu'elle soit compatible avec le SDK Expo.
+Pour ajouter une bibliothèque : `bunx expo install <nom>` (et non `bun add`), pour qu'elle soit compatible avec le SDK Expo.
 
 ## Organisation du code
 
@@ -76,7 +76,7 @@ src/
     db/                base locale (SQLite), 17 migrations, écritures + file de synchronisation, requêtes vivantes
     errors/            erreurs et messages compréhensibles
     ui/                composants de base (texte, écran, bouton, champs, état vide)
-supabase/              schéma serveur (généré, vérifié par `npm run test:server`) et fonction delete-account
+supabase/              schéma serveur (généré, vérifié par `bun run test:server`) et fonction delete-account
 ```
 
 ## Changer une couleur

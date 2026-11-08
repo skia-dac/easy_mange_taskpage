@@ -44,6 +44,6 @@ yarn-error.*
 .env
 .env.local
 
-# Vérification d'assemblage (npm run check:bundle)
+# Vérification d'assemblage (bun run check:bundle)
 .expo-export-check/
 .claude/worktrees/
