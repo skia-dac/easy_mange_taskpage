@@ -48,6 +48,7 @@ export type { SelectOption } from './SelectField';
 export { SubjectBar, SubjectDot } from './SubjectDot';
 export { TextButton } from './TextButton';
 export { useScreenReader } from './useScreenReader';
+export { AFTER_DISMISS_IOS_FALLBACK_MS, useAfterDismiss } from './useAfterDismiss';
 export { Toggle } from './Toggle';
 export { showToast, showUndoToast, ToastHost } from './Toast';
 export type { ToastAction } from './Toast';

@@ -19,6 +19,21 @@ export function calendarStep(mode: CalendarViewMode, selected: IsoDate, dir: 1 |
   return addDaysIso(selected, dir * 7);
 }
 
+/**
+ * Jour des ajouts du « + » du calendrier. Vues Jour, Semaine, Mois : le jour choisi (il est mis en
+ * avant). Vue Heures : aucun jour n'y est mis en avant, donc aujourd'hui si la semaine affichée le
+ * contient, sinon son premier jour (jamais un jour choisi auparavant et caché).
+ */
+export function quickAddDay(
+  mode: CalendarViewMode,
+  selected: IsoDate,
+  weekStart: IsoDate,
+  today: IsoDate,
+): IsoDate {
+  if (mode !== 'hours') return selected;
+  return today >= weekStart && today <= addDaysIso(weekStart, 6) ? today : weekStart;
+}
+
 export type CalendarItem =
   | { kind: 'course'; sortTime: string; occurrence: Occurrence }
   | { kind: 'exam'; sortTime: string; exam: Exam }

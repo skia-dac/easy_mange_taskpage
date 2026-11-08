@@ -88,6 +88,7 @@ export function PlusButton({
   open: openProp,
   menuOpen,
   bottomInset: requestedInset,
+  overlay = false,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
@@ -100,6 +101,11 @@ export function PlusButton({
    * la hauteur de cette barre dans les onglets, la barre d'accueil de l'iPhone ailleurs.
    */
   bottomInset?: number;
+  /**
+   * Copie du bouton posée au même endroit dans la fenêtre d'un menu (au-dessus de son voile) :
+   * pas d'animation d'arrivée, et le passage de + à × se voit dès qu'elle apparaît.
+   */
+  overlay?: boolean;
 }) {
   const { colors, radius, spacing, scheme } = useTheme();
   const reduced = useReducedMotion();
@@ -107,13 +113,14 @@ export function PlusButton({
   const bottomInset = usePlusButtonInset(requestedInset);
   const open = openProp ?? false;
   const expanded = openProp ?? menuOpen;
-  const arrive = useSharedValue(reduced ? 1 : ARRIVE_FROM);
+  const arrive = useSharedValue(reduced || overlay ? 1 : ARRIVE_FROM);
   const pop = useSharedValue(1);
   const press = useSharedValue(1);
-  const turn = useSharedValue(open ? 1 : 0);
+  const turn = useSharedValue(open && !overlay ? 1 : 0);
   const shift = useSharedValue(0);
-  const seen = useRef(false);
-  const away = hidden && !open;
+  const seen = useRef(overlay);
+  // La copie posée sur un menu reste toujours là (le menu est ouvert).
+  const away = hidden && !open && !overlay;
 
   useEffect(() => {
     const travel = bottomInset + spacing.xl + SIZE;

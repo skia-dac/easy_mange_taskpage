@@ -19,6 +19,7 @@ import {
   calendarFilters,
   calendarStep,
   filterItems,
+  quickAddDay,
   useAgendaData,
   type CalendarFilter,
   type CalendarItem,
@@ -360,8 +361,9 @@ export default function CalendarScreen() {
         )}
         <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
-      {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi. */}
-      <QuickAddMenu date={selected} />
+      {/* Comme sur Aujourd'hui : le « + » ouvre un menu, ajouts datés du jour choisi (vue Heures :
+          aujourd'hui ou le premier jour de la semaine affichée, voir quickAddDay). */}
+      <QuickAddMenu date={quickAddDay(mode, selected, weekStart, today)} />
     </View>
   );
 }

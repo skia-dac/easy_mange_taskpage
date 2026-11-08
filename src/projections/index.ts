@@ -1,4 +1,4 @@
-export { calendarDays, calendarStep } from './calendar';
+export { calendarDays, calendarStep, quickAddDay } from './calendar';
 export type { CalendarItem, CalendarViewMode } from './calendar';
 export {
   buildDayLine,
