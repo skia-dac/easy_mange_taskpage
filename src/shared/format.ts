@@ -88,3 +88,8 @@ export function formatDateTime(date: Date, locale: string): string {
 export function formatMonthShort(day: IsoDate, locale: string): string {
   return new Intl.DateTimeFormat(locale, { month: 'short' }).format(fromIsoDate(day));
 }
+
+/** « 14 déc. » (jour et mois courts, sans l'année). */
+export function formatDayMonth(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(date);
+}

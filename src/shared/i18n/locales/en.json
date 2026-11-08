@@ -590,8 +590,6 @@
   "settings": {
     "title": "Settings",
     "notifications": "Notifications",
-    "permissionOff": "Notifications are turned off for MySky. Turn them on in your phone’s Settings to get reminders.",
-    "openSettings": "Open phone settings",
     "allow": "Allow notifications",
     "courses": "Class reminders",
     "courseMinutes": "Before each class",
@@ -648,7 +646,22 @@
     "eveningReviewHint": "On from the start: a reminder every evening to get ready for tomorrow. Turn it off here if you don’t want it.",
     "eveningReviewTime": "Review time",
     "money": "Money: fixed costs and tontines",
-    "moneyHint": "At the times chosen on each cost or tontine."
+    "moneyHint": "At the times chosen on each cost or tontine.",
+    "reminderStatus": {
+      "active_one": "Reminders on: {{count}} scheduled, until {{date}}",
+      "active_other": "Reminders on: {{count}} scheduled, until {{date}}",
+      "activeHint": "Open MySky now and then to extend them: otherwise a notification will remind you on {{date}}.",
+      "activeHintNoNet": "They are rescheduled each time you open MySky.",
+      "none": "Reminders on: none coming up for now",
+      "pending": "Scheduling your reminders…",
+      "paused": "Reminders paused",
+      "pausedHint": "All reminders are off. Turn on the ones you want below.",
+      "denied": "Notifications denied: your reminders won’t ring",
+      "deniedHint": "Only your phone settings can turn them back on.",
+      "undetermined": "Notifications not allowed yet: your reminders won’t ring",
+      "openSettings": "Open settings",
+      "updatedAt": "Updated {{date}}"
+    }
   },
   "reminder": {
     "pastError": "This time has already passed: pick a time to come so the reminder can ring.",

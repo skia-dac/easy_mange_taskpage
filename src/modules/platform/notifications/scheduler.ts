@@ -11,11 +11,18 @@ import { i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
 import {
+  firstReviewDay,
   planReminders,
   reminderActionSchema,
   type PlannedReminder,
   type ReminderAction,
 } from './plan';
+import {
+  getReviewIntroDate,
+  setReminderRunStatus,
+  setReviewIntroDate,
+  summarizePlan,
+} from './status';
 
 export const END_OF_COURSE_CATEGORY = 'endofcourse';
 export const ACTIONS = {
@@ -211,7 +218,14 @@ async function runSync({ db, data, now = new Date() }: SyncArgs): Promise<number
   }
   const [prefs, subjects] = await Promise.all([getNotificationPreferences(db), listSubjects(db)]);
   const byId = new Map(subjects.map((s) => [s.id, s.name]));
-  const plan = planReminders(data, prefs, now, { subjectName: (id) => byId.get(id) ?? '' });
+  const reviewIntroDate = await reviewIntro(db, prefs, now);
+  const plan = planReminders(
+    data,
+    prefs,
+    now,
+    { subjectName: (id) => byId.get(id) ?? '' },
+    { reviewIntroDate },
+  );
   const key = planKey(plan, prefs, i18n.language);
   if (key === scheduledKey) return plan.length;
   // Une programmation interrompue (erreur, rappel refusé) doit être refaite au prochain appel :
@@ -219,8 +233,35 @@ async function runSync({ db, data, now = new Date() }: SyncArgs): Promise<number
   scheduledKey = null;
   await Notifications.cancelAllScheduledNotificationsAsync();
   const scheduled = await Promise.all(plan.map((r) => scheduleOne(r, prefs)));
-  if (scheduled.every(Boolean)) scheduledKey = key;
+  if (scheduled.every(Boolean)) {
+    scheduledKey = key;
+    // État affiché dans Réglages › Notifications : seulement après un passage complet.
+    await setReminderRunStatus(db, summarizePlan(plan, now)).catch((e: unknown) =>
+      logger.error(e, { where: 'setReminderRunStatus' }),
+    );
+  }
   return plan.length;
+}
+
+/**
+ * Jour du premier bilan du soir (celui qui explique ce rappel, activé par défaut). Retenu la
+ * première fois qu'un bilan est programmé ; ensuite, il ne change plus.
+ */
+async function reviewIntro(
+  db: Db,
+  prefs: NotificationPreferences,
+  now: Date,
+): Promise<string | null> {
+  try {
+    const known = await getReviewIntroDate(db);
+    if (known || !prefs.eveningReview) return known;
+    const day = firstReviewDay(prefs, now);
+    await setReviewIntroDate(db, day);
+    return day;
+  } catch (e) {
+    logger.error(e, { where: 'reviewIntro' });
+    return null;
+  }
 }
 
 /** Annule tous les rappels programmés (suppression des données), après le passage en cours. */

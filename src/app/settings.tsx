@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { AccentPicker } from '@/components/AccentPicker';
+import { ReminderStatusCard } from '@/components/ReminderStatusCard';
 import { useErasePhone } from '@/hooks/useErasePhone';
 import { useLabels } from '@/hooks/useLabels';
 import {
@@ -35,8 +36,6 @@ import {
 } from '@/modules/identity';
 import {
   canUseAppLock,
-  ensurePermission,
-  hasPermission,
   listBackups,
   pickBackupFile,
   readBackup,
@@ -104,7 +103,6 @@ export default function SettingsScreen() {
   const [accent, setAccent] = useState<AccentPreference>('blue');
   const [textScale, setTextScale] = useState<TextScalePreference>('normal');
   const [weekStart, setWeekStartState] = useState<WeekStart>(1);
-  const [granted, setGranted] = useState<boolean | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
   const [appLock, setAppLock] = useState(false);
   const [backups, setBackups] = useState<BackupFile[]>([]);
@@ -124,26 +122,23 @@ export default function SettingsScreen() {
       getLanguagePreference(db),
       getAppearancePreference(db),
       getWeekStart(db),
-      hasPermission(),
       isAppLockEnabled(db),
       getAccentPreference(db),
       getTextScalePreference(db),
     ])
-      .then(([p, l, a, w, g, lock, ac, ts]) => {
+      .then(([p, l, a, w, lock, ac, ts]) => {
         setAccent(ac);
         setTextScale(ts);
         setPrefs(p);
         setLang(l);
         setAppearance(a);
         setWeekStartState(w);
-        setGranted(g);
         setAppLock(lock);
       })
       .catch((e: unknown) => {
         // Une lecture a échoué : l'écran s'affiche quand même avec les valeurs par défaut.
         reportLoadError(e);
         setPrefs((current) => current ?? defaultNotificationPreferences);
-        setGranted((current) => current ?? false);
       })
       .then(() => refreshBackups())
       .catch(reportLoadError);
@@ -154,12 +149,6 @@ export default function SettingsScreen() {
     const next = { ...prefs, ...patch };
     setPrefs(next);
     setNotificationPreferences(db, next).catch((e: unknown) => showError(userMessageKey(e)));
-  };
-
-  const allow = async () => {
-    const ok = await ensurePermission();
-    setGranted(ok);
-    if (!ok) await Linking.openSettings();
   };
 
   const changeLanguage = (value: LanguagePreference) => {
@@ -301,18 +290,8 @@ export default function SettingsScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
       <SectionHeader title={t('settings.notifications')} />
-      {granted === false ? (
-        <Card>
-          <View style={{ gap: spacing.md }}>
-            <AppText>{t('settings.permissionOff')}</AppText>
-            <Button label={t('settings.allow')} onPress={() => void allow()} />
-            <TextButton
-              label={t('settings.openSettings')}
-              onPress={() => void Linking.openSettings()}
-            />
-          </View>
-        </Card>
-      ) : null}
+      {/* État des rappels : programmés jusqu'à quand, en pause, ou permission manquante. */}
+      <ReminderStatusCard prefs={prefs} />
       <Card>
         {/* Rappels des espaces coupés : cachés ici et mis en pause (les réglages sont gardés). */}
         {study ? (

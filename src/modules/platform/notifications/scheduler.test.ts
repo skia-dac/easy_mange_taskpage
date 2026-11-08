@@ -8,6 +8,7 @@ import { i18n } from '@/shared/i18n';
 import { createTestDb } from '@/test/memoryDb';
 
 import { planReminders } from './plan';
+import { getReminderRunStatus, getReviewIntroDate } from './status';
 import {
   cancelAllReminders,
   planKey,
@@ -206,5 +207,94 @@ describe('reprogrammations qui se chevauchent', () => {
     // L'empreinte est oubliée : le plan est reprogrammé au prochain passage.
     await syncScheduledNotifications(db, agenda([task]), now);
     expect(store.size).toBe(1);
+  });
+});
+
+describe('état des rappels (Réglages › Notifications) et filet de sécurité', () => {
+  const habit = {
+    id: 'h1',
+    position: 0,
+    name: 'Lire',
+    icon: 'book',
+    colorId: 'blue',
+    frequency: 'daily' as const,
+    weekdays: [],
+    timesPerWeek: 1,
+    target: 1,
+    unit: null,
+    reminderTime: '21:00',
+    autoStudy: false,
+    tracksBody: false,
+  };
+  const withHabit = (work: WorkItem[]) => agenda(work, { habits: [habit], habitLogs: [] });
+  const permissions = jest.mocked(Notifications.getPermissionsAsync);
+  let statusDb: Db & { close(): void };
+  beforeEach(async () => {
+    statusDb = await createTestDb();
+    await setNotificationPreferences(statusDb, {
+      ...defaultNotificationPreferences,
+      eveningReview: false,
+    });
+  });
+  afterEach(() => statusDb.close());
+
+  it('après un passage réussi : nombre, dernier rappel et heure du passage', async () => {
+    expect(await getReminderRunStatus(statusDb)).toBeNull();
+    await syncScheduledNotifications(statusDb, agenda([task]), now);
+    expect(await getReminderRunStatus(statusDb)).toEqual({
+      count: 1,
+      lastAt: task.reminderAt,
+      ranAt: now.toISOString(),
+      safetyNetAt: null,
+    });
+  });
+
+  it('une habitude : le filet est programmé avec le plan, sans compter comme un rappel', async () => {
+    const count = await syncScheduledNotifications(statusDb, withHabit([]), now);
+    expect(schedule).toHaveBeenCalledTimes(count);
+    const nets = schedule.mock.calls.filter(([req]) => req.identifier?.startsWith('refresh:'));
+    expect(nets).toHaveLength(1);
+    const net = nets[0]![0];
+    expect(net.content.title).toBe(i18n.t('notif.refreshTitle'));
+    expect(net.content.body).toBe(i18n.t('notif.refreshBody'));
+    expect(net.content.data).toEqual({ kind: 'refresh' });
+    const status = await getReminderRunStatus(statusDb);
+    expect(status?.count).toBe(count - 1);
+    expect(status?.safetyNetAt).toBe((net.trigger as { date: Date }).date.toISOString());
+    expect(Date.parse(status!.safetyNetAt!)).toBeLessThan(Date.parse(status!.lastAt!));
+  });
+
+  it('permission manquante : rien n’est programmé, pas de filet, aucun état', async () => {
+    permissions.mockResolvedValueOnce({ granted: false, canAskAgain: false } as never);
+    expect(await syncScheduledNotifications(statusDb, withHabit([task]), now)).toBe(0);
+    expect(schedule).not.toHaveBeenCalled();
+    expect(await getReminderRunStatus(statusDb)).toBeNull();
+  });
+
+  it('un rappel refusé : l’état du dernier passage réussi est gardé', async () => {
+    await syncScheduledNotifications(statusDb, agenda([task]), now);
+    const before = await getReminderRunStatus(statusDb);
+    schedule.mockRejectedValueOnce(new Error('quota'));
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const later = new Date(2026, 8, 24, 8, 0);
+    await syncScheduledNotifications(statusDb, agenda([task, { ...task, id: 'w2' }]), later);
+    expect(await getReminderRunStatus(statusDb)).toEqual(before);
+    quiet.mockRestore();
+  });
+
+  it('bilan du soir : le premier s’explique, une seule fois (jour retenu)', async () => {
+    await setNotificationPreferences(statusDb, defaultNotificationPreferences);
+    await syncScheduledNotifications(statusDb, agenda([]), now);
+    expect(await getReviewIntroDate(statusDb)).toBe('2026-09-23');
+    const body = (id: string) =>
+      schedule.mock.calls.find(([req]) => req.identifier === id)?.[0].content.body;
+    expect(body('review:2026-09-23')).toBe(i18n.t('notif.reviewBodyFirst'));
+    expect(body('review:2026-09-24')).toBe(i18n.t('notif.reviewBody'));
+    // Le lendemain, le jour d'introduction est passé : plus aucun texte d'introduction.
+    schedule.mockClear();
+    await syncScheduledNotifications(statusDb, agenda([]), new Date(2026, 8, 24, 8, 0));
+    expect(await getReviewIntroDate(statusDb)).toBe('2026-09-23');
+    const intro = i18n.t('notif.reviewBodyFirst');
+    expect(schedule.mock.calls.some(([req]) => req.content.body === intro)).toBe(false);
   });
 });
