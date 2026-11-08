@@ -1,5 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
-import { FlatList, StyleSheet, View, type ListRenderItem, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ListRenderItem, type ViewStyle } from 'react-native';
+import Animated, { LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTabBarInset, useTabBarScrollHandlers } from '../tabBarVisibility';
@@ -55,24 +56,29 @@ export function CardSegment({
 }
 
 /**
- * Une ligne de liste : animée (entrée, sortie, glissement des suivantes) dans le premier écran
- * seulement, affichée telle quelle au-delà.
+ * Glissement des lignes quand une ligne part ou arrive (tâche terminée, supprimée). Dans une
+ * liste virtualisée, chaque ligne vit dans sa propre cellule : seule une animation posée sur la
+ * cellule elle-même (`itemLayoutAnimation`) la déplace ; une animation à l'intérieur ne bouge pas
+ * la cellule, et les lignes sauteraient.
+ */
+export const listItemLayout = LinearTransition.duration(200);
+
+/**
+ * Une ligne de liste virtualisée : elle entre en douceur dans le premier écran seulement,
+ * affichée telle quelle au-delà. Le glissement des suivantes est porté par la liste
+ * (`listItemLayout`), pas par la ligne.
  */
 export function ListItemMotion({
   index,
-  row = false,
   children,
 }: {
   index: number;
+  /** Conservé pour les appels existants : le glissement est porté par la cellule. */
   row?: boolean;
   children: ReactNode;
 }) {
   if (index >= ANIMATED_ROWS) return <>{children}</>;
-  return (
-    <RiseIn row={row} delay={staggerDelay(index + 1)}>
-      {children}
-    </RiseIn>
-  );
+  return <RiseIn delay={staggerDelay(index + 1)}>{children}</RiseIn>;
 }
 
 type Props<T> = {
@@ -114,10 +120,13 @@ export function ListScreen<T>({
   const { colors, spacing } = useTheme();
   const scroll = useTabBarScrollHandlers();
   const tabBarInset = useTabBarInset();
+  const reduced = useReducedMotion();
   return (
     <SafeAreaView edges={['top']} style={[styles.fill, { backgroundColor: colors.background }]}>
-      <FlatList
+      <Animated.FlatList
         {...scroll}
+        // Animations coupées : les lignes prennent leur place sans glisser.
+        itemLayoutAnimation={reduced ? undefined : listItemLayout}
         data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
