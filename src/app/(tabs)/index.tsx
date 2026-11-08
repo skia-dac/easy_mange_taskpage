@@ -480,14 +480,13 @@ export default function TodayScreen() {
         ) : null}
         <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
-      {habitSheet && view ? (
-        <HabitDaySheet
-          habit={habitSheet}
-          date={view.today}
-          log={logOn(habitLogs, habitSheet.id, view.today)}
-          onClose={() => setHabitSheet(null)}
-        />
-      ) : null}
+      <HabitDaySheet
+        visible={habitSheet !== null && !!view}
+        habit={habitSheet}
+        date={view?.today ?? null}
+        log={habitSheet && view ? logOn(habitLogs, habitSheet.id, view.today) : undefined}
+        onClose={() => setHabitSheet(null)}
+      />
       <QuickAddMenu
         note={
           view?.next
