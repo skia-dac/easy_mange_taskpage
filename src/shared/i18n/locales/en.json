@@ -209,7 +209,10 @@
     "empty2": "Empty note",
     "untitled": "Untitled",
     "sharePdf": "Share as PDF",
-    "pdfFooter": "Exported from MySky on {{date}}"
+    "pdfFooter": "Exported from MySky on {{date}}",
+    "screenTitle": "Note",
+    "saveFailed": "The note could not be saved. Open it again to check your text.",
+    "attachmentCannotOpen": "This file cannot be opened on this phone."
   },
   "editor": {
     "heading": "Heading",

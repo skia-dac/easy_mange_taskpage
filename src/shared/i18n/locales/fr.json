@@ -209,7 +209,10 @@
     "empty2": "Note vide",
     "untitled": "Sans titre",
     "sharePdf": "Partager en PDF",
-    "pdfFooter": "Exporté de MySky le {{date}}"
+    "pdfFooter": "Exporté de MySky le {{date}}",
+    "screenTitle": "Note",
+    "saveFailed": "La note n’a pas pu être enregistrée. Rouvre-la pour vérifier ton texte.",
+    "attachmentCannotOpen": "Ce fichier ne peut pas être ouvert sur ce téléphone."
   },
   "editor": {
     "heading": "Titre",

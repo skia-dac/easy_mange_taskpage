@@ -6,7 +6,7 @@ import { goBack } from '@/components/navigation';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, ScrollView, TextInput, View } from 'react-native';
+import { ScrollView, TextInput, View } from 'react-native';
 
 import { NOTE_TITLE_MAX } from '@/shared/fieldLimits';
 
@@ -21,6 +21,7 @@ import {
   attachmentUri,
   deleteLocalFile,
   formatSize,
+  openLocalFile,
   pickDocument,
   pickImage,
   sharePdf,
@@ -45,6 +46,7 @@ import {
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { AppError, userMessageKey } from '@/shared/errors';
+import { logger } from '@/shared/logger';
 import { useSpaces } from '@/shared/SpacesContext';
 import { formatDate, formatShortDate } from '@/shared/format';
 import { minTouchSize, useTheme, variantMaxFontSizeMultiplier } from '@/shared/theme';
@@ -58,6 +60,7 @@ import {
   KeyboardAvoiding,
   SelectField,
   showError,
+  showToast,
   SubjectDot,
   TextButton,
   reportLoadError,
@@ -114,6 +117,13 @@ export default function NoteScreen() {
   const leave = useUnsavedGuard(unsaved);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title: '', content: '' });
+  /** Note supprimée : plus aucun enregistrement (sinon la sortie de l'écran la recréerait vide). */
+  const deleted = useRef(false);
+  // Message de l'enregistrement de sortie, lu après le démontage (dernière langue choisie).
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
   const attachments = useLiveQuery(
     (d) => (noteId ? listAttachments(d, noteId) : Promise.resolve([] as Attachment[])),
     ['attachments'],
@@ -166,6 +176,7 @@ export default function NoteScreen() {
 
   /** Enregistrement (crée la note au premier contenu). Retourne l'id de la note. */
   const persist = useCallback(async (): Promise<string | null> => {
+    if (deleted.current) return null;
     if (!noteIdRef.current && !creating.current) {
       const { title: tt, content: cc } = latest.current;
       if (tt.trim() === '' && cc.trim() === '') return null;
@@ -231,7 +242,11 @@ export default function NoteScreen() {
   useEffect(() => {
     return function saveOnLeave() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      void persistRef.current().catch(() => undefined);
+      // L'écran se ferme : un échec ne peut plus s'afficher sous le titre, on le dit par un toast.
+      void persistRef.current().catch((e: unknown) => {
+        logger.error(e, { where: 'note.saveOnLeave' });
+        showToast(tRef.current('notes.saveFailed'));
+      });
     };
   }, []);
 
@@ -328,10 +343,14 @@ export default function NoteScreen() {
       t('common.delete'),
     );
     if (!ok) return;
+    // Un enregistrement en attente ne doit pas partir après la suppression.
+    if (saveTimer.current) clearTimeout(saveTimer.current);
     try {
-      latest.current = { title: '', content: '' };
       const files = attachments.data ?? [];
       await deleteNote(db, noteId);
+      // Seulement une fois la suppression réussie : en cas d'échec, le texte reste intact et
+      // l'enregistrement de sortie garde la note telle quelle (jamais une note vidée).
+      deleted.current = true;
       files.forEach((a) => deleteLocalFile(a.localPath));
       setNoteId(null);
       leave(goBack);
@@ -477,7 +496,7 @@ export default function NoteScreen() {
 
   return (
     <KeyboardAvoiding>
-      <Stack.Screen options={{ title: '', headerRight }} />
+      <Stack.Screen options={{ title: t('notes.screenTitle'), headerRight }} />
       {editing ? (
         <View style={{ flex: 1 }}>
           <View style={{ paddingTop: spacing.md }}>{meta}</View>
@@ -530,7 +549,14 @@ function AttachmentTile({
       showError('notes.attachmentMissing');
       return;
     }
-    void Linking.openURL(attachmentUri(a.localPath)).catch(() => showError('errors.generic'));
+    openLocalFile(attachmentUri(a.localPath), a.mimeType, a.name)
+      .then((ok) => {
+        if (!ok) showToast(t('notes.attachmentCannotOpen'));
+      })
+      .catch((e: unknown) => {
+        logger.error(e, { where: 'note.openAttachment' });
+        showToast(t('notes.attachmentCannotOpen'));
+      });
   };
   return (
     <View style={{ width: 132, gap: spacing.xs }}>
