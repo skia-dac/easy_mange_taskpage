@@ -4,7 +4,7 @@ import * as Sharing from 'expo-sharing';
 
 import { getLastBackupAt, setLastBackupAt } from '@/modules/identity';
 import { nowIso, type Db } from '@/shared/db';
-import { AppError } from '@/shared/errors';
+import { AppError, userMessageKey } from '@/shared/errors';
 import { i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
@@ -108,6 +108,17 @@ export async function readBackup(db: Db, uri: string): Promise<BackupSnapshot> {
     throw new AppError('validation', 'backupUnreadable', { cause: e });
   }
   return parseSnapshot(db, text);
+}
+
+/**
+ * Message à montrer quand une sauvegarde ne peut pas être lue ou restaurée : jamais de message
+ * technique. Fichier qui n'est pas une sauvegarde MySky (abîmé, autre app) → « pas lisible » ;
+ * sauvegarde d'une version plus récente → « mets l'app à jour » ; sinon le message habituel.
+ */
+export function backupMessageKey(e: unknown): string {
+  if (e instanceof AppError && e.message === 'backupUnreadable') return 'backup.unreadable';
+  if (e instanceof AppError && e.message === 'backupTooRecent') return 'backup.tooRecent';
+  return userMessageKey(e);
 }
 
 /** Remplace les données actuelles par cette sauvegarde (à confirmer avant par l'utilisateur). */

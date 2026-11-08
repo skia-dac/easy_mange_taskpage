@@ -37,6 +37,7 @@ export { cancelAllReminders, readableParams } from './notifications/scheduler';
 export { deleteAllAttachments } from './files/attachments';
 export {
   autoBackupIfDue,
+  backupMessageKey,
   BACKUPS_KEPT,
   deleteAllBackups,
   listBackups,
