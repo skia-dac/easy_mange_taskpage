@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -14,6 +13,7 @@ import {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -73,8 +73,10 @@ export function sheetContentStyle(
 
 /**
  * Fenêtre posée en bas de l'écran, sur un voile. Elle monte du bas (un simple fondu quand les
- * animations sont réduites), porte une poignée et se ferme en la glissant vers le bas. Son contenu
- * défile s'il dépasse ≈ 85 % de l'écran (texte agrandi, clavier ouvert).
+ * animations sont réduites), porte une poignée et se ferme en la glissant vers le bas, par la
+ * poignée ou par le contenu quand il est en haut de son défilement (comme les feuilles d'iOS et de
+ * Material 3). Son contenu défile s'il dépasse ≈ 85 % de l'écran (texte agrandi, clavier ouvert) :
+ * un seul défilement par fenêtre, le contenu n'en ajoute pas un second.
  *
  * Le voile et le panneau sont FRÈRES, jamais l'un dans l'autre : un bouton qui contient tout le
  * panneau en ferait un seul élément pour VoiceOver, et ses choix deviendraient inatteignables.
@@ -121,7 +123,36 @@ export function BottomSheet({
   }, [visible, onDismissed]);
 
   const close = () => onClose();
-  const drag = Gesture.Pan()
+  // Position du défilement du contenu : on ne tire la fenêtre par le contenu qu'en haut.
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.set(e.contentOffset.y);
+  });
+  /** Le geste en cours tire bien la fenêtre (faux s'il a commencé contenu défilé). */
+  const pulling = useSharedValue(false);
+  // Le défilement natif du contenu, pour que le glisser du contenu marche en même temps que lui.
+  const scrollGesture = Gesture.Native();
+
+  const release = (translationY: number, velocityY: number) => {
+    'worklet';
+    if (translationY > CLOSE_DISTANCE || velocityY > CLOSE_VELOCITY) {
+      if (reduced) {
+        scheduleOnRN(close);
+        return;
+      }
+      offset.set(
+        withTiming(height, { duration: 180 }, (finished) => {
+          if (finished) scheduleOnRN(close);
+        }),
+      );
+    } else {
+      offset.set(reduced ? 0 : withSpring(0, { damping: 20, stiffness: 220 }));
+    }
+  };
+
+  // Poignée : toujours.
+  const handleDrag = Gesture.Pan()
+    .withTestId('sheet-handle-drag')
     .activeOffsetY(8)
     .onUpdate((e) => {
       'worklet';
@@ -129,19 +160,38 @@ export function BottomSheet({
     })
     .onEnd((e) => {
       'worklet';
-      if (e.translationY > CLOSE_DISTANCE || e.velocityY > CLOSE_VELOCITY) {
-        if (reduced) {
-          scheduleOnRN(close);
-          return;
-        }
-        offset.set(
-          withTiming(height, { duration: 180 }, (finished) => {
-            if (finished) scheduleOnRN(close);
-          }),
-        );
-      } else {
-        offset.set(reduced ? 0 : withSpring(0, { damping: 20, stiffness: 220 }));
+      release(e.translationY, e.velocityY);
+    });
+
+  // Contenu : seulement s'il est tout en haut au début du geste, et vers le bas. Un geste
+  // horizontal (pastilles qui défilent) n'est pas pris.
+  const contentDrag = Gesture.Pan()
+    .withTestId('sheet-content-drag')
+    .activeOffsetY(8)
+    .failOffsetX([-16, 16])
+    .simultaneousWithExternalGesture(scrollGesture)
+    .onBegin(() => {
+      'worklet';
+      pulling.set(scrollY.get() <= 0);
+    })
+    .onUpdate((e) => {
+      'worklet';
+      if (!pulling.get()) return;
+      if (scrollY.get() > 0) {
+        // Le contenu s'est mis à défiler (geste vers le haut) : il garde la main.
+        pulling.set(false);
+        offset.set(0);
+        return;
       }
+      offset.set(Math.max(0, e.translationY));
+    })
+    .onEnd((e) => {
+      'worklet';
+      if (pulling.get()) release(e.translationY, e.velocityY);
+    })
+    .onFinalize(() => {
+      'worklet';
+      pulling.set(false);
     });
 
   const slide = useAnimatedStyle(() => ({ transform: [{ translateY: offset.get() }] }));
@@ -172,7 +222,7 @@ export function BottomSheet({
           slide,
         ]}
       >
-        <GestureDetector gesture={drag}>
+        <GestureDetector gesture={handleDrag}>
           <View
             testID="sheet-handle"
             accessible={false}
@@ -190,21 +240,30 @@ export function BottomSheet({
             />
           </View>
         </GestureDetector>
-        <ScrollView
-          testID="sheet-scroll"
-          style={{ flexGrow: 0, flexShrink: 1 }}
-          contentContainerStyle={sheetContentStyle(
-            { padding: spacing.xl, gap: spacing.sm },
-            [{ paddingTop: spacing.xs }, style],
-            insets.bottom,
-          )}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-          showsVerticalScrollIndicator
-          bounces={false}
-        >
-          {children}
-        </ScrollView>
+        <GestureDetector gesture={contentDrag}>
+          <View collapsable={false} style={{ flexShrink: 1 }}>
+            <GestureDetector gesture={scrollGesture}>
+              <Animated.ScrollView
+                testID="sheet-scroll"
+                style={{ flexGrow: 0, flexShrink: 1 }}
+                contentContainerStyle={sheetContentStyle(
+                  { padding: spacing.xl, gap: spacing.sm },
+                  [{ paddingTop: spacing.xs }, style],
+                  insets.bottom,
+                )}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+                showsVerticalScrollIndicator
+                bounces={false}
+                overScrollMode="never"
+              >
+                {children}
+              </Animated.ScrollView>
+            </GestureDetector>
+          </View>
+        </GestureDetector>
       </Animated.View>
     </View>
   );

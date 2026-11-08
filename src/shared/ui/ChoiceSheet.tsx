@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useEffect, useRef } from 'react';
-import { Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { minTouchSize, useTheme } from '../theme';
@@ -48,7 +48,6 @@ export const CHOICE_IOS_FALLBACK_MS = 1000;
 export function ChoiceSheet({ visible, title, message, options, onClose }: Props) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
-  const { height } = useWindowDimensions();
   const pending = useRef<(() => void) | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Un choix est déjà fait pour cette ouverture : un second appui ne fait rien. */
@@ -103,10 +102,8 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
         {title}
       </AppText>
       {message ? <AppText color="muted">{message}</AppText> : null}
-      <ScrollView
-        style={{ maxHeight: height * 0.6, marginTop: spacing.xs }}
-        contentContainerStyle={{ gap: spacing.sm }}
-      >
+      {/* Pas de second défilement : celui de la fenêtre suffit (et la laisse glisser du contenu). */}
+      <View style={{ marginTop: spacing.xs, gap: spacing.sm }}>
         {options.map((o, i) => (
           <Tappable
             key={`${i}:${o.label}`}
@@ -141,7 +138,7 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
             {o.selected ? <Feather name="check" size={20} color={colors.primary} /> : null}
           </Tappable>
         ))}
-      </ScrollView>
+      </View>
       <View style={{ marginTop: spacing.xs }}>
         <Tappable
           accessibilityRole="button"
