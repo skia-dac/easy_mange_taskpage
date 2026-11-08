@@ -6,6 +6,7 @@ import { Linking, ScrollView, View } from 'react-native';
 import { AccentPicker } from '@/components/AccentPicker';
 import { useLabels } from '@/hooks/useLabels';
 import {
+  accountMessageKey,
   courseReminderOptions,
   defaultNotificationPreferences,
   getAccentPreference,
@@ -24,6 +25,7 @@ import {
   setNotificationPreferences,
   setTextScalePreference,
   setWeekStart,
+  useAuth,
   weekStartOptions,
   type AccentPreference,
   type AppearancePreference,
@@ -59,6 +61,7 @@ import {
   ChoiceChips,
   ChoiceSheet,
   confirmDestructive,
+  confirmDestructiveOrRetry,
   DateTimeField,
   IconBadge,
   ListRow,
@@ -72,7 +75,7 @@ import {
   reportLoadError,
   Toggle,
 } from '@/shared/ui';
-import { wipeAllData } from '@/workflows';
+import { pushBeforeErase, signOutFromPhone, wipeAllData } from '@/workflows';
 
 type SheetKind = 'share' | 'restore' | null;
 
@@ -82,6 +85,11 @@ function backupErrorKey(e: unknown): string {
   return userMessageKey(e);
 }
 
+/** Effacement refusé (modifications pas encore envoyées) : message du compte, sinon générique. */
+function wipeErrorKey(e: unknown): string {
+  return accountMessageKey(e, userMessageKey);
+}
+
 export default function SettingsScreen() {
   const spaces = useSpaces();
   const study = spaces.has('study');
@@ -89,6 +97,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const labels = useLabels();
   const db = useDb();
+  const { userId } = useAuth();
   const { spacing } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [lang, setLang] = useState<LanguagePreference>('auto');
@@ -217,18 +226,43 @@ export default function SettingsScreen() {
         t('data.wipeConfirm'),
       );
       if (!first) return;
+      // Connecté : comme « Compte › Effacer ce téléphone », on envoie d'abord ce qui attend ; s'il
+      // reste des modifications non envoyées, on le dit (réessayer, effacer quand même, annuler).
+      let discardUnsynced = false;
+      if (userId) {
+        for (;;) {
+          const left = await pushBeforeErase(db, userId);
+          if (left === 0) break;
+          const choice = await confirmDestructiveOrRetry(
+            t('account.unsyncedTitle'),
+            t('account.unsyncedMessage', { count: left }),
+            t('account.unsyncedRetry'),
+            t('account.unsyncedErase'),
+          );
+          if (choice === 'cancel') return;
+          if (choice === 'destructive') {
+            discardUnsynced = true;
+            break;
+          }
+        }
+      }
       const second = await confirmDestructive(
         t('data.wipeAgainTitle'),
         t('data.wipeAgainMessage'),
         t('data.wipeAgainConfirm'),
       );
       if (!second) return;
-      await wipeAllData(db);
-      // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau
-      // (sans condition : une session peut exister sans que l'état d'auth soit encore renseigné).
-      await signOut();
+      if (userId) {
+        // Refuse encore d'effacer des modifications non envoyées sans « Effacer quand même ».
+        await signOutFromPhone(db, false, { discardUnsynced });
+      } else {
+        await wipeAllData(db);
+        // Les données restent sur le compte : on se déconnecte pour ne pas les recevoir de nouveau
+        // (sans condition : une session peut exister sans que l'état d'auth soit encore renseigné).
+        await signOut();
+      }
       router.replace('/onboarding');
-    });
+    }, wipeErrorKey);
 
   const toggleAppLock = async (value: boolean) => {
     if (value && !(await canUseAppLock())) {

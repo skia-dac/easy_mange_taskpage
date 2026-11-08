@@ -703,7 +703,7 @@
     "wipe": "Supprimer toutes mes données",
     "wipeHint": "Efface matières, cours, notes, tâches, réglages, pièces jointes et sauvegardes de ce téléphone. Irréversible.",
     "wipeTitle": "Supprimer toutes tes données ?",
-    "wipeMessage": "Tout sera effacé de ce téléphone, y compris les sauvegardes. Partage d’abord une sauvegarde si tu veux garder une copie.",
+    "wipeMessage": "Tout sera effacé de ce téléphone, y compris les sauvegardes. Partage d’abord une sauvegarde si tu veux garder une copie.\n\nSi tu es connecté à un compte, les modifications pas encore envoyées partent d’abord ; si l’envoi échoue, tu choisis de réessayer ou de les perdre. Tu seras ensuite déconnecté : ton compte et ses données restent sur le serveur. Pour les supprimer aussi, utilise « Supprimer mon compte » dans « Compte et synchronisation ».",
     "wipeConfirm": "Continuer",
     "wipeAgainTitle": "Dernière vérification",
     "wipeAgainMessage": "Cette action est définitive. Supprimer vraiment toutes tes données ?",
