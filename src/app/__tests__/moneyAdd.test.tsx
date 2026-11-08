@@ -1,7 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createTransaction, listTransactions } from '@/modules/finance';
@@ -112,9 +111,9 @@ describe('modifier une opération', () => {
     expect(await listTransactions(mockDb)).toHaveLength(1);
   });
 
-  it('lecture en échec : message clair, plus d’écran d’attente sans fin, aucun Enregistrer', async () => {
+  it('lecture en échec : erreur et « Réessayer » (pas « n’existe plus »), aucun Enregistrer', async () => {
     mockRead.fail = true;
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => {});
     await render(
       <SafeAreaProvider
         initialMetrics={{
@@ -128,11 +127,42 @@ describe('modifier une opération', () => {
       </SafeAreaProvider>,
     );
     for (let i = 0; i < 3; i++) await flush();
-    expect(alert).toHaveBeenCalledWith(i18n.t('errors.title'), i18n.t('errors.loadFailed'));
-    expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
+    // Une lecture ratée n'est pas une opération supprimée : on peut réessayer.
+    expect(screen.getByText(i18n.t('state.itemErrorTitle'))).toBeTruthy();
+    expect(screen.queryByText(i18n.t('errors.itemNotFound'))).toBeNull();
     expect(screen.queryByText(/Enregistrer/)).toBeNull();
-    alert.mockRestore();
+
+    // « Réessayer » : la lecture réussit, le formulaire apparaît avec l'opération.
     mockRead.fail = false;
+    await fireEvent.press(screen.getByText('Réessayer'));
+    await act(async () => release?.());
+    for (let i = 0; i < 5; i++) await flush();
+    expect(await screen.findByDisplayValue('Déjeuner')).toBeTruthy();
+    expect(screen.getByText(i18n.t('money.delete'))).toBeTruthy();
+    quiet.mockRestore();
+  });
+
+  it('opération supprimée entre-temps : « n’existe plus » avec « Retour »', async () => {
+    const id = mockParams.id;
+    mockParams.id = 'disparue';
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <GestureHandlerRootView>
+          <MoneyAddScreen />
+        </GestureHandlerRootView>
+      </SafeAreaProvider>,
+    );
+    await act(async () => release?.());
+    for (let i = 0; i < 3; i++) await flush();
+    expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
+    expect(screen.getByText('Retour')).toBeTruthy();
+    expect(screen.queryByText(/Enregistrer/)).toBeNull();
+    mockParams.id = id!;
   });
 });
 

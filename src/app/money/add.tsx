@@ -1,7 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
+import { EditLoadView } from '@/components/EditLoadView';
 import { goBack } from '@/components/navigation';
+import { useEditLoad } from '@/hooks/useEditLoad';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -44,8 +46,6 @@ import {
   Button,
   confirmDestructive,
   DateTimeField,
-  EmptyState,
-  LoadingScreen,
   Segmented,
   showError,
   TextButton,
@@ -104,11 +104,23 @@ export default function MoneyAddScreen() {
   const [note, setNote] = useState('');
   const [preferredCurrency, setCurrency] = useState('XAF');
   const [existing, setExisting] = useState<Transaction | null>(null);
-  // Modification : 'loading' tant que l'opération n'est pas chargée (pas de bouton Enregistrer
-  // qui créerait un doublon), 'missing' si elle n'existe plus.
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>(
-    params.id ? 'loading' : 'ready',
+  // Modification : le formulaire n'apparaît qu'une fois l'opération lue (pas de bouton
+  // Enregistrer qui créerait un doublon) ; « n'existe plus » si elle a disparu, « Réessayer » si
+  // la lecture a échoué.
+  const load = useEditLoad(
+    params.id,
+    (id) => getTransaction(db, id),
+    (tx) => {
+      setExisting(tx);
+      setKind(tx.kind);
+      setCategoryId(tx.categoryId);
+      setDigits(amountInput(tx.amountMinor, tx.currency));
+      setDate(tx.date);
+      setNote(tx.note ?? '');
+      setCurrency(tx.currency);
+    },
   );
+  const loadState = load.state;
   const [error, setError] = useState<string | null>(null);
   /** Erreur de saisie de la note, sous son champ. */
   const [noteError, setNoteError] = useState<string | undefined>();
@@ -131,31 +143,11 @@ export default function MoneyAddScreen() {
     [goalId, loanId],
   );
 
+  // Nouvelle opération : la devise choisie dans les réglages de l'argent (l'opération modifiée
+  // garde la sienne).
   useEffect(() => {
-    void (async () => {
-      const prefs = await getMoneyPrefs(db);
-      if (!params.id) {
-        setCurrency(prefs.currency);
-        return;
-      }
-      const tx = await getTransaction(db, params.id);
-      if (!tx) {
-        setLoadState('missing');
-        return;
-      }
-      setExisting(tx);
-      setLoadState('ready');
-      setKind(tx.kind);
-      setCategoryId(tx.categoryId);
-      setDigits(amountInput(tx.amountMinor, tx.currency));
-      setDate(tx.date);
-      setNote(tx.note ?? '');
-      setCurrency(tx.currency);
-    })().catch((e: unknown) => {
-      // Lecture ratée : message clair, jamais un chargement sans fin (ni un Enregistrer qui doublerait).
-      reportLoadError(e);
-      if (params.id) setLoadState('missing');
-    });
+    if (params.id) return;
+    getMoneyPrefs(db).then((prefs) => setCurrency(prefs.currency), reportLoadError);
   }, [db, params.id]);
 
   // Mouvement lié à un prêt ou à un objectif : il a forcément leur devise.
@@ -335,9 +327,8 @@ export default function MoneyAddScreen() {
     </View>
   );
 
-  if (loadState === 'missing')
-    return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
-  if (loadState === 'loading') return <LoadingScreen />;
+  if (loadState !== 'ready')
+    return <EditLoadView state={loadState} onRetry={load.retry} title={t('money.editTitle')} />;
 
   return (
     <KeyboardAvoiding>
