@@ -30,7 +30,8 @@
     "previous": "Previous",
     "next": "Next",
     "clearField": "Clear {{label}}",
-    "showMore": "Show more ({{count}})"
+    "showMore": "Show more ({{count}})",
+    "today": "Today"
   },
   "tabs": {
     "today": "Today",

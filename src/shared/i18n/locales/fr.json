@@ -30,7 +30,8 @@
     "previous": "Précédent",
     "next": "Suivant",
     "clearField": "Effacer {{label}}",
-    "showMore": "Voir plus ({{count}})"
+    "showMore": "Voir plus ({{count}})",
+    "today": "Aujourd’hui"
   },
   "tabs": {
     "today": "Aujourd’hui",
