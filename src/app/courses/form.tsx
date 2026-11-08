@@ -183,7 +183,7 @@ export default function CourseFormScreen() {
       void getNotificationPreferences(db)
         .then((prefs) => {
           const before = prefs.courses && (form.reminderMinutes ?? prefs.courseReminderMinutes) > 0;
-          if (before || prefs.endOfCourse) return askNotificationPermission();
+          if (before || prefs.endOfCourse) return askNotificationPermission(db);
         })
         .catch((e: unknown) => logger.error(e, { where: 'coursePermission' }));
     });

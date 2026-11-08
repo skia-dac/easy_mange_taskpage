@@ -95,6 +95,22 @@ export async function setLastBackupAt(db: Db, isoDate: string): Promise<void> {
   await writeSetting(db, KEYS.lastBackupAt, isoDate);
 }
 
+const NOTIFICATION_PROMPT_KEY = 'notification_prompt_snoozed_at';
+
+/**
+ * Moment (ISO) où l'utilisateur a répondu « Plus tard » à « Recevoir tes rappels ? », ou null :
+ * l'explication n'est pas reproposée d'elle-même pendant quelques jours.
+ */
+export async function getNotificationPromptSnoozedAt(db: Db): Promise<string | null> {
+  const value = await readSetting(db, NOTIFICATION_PROMPT_KEY);
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : null;
+}
+
+export async function setNotificationPromptSnoozedAt(db: Db, iso: string | null): Promise<void> {
+  if (iso) await writeSetting(db, NOTIFICATION_PROMPT_KEY, iso);
+  else await deleteSetting(db, NOTIFICATION_PROMPT_KEY);
+}
+
 /** Verrouillage de l'app par Face ID / Touch ID / code du téléphone. */
 export async function isAppLockEnabled(db: Db): Promise<boolean> {
   return (await readSetting(db, KEYS.appLock)) === true;

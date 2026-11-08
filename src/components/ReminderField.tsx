@@ -103,8 +103,8 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
     setRejected(false);
     if (p === 'custom') onChange(value && !isPast(value) ? value : defaultCustom(dueDate));
     else onChange(presetValue(p, dueDate));
-    // Premier rappel choisi : c'est le bon moment pour demander la permission.
-    if (p !== 'none' && !value) void permission.ask();
+    // La permission n'est pas demandée ici, au milieu du choix : la fiche la demande une fois le
+    // rappel enregistré (`askNotificationPermission`), et la note ci-dessous propose « Autoriser ».
   };
 
   /** Date ou heure personnalisée : un moment passé est refusé, avec un message clair. */
@@ -185,7 +185,7 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
           ) : (
             <TextButton
               label={t('reminder.permissionAllow')}
-              onPress={() => void permission.ask()}
+              onPress={() => void permission.ask({ force: true })}
             />
           )}
         </View>

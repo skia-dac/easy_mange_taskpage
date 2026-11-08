@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ReminderField } from '@/components/ReminderField';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
 import { subjectOptions } from '@/components/SubjectOptions';
 import { useLabels } from '@/hooks/useLabels';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -133,6 +134,8 @@ export default function WorkFormScreen() {
       if (params.id) await updateWorkItem(db, kind, params.id, form);
       else await createWorkItem(db, kind, form);
       leave(goBack);
+      // Rappel enregistré (le choix est fini) : sans permission, il ne sonnerait jamais.
+      if (form.reminderAt) void askNotificationPermission(db);
     });
 
   const remove = async () => {

@@ -44,6 +44,12 @@ jest.mock('@/modules/platform', () => ({
   hasPermission: async () => true,
   ensurePermission: async () => true,
 }));
+// La permission est demandée une fois le rappel enregistré, jamais pendant le choix.
+const mockAsk = jest.fn(async () => 'granted' as const);
+jest.mock('@/hooks/useNotificationPermission', () => ({
+  ...jest.requireActual('@/hooks/useNotificationPermission'),
+  askNotificationPermission: () => mockAsk(),
+}));
 jest.useFakeTimers({ now: new Date(2026, 8, 23, 10, 18) });
 
 let detailed = '';
@@ -198,5 +204,41 @@ describe('modifier une tâche : lecture ratée', () => {
     await fireEvent.press(screen.getByText('Réessayer'));
     await flush();
     expect(screen.getByDisplayValue('Acheter du pain')).toBeTruthy();
+  });
+});
+
+describe('rappel d’une nouvelle tâche', () => {
+  it('la permission est demandée à l’enregistrement, pas en touchant le rappel', async () => {
+    mockAsk.mockClear();
+    mockParams = { date: '2026-09-30' };
+    await show();
+    await fireEvent.changeText(
+      screen.getByPlaceholderText(i18n.t('work.titlePlaceholderTask')),
+      'Rendre le mémoire',
+    );
+    await fireEvent.press(screen.getByLabelText('Plus d’options'));
+    await fireEvent.press(screen.getByText('La veille à 18:00'));
+    await flush();
+    expect(mockAsk).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByText('Enregistrer la tâche'));
+    await flush();
+    expect(mockAsk).toHaveBeenCalledTimes(1);
+    const saved = (await listWorkItems(mockDb, 'task')).find(
+      (w) => w.title === 'Rendre le mémoire',
+    );
+    expect(saved?.reminderAt).toBeTruthy();
+  });
+
+  it('sans rappel : rien n’est demandé', async () => {
+    mockAsk.mockClear();
+    mockParams = {};
+    await show();
+    await fireEvent.changeText(
+      screen.getByPlaceholderText(i18n.t('work.titlePlaceholderTask')),
+      'Sans rappel',
+    );
+    await fireEvent.press(screen.getByText('Enregistrer la tâche'));
+    await flush();
+    expect(mockAsk).not.toHaveBeenCalled();
   });
 });

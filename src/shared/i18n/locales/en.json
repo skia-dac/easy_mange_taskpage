@@ -666,7 +666,8 @@
     "permissionContinue": "Continue",
     "permissionOff": "Notifications are turned off: this reminder will not ring.",
     "permissionAllow": "Allow notifications",
-    "permissionSettings": "Open settings"
+    "permissionSettings": "Open settings",
+    "permissionLater": "Not now"
   },
   "search": {
     "title": "Search",

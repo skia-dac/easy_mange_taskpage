@@ -666,7 +666,8 @@
     "permissionContinue": "Continuer",
     "permissionOff": "Les notifications sont désactivées : ce rappel ne sonnera pas.",
     "permissionAllow": "Autoriser les notifications",
-    "permissionSettings": "Ouvrir les réglages"
+    "permissionSettings": "Ouvrir les réglages",
+    "permissionLater": "Plus tard"
   },
   "search": {
     "title": "Recherche",

@@ -84,13 +84,15 @@ export function confirmAction(
   title: string,
   message: string,
   confirmLabel: string,
+  /** Libellé du refus (« Annuler » par défaut). */
+  cancelLabel: string = i18n.t('common.cancel'),
 ): Promise<boolean> {
   return new Promise((resolve) => {
     Alert.alert(
       title,
       message,
       [
-        { text: i18n.t('common.cancel'), style: 'cancel', onPress: () => resolve(false) },
+        { text: cancelLabel, style: 'cancel', onPress: () => resolve(false) },
         { text: confirmLabel, onPress: () => resolve(true) },
       ],
       { cancelable: true, onDismiss: () => resolve(false) },

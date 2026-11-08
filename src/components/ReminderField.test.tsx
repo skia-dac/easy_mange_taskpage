@@ -1,7 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { useState, type ReactElement } from 'react';
-import { Pressable, Text } from 'react-native';
-import { Alert, Linking } from 'react-native';
+import { Alert, Linking, Pressable, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { defaultNotificationPreferences, setNotificationPreferences } from '@/modules/identity';
@@ -103,7 +102,7 @@ beforeEach(async () => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('rappel : la permission est demandée au bon moment', () => {
-  it('premier rappel choisi : explication, puis demande du système', async () => {
+  it('choisir un rappel ne coupe pas le geste : aucune question, la note propose « Autoriser »', async () => {
     mockPermission.state = 'undetermined';
     mockPermission.ensure.mockImplementation(async () => {
       mockPermission.state = 'granted';
@@ -112,6 +111,13 @@ describe('rappel : la permission est demandée au bon moment', () => {
     const alert = answerAlert('Continuer');
     await render(inApp(<Harness />));
     await fireEvent.press(screen.getByText('La veille à 18:00'));
+    await fireEvent.press(screen.getByText('Le jour même à 09:00'));
+    await flush();
+    // Rien n'est demandé pendant le choix (la fiche demande une fois le rappel enregistré).
+    expect(alert).not.toHaveBeenCalled();
+    expect(screen.getByText('Les notifications sont désactivées : ce rappel ne sonnera pas.'));
+    // « Autoriser » touché : explication, puis demande du système.
+    await fireEvent.press(screen.getByText('Autoriser les notifications'));
     await flush();
     expect(alert).toHaveBeenCalledWith(
       i18n.t('reminder.permissionTitle'),
@@ -123,15 +129,19 @@ describe('rappel : la permission est demandée au bon moment', () => {
     expect(screen.queryByTestId('reminder-permission-off')).toBeNull();
   });
 
-  it('explication refusée : le champ le dit, avec un bouton pour autoriser', async () => {
+  it('« Plus tard » : la note reste, et « Autoriser » redemande quand même', async () => {
     mockPermission.state = 'undetermined';
-    answerAlert('Annuler');
+    const alert = answerAlert('Plus tard');
     await render(inApp(<Harness />));
     await fireEvent.press(screen.getByText('Le jour même à 09:00'));
+    await fireEvent.press(screen.getByText('Autoriser les notifications'));
     await flush();
     expect(mockPermission.ensure).not.toHaveBeenCalled();
     expect(screen.getByText('Les notifications sont désactivées : ce rappel ne sonnera pas.'));
-    expect(screen.getByText('Autoriser les notifications')).toBeTruthy();
+    // Le refus est récent, mais c'est l'utilisateur qui le demande : l'explication revient.
+    await fireEvent.press(screen.getByText('Autoriser les notifications'));
+    await flush();
+    expect(alert).toHaveBeenCalledTimes(2);
   });
 
   it('permission refusée dans le système : message et bouton vers les réglages', async () => {
