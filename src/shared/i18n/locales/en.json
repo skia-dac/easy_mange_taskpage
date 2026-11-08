@@ -28,7 +28,8 @@
     "seeAll": "See all",
     "optional": "Optional",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "showMore": "Show more ({{count}})"
   },
   "tabs": {
     "today": "Today",

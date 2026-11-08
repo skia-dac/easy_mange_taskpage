@@ -28,7 +28,8 @@
     "seeAll": "Tout voir",
     "optional": "Facultatif",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "showMore": "Voir plus ({{count}})"
   },
   "tabs": {
     "today": "Aujourd’hui",

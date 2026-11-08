@@ -53,6 +53,32 @@ export async function searchNotes(db: Db, query: string) {
   return rows.map(toNote);
 }
 
+/** Caractères du contenu lus pour une vignette : de quoi faire le titre et l'aperçu. */
+export const NOTE_EXCERPT_CHARS = 600;
+
+const SUMMARY_COLUMNS = `id, title, substr(content, 1, ${NOTE_EXCERPT_CHARS}) AS content, subject_id,
+  course_series_id, course_date, is_favorite, created_at, updated_at, space, category_id`;
+
+/**
+ * Notes de la liste du Carnet, avec le début du contenu seulement (`content` est un extrait) :
+ * une longue note n'est jamais lue en entier pour sa vignette. Avec `query`, recherche dans le
+ * titre et TOUT le contenu (comme `searchNotes`). Ne pas enregistrer une note lue ainsi.
+ */
+export async function listNoteSummaries(db: Db, query = '') {
+  const q = query.trim().replace(/[%_]/g, '');
+  const rows = q
+    ? await db.getAllAsync<NoteRow>(
+        `SELECT ${SUMMARY_COLUMNS} FROM notes WHERE ${ALIVE} AND (title LIKE ? OR content LIKE ?)
+         ORDER BY updated_at DESC LIMIT 100`,
+        [`%${q}%`, `%${q}%`],
+      )
+    : await db.getAllAsync<NoteRow>(
+        `SELECT ${SUMMARY_COLUMNS} FROM notes WHERE ${ALIVE} ORDER BY updated_at DESC`,
+        [],
+      );
+  return rows.map(toNote);
+}
+
 export async function getNote(db: Db, id: string) {
   const row = await db.getFirstAsync<NoteRow>(`SELECT * FROM notes WHERE id = ? AND ${ALIVE}`, [
     id,
