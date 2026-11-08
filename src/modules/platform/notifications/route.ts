@@ -34,6 +34,7 @@ export function routeForResponse(r: NotificationResponse): Href | null {
     case 'exam':
       return { pathname: '/exams/[id]', params: { id: a.id } };
     case 'event':
+      // Pas d'écran de lecture pour un rendez-vous : partout dans l'app, il s'ouvre sur sa fiche.
       return { pathname: '/events/form', params: { id: a.id } };
     case 'study':
       return '/study';
@@ -44,6 +45,8 @@ export function routeForResponse(r: NotificationResponse): Href | null {
     case 'review':
       return '/review';
     case 'money':
-      return { pathname: '/money/recurring-form', params: { id: a.id } };
+      // Pas d'écran de lecture : la liste des charges et tontines, la ligne mise en avant
+      // (la fiche de modification reste à un appui).
+      return { pathname: '/money/recurring', params: { highlight: a.id } };
   }
 }

@@ -44,3 +44,19 @@ describe('réponse à une notification de fin de cours (§76–79)', () => {
     });
   });
 });
+
+describe('rappels sans écran de lecture', () => {
+  const tap = 'expo.modules.notifications.actions.DEFAULT';
+
+  it('charge ou tontine : la liste, la ligne mise en avant (pas la fiche de modification)', () => {
+    expect(
+      routeForResponse({ actionIdentifier: tap, action: { kind: 'money', id: 'r1' } }),
+    ).toEqual({ pathname: '/money/recurring', params: { highlight: 'r1' } });
+  });
+
+  it('rendez-vous : sa fiche, comme partout dans l’app', () => {
+    expect(
+      routeForResponse({ actionIdentifier: tap, action: { kind: 'event', id: 'e1' } }),
+    ).toEqual({ pathname: '/events/form', params: { id: 'e1' } });
+  });
+});
