@@ -1742,6 +1742,11 @@
     "withPhoto": "with photo"
   },
   "conflicts": {
+    "newToast_one": "A sync conflict needs your attention.",
+    "newToast_other": "{{count}} sync conflicts need your attention.",
+    "see": "View",
+    "badge_one": "{{count}} conflict to resolve",
+    "badge_other": "{{count}} conflicts to resolve",
     "title": "Sync conflicts",
     "intro": "These changes made on this phone were replaced by a newer version from another device, or refused by the server. Nothing is lost: you decide.",
     "empty": "No pending conflict",

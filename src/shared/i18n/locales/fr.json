@@ -1742,6 +1742,11 @@
     "withPhoto": "avec photo"
   },
   "conflicts": {
+    "newToast_one": "Un conflit de synchronisation est à régler.",
+    "newToast_other": "{{count}} conflits de synchronisation sont à régler.",
+    "see": "Voir",
+    "badge_one": "{{count}} conflit à régler",
+    "badge_other": "{{count}} conflits à régler",
     "title": "Conflits de synchronisation",
     "intro": "Ces modifications faites sur ce téléphone ont été remplacées par une version plus récente d’un autre appareil, ou refusées par le serveur. Rien n’est perdu : tu choisis.",
     "empty": "Aucun conflit en attente",
