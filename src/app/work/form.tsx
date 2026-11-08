@@ -13,7 +13,7 @@ import {
   createWorkItem,
   deleteWorkItem,
   estimatePresets,
-  getWorkItem,
+  getWorkItemOfKind,
   priorities,
   repeatRules,
   shiftReminder,
@@ -32,7 +32,9 @@ import {
   confirmDestructive,
   DateTimeField,
   Disclosure,
+  EmptyState,
   FormScreen,
+  LoadingScreen,
   SelectField,
   showError,
   TextButton,
@@ -72,8 +74,14 @@ export default function WorkFormScreen() {
   const spaces = useSpaces();
   const study = spaces.has('study');
   const editing = !!params.id;
-  // Le type enregistré (tâche ou devoir) ne change jamais à la modification.
-  const savedKind: WorkKind = params.kind === 'task' ? 'task' : 'assignment';
+  // Le type enregistré (tâche ou devoir) ne change jamais à la modification. Sans `kind` dans
+  // le lien, il vient de la table où l'élément est trouvé.
+  const [foundKind, setFoundKind] = useState<WorkKind | null>(null);
+  const savedKind: WorkKind = foundKind ?? (params.kind === 'task' ? 'task' : 'assignment');
+  // Modification : 'loading' jusqu'à la lecture, 'missing' si l'élément n'existe plus.
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>(
+    params.id ? 'loading' : 'ready',
+  );
   const { subjects } = useSubjects();
   const [form, setForm] = useState<WorkItemInput>({
     title: '',
@@ -106,14 +114,22 @@ export default function WorkFormScreen() {
 
   useEffect(() => {
     if (!params.id) return;
-    void getWorkItem(db, savedKind, params.id)
+    void getWorkItemOfKind(db, params.kind, params.id)
       .then((w) => {
-        if (!w) return;
+        if (!w) {
+          setLoadState('missing');
+          return;
+        }
+        setFoundKind(w.kind);
         setForm(w);
         markClean(w);
+        setLoadState('ready');
       })
-      .catch(reportLoadError);
-  }, [db, savedKind, params.id, markClean]);
+      .catch((e: unknown) => {
+        reportLoadError(e);
+        setLoadState('missing');
+      });
+  }, [db, params.kind, params.id, markClean]);
 
   const submit = () =>
     run(async () => {
@@ -144,6 +160,19 @@ export default function WorkFormScreen() {
       ? t('work.editTask')
       : t('work.editAssignment')
     : t('work.newTask');
+
+  if (loadState === 'loading') return <LoadingScreen />;
+  if (loadState === 'missing')
+    return (
+      <>
+        <Stack.Screen options={{ title }} />
+        <EmptyState
+          icon="alert-circle"
+          title={t('errors.itemNotFound')}
+          action={{ label: t('common.back'), onPress: () => goBack() }}
+        />
+      </>
+    );
 
   return (
     <FormScreen

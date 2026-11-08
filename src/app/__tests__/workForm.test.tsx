@@ -105,4 +105,19 @@ describe('fiche de tâche courte', () => {
     expect(screen.getByText('Statut')).toBeTruthy();
     expect(screen.queryByText('Priorité')).toBeNull();
   });
+
+  it('lien sans `kind` : la tâche est retrouvée dans sa table (jamais « introuvable » à tort)', async () => {
+    mockParams = { id: plain };
+    await show();
+    expect(screen.getByDisplayValue('Acheter du pain')).toBeTruthy();
+    expect(screen.queryByText('Élément introuvable')).toBeNull();
+  });
+
+  it('élément supprimé entre-temps : « introuvable » avec « Retour », pas un formulaire vide', async () => {
+    mockParams = { id: 'disparu', kind: 'task' };
+    await show();
+    expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
+    expect(screen.getByText('Retour')).toBeTruthy();
+    expect(screen.queryByText(/^Titre/)).toBeNull();
+  });
 });
