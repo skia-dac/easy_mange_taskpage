@@ -104,7 +104,11 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
   };
 
   return (
-    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ gap: spacing.sm }}>
+    <View
+      testID="hours-grid"
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ gap: spacing.sm }}
+    >
       <View style={{ flexDirection: 'row', paddingLeft: GUTTER }}>
         {dates.map((d) => (
           <View key={d} style={{ flex: 1, alignItems: 'center' }}>
@@ -202,6 +206,16 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
                     height={Math.max(18, ((b.end - b.start) / 60) * HOUR_HEIGHT - 2)}
                     colWidth={colWidth}
                     title={title(b.item)}
+                    accessibilityLabel={[
+                      title(b.item),
+                      `${labels.weekday(isoWeekday(l.day))} ${Number(l.day.slice(8))}`,
+                      `${minutesToTime(b.start)} – ${minutesToTime(b.end)}`,
+                      b.item.kind === 'course' && b.item.occurrence.status === 'cancelled'
+                        ? t('occurrence.cancelled')
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
                     tone={tone(b.item)}
                     struck={
                       (b.item.kind === 'course' && b.item.occurrence.status === 'cancelled') ||
@@ -220,6 +234,38 @@ export function WeekHoursGrid({ weekStart, today, days, subjects, onOpen, onMove
   );
 }
 
+/** Noms des actions du lecteur d'écran sur un bloc (exportés pour les tests). */
+export const BLOCK_ACTIONS = {
+  open: 'activate',
+  earlier: 'moveEarlier',
+  later: 'moveLater',
+  previousDay: 'movePreviousDay',
+  nextDay: 'moveNextDay',
+} as const;
+
+/**
+ * Déplacement demandé par une action du lecteur d'écran (sans geste) : même calcul que le
+ * glisser, d'un quart d'heure ou d'un jour. `null` si l'action n'en est pas une, ou si le bloc
+ * est déjà au bord de la journée.
+ */
+export function accessibleMove(
+  block: Pick<TimedBlock, 'start' | 'end'>,
+  day: IsoDate,
+  action: string,
+): MoveTarget | null {
+  const steps: Record<string, [number, number]> = {
+    [BLOCK_ACTIONS.earlier]: [0, -SNAP_MINUTES],
+    [BLOCK_ACTIONS.later]: [0, SNAP_MINUTES],
+    [BLOCK_ACTIONS.previousDay]: [-1, 0],
+    [BLOCK_ACTIONS.nextDay]: [1, 0],
+  };
+  const step = steps[action];
+  if (!step) return null;
+  const to = moveTarget(block, day, step[0], step[1]);
+  if (to.date === day && to.startTime === minutesToTime(block.start)) return null;
+  return to;
+}
+
 type BlockProps = {
   block: TimedBlock;
   day: IsoDate;
@@ -229,6 +275,8 @@ type BlockProps = {
   height: number;
   colWidth: number;
   title: string;
+  /** Ce que lit le lecteur d'écran : titre, jour, heures, état. */
+  accessibilityLabel: string;
   tone: { bg: string; fg: string };
   struck: boolean;
   moveHint: string;
@@ -245,6 +293,29 @@ function Block(p: BlockProps) {
   const shownStep = useSharedValue(Number.NaN);
   const [label, setLabel] = useState<string | null>(null);
   const { text } = useTheme();
+  const { t } = useTranslation();
+  // Le glisser est inaccessible au lecteur d'écran (VoiceOver, TalkBack) : les mêmes
+  // déplacements sont proposés en actions, et le double-tap ouvre l'élément.
+  const actions = [
+    { name: BLOCK_ACTIONS.open, label: t('calendar.open') },
+    ...(p.block.movable
+      ? [
+          { name: BLOCK_ACTIONS.earlier, label: t('calendar.moveEarlier') },
+          { name: BLOCK_ACTIONS.later, label: t('calendar.moveLater') },
+          { name: BLOCK_ACTIONS.previousDay, label: t('calendar.movePreviousDay') },
+          { name: BLOCK_ACTIONS.nextDay, label: t('calendar.moveNextDay') },
+        ]
+      : []),
+  ];
+  const onAction = (name: string) => {
+    if (name === BLOCK_ACTIONS.open) {
+      p.onOpen(p.block.item);
+      return;
+    }
+    if (!p.block.movable) return;
+    const to = accessibleMove(p.block, p.day, name);
+    if (to) p.onMove(p.block.item, to);
+  };
 
   const drop = (dx: number, dy: number) => {
     setLabel(null);
@@ -306,8 +377,11 @@ function Block(p: BlockProps) {
       <Animated.View
         accessible
         accessibilityRole="button"
-        accessibilityLabel={p.title}
+        accessibilityLabel={p.accessibilityLabel}
         accessibilityHint={p.block.movable ? p.moveHint : undefined}
+        accessibilityActions={actions}
+        onAccessibilityAction={(e) => onAction(e.nativeEvent.actionName)}
+        onAccessibilityTap={() => p.onOpen(p.block.item)}
         style={[
           {
             position: 'absolute',

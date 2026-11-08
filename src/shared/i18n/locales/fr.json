@@ -162,7 +162,7 @@
       "event": "Rendez-vous"
     },
     "hoursHint": "Appui long sur un élément puis glisse-le pour changer son jour ou son heure.",
-    "moveHint": "Appui long puis glisser pour déplacer",
+    "moveHint": "Appui long puis glisser pour déplacer. Avec le lecteur d’écran, utilise les actions.",
     "moveCourseTitle": "Déplacer ce cours ?",
     "moveCourseMessage": "Seule cette séance passe au {{date}} à {{time}}. Les autres semaines ne changent pas.",
     "moveConfirm": "Déplacer",
@@ -176,7 +176,12 @@
       "day": "Jour suivant",
       "week": "Semaine suivante",
       "month": "Mois suivant"
-    }
+    },
+    "open": "Ouvrir",
+    "moveEarlier": "Avancer de 15 min",
+    "moveLater": "Reculer de 15 min",
+    "movePreviousDay": "Déplacer au jour précédent",
+    "moveNextDay": "Déplacer au jour suivant"
   },
   "calendarItem": {
     "exam": "Examen",

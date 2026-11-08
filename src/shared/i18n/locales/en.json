@@ -162,7 +162,7 @@
       "event": "Appointments"
     },
     "hoursHint": "Long-press an item, then drag it to change its day or time.",
-    "moveHint": "Long-press then drag to move",
+    "moveHint": "Long-press then drag to move. With a screen reader, use the actions.",
     "moveCourseTitle": "Move this class?",
     "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
     "moveConfirm": "Move",
@@ -176,7 +176,12 @@
       "day": "Next day",
       "week": "Next week",
       "month": "Next month"
-    }
+    },
+    "open": "Open",
+    "moveEarlier": "Move 15 min earlier",
+    "moveLater": "Move 15 min later",
+    "movePreviousDay": "Move to the previous day",
+    "moveNextDay": "Move to the next day"
   },
   "calendarItem": {
     "exam": "Exam",
