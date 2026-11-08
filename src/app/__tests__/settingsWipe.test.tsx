@@ -104,22 +104,18 @@ async function pressWipe() {
 const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 const signedIn = { ...signedOut, enabled: true, userId: 'user-1', email: 'a@b.c' };
 
-describe('Réglages › Supprimer toutes mes données', () => {
-  it('connecté : envoie d’abord, propose de réessayer, puis efface et déconnecte', async () => {
+describe('Réglages › Supprimer toutes mes données (même parcours que Compte › Effacer ce téléphone)', () => {
+  it('connecté : une confirmation, envoie d’abord, propose de réessayer, puis efface et déconnecte', async () => {
     mockAuth = signedIn;
     mockLeft = [2, 0];
-    const shown = answer([
-      t('data.wipeConfirm'),
-      t('account.unsyncedRetry'),
-      t('data.wipeAgainConfirm'),
-    ]);
+    const shown = answer([t('account.eraseConfirm'), t('account.unsyncedRetry')]);
     await pressWipe();
     expect(mockPush).toHaveBeenCalledTimes(2);
     expect(shown.map((s) => s.title)).toEqual([
-      t('data.wipeTitle'),
+      t('account.eraseTitle'),
       t('account.unsyncedTitle'),
-      t('data.wipeAgainTitle'),
     ]);
+    expect(shown[0]?.message).toBe(t('account.eraseMessage'));
     expect(shown[1]?.message).toBe(t('account.unsyncedMessage', { count: 2 }));
     expect(mockSignOutFromPhone).toHaveBeenCalledWith(mockDb, false, { discardUnsynced: false });
     expect(mockWipe).not.toHaveBeenCalled();
@@ -129,7 +125,7 @@ describe('Réglages › Supprimer toutes mes données', () => {
   it('connecté : « Annuler » devant les modifications non envoyées n’efface rien', async () => {
     mockAuth = signedIn;
     mockLeft = [3];
-    answer([t('data.wipeConfirm'), t('common.cancel')]);
+    answer([t('account.eraseConfirm'), t('common.cancel')]);
     await pressWipe();
     expect(mockSignOutFromPhone).not.toHaveBeenCalled();
     expect(mockWipe).not.toHaveBeenCalled();
@@ -137,27 +133,30 @@ describe('Réglages › Supprimer toutes mes données', () => {
     expect(router.replace).not.toHaveBeenCalled();
   });
 
-  it('connecté : « Effacer quand même » l’accepte explicitement, après la dernière vérification', async () => {
+  it('connecté : « Effacer quand même » l’accepte explicitement, sans autre question', async () => {
     mockAuth = signedIn;
     mockLeft = [1];
-    answer([t('data.wipeConfirm'), t('account.unsyncedErase'), t('data.wipeAgainConfirm')]);
+    const shown = answer([t('account.eraseConfirm'), t('account.unsyncedErase')]);
     await pressWipe();
+    expect(shown).toHaveLength(2);
     expect(mockSignOutFromPhone).toHaveBeenCalledWith(mockDb, false, { discardUnsynced: true });
     expect(router.replace).toHaveBeenCalledWith('/onboarding');
   });
 
-  it('connecté : la dernière vérification refusée n’efface rien', async () => {
+  it('connecté : tout envoyé, une seule question ; la confirmation refusée n’envoie ni n’efface rien', async () => {
     mockAuth = signedIn;
     mockLeft = [0];
-    answer([t('data.wipeConfirm'), t('common.cancel')]);
+    const shown = answer([t('common.cancel')]);
     await pressWipe();
-    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(shown).toHaveLength(1);
+    expect(mockPush).not.toHaveBeenCalled();
     expect(mockSignOutFromPhone).not.toHaveBeenCalled();
   });
 
-  it('sans compte : aucun envoi, efface puis déconnecte par précaution', async () => {
-    answer([t('data.wipeConfirm'), t('data.wipeAgainConfirm')]);
+  it('sans compte : une confirmation, aucun envoi, efface puis déconnecte par précaution', async () => {
+    const shown = answer([t('data.wipeConfirm')]);
     await pressWipe();
+    expect(shown.map((s) => s.title)).toEqual([t('data.wipeTitle')]);
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockWipe).toHaveBeenCalledWith(mockDb);
     expect(mockSignOut).toHaveBeenCalledTimes(1);
@@ -165,7 +164,7 @@ describe('Réglages › Supprimer toutes mes données', () => {
   });
 
   it('le message dit ce que deviennent le compte et les modifications non envoyées', () => {
-    expect(t('data.wipeMessage')).toMatch(/compte/);
-    expect(t('data.wipeMessage')).toMatch(/pas encore envoyées/);
+    expect(t('account.eraseMessage')).toMatch(/compte/);
+    expect(t('account.eraseMessage')).toMatch(/pas encore envoyé/);
   });
 });

@@ -723,11 +723,8 @@
     "wipe": "Supprimer toutes mes données",
     "wipeHint": "Efface matières, cours, notes, tâches, réglages, pièces jointes et sauvegardes de ce téléphone. Irréversible.",
     "wipeTitle": "Supprimer toutes tes données ?",
-    "wipeMessage": "Tout sera effacé de ce téléphone, y compris les sauvegardes. Partage d’abord une sauvegarde si tu veux garder une copie.\n\nSi tu es connecté à un compte, les modifications pas encore envoyées partent d’abord ; si l’envoi échoue, tu choisis de réessayer ou de les perdre. Tu seras ensuite déconnecté : ton compte et ses données restent sur le serveur. Pour les supprimer aussi, utilise « Supprimer mon compte » dans « Compte et synchronisation ».",
-    "wipeConfirm": "Continuer",
-    "wipeAgainTitle": "Dernière vérification",
-    "wipeAgainMessage": "Cette action est définitive. Supprimer vraiment toutes tes données ?",
-    "wipeAgainConfirm": "Tout supprimer"
+    "wipeMessage": "Tout sera effacé de ce téléphone, y compris les sauvegardes. Partage d’abord une sauvegarde si tu veux garder une copie. Cette action est définitive.",
+    "wipeConfirm": "Tout supprimer"
   },
   "backup": {
     "title": "Sauvegarde locale",
@@ -1023,14 +1020,15 @@
     "otherMessage": "Ce téléphone contient les données d’un autre compte MySky. Pour continuer avec ce compte, elles seront effacées de ce téléphone (elles restent sur l’autre compte).",
     "otherConfirm": "Effacer et continuer",
     "eraseTitle": "Effacer ce téléphone ?",
-    "eraseMessage": "Tout est envoyé sur ton compte. Les données, pièces jointes et sauvegardes de ce téléphone seront effacées, puis tu seras déconnecté.",
+    "eraseMessage": "Ce qui n’est pas encore envoyé part d’abord sur ton compte. Les données, pièces jointes et sauvegardes de ce téléphone seront ensuite effacées et tu seras déconnecté. Ton compte et ses données restent sur le serveur : pour les supprimer aussi, utilise « Supprimer mon compte » dans « Compte et synchronisation ».",
     "eraseConfirm": "Effacer ce téléphone",
     "unsyncedTitle": "Modifications pas encore envoyées",
     "unsyncedMessage_one": "{{count}} modification n’est pas encore envoyée. Si tu continues, elle sera perdue.",
     "unsyncedMessage_other": "{{count}} modifications ne sont pas encore envoyées. Si tu continues, elles seront perdues.",
     "unsyncedRetry": "Réessayer l’envoi",
     "unsyncedErase": "Effacer quand même",
-    "unsyncedBlocked": "Des modifications ne sont pas encore envoyées : ce téléphone n’a pas été effacé."
+    "unsyncedBlocked": "Des modifications ne sont pas encore envoyées : ce téléphone n’a pas été effacé.",
+    "signedOutKept": "Tu es déconnecté. Tes données restent sur ce téléphone."
   },
   "auth": {
     "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer à synchroniser.",

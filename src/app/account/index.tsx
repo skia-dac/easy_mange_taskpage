@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { AccountsUnavailable } from '@/components/AccountsUnavailable';
+import { useErasePhone } from '@/hooks/useErasePhone';
 import { useLabels } from '@/hooks/useLabels';
 import { accountMessageKey, getAccountOwner, getLastSyncAt, useAuth } from '@/modules/identity';
 import {
@@ -24,17 +25,16 @@ import {
   ChoiceSheet,
   Chip,
   confirmDestructive,
-  confirmDestructiveOrRetry,
   IconBadge,
   ListRow,
   LoadingScreen,
   SectionHeader,
   showError,
+  showToast,
   TextButton,
 } from '@/shared/ui';
 import {
   deleteAccountEverywhere,
-  pushBeforeErase,
   replaceLocalDataWithAccount,
   signOutFromPhone,
 } from '@/workflows';
@@ -49,6 +49,7 @@ export default function AccountScreen() {
   const sync = useSyncStatus();
   const [sheet, setSheet] = useState(false);
   const [busy, setBusy] = useState(false);
+  const erasePhone = useErasePhone();
   const info = useLiveQuery(
     async (d) => ({
       owner: await getAccountOwner(d),
@@ -96,40 +97,6 @@ export default function AccountScreen() {
     if (after.state === 'error' || after.state === 'offline') {
       showError(after.lastError ?? 'sync.error');
     }
-  };
-
-  /**
-   * « Effacer ce téléphone » : on envoie d'abord ce qui attend. S'il reste des modifications non
-   * envoyées, on le dit avec leur nombre (réessayer, effacer quand même, annuler) ; sinon une
-   * confirmation simple. Jamais d'effacement sans confirmation.
-   */
-  const eraseThisPhone = async () => {
-    if (!userId) return;
-    for (;;) {
-      const left = await pushBeforeErase(db, userId);
-      if (left === 0) {
-        const ok = await confirmDestructive(
-          t('account.eraseTitle'),
-          t('account.eraseMessage'),
-          t('account.eraseConfirm'),
-        );
-        if (!ok) return;
-        await signOutFromPhone(db, false);
-        break;
-      }
-      const choice = await confirmDestructiveOrRetry(
-        t('account.unsyncedTitle'),
-        t('account.unsyncedMessage', { count: left }),
-        t('account.unsyncedRetry'),
-        t('account.unsyncedErase'),
-      );
-      if (choice === 'cancel') return;
-      if (choice === 'destructive') {
-        await signOutFromPhone(db, false, { discardUnsynced: true });
-        break;
-      }
-    }
-    router.replace('/onboarding');
   };
 
   if (!userId) {
@@ -302,13 +269,21 @@ export default function AccountScreen() {
           {
             label: t('account.signOutKeep'),
             hint: t('account.signOutKeepHint'),
-            onPress: () => void guard(() => signOutFromPhone(db, true)),
+            onPress: () =>
+              void guard(async () => {
+                await signOutFromPhone(db, true);
+                showToast(t('account.signedOutKept'));
+              }),
           },
           {
             label: t('account.signOutErase'),
             hint: t('account.signOutEraseHint'),
             destructive: true,
-            onPress: () => void guard(eraseThisPhone),
+            afterDismiss: true,
+            onPress: () =>
+              void guard(async () => {
+                await erasePhone();
+              }),
           },
         ]}
         onClose={() => setSheet(false)}
