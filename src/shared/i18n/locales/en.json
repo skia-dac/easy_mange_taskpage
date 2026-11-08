@@ -650,14 +650,16 @@
     "body3": "A reminder at the right time so you forget nothing: classes, meetings, tasks, tontines.",
     "howTitle": "How do you want to start?",
     "howHint": "You can change your mind later.",
-    "manual": "Create my timetable",
-    "manualHint": "Add your subjects and classes one by one.",
+    "manual": "Add my subjects",
+    "manualHint": "Start with your subjects, then add your classes.",
     "laterHint": "Explore the app first.",
     "progress": "Step {{step}} of {{total}}",
     "account": "I already have an account",
     "accountHint": "Get your data back from another phone",
     "welcome": "Welcome to MySky",
-    "previous": "Back"
+    "previous": "Back",
+    "firstTask": "Write down my first task",
+    "firstTaskHint": "Something to do, big or small."
   },
   "notifications": {
     "title": "Notifications",

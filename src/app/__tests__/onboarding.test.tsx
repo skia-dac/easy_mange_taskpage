@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { getActiveSpaces, isOnboardingDone } from '@/modules/identity';
@@ -13,16 +14,44 @@ let mockDb: Db & { close(): void };
 
 jest.mock('expo-sqlite', () => ({ useSQLiteContext: () => mockDb }));
 jest.mock('expo-router', () => ({ router: { replace: jest.fn(), push: jest.fn() } }));
-jest.mock('@/modules/identity', () => ({
-  ...jest.requireActual('@/modules/identity'),
-  useAuth: () => ({ enabled: false }),
-}));
+const mockSave = { fail: 0 };
+jest.mock('@/modules/identity', () => {
+  const actual = jest.requireActual('@/modules/identity');
+  return {
+    ...actual,
+    useAuth: () => ({ enabled: false }),
+    // `mockSave.fail` : nombre d'enregistrements qui échouent avant de réussir.
+    setOnboardingDone: (db: unknown) => {
+      if (mockSave.fail > 0) {
+        mockSave.fail -= 1;
+        return Promise.reject(new Error('disk'));
+      }
+      return actual.setOnboardingDone(db);
+    },
+  };
+});
 
 beforeEach(async () => {
   await i18n.changeLanguage('fr');
   mockDb = await createTestDb();
+  jest.mocked(router.replace).mockClear();
+  jest.mocked(router.push).mockClear();
 });
-afterEach(() => mockDb.close());
+afterEach(() => {
+  jest.restoreAllMocks();
+  mockDb.close();
+});
+
+/** Va jusqu'à la dernière étape, en décochant Études si `withoutStudy`. */
+async function toLastStep(withoutStudy = false) {
+  await fireEvent.press(screen.getByRole('button', { name: 'Suivant' }));
+  if (withoutStudy) {
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Ma vie perso' }));
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Mes études' }));
+  }
+  await fireEvent.press(screen.getByRole('button', { name: 'Suivant' }));
+  await flush();
+}
 
 const flush = () => act(async () => {});
 
@@ -80,5 +109,53 @@ describe('première utilisation', () => {
     ).toMatchObject({ checked: true });
     await fireEvent.press(screen.getByRole('button', { name: 'Précédent' }));
     expect(screen.getByLabelText('Étape 1 sur 3')).toBeTruthy();
+  });
+
+  it('« accueil terminé » pas enregistré : message et « Réessayer », jamais d’ouverture en boucle', async () => {
+    mockSave.fail = 1;
+    // 1er échec : « Annuler » → on reste sur l'étape, rien n'est ouvert.
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => {
+      buttons?.find((b) => b.style === 'cancel')?.onPress?.();
+    });
+    await show();
+    await toLastStep();
+    await fireEvent.press(screen.getByRole('button', { name: 'Commencer' }));
+    await flush();
+    expect(alert).toHaveBeenCalledWith(
+      'Oups',
+      expect.any(String),
+      expect.arrayContaining([expect.objectContaining({ text: 'Réessayer' })]),
+      expect.any(Object),
+    );
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Étape 3 sur 3')).toBeTruthy();
+
+    // 2e essai : échec puis « Réessayer » qui réussit → l'app s'ouvre.
+    alert.mockImplementation((_t, _m, buttons) => {
+      buttons?.find((b) => b.text === 'Réessayer')?.onPress?.();
+    });
+    mockSave.fail = 1;
+    await fireEvent.press(screen.getByRole('button', { name: 'Commencer' }));
+    await flush();
+    expect(await isOnboardingDone(mockDb)).toBe(true);
+    expect(router.replace).toHaveBeenCalledWith('/');
+  });
+
+  it('dernière étape sans Études ni comptes : toujours un choix utile, une première tâche', async () => {
+    await show();
+    await toLastStep(true);
+    expect(screen.queryByText('Ajouter mes matières')).toBeNull();
+    await fireEvent.press(screen.getByLabelText('Noter ma première tâche'));
+    await flush();
+    expect(await isOnboardingDone(mockDb)).toBe(true);
+    expect(router.push).toHaveBeenCalledWith('/work/form');
+  });
+
+  it('avec Études : le choix dit ce qu’il ouvre (les matières)', async () => {
+    await show();
+    await toLastStep();
+    await fireEvent.press(screen.getByLabelText('Ajouter mes matières'));
+    await flush();
+    expect(router.push).toHaveBeenCalledWith('/subjects/form');
   });
 });

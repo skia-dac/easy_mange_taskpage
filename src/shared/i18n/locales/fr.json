@@ -650,14 +650,16 @@
     "body3": "Un rappel au bon moment pour ne rien oublier : cours, réunions, tâches, tontines.",
     "howTitle": "Comment veux-tu commencer ?",
     "howHint": "Tu pourras changer d’avis plus tard.",
-    "manual": "Créer mon emploi du temps",
-    "manualHint": "Ajoute tes matières et tes cours un par un.",
+    "manual": "Ajouter mes matières",
+    "manualHint": "Commence par tes matières, puis ajoute tes cours.",
     "laterHint": "Découvre d’abord l’application.",
     "progress": "Étape {{step}} sur {{total}}",
     "account": "J’ai déjà un compte",
     "accountHint": "Retrouve tes données d’un autre téléphone",
     "welcome": "Bienvenue dans MySky",
-    "previous": "Précédent"
+    "previous": "Précédent",
+    "firstTask": "Noter ma première tâche",
+    "firstTaskHint": "Une chose à faire, petite ou grande."
   },
   "notifications": {
     "title": "Notifications",

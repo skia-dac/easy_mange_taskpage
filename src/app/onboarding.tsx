@@ -13,7 +13,15 @@ import { userMessageKey } from '@/shared/errors';
 import { logger } from '@/shared/logger';
 import { spaceIds, toggleSpace, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
 import { useTheme } from '@/shared/theme';
-import { AppText, Button, Card, IconBadge, showError, TextButton } from '@/shared/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  confirmAction,
+  IconBadge,
+  showError,
+  TextButton,
+} from '@/shared/ui';
 
 type Icon = ComponentProps<typeof Feather>['name'];
 
@@ -41,14 +49,35 @@ export default function OnboardingScreen() {
   const [savingSpaces, setSavingSpaces] = useState(false);
   const { enabled: accounts } = useAuth();
 
-  const finish = async (then: 'today' | 'subject' | 'account') => {
-    try {
-      await setOnboardingDone(db);
-    } catch (e) {
-      logger.error(e, { where: 'onboarding' });
+  const [finishing, setFinishing] = useState(false);
+  /**
+   * Fin de l'accueil : « accueil terminé » est enregistré AVANT d'ouvrir l'app, sinon l'app
+   * renverrait ici en boucle. En échec : message clair et « Réessayer », on reste sur l'étape.
+   */
+  const finish = async (then: 'today' | 'subject' | 'task' | 'account') => {
+    if (finishing) return;
+    setFinishing(true);
+    for (;;) {
+      try {
+        await setOnboardingDone(db);
+        break;
+      } catch (e) {
+        logger.error(e, { where: 'onboarding' });
+        const retry = await confirmAction(
+          t('errors.title'),
+          t(userMessageKey(e)),
+          t('errors.retry'),
+        );
+        if (!retry) {
+          setFinishing(false);
+          return;
+        }
+      }
     }
+    setFinishing(false);
     router.replace('/');
     if (then === 'subject') router.push('/subjects/form');
+    if (then === 'task') router.push('/work/form');
     if (then === 'account') router.push('/auth/sign-in');
   };
 
@@ -98,7 +127,7 @@ export default function OnboardingScreen() {
   const last = index === STEPS - 1;
   const primary = {
     label: last ? t('onboarding.start') : t('onboarding.next'),
-    disabled: index === 1 && savingSpaces,
+    disabled: (index === 1 && savingSpaces) || finishing,
     onPress: () => {
       if (index === 0) setIndex(1);
       else if (index === 1) void saveSpaces();
@@ -230,7 +259,8 @@ export default function OnboardingScreen() {
                 <Feather
                   name={on ? 'check-circle' : 'circle'}
                   size={24}
-                  color={on ? colors.primary : colors.border}
+                  // Contour d'au moins 3:1 sur la carte (jeton `outline`), lisible non coché.
+                  color={on ? colors.primary : colors.outline}
                 />
               </View>
             </Card>
@@ -263,14 +293,21 @@ export default function OnboardingScreen() {
         {t('onboarding.howTitle')}
       </AppText>
       <AppText color="muted">{t('onboarding.howHint')}</AppText>
+      {/* Toujours au moins un choix utile : une première tâche, commune aux trois espaces. */}
       {picked.includes('study')
         ? choice(
-            'edit-3',
+            'book-open',
             t('onboarding.manual'),
             t('onboarding.manualHint'),
             () => void finish('subject'),
           )
         : null}
+      {choice(
+        'check-square',
+        t('onboarding.firstTask'),
+        t('onboarding.firstTaskHint'),
+        () => void finish('task'),
+      )}
       {accounts
         ? choice(
             'log-in',
