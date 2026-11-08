@@ -1526,6 +1526,7 @@
     "periodWeek": "Weekly",
     "periodStartDay": "Your month starts on",
     "periodStartWeekday": "Your week starts on",
+    "periodCurrent": "Current period: {{from}} to {{to}}.",
     "periodHint": "E.g. the 25th if that’s when your money arrives. Reports follow this choice.",
     "widgets": "Widgets",
     "hideAmounts": "Hide amounts in widgets",

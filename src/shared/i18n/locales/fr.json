@@ -1526,6 +1526,7 @@
     "periodWeek": "Par semaine",
     "periodStartDay": "Ton mois commence le",
     "periodStartWeekday": "Ta semaine commence le",
+    "periodCurrent": "Ta période en cours : du {{from}} au {{to}}.",
     "periodHint": "Ex. le 25 si c’est le jour où ton argent arrive. Les bilans suivent ce choix.",
     "widgets": "Widgets",
     "hideAmounts": "Masquer les montants dans les widgets",

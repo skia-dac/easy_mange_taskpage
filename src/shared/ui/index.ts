@@ -12,6 +12,7 @@ export type { ChipTone } from './Chip';
 export { ChoiceChip, ChoiceChips } from './ChoiceChips';
 export { DateTimeField, useDateTimePicker } from './DateTimeField';
 export { Disclosure } from './Disclosure';
+export { DayOfMonthPicker } from './DayOfMonthPicker';
 export {
   confirmAction,
   confirmDestructive,

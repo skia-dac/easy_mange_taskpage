@@ -17,6 +17,7 @@ import {
   deleteCategory,
   getMoneyPrefs,
   listCategories,
+  periodContaining,
   setMoneyPrefs,
   updateCategory,
   type CategoryKind,
@@ -25,6 +26,8 @@ import {
 } from '@/modules/finance';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
+import { toIsoDate } from '@/shared/dates';
+import { formatShortDate } from '@/shared/format';
 import { isValidationError } from '@/shared/validation';
 import { minTouchSize, subjectColors, useTheme } from '@/shared/theme';
 import {
@@ -32,6 +35,7 @@ import {
   Button,
   Card,
   ChoiceChips,
+  DayOfMonthPicker,
   confirmDestructive,
   ListRow,
   SectionHeader,
@@ -47,7 +51,7 @@ import {
 
 /** Réglages de l'argent : monnaie, début du mois ou de la semaine, widgets, catégories personnelles. */
 export default function MoneySettingsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const labels = useLabels();
   const db = useDb();
   const { colors, spacing, radius, scheme } = useTheme();
@@ -70,6 +74,7 @@ export default function MoneySettingsScreen() {
   const save = (patch: Partial<MoneyPrefs>) =>
     setMoneyPrefs(db, { ...prefs, ...patch }).catch(fail);
   const period = prefs.period;
+  const currentPeriod = periodContaining(toIsoDate(new Date()), period);
 
   const resetForm = () => {
     setEditingId(null);
@@ -154,15 +159,17 @@ export default function MoneySettingsScreen() {
           ]}
         />
         {period.kind === 'month' ? (
-          <SelectField
-            label={t('money.periodStartDay')}
-            value={String(period.startDay)}
-            options={Array.from({ length: 31 }, (_, i) => ({
-              value: String(i + 1),
-              label: t('money.dayN', { day: i + 1 }),
-            }))}
-            onChange={(v) => void save({ period: { kind: 'month', startDay: Number(v ?? 1) } })}
-          />
+          <Card>
+            <View style={{ gap: spacing.sm }}>
+              <AppText variant="bodyStrong">{t('money.periodStartDay')}</AppText>
+              <DayOfMonthPicker
+                accessibilityLabel={t('money.periodStartDay')}
+                value={period.startDay}
+                dayLabel={(day) => t('money.dayN', { day })}
+                onChange={(day) => void save({ period: { kind: 'month', startDay: day } })}
+              />
+            </View>
+          </Card>
         ) : (
           <ChoiceChips
             label={t('money.periodStartWeekday')}
@@ -175,6 +182,10 @@ export default function MoneySettingsScreen() {
           />
         )}
         <AppText variant="caption" color="muted">
+          {t('money.periodCurrent', {
+            from: formatShortDate(currentPeriod.from, i18n.language),
+            to: formatShortDate(currentPeriod.to, i18n.language),
+          })}{' '}
           {t('money.periodHint')}
         </AppText>
 
