@@ -25,7 +25,14 @@ import {
 } from '@/modules/identity';
 import { isScheduledOn, logOn, subtaskCounts, type Habit } from '@/modules/productivity';
 import { useSubjects } from '@/hooks/useSubjects';
-import { buildDayLine, buildToday, useAgendaData, type NextCourse } from '@/projections';
+import {
+  buildDayLine,
+  buildToday,
+  capList,
+  TODAY_TODO_LIMIT,
+  useAgendaData,
+  type NextCourse,
+} from '@/projections';
 import { timeToMinutes } from '@/shared/dates';
 import { settingTable, useLiveQuery } from '@/shared/db';
 import { useSpaces } from '@/shared/SpacesContext';
@@ -63,7 +70,8 @@ export default function TodayScreen() {
   const data = agenda.data;
   const view = useMemo(() => (data ? buildToday(data, now) : null), [data, now]);
 
-  const todo = view ? [...view.overdue, ...view.dueToday] : [];
+  const todo = capList(view ? [...view.overdue, ...view.dueToday] : [], TODAY_TODO_LIMIT);
+  const openTodo = () => router.navigate('/(tabs)/tasks?view=todo');
   const weekStart = useWeekStart();
   const [habitSheet, setHabitSheet] = useState<Habit | null>(null);
   const habits = (data?.habits ?? []).filter((h) => view && isScheduledOn(h, view.today));
@@ -229,15 +237,12 @@ export default function TodayScreen() {
             <RiseIn>
               <SectionHeader
                 title={t('today.todoTitle')}
-                action={{
-                  label: t('common.seeAll'),
-                  onPress: () => router.navigate('/(tabs)/tasks?view=todo'),
-                }}
+                action={{ label: t('common.seeAll'), onPress: openTodo }}
               />
             </RiseIn>
-            {todo.length > 0 ? (
+            {todo.total > 0 ? (
               <Card>
-                {todo.map((w) => (
+                {todo.shown.map((w) => (
                   <RiseIn row key={`${w.kind}-${w.id}`}>
                     <WorkRow
                       item={w}
@@ -249,6 +254,12 @@ export default function TodayScreen() {
                     />
                   </RiseIn>
                 ))}
+                {todo.total > todo.shown.length ? (
+                  <TextButton
+                    label={t('today.todoSeeAll', { count: todo.total })}
+                    onPress={openTodo}
+                  />
+                ) : null}
               </Card>
             ) : (
               <RiseIn>

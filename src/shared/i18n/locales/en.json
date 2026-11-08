@@ -103,7 +103,8 @@
       "workHint": "Add your first task or an appointment: your day will show up here.",
       "personalTitle": "Organise your personal life",
       "personalHint": "Add a first task, or create a habit to follow every day."
-    }
+    },
+    "todoSeeAll": "See all ({{count}})"
   },
   "countdown": {
     "today": "Today",

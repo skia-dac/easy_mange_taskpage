@@ -103,7 +103,8 @@
       "workHint": "Ajoute ta première tâche ou un rendez-vous : ta journée s’affichera ici.",
       "personalTitle": "Organise ta vie perso",
       "personalHint": "Note une première tâche, ou crée une habitude à suivre chaque jour."
-    }
+    },
+    "todoSeeAll": "Voir tout ({{count}})"
   },
   "countdown": {
     "today": "Aujourd’hui",
