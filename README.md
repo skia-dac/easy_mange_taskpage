@@ -40,7 +40,7 @@ npm run check      # types + lint + formatage + tests + schéma serveur
 
 | Commande | Rôle |
 |---|---|
-| `npm run typecheck` | Vérifie les types TypeScript |
+| `npm run typecheck` | Vérifie les types avec TypeScript 7 (compilateur natif, paquet `typescript7`) |
 | `npm run lint` | Règles de code (0 avertissement autorisé) |
 | `npm run format` | Formate le code automatiquement |
 | `npm test` | Lance les tests (dont un test qui affiche chaque écran avec de vraies données) |

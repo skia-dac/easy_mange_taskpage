@@ -62,6 +62,7 @@ This table was the plan of 23 Sep; it now records what is actually used. No ORM,
 | Concern | Choice | Notes |
 |---|---|---|
 | App | **Expo (latest SDK) + TypeScript + Expo Router** | Dev builds (not Expo Go) are needed for Apple/Google sign-in and notifications. |
+| TypeScript | **7.0.2** for type checking (`npm run typecheck`, devDependency `typescript7` = `npm:typescript@~7.0.2`, native compiler) | `typescript` 6.0.3 stays installed only as the library that typescript-eslint (via `eslint-config-expo`) and editors load: TypeScript 7 no longer ships that JS API, and typescript-eslint 8.72 accepts `<6.1.0`. Remove it once typescript-eslint supports TypeScript 7. |
 | Build / release | **EAS Build + EAS Submit** | Builds iOS without a Mac. |
 | Backend | **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions) | Email, Google and Apple auth built in. Storage for attachments and import files. How the modular monolith maps onto it: section 4. |
 | Local DB | **expo-sqlite** + in-house migration runner (`src/shared/db/migrations.ts`, 17 migrations, never edited once published) | The local DB is the source of truth for the UI, which gives offline mode directly. Plain parameterised SQL in each module's `data/` folder; **no ORM** (Drizzle was not needed). Every write goes through `entityWriter` (`write()`): one transaction, sync columns, outbox. |
