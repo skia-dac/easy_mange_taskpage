@@ -155,6 +155,23 @@ export function planKey(
 /** Empreinte du dernier plan programmé (null : rien de connu, on reprogramme). */
 let scheduledKey: string | null = null;
 
+/**
+ * File des opérations sur les notifications programmées : une seule à la fois. Sans elle, deux
+ * reprogrammations se chevauchent (A annule, B annule, puis les rappels de A arrivent après
+ * l'annulation de B) : un rappel fantôme survit, et l'empreinte le cache ensuite.
+ */
+let queue: Promise<unknown> = Promise.resolve();
+
+function enqueue<T>(op: () => Promise<T>): Promise<T> {
+  const result = queue.then(op, op);
+  queue = result.catch(() => undefined);
+  return result;
+}
+
+type SyncArgs = { db: Db; data: TodayData; now: Date | undefined };
+/** Reprogrammation en attente (pas encore commencée) : un nouvel appel remplace son plan. */
+let pendingSync: { args: SyncArgs; result: Promise<number> } | null = null;
+
 /** Oublie le dernier plan (tests, ou notifications effacées par ailleurs). */
 export function resetScheduledPlan(): void {
   scheduledKey = null;
@@ -166,12 +183,27 @@ export function resetScheduledPlan(): void {
  * recalcule ses rappels ; un devoir terminé perd le sien. Une dépense ou une humeur, qui ne
  * changent aucun rappel, ne font rien annuler ni reprogrammer. Retourne le nombre de rappels du
  * plan.
+ *
+ * Les passages se suivent, jamais en même temps. Les appels faits pendant un passage sont
+ * regroupés : un seul passage suit, avec le plan le plus récent (le dernier appel gagne).
  */
-export async function syncScheduledNotifications(
-  db: Db,
-  data: TodayData,
-  now = new Date(),
-): Promise<number> {
+export function syncScheduledNotifications(db: Db, data: TodayData, now?: Date): Promise<number> {
+  const args: SyncArgs = { db, data, now };
+  if (pendingSync) {
+    pendingSync.args = args;
+    return pendingSync.result;
+  }
+  const entry = { args } as { args: SyncArgs; result: Promise<number> };
+  entry.result = enqueue(() => {
+    // Le passage commence : les appels suivants attendront le prochain.
+    if (pendingSync === entry) pendingSync = null;
+    return runSync(entry.args);
+  });
+  pendingSync = entry;
+  return entry.result;
+}
+
+async function runSync({ db, data, now = new Date() }: SyncArgs): Promise<number> {
   if (!(await hasPermission())) {
     // Permission retirée : au retour, tout est reprogrammé.
     scheduledKey = null;
@@ -182,18 +214,21 @@ export async function syncScheduledNotifications(
   const plan = planReminders(data, prefs, now, { subjectName: (id) => byId.get(id) ?? '' });
   const key = planKey(plan, prefs, i18n.language);
   if (key === scheduledKey) return plan.length;
-  // Une programmation interrompue doit être refaite au prochain appel.
+  // Une programmation interrompue (erreur, rappel refusé) doit être refaite au prochain appel :
+  // l'empreinte n'est posée qu'une fois tout le plan programmé.
   scheduledKey = null;
   await Notifications.cancelAllScheduledNotificationsAsync();
-  await Promise.all(plan.map((r) => scheduleOne(r, prefs)));
-  scheduledKey = key;
+  const scheduled = await Promise.all(plan.map((r) => scheduleOne(r, prefs)));
+  if (scheduled.every(Boolean)) scheduledKey = key;
   return plan.length;
 }
 
-/** Annule tous les rappels programmés (suppression des données). */
-export async function cancelAllReminders(): Promise<void> {
-  scheduledKey = null;
-  await Notifications.cancelAllScheduledNotificationsAsync();
+/** Annule tous les rappels programmés (suppression des données), après le passage en cours. */
+export function cancelAllReminders(): Promise<void> {
+  return enqueue(async () => {
+    scheduledKey = null;
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  });
 }
 
 /** Les dates « AAAA-MM-JJ » des textes deviennent « mer. 1 oct. » dans la langue du téléphone. */
@@ -205,7 +240,8 @@ export function readableParams(params: Record<string, string | number> | undefin
   return out;
 }
 
-async function scheduleOne(r: PlannedReminder, prefs: NotificationPreferences): Promise<void> {
+/** Programme un rappel ; false s'il est refusé (le plan sera refait au prochain passage). */
+async function scheduleOne(r: PlannedReminder, prefs: NotificationPreferences): Promise<boolean> {
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: r.id,
@@ -222,8 +258,10 @@ async function scheduleOne(r: PlannedReminder, prefs: NotificationPreferences): 
         channelId: Platform.OS === 'android' ? channelFor(prefs) : undefined,
       },
     });
+    return true;
   } catch (e) {
     logger.error(e, { where: 'scheduleOne', id: r.id });
+    return false;
   }
 }
 
