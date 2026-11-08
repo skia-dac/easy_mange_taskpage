@@ -60,7 +60,8 @@ export function weekStats(
       const d = dayOf(w.completedAt);
       doneDays.add(d);
       if (d >= from && d <= to) tasksDone++;
-    } else if (w.status !== 'done' && w.dueDate >= from && w.dueDate <= to) tasksOpen++;
+    } else if (w.status !== 'done' && w.dueDate && w.dueDate >= from && w.dueDate <= to)
+      tasksOpen++;
   }
 
   const totals = studyTotals(sessions, from, to, now);

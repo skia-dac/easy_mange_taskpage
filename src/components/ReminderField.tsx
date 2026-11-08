@@ -15,14 +15,16 @@ import { AppText, ChoiceChips, confirmAction, DateTimeField, TextButton } from '
 type Preset = 'none' | 'dayBefore' | 'sameDay' | 'custom';
 
 type Props = {
-  dueDate: IsoDate;
+  /** Échéance ; null = sans date (seul un rappel « Personnalisé » a du sens). */
+  dueDate: IsoDate | null;
   /** ISO date-heure du rappel, ou null. */
   value: string | null;
   onChange: (value: string | null) => void;
   error?: string;
 };
 
-function presetValue(preset: Preset, dueDate: IsoDate): string | null {
+function presetValue(preset: Preset, dueDate: IsoDate | null): string | null {
+  if (!dueDate) return null;
   if (preset === 'dayBefore') return atTime(addDaysIso(dueDate, -1), '18:00').toISOString();
   if (preset === 'sameDay') return atTime(dueDate, '09:00').toISOString();
   return null;
@@ -99,7 +101,9 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
 
   const choose = (p: Preset) => {
     setPreset(p);
-    if (p === 'custom') onChange(value ?? atTime(dueDate, '09:00').toISOString());
+    // Sans date : le rappel personnalisé propose demain à 09:00.
+    const base = dueDate ?? addDaysIso(toIsoDate(new Date()), 1);
+    if (p === 'custom') onChange(value ?? atTime(base, '09:00').toISOString());
     else onChange(presetValue(p, dueDate));
     // Premier rappel choisi : c'est le bon moment pour demander la permission.
     if (p !== 'none' && !value) void permission.ask();
@@ -112,10 +116,15 @@ export function ReminderField({ dueDate, value, onChange, error }: Props) {
       <ChoiceChips
         label={t('reminder.label')}
         options={[
-          { value: 'none', label: t('reminder.none') },
-          { value: 'dayBefore', label: t('reminder.dayBefore') },
-          { value: 'sameDay', label: t('reminder.sameDay') },
-          { value: 'custom', label: t('reminder.custom') },
+          { value: 'none' as Preset, label: t('reminder.none') },
+          // « La veille » et « le jour même » n'existent qu'avec une date.
+          ...(dueDate
+            ? [
+                { value: 'dayBefore' as Preset, label: t('reminder.dayBefore') },
+                { value: 'sameDay' as Preset, label: t('reminder.sameDay') },
+              ]
+            : []),
+          { value: 'custom' as Preset, label: t('reminder.custom') },
         ]}
         selected={[preset === detected || preset === 'custom' ? preset : detected]}
         onToggle={choose}

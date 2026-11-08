@@ -54,6 +54,13 @@ export const migrationPreparations: MigrationPreparations = {
 };
 
 /**
+ * Colonnes des tables `tasks` et `assignments` (migration 20, reconstruction de la table) : la
+ * liste est écrite ici une fois pour toutes, la migration publiée ne change jamais.
+ */
+const WORK_COLUMNS_V20 =
+  'id, created_at, updated_at, deleted_at, version, sync_status, title, description, subject_id, due_date, due_time, priority, status, completed_at, reminder_at, repeat_rule, estimated_minutes, space, repeat_parent_id';
+
+/**
  * Liste des migrations. Règles :
  * - ne JAMAIS modifier une migration déjà publiée : en ajouter une nouvelle à la fin ;
  * - les numéros se suivent (1, 2, 3…), un test le vérifie.
@@ -534,6 +541,57 @@ export const migrations: readonly Migration[] = [
       ${DEDUPE_ALIVE_COURSE_EXCEPTIONS}
       CREATE UNIQUE INDEX IF NOT EXISTS idx_course_exceptions_series_date_alive
         ON course_exceptions (series_id, date) WHERE deleted_at IS NULL;
+    `,
+  },
+  {
+    version: 20,
+    name: 'tâches et devoirs « sans date » : échéance facultative',
+    // SQLite ne sait pas retirer un NOT NULL : la table est recréée à l'identique (mêmes colonnes,
+    // mêmes contraintes, mêmes index), avec \`due_date\` facultative. Aucune table ne pointe vers
+    // elles : la copie garde tout (ids, versions, état de synchronisation).
+    sql: `
+      CREATE TABLE tasks_new (${SYNC_COLUMNS},
+        title TEXT NOT NULL CHECK (length(trim(title)) > 0),
+        description TEXT,
+        subject_id TEXT REFERENCES subjects (id),
+        due_date TEXT,
+        due_time TEXT,
+        priority TEXT NOT NULL CHECK (priority IN ('low', 'normal', 'important', 'urgent')),
+        status TEXT NOT NULL CHECK (status IN ('todo', 'in_progress', 'done')),
+        completed_at TEXT,
+        reminder_at TEXT,
+        repeat_rule TEXT NOT NULL DEFAULT 'none',
+        estimated_minutes INTEGER,
+        space TEXT NOT NULL DEFAULT 'personal',
+        repeat_parent_id TEXT
+      );
+      INSERT INTO tasks_new (${WORK_COLUMNS_V20})
+        SELECT ${WORK_COLUMNS_V20} FROM tasks;
+      DROP TABLE tasks;
+      ALTER TABLE tasks_new RENAME TO tasks;
+      CREATE INDEX idx_tasks_due ON tasks (due_date);
+      CREATE INDEX idx_tasks_repeat_parent ON tasks (repeat_parent_id);
+      CREATE TABLE assignments_new (${SYNC_COLUMNS},
+        title TEXT NOT NULL CHECK (length(trim(title)) > 0),
+        description TEXT,
+        subject_id TEXT REFERENCES subjects (id),
+        due_date TEXT,
+        due_time TEXT,
+        priority TEXT NOT NULL CHECK (priority IN ('low', 'normal', 'important', 'urgent')),
+        status TEXT NOT NULL CHECK (status IN ('todo', 'in_progress', 'done')),
+        completed_at TEXT,
+        reminder_at TEXT,
+        repeat_rule TEXT NOT NULL DEFAULT 'none',
+        estimated_minutes INTEGER,
+        space TEXT NOT NULL DEFAULT 'study',
+        repeat_parent_id TEXT
+      );
+      INSERT INTO assignments_new (${WORK_COLUMNS_V20})
+        SELECT ${WORK_COLUMNS_V20} FROM assignments;
+      DROP TABLE assignments;
+      ALTER TABLE assignments_new RENAME TO assignments;
+      CREATE INDEX idx_assignments_due ON assignments (due_date);
+      CREATE INDEX idx_assignments_repeat_parent ON assignments (repeat_parent_id);
     `,
   },
 ];

@@ -23,6 +23,15 @@ type Column = { name: string; type: string; notnull: number; dflt_value: string 
 
 const SERVER_ONLY = new Set(['sync_status']);
 
+/**
+ * Colonnes devenues facultatives sur le téléphone après leur création : un projet déjà créé les
+ * a encore en `not null`, relancer le fichier les rend facultatives (tâches « sans date »).
+ */
+const RELAXED_NOT_NULL: Partial<Record<string, readonly string[]>> = {
+  tasks: ['due_date'],
+  assignments: ['due_date'],
+};
+
 function pgType(sqlite: string): string {
   const t = sqlite.toUpperCase();
   if (t.includes('INT')) return 'bigint';
@@ -86,12 +95,16 @@ export async function generateServerSql(db: Db): Promise<string> {
       .slice(1)
       .map((d) => `  add column if not exists ${d.trim()}`)
       .join(',\n');
+    const relaxed = (RELAXED_NOT_NULL[table] ?? []).filter((name) =>
+      cols.some((c) => c.name === name && !c.notnull),
+    );
     out.push(
       `create table if not exists public.${table} (`,
       defs.join(',\n'),
       ');',
       `alter table public.${table}`,
       `${adds};`,
+      ...relaxed.map((name) => `alter table public.${table} alter column ${name} drop not null;`),
       `create index if not exists ${table}_sync_idx on public.${table} (user_id, server_updated_at);`,
       `alter table public.${table} enable row level security;`,
       `drop policy if exists "own rows" on public.${table};`,

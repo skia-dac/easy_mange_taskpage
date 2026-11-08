@@ -278,7 +278,8 @@
     "kindFilter": "Type",
     "subjectChip": "Subject: {{name}}",
     "subjectAll": "Subject: all",
-    "subjectPick": "Filter by subject"
+    "subjectPick": "Filter by subject",
+    "groupNoDate": "No date"
   },
   "profile": {
     "title": "Profile",
@@ -411,7 +412,9 @@
     "noEstimate": "None",
     "startStudy": "Start the study timer",
     "moreOptions": "More options",
-    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description"
+    "moreOptionsHint": "Time, reminder, duration, priority, repeat, description",
+    "noDate": "No date",
+    "noDateHint": "No date: the task stays in the Notebook, never “late”."
   },
   "exams": {
     "new": "New exam",
@@ -541,7 +544,8 @@
     "moneyBody": "{{amount}} · on {{date}}",
     "moneyBodyTime": "{{amount}} · on {{date}} at {{time}}",
     "payoutTitle": "It’s your turn: {{name}}",
-    "payoutBody": "You receive {{amount}} today."
+    "payoutBody": "You receive {{amount}} today.",
+    "workBodyNoDate": "{{title}}"
   },
   "settings": {
     "title": "Settings",

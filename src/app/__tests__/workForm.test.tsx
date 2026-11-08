@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createWorkItem } from '@/modules/productivity';
+import { createWorkItem, getWorkItem } from '@/modules/productivity';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { SpacesContext, spacesValue } from '@/shared/SpacesContext';
@@ -119,5 +119,22 @@ describe('fiche de tâche courte', () => {
     expect(screen.getByText(i18n.t('errors.itemNotFound'))).toBeTruthy();
     expect(screen.getByText('Retour')).toBeTruthy();
     expect(screen.queryByText(/^Titre/)).toBeNull();
+  });
+
+  it('« Effacer » la date la retire vraiment : la tâche passe « Sans date »', async () => {
+    const id = await createWorkItem(mockDb, 'task', {
+      title: 'Ranger le bureau',
+      dueDate: '2026-09-24',
+      priority: 'normal',
+      status: 'todo',
+    });
+    mockParams = { id, kind: 'task' };
+    await show();
+    expect(screen.queryByText(i18n.t('work.noDateHint'))).toBeNull();
+    await fireEvent.press(screen.getByText('Effacer'));
+    expect(screen.getByText(i18n.t('work.noDateHint'))).toBeTruthy();
+    await fireEvent.press(screen.getByText('Enregistrer la tâche'));
+    await flush();
+    expect((await getWorkItem(mockDb, 'task', id))?.dueDate).toBeNull();
   });
 });

@@ -40,7 +40,7 @@ export function calendarDays(
   }
   for (const e of data.exams) push(e.date, { kind: 'exam', sortTime: e.time ?? '00:00', exam: e });
   for (const w of data.work)
-    push(w.dueDate, { kind: 'work', sortTime: w.dueTime ?? '23:59', item: w });
+    if (w.dueDate) push(w.dueDate, { kind: 'work', sortTime: w.dueTime ?? '23:59', item: w });
   for (const e of data.events) {
     push(e.date, { kind: 'event', sortTime: e.startTime ?? '00:00', event: e });
   }

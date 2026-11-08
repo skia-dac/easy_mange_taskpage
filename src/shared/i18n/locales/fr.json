@@ -278,7 +278,8 @@
     "kindFilter": "Type",
     "subjectChip": "Matière : {{name}}",
     "subjectAll": "Matière : toutes",
-    "subjectPick": "Filtrer par matière"
+    "subjectPick": "Filtrer par matière",
+    "groupNoDate": "Sans date"
   },
   "profile": {
     "title": "Profil",
@@ -411,7 +412,9 @@
     "noEstimate": "Aucune",
     "startStudy": "Lancer le minuteur de révision",
     "moreOptions": "Plus d’options",
-    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description"
+    "moreOptionsHint": "Heure, rappel, durée, priorité, répétition, description",
+    "noDate": "Sans date",
+    "noDateHint": "Sans date : la tâche reste dans le Carnet, jamais « en retard »."
   },
   "exams": {
     "new": "Nouvel examen",
@@ -541,7 +544,8 @@
     "moneyBody": "{{amount}} · le {{date}}",
     "moneyBodyTime": "{{amount}} · le {{date}} à {{time}}",
     "payoutTitle": "C’est ton tour : {{name}}",
-    "payoutBody": "Tu reçois {{amount}} aujourd’hui."
+    "payoutBody": "Tu reçois {{amount}} aujourd’hui.",
+    "workBodyNoDate": "{{title}}"
   },
   "settings": {
     "title": "Réglages",

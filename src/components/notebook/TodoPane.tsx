@@ -112,7 +112,8 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
     return {
       overdue: open.filter((w) => isOverdue(w, now)),
       today: open.filter((w) => !isOverdue(w, now) && w.dueDate === today),
-      upcoming: open.filter((w) => !isOverdue(w, now) && w.dueDate > today),
+      upcoming: open.filter((w) => !isOverdue(w, now) && !!w.dueDate && w.dueDate > today),
+      noDate: open.filter((w) => !w.dueDate),
       done: filtered
         .filter((w) => w.status === 'done')
         .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '')),
@@ -154,7 +155,8 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
           params: study && subjectId ? { subjectId } : {},
         });
 
-  const openCount = groups.overdue.length + groups.today.length + groups.upcoming.length;
+  const openCount =
+    groups.overdue.length + groups.today.length + groups.upcoming.length + groups.noDate.length;
 
   return (
     <View style={{ flex: 1 }}>
@@ -254,6 +256,7 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
             {section(t('tasks.groupOverdue'), groups.overdue)}
             {section(t('tasks.groupToday'), groups.today)}
             {section(t('tasks.groupUpcoming'), groups.upcoming)}
+            {section(t('tasks.groupNoDate'), groups.noDate)}
             {groups.done.length > 0 ? (
               <>
                 <TextButton

@@ -222,10 +222,11 @@ export default function WorkFormScreen() {
       <DateTimeField
         label={isTask ? t('work.dueDate') : t('work.dueDateAssignment')}
         mode="date"
-        required
-        value={form.dueDate}
+        clearable
+        value={form.dueDate ?? null}
         onChange={(v) => {
-          const dueDate = v ?? toIsoDate(new Date());
+          // « Effacer » retire vraiment la date : la tâche passe « Sans date » (jamais en retard).
+          const dueDate = v ?? null;
           // Le rappel suit l'échéance (« la veille à 18:00 » reste la veille).
           setForm((f) => ({
             ...f,
@@ -235,6 +236,11 @@ export default function WorkFormScreen() {
         }}
         error={errors.dueDate}
       />
+      {!form.dueDate ? (
+        <AppText variant="caption" color="muted">
+          {t('work.noDateHint')}
+        </AppText>
+      ) : null}
       {editing ? (
         <ChoiceChips
           label={t('work.status')}
@@ -258,7 +264,7 @@ export default function WorkFormScreen() {
           error={errors.dueTime}
         />
         <ReminderField
-          dueDate={form.dueDate}
+          dueDate={form.dueDate ?? null}
           value={form.reminderAt ?? null}
           onChange={(reminderAt) => set({ reminderAt })}
           error={errors.reminderAt}

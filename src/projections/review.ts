@@ -45,7 +45,7 @@ export function buildEveningReview(data: TodayData, now: Date): EveningReview {
   return {
     today,
     tomorrow,
-    remaining: open.filter((w) => w.dueDate <= today).sort(compareWorkItems),
+    remaining: open.filter((w) => !!w.dueDate && w.dueDate <= today).sort(compareWorkItems),
     revisions: blocks.filter((b) => b.date === today && b.status === 'planned'),
     next: {
       courses: occurrencesInRange(data.series, tomorrow, tomorrow, data).filter(

@@ -326,7 +326,7 @@ create table if not exists public.tasks (
   title text not null,
   description text,
   subject_id text,
-  due_date text not null,
+  due_date text,
   due_time text,
   priority text not null,
   status text not null,
@@ -347,7 +347,7 @@ alter table public.tasks
   add column if not exists title text not null,
   add column if not exists description text,
   add column if not exists subject_id text,
-  add column if not exists due_date text not null,
+  add column if not exists due_date text,
   add column if not exists due_time text,
   add column if not exists priority text not null,
   add column if not exists status text not null,
@@ -358,6 +358,7 @@ alter table public.tasks
   add column if not exists space text not null default 'personal',
   add column if not exists repeat_parent_id text,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+alter table public.tasks alter column due_date drop not null;
 create index if not exists tasks_sync_idx on public.tasks (user_id, server_updated_at);
 alter table public.tasks enable row level security;
 drop policy if exists "own rows" on public.tasks;
@@ -379,7 +380,7 @@ create table if not exists public.assignments (
   title text not null,
   description text,
   subject_id text,
-  due_date text not null,
+  due_date text,
   due_time text,
   priority text not null,
   status text not null,
@@ -400,7 +401,7 @@ alter table public.assignments
   add column if not exists title text not null,
   add column if not exists description text,
   add column if not exists subject_id text,
-  add column if not exists due_date text not null,
+  add column if not exists due_date text,
   add column if not exists due_time text,
   add column if not exists priority text not null,
   add column if not exists status text not null,
@@ -411,6 +412,7 @@ alter table public.assignments
   add column if not exists space text not null default 'study',
   add column if not exists repeat_parent_id text,
   add column if not exists server_updated_at timestamptz not null default clock_timestamp();
+alter table public.assignments alter column due_date drop not null;
 create index if not exists assignments_sync_idx on public.assignments (user_id, server_updated_at);
 alter table public.assignments enable row level security;
 drop policy if exists "own rows" on public.assignments;

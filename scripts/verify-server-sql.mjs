@@ -42,6 +42,9 @@ const check = (label, ok, extra) => {
 // Projet créé avec une version plus ancienne du fichier : le relancer ajoute ce qui manque
 // (colonne, clé composée de sync_mutations, limite de taille du bucket).
 await db.exec('alter table public.tasks drop column estimated_minutes;');
+// Ancien projet : l'échéance des tâches et devoirs était obligatoire (avant « Sans date »).
+await db.exec('alter table public.tasks alter column due_date set not null;');
+await db.exec('alter table public.assignments alter column due_date set not null;');
 await db.exec(`
   alter table public.sync_mutations drop constraint sync_mutations_pkey;
   alter table public.sync_mutations drop column created_at;
@@ -72,6 +75,16 @@ const upgraded = await db.query(
    where table_schema = 'public' and table_name = 'tasks' and column_name = 'estimated_minutes'`,
 );
 check('relancer le fichier met à jour un projet existant', upgraded.rows.length === 1);
+const dueNullable = await db.query(
+  `select table_name, is_nullable from information_schema.columns
+   where table_schema = 'public' and table_name in ('tasks', 'assignments')
+     and column_name = 'due_date' order by table_name`,
+);
+check(
+  'relancer le fichier rend l’échéance facultative (tâches « sans date »)',
+  dueNullable.rows.length === 2 && dueNullable.rows.every((row) => row.is_nullable === 'YES'),
+  dueNullable.rows,
+);
 async function as(user, fn) {
   await db.exec(
     `set role authenticated; select set_config('request.jwt.claim.sub', '${user}', false);`,
@@ -106,6 +119,25 @@ const create = {
 };
 let r = await push(A, [create]);
 check('create appliqué en version 1', r[0].status === 'applied' && r[0].version === 1, r);
+r = await push(A, [
+  {
+    mutation_id: 'm-nodate',
+    entity: 'tasks',
+    entity_id: 't-nodate',
+    operation: 'create',
+    base_version: null,
+    payload: {
+      id: 't-nodate',
+      title: 'Lire un livre',
+      due_date: null,
+      priority: 'normal',
+      status: 'todo',
+      created_at: '2026-09-24T08:00:00.000Z',
+      updated_at: '2026-09-24T08:00:00.000Z',
+    },
+  },
+]);
+check('tâche sans date acceptée', r[0].status === 'applied', r);
 r = await push(A, [create]);
 check(
   'même modification renvoyée : comptée une fois',

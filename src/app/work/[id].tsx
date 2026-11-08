@@ -97,7 +97,11 @@ export default function WorkDetailScreen() {
         </AppText>
         <Card>
           <ListRow
-            title={[formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')}
+            title={
+              w.dueDate
+                ? [formatShortDate(w.dueDate, labels.lang), w.dueTime].filter(Boolean).join(' · ')
+                : t('work.noDate')
+            }
             subtitle={t('work.due')}
             leading={<IconBadge icon="clock" />}
           />
