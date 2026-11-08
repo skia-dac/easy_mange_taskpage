@@ -182,7 +182,10 @@
     "moveEarlier": "Avancer de 15 min",
     "moveLater": "Reculer de 15 min",
     "movePreviousDay": "Déplacer au jour précédent",
-    "moveNextDay": "Déplacer au jour suivant"
+    "moveNextDay": "Déplacer au jour suivant",
+    "todayCell": "aujourd’hui",
+    "offCell": "vacances, pas de cours",
+    "hasItemsCell": "contient des éléments"
   },
   "calendarItem": {
     "exam": "Examen",

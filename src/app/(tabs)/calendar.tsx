@@ -55,6 +55,7 @@ import {
   showInfo,
   StateView,
   Tappable,
+  useLargeText,
 } from '@/shared/ui';
 import { moveCalendarItem } from '@/workflows';
 
@@ -69,6 +70,7 @@ function monthGrid(anyDay: IsoDate, weekStartDay: number): IsoDate[] {
 
 export default function CalendarScreen() {
   const { t } = useTranslation();
+  const large = useLargeText();
   const labels = useLabels();
   const { colors, spacing } = useTheme();
   const now = useNow(60_000);
@@ -207,8 +209,15 @@ export default function CalendarScreen() {
           </>
         }
       >
-        <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
-          <View style={{ flex: 1 }}>
+        {/* Très grand texte : les 4 choix prennent toute la largeur, les icônes passent dessous. */}
+        <View
+          style={{
+            flexDirection: large ? 'column' : 'row',
+            gap: spacing.sm,
+            alignItems: large ? 'stretch' : 'center',
+          }}
+        >
+          <View style={large ? undefined : { flex: 1 }}>
             <Segmented
               accessibilityLabel={t('calendar.viewMode')}
               value={mode}
@@ -216,36 +225,44 @@ export default function CalendarScreen() {
               options={viewModes.map((m) => ({ value: m, label: t(`calendar.${m}`) }))}
             />
           </View>
-          {spaces.has('work') || spaces.has('personal') ? (
-            <Tappable
-              accessibilityRole="button"
-              accessibilityLabel={t('planning.title')}
-              onPress={() => router.push('/planning')}
-              style={{
-                width: minTouchSize,
-                height: minTouchSize,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Feather name="repeat" size={22} color={colors.primary} />
-            </Tappable>
-          ) : null}
-          {study ? (
-            <Tappable
-              accessibilityRole="button"
-              accessibilityLabel={t('calendar.timetables')}
-              onPress={() => router.push('/timetables')}
-              style={{
-                width: minTouchSize,
-                height: minTouchSize,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Feather name="grid" size={22} color={colors.primary} />
-            </Tappable>
-          ) : null}
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: spacing.sm,
+              justifyContent: 'flex-end',
+            }}
+          >
+            {spaces.has('work') || spaces.has('personal') ? (
+              <Tappable
+                accessibilityRole="button"
+                accessibilityLabel={t('planning.title')}
+                onPress={() => router.push('/planning')}
+                style={{
+                  width: minTouchSize,
+                  height: minTouchSize,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Feather name="repeat" size={22} color={colors.primary} />
+              </Tappable>
+            ) : null}
+            {study ? (
+              <Tappable
+                accessibilityRole="button"
+                accessibilityLabel={t('calendar.timetables')}
+                onPress={() => router.push('/timetables')}
+                style={{
+                  width: minTouchSize,
+                  height: minTouchSize,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Feather name="grid" size={22} color={colors.primary} />
+              </Tappable>
+            ) : null}
+          </View>
         </View>
 
         <View
@@ -359,6 +376,7 @@ function DayCell({
   isOff,
   dimmed,
 }: DayPickerProps & { day: IsoDate; dimmed?: boolean }) {
+  const { t } = useTranslation();
   const labels = useLabels();
   const { colors, radius, spacing } = useTheme();
   const isSelected = day === selected;
@@ -367,7 +385,14 @@ function DayCell({
     <Tappable
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
-      accessibilityLabel={formatLongDate(fromIsoDate(day), labels.lang)}
+      accessibilityLabel={[
+        formatLongDate(fromIsoDate(day), labels.lang),
+        isToday ? t('calendar.todayCell') : null,
+        isOff(day) ? t('calendar.offCell') : null,
+        hasItems(day) ? t('calendar.hasItemsCell') : null,
+      ]
+        .filter(Boolean)
+        .join(', ')}
       onPress={() => onSelect(day)}
       style={{
         flex: 1,

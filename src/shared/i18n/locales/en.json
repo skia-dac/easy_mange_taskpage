@@ -182,7 +182,10 @@
     "moveEarlier": "Move 15 min earlier",
     "moveLater": "Move 15 min later",
     "movePreviousDay": "Move to the previous day",
-    "moveNextDay": "Move to the next day"
+    "moveNextDay": "Move to the next day",
+    "todayCell": "today",
+    "offCell": "holiday, no classes",
+    "hasItemsCell": "has items"
   },
   "calendarItem": {
     "exam": "Exam",
