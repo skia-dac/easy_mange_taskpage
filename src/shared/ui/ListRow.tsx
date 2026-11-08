@@ -19,6 +19,11 @@ type Props = {
    */
   control?: ReactNode;
   trailing?: ReactNode;
+  /**
+   * Ce que dit l'étiquette de droite (« En retard », « Dans 3 jours »…). La ligne est un seul
+   * bouton pour le lecteur d'écran : sans ce texte, l'étiquette ne serait jamais annoncée.
+   */
+  trailingLabel?: string | null;
   onPress?: () => void;
   /** Titre barré et grisé (élément terminé ou annulé). */
   struck?: boolean;
@@ -29,6 +34,25 @@ type Props = {
   onAccessibilityAction?: (name: string) => void;
 };
 
+/**
+ * Libellé lu par le lecteur d'écran : « titre, sous-titre, étiquette ». Un libellé imposé
+ * remplace le titre et le sous-titre, mais l'étiquette (état, compte à rebours) reste annoncée.
+ */
+export function rowAccessibilityLabel({
+  title,
+  subtitle,
+  trailingLabel,
+  accessibilityLabel,
+}: {
+  title: string;
+  subtitle?: string | null;
+  trailingLabel?: string | null;
+  accessibilityLabel?: string;
+}): string {
+  const main = accessibilityLabel ? [accessibilityLabel] : [title, subtitle];
+  return [...main, trailingLabel].filter(Boolean).join(', ');
+}
+
 /** Ligne de liste : [case] [icône] titre / sous-titre [étiquette] ›. */
 export function ListRow({
   title,
@@ -36,6 +60,7 @@ export function ListRow({
   leading,
   control,
   trailing,
+  trailingLabel,
   onPress,
   struck,
   accessibilityLabel,
@@ -82,7 +107,12 @@ export function ListRow({
   const body = onPress ? (
     <PressableScale
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? [title, subtitle].filter(Boolean).join(', ')}
+      accessibilityLabel={rowAccessibilityLabel({
+        title,
+        subtitle,
+        trailingLabel,
+        accessibilityLabel,
+      })}
       accessibilityActions={accessibilityActions}
       onAccessibilityAction={
         onAccessibilityAction

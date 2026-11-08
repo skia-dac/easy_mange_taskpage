@@ -49,8 +49,17 @@ export function CourseRow({
   const details = [labels.courseType(occurrence.courseType), occurrence.room, occurrence.teacher]
     .filter(Boolean)
     .join(' · ');
+  const status = cancelled
+    ? { label: t('occurrence.cancelled'), tone: 'danger' as const }
+    : occurrence.status === 'modified'
+      ? { label: t('occurrence.modified'), tone: 'warning' as const }
+      : null;
+  const time = `${occurrence.startTime} – ${occurrence.endTime}`;
   return (
     <ListRow
+      accessibilityLabel={[occurrence.title ?? subject?.name ?? '', time, details]
+        .filter(Boolean)
+        .join(', ')}
       title={occurrence.title ?? subject?.name ?? ''}
       subtitle={details}
       struck={cancelled}
@@ -73,13 +82,8 @@ export function CourseRow({
           <SubjectBar color={colorOf(subject)} />
         </View>
       }
-      trailing={
-        cancelled ? (
-          <Chip label={t('occurrence.cancelled')} tone="danger" />
-        ) : occurrence.status === 'modified' ? (
-          <Chip label={t('occurrence.modified')} tone="warning" />
-        ) : undefined
-      }
+      trailing={status ? <Chip label={status.label} tone={status.tone} /> : undefined}
+      trailingLabel={status?.label}
     />
   );
 }
@@ -115,6 +119,11 @@ export function WorkRow({
     .filter(Boolean)
     .join(' · ');
   const toggle = () => void actions.setDone(item, !done);
+  const flag = late
+    ? { label: t('status.overdue'), tone: 'danger' as const }
+    : item.priority === 'urgent' || item.priority === 'important'
+      ? { label: labels.priority(item.priority), tone: 'warning' as const }
+      : null;
 
   const swipe = {
     right: { label: t('work.markDone'), icon: 'check', color: 'success', onAction: toggle },
@@ -143,13 +152,8 @@ export function WorkRow({
         .filter(Boolean)
         .join(' · ')}
       control={<Checkbox checked={done} onToggle={toggle} accessibilityLabel={item.title} />}
-      trailing={
-        late ? (
-          <Chip label={t('status.overdue')} tone="danger" />
-        ) : item.priority === 'urgent' || item.priority === 'important' ? (
-          <Chip label={labels.priority(item.priority)} tone="warning" />
-        ) : undefined
-      }
+      trailing={flag ? <Chip label={flag.label} tone={flag.tone} /> : undefined}
+      trailingLabel={flag?.label}
       onPress={() =>
         router.push({ pathname: '/work/[id]', params: { id: item.id, kind: item.kind } })
       }
@@ -170,6 +174,7 @@ export function ExamRow({ exam, subjects, now }: { exam: Exam; subjects: Subject
   const labels = useLabels();
   const subject = subjects.get(exam.subjectId);
   const c = countdown(exam.date, toIsoDate(now));
+  const remaining = c.kind === 'past' ? null : labels.countdown(c);
   return (
     <ListRow
       title={[t('calendarItem.exam'), subject?.name].filter(Boolean).join(' · ')}
@@ -178,10 +183,11 @@ export function ExamRow({ exam, subjects, now }: { exam: Exam; subjects: Subject
         .join(' · ')}
       leading={<IconBadge {...badge(itemTypes.exam)} />}
       trailing={
-        c.kind === 'past' ? undefined : (
-          <Chip label={labels.countdown(c)} tone={c.kind === 'inDays' ? 'primary' : 'warning'} />
-        )
+        remaining ? (
+          <Chip label={remaining} tone={c.kind === 'inDays' ? 'primary' : 'warning'} />
+        ) : undefined
       }
+      trailingLabel={remaining}
       onPress={() => router.push({ pathname: '/exams/[id]', params: { id: exam.id } })}
     />
   );
@@ -227,6 +233,7 @@ export function RevisionRow({ block, subjects }: { block: RevisionBlock; subject
         )
       }
       trailing={done ? <Chip label={t('revision.status.done')} tone="success" /> : undefined}
+      trailingLabel={done ? t('revision.status.done') : null}
       onPress={() => router.push({ pathname: '/revision/[id]', params: { id: block.id } })}
     />
   );
