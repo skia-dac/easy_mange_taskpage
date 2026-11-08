@@ -45,7 +45,7 @@ describe('le + qui ouvre un menu (Aujourd’hui, Calendrier)', () => {
       'Tâche',
       'Note',
       'Rendez-vous',
-      'Révision',
+      'Minuteur de révision',
       'Autre (examen, cours…)',
     ]);
   });

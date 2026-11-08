@@ -1,24 +1,21 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
-import { minTouchSize, useTheme, type ColorTokens } from '@/shared/theme';
+import { itemLooks, type ItemLook } from '@/components/itemTypes';
+import { minTouchSize, useTheme } from '@/shared/theme';
 import { useSpaces } from '@/shared/SpacesContext';
 import { AppText, Tappable } from '@/shared/ui';
 
-type Tile = {
+type Tile = ItemLook & {
   label: string;
   /** Réservé à l'espace Études (masqué sinon). */
   study?: boolean;
-  icon: ComponentProps<typeof Feather>['name'];
-  color: keyof ColorTokens;
-  background: keyof ColorTokens;
   href: Href;
 };
 
-/** Ajout rapide (§12, §39) : une date peut être transmise depuis le calendrier. */
+/** « Autre » du + (§12, §39) : examen, cours, matière ; une date peut venir du calendrier. */
 export default function AddScreen() {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
@@ -26,50 +23,24 @@ export default function AddScreen() {
   const withDate = date ? { date } : {};
   const study = useSpaces().has('study');
 
+  // « Autre » du + : seulement ce que le menu n'a pas déjà (note, tâche et rendez-vous y sont).
   const tiles: Tile[] = [
-    {
-      label: t('add.note'),
-      icon: 'file-text',
-      color: 'primary',
-      background: 'primarySoft',
-      href: { pathname: '/notes/[id]', params: { id: 'new' } },
-    },
-    {
-      label: t('add.task'),
-      icon: 'check-square',
-      color: 'success',
-      background: 'successSoft',
-      href: { pathname: '/work/form', params: withDate },
-    },
     {
       label: t('add.exam'),
       study: true,
-      icon: 'award',
-      color: 'danger',
-      background: 'dangerSoft',
+      ...itemLooks.exam,
       href: { pathname: '/exams/form', params: withDate },
-    },
-    {
-      label: t('add.event'),
-      icon: 'star',
-      color: 'warning',
-      background: 'warningSoft',
-      href: { pathname: '/events/form', params: withDate },
     },
     {
       label: t('add.course'),
       study: true,
-      icon: 'clock',
-      color: 'primary',
-      background: 'primarySoft',
+      ...itemLooks.course,
       href: { pathname: '/courses/form', params: withDate },
     },
     {
       label: t('add.subject'),
       study: true,
-      icon: 'book-open',
-      color: 'primary',
-      background: 'primarySoft',
+      ...itemLooks.subject,
       href: '/subjects/form',
     },
   ];
