@@ -14,7 +14,7 @@ import {
   type Recurring,
   type Transaction,
 } from '@/modules/finance';
-import { addDaysIso, isoWeekday, type IsoDate } from '@/shared/dates';
+import { addDaysIso, fromIsoDate, isoWeekday, type IsoDate } from '@/shared/dates';
 
 export type MoneyInput = {
   today: IsoDate;
@@ -322,4 +322,137 @@ export function moneyOverview(input: MoneyInput): MoneyOverview {
     insights,
     items,
   };
+}
+
+/**
+ * Une charge fixe ou une tontine dans « À payer » : toutes ses échéances de la liste réunies en
+ * une ligne (une tontine hebdomadaire tombe 4 ou 5 fois dans le mois).
+ */
+export type DueGroup = {
+  recurring: Recurring;
+  /** Ses échéances, la plus ancienne d'abord (retards compris). */
+  items: DueItem[];
+  /** La première échéance impayée : c'est elle que la case paie. `null` : tout est payé. */
+  next: DueItem | null;
+  /** La dernière échéance payée : c'est elle que la case décoche quand tout est payé. */
+  lastPaid: DueItem | null;
+  count: number;
+  paidCount: number;
+  /** Total des échéances de la ligne (payées ou non). */
+  totalMinor: number;
+  /** Ce qu'il reste à payer sur la ligne. */
+  unpaidMinor: number;
+  /** La prochaine échéance impayée est passée. */
+  late: boolean;
+};
+
+/**
+ * Regroupe les échéances par charge fixe ou tontine. Ordre : en retard d'abord (le plus ancien
+ * retard en tête), puis les prochaines échéances par date, puis les lignes entièrement payées.
+ */
+export function groupDue(due: readonly DueItem[], today: IsoDate): DueGroup[] {
+  const byId = new Map<string, DueItem[]>();
+  for (const d of due) byId.set(d.recurring.id, [...(byId.get(d.recurring.id) ?? []), d]);
+  const groups = [...byId.values()].map((list): DueGroup => {
+    const items = [...list].sort((a, b) => a.date.localeCompare(b.date));
+    const first = items[0] as DueItem;
+    const next = items.find((d) => !d.paid) ?? null;
+    const paid = items.filter((d) => d.paid);
+    return {
+      recurring: first.recurring,
+      items,
+      next,
+      lastPaid: paid[paid.length - 1] ?? null,
+      count: items.length,
+      paidCount: paid.length,
+      totalMinor: items.reduce((s, d) => s + d.amountMinor, 0),
+      unpaidMinor: items.filter((d) => !d.paid).reduce((s, d) => s + d.amountMinor, 0),
+      late: next !== null && next.date < today,
+    };
+  });
+  const rank = (g: DueGroup) => (g.late ? 0 : g.next ? 1 : 2);
+  const when = (g: DueGroup) => g.next?.date ?? g.lastPaid?.date ?? '';
+  return groups.sort(
+    (a, b) =>
+      rank(a) - rank(b) ||
+      when(a).localeCompare(when(b)) ||
+      a.recurring.name.localeCompare(b.recurring.name),
+  );
+}
+
+/** La période affichée est en cours, terminée ou à venir. */
+export type PeriodTense = 'current' | 'past' | 'future';
+
+export function periodTense(range: PeriodRange, today: IsoDate): PeriodTense {
+  return today < range.from ? 'future' : today > range.to ? 'past' : 'current';
+}
+
+/** Ce que montre la carte principale de l'onglet Argent. */
+export type MoneyHero = {
+  tense: PeriodTense;
+  /** Découvert (montant positif) quand le solde est négatif, sinon 0. */
+  deficitMinor: number;
+  /**
+   * Barre « ce qui reste de l'argent disponible » (report positif + entrées de la période).
+   * `null` quand elle ne voudrait rien dire : rien de disponible, solde négatif, période à venir.
+   */
+  bar: { leftPercent: number; availableMinor: number } | null;
+  /** Report de la période précédente, `null` quand il est nul (la ligne est cachée). */
+  carryOverMinor: number | null;
+};
+
+export function moneyHero(
+  o: Pick<MoneyOverview, 'range' | 'balance' | 'income' | 'carryOver'>,
+  today: IsoDate,
+): MoneyHero {
+  const tense = periodTense(o.range, today);
+  const availableMinor = o.income + Math.max(0, o.carryOver);
+  const bar =
+    tense === 'future' || availableMinor <= 0 || o.balance < 0
+      ? null
+      : {
+          leftPercent: Math.round(Math.min(1, o.balance / availableMinor) * 100),
+          availableMinor,
+        };
+  return {
+    tense,
+    deficitMinor: o.balance < 0 ? -o.balance : 0,
+    bar,
+    carryOverMinor: o.carryOver === 0 ? null : o.carryOver,
+  };
+}
+
+const dayMonth = (day: IsoDate, locale: string, withYear: boolean) =>
+  new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    ...(withYear ? { year: 'numeric' as const } : {}),
+  }).format(fromIsoDate(day));
+
+/**
+ * Libellé court de la période entre les flèches : « Janvier 2027 » pour un mois qui commence le
+ * 1er, sinon « 25 déc. – 24 janv. » (mois décalé ou semaine). L'année n'est ajoutée que si la
+ * période sort de l'année en cours. `join` assemble les deux dates (gabarit traduit).
+ */
+export function periodLabel(
+  range: PeriodRange,
+  period: BudgetPeriod,
+  locale: string,
+  today: IsoDate,
+  join: (from: string, to: string) => string = (from, to) => `${from} – ${to}`,
+): string {
+  if (period.kind === 'month' && period.startDay === 1) {
+    const text = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+      fromIsoDate(range.from),
+    );
+    return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
+  }
+  const year = today.slice(0, 4);
+  const fromYear = range.from.slice(0, 4);
+  const toYear = range.to.slice(0, 4);
+  const showYear = fromYear !== year || toYear !== year;
+  return join(
+    dayMonth(range.from, locale, showYear && fromYear !== toYear),
+    dayMonth(range.to, locale, showYear),
+  );
 }
