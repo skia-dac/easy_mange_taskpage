@@ -88,7 +88,15 @@ export default function SearchScreen() {
         {trimmed.length < MIN_QUERY_LENGTH ? (
           <AppText color="muted">{t('search.hint')}</AppText>
         ) : !results.loading && total === 0 ? (
-          <EmptyState icon="search" title={t('search.noResults', { query: trimmed })} />
+          <EmptyState
+            icon="search"
+            title={t('search.noResults', { query: trimmed })}
+            // Pas une impasse : ce qu'on cherchait devient une tâche, titre déjà rempli.
+            action={{
+              label: t('search.createTask', { query: trimmed }),
+              onPress: () => router.push({ pathname: '/work/form', params: { title: trimmed } }),
+            }}
+          />
         ) : null}
 
         {r.subjects.length > 0 ? (

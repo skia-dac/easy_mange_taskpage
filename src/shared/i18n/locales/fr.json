@@ -624,6 +624,7 @@
     "placeholder": "Matière, cours, note, tâche, examen…",
     "hint": "Tape au moins 2 caractères.",
     "noResults": "Aucun résultat pour « {{query}} ».",
+    "createTask": "Créer la tâche « {{query}} »",
     "subjects": "Matières",
     "courses": "Cours",
     "notes": "Notes",

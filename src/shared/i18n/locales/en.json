@@ -624,6 +624,7 @@
     "placeholder": "Subject, class, note, task, exam…",
     "hint": "Type at least 2 characters.",
     "noResults": "No results for “{{query}}”.",
+    "createTask": "Create the task “{{query}}”",
     "subjects": "Subjects",
     "courses": "Classes",
     "notes": "Notes",
