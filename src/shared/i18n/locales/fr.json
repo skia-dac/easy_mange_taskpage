@@ -390,6 +390,9 @@
     "notesTitle": "Notes de ce cours"
   },
   "work": {
+    "reminderPast": "Rappel (passé)",
+    "todayChip": "Aujourd’hui",
+    "quickDate": "Date rapide",
     "newTask": "Nouvelle tâche",
     "editTask": "Modifier la tâche",
     "editAssignment": "Modifier la tâche",
@@ -1193,6 +1196,9 @@
     "removeMessage": "Cette étape sera supprimée."
   },
   "postpone": {
+    "today": "Aujourd’hui",
+    "removeDate": "Retirer la date",
+    "removedToast": "Date retirée : la tâche est « Sans date ».",
     "action": "Reporter",
     "title": "Reporter à quand ?",
     "tomorrow": "Demain",

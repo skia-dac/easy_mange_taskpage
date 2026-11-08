@@ -390,6 +390,9 @@
     "notesTitle": "Notes for this class"
   },
   "work": {
+    "reminderPast": "Reminder (passed)",
+    "todayChip": "Today",
+    "quickDate": "Quick date",
     "newTask": "New task",
     "editTask": "Edit task",
     "editAssignment": "Edit task",
@@ -1193,6 +1196,9 @@
     "removeMessage": "This step will be deleted."
   },
   "postpone": {
+    "today": "Today",
+    "removeDate": "Remove the date",
+    "removedToast": "Date removed: the task is now “No date”.",
     "action": "Postpone",
     "title": "Postpone until when?",
     "tomorrow": "Tomorrow",

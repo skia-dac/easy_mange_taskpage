@@ -38,11 +38,15 @@ export function useWorkActions() {
       showUndoToast(message, () => undoWorkDone(db, item.kind, item.id, previous, spawnedId));
     }, fail);
 
-  const postpone = (item: WorkTarget, date: IsoDate) =>
+  /** Nouvelle échéance ; `null` retire la date (la tâche passe « Sans date »). */
+  const postpone = (item: WorkTarget, date: IsoDate | null) =>
     rescheduleWorkItem(db, item.kind, item.id, date).then(
       () =>
-        showUndoToast(t('postpone.doneToast', { date: formatShortDate(date, labels.lang) }), () =>
-          rescheduleWorkItem(db, item.kind, item.id, item.dueDate, item.dueTime),
+        showUndoToast(
+          date
+            ? t('postpone.doneToast', { date: formatShortDate(date, labels.lang) })
+            : t('postpone.removedToast'),
+          () => rescheduleWorkItem(db, item.kind, item.id, item.dueDate, item.dueTime),
         ),
       fail,
     );

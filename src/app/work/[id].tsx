@@ -1,10 +1,11 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 
+import { EditLoadView } from '@/components/EditLoadView';
 import { goBack } from '@/components/navigation';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
-import { usePostpone } from '@/components/PostponeSheet';
+import { canPostpone, usePostpone } from '@/components/PostponeSheet';
 import { useWorkActions } from '@/hooks/useWorkActions';
 import { SubtaskList } from '@/components/SubtaskList';
 import { useLabels } from '@/hooks/useLabels';
@@ -14,7 +15,7 @@ import { deleteWorkItem, getWorkItemOfKind, isOverdue } from '@/modules/producti
 import { toIsoDate } from '@/shared/dates';
 import { useDb, useLiveQuery } from '@/shared/db';
 import { userMessageKey } from '@/shared/errors';
-import { formatDate, formatShortDate } from '@/shared/format';
+import { formatDate, formatDateTime, formatShortDate } from '@/shared/format';
 import { useTheme } from '@/shared/theme';
 import { useNow } from '@/shared/useNow';
 import {
@@ -23,12 +24,11 @@ import {
   Card,
   Chip,
   confirmDestructive,
-  EmptyState,
   IconBadge,
   ListRow,
+  loadStateOf,
   showError,
   TextButton,
-  LoadingScreen,
   KeyboardAvoiding,
 } from '@/shared/ui';
 
@@ -49,16 +49,12 @@ export default function WorkDetailScreen() {
     [params.kind, params.id],
   );
 
-  if (item.loading) return <LoadingScreen />;
+  // Lecture ratée : erreur avec « Réessayer » ; « introuvable » seulement si l'élément n'existe plus.
+  const state = loadStateOf(item);
+  if (state !== 'ready')
+    return <EditLoadView state={state} onRetry={item.retry} title={t('calendarItem.task')} />;
   const w = item.data;
-  if (!w)
-    return (
-      <EmptyState
-        icon="alert-circle"
-        title={t('errors.itemNotFound')}
-        action={{ label: t('common.back'), onPress: () => goBack() }}
-      />
-    );
+  if (!w) return <EditLoadView state="missing" onRetry={item.retry} />;
   const kind = w.kind;
 
   const subject = w.subjectId ? byId.get(w.subjectId) : undefined;
@@ -105,6 +101,17 @@ export default function WorkDetailScreen() {
             subtitle={t('work.due')}
             leading={<IconBadge icon="clock" />}
           />
+          {w.reminderAt ? (
+            <ListRow
+              title={formatDateTime(new Date(w.reminderAt), labels.lang)}
+              subtitle={
+                new Date(w.reminderAt).getTime() <= now.getTime()
+                  ? t('work.reminderPast')
+                  : t('reminder.label')
+              }
+              leading={<IconBadge icon="bell" />}
+            />
+          ) : null}
           {w.estimatedMinutes ? (
             <ListRow
               title={labels.duration(w.estimatedMinutes)}
@@ -141,7 +148,8 @@ export default function WorkDetailScreen() {
           label={done ? t('work.reopen') : t('work.markDone')}
           onPress={() => void toggle()}
         />
-        {!done ? (
+        {/* Sans date, rien à reporter : la date se choisit dans la fiche. */}
+        {canPostpone(w) ? (
           <Button
             variant="secondary"
             label={t('postpone.action')}

@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createWorkItem, getWorkItem } from '@/modules/productivity';
+import { createWorkItem, getWorkItem, listWorkItems } from '@/modules/productivity';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
 import { SpacesContext, spacesValue } from '@/shared/SpacesContext';
@@ -22,6 +22,21 @@ jest.mock('expo-router', () => {
     useFocusEffect: (effect: () => void | (() => void)) => React.useEffect(effect, [effect]),
     useSegments: () => [],
     Stack: { Screen: () => null },
+  };
+});
+/** Lectures qui échouent avant de réussir (base momentanément illisible). */
+const mockFailures = { work: 0 };
+jest.mock('@/modules/productivity', () => {
+  const actual = jest.requireActual('@/modules/productivity');
+  return {
+    ...actual,
+    getWorkItemOfKind: (...args: unknown[]) => {
+      if (mockFailures.work > 0) {
+        mockFailures.work -= 1;
+        return Promise.reject(new Error('lecture impossible'));
+      }
+      return actual.getWorkItemOfKind(...args);
+    },
   };
 });
 jest.mock('@/modules/platform', () => ({
@@ -136,5 +151,52 @@ describe('fiche de tâche courte', () => {
     await fireEvent.press(screen.getByText('Enregistrer la tâche'));
     await flush();
     expect((await getWorkItem(mockDb, 'task', id))?.dueDate).toBeNull();
+  });
+});
+
+describe('date d’une nouvelle tâche', () => {
+  const titled = async (title: string) => {
+    await fireEvent.changeText(
+      screen.getByPlaceholderText(i18n.t('work.titlePlaceholderTask')),
+      title,
+    );
+    await fireEvent.press(screen.getByText('Enregistrer la tâche'));
+    await flush();
+    return (await listWorkItems(mockDb, 'task')).find((w) => w.title === title);
+  };
+
+  it('sans date dans le lien (Carnet, recherche, fin de cours) : « Sans date »', async () => {
+    mockParams = {};
+    await show();
+    expect(screen.getByText(i18n.t('work.noDateHint'))).toBeTruthy();
+    expect((await titled('Appeler la banque'))?.dueDate).toBeNull();
+  });
+
+  it('depuis Aujourd’hui ou un jour du calendrier : la date du lien est gardée', async () => {
+    mockParams = { date: '2026-09-23' };
+    await show();
+    expect(screen.queryByText(i18n.t('work.noDateHint'))).toBeNull();
+    expect((await titled('Réviser le cours'))?.dueDate).toBe('2026-09-23');
+  });
+
+  it('« Aujourd’hui » met la date du jour en un appui', async () => {
+    mockParams = {};
+    await show();
+    await fireEvent.press(screen.getByText(i18n.t('work.todayChip')));
+    expect(screen.queryByText(i18n.t('work.noDateHint'))).toBeNull();
+    expect((await titled('Payer le loyer'))?.dueDate).toBe('2026-09-23');
+  });
+});
+
+describe('modifier une tâche : lecture ratée', () => {
+  it('erreur avec « Réessayer » (pas « introuvable »), puis la fiche', async () => {
+    mockFailures.work = 1;
+    mockParams = { id: plain, kind: 'task' };
+    await show();
+    expect(screen.queryByText(i18n.t('errors.itemNotFound'))).toBeNull();
+    expect(screen.getByText(i18n.t('state.itemErrorTitle'))).toBeTruthy();
+    await fireEvent.press(screen.getByText('Réessayer'));
+    await flush();
+    expect(screen.getByDisplayValue('Acheter du pain')).toBeTruthy();
   });
 });
