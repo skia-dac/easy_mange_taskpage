@@ -2,6 +2,7 @@ import type Feather from '@expo/vector-icons/Feather';
 import type { ComponentProps } from 'react';
 
 import type { ColorTokens } from '@/shared/theme';
+import { itemTypes } from '@/shared/ui';
 
 export type ItemType =
   | 'expense'
@@ -21,19 +22,26 @@ export type ItemLook = {
   background: keyof ColorTokens;
 };
 
+function look(type: keyof typeof itemTypes): ItemLook {
+  const { icon, color, background } = itemTypes[type];
+  return { icon, color, background };
+}
+
 /**
- * Icône et couleur de chaque sorte d'élément dans les menus d'ajout (le + et « Autre ») :
- * la même tâche, la même note, le même rendez-vous partout.
+ * Icône et couleur de chaque entrée des menus d'ajout (le + et « Autre »). Les types
+ * d'éléments reprennent la table partagée `itemTypes` : la même tâche, la même note, le même
+ * rendez-vous dans les menus et dans les listes. Seules les entrées propres aux menus
+ * (minuteur, « Autre ») sont définies ici.
  */
 export const itemLooks: Record<ItemType, ItemLook> = {
-  expense: { icon: 'minus', color: 'danger', background: 'dangerSoft' },
-  income: { icon: 'plus', color: 'success', background: 'successSoft' },
-  task: { icon: 'check-square', color: 'primary', background: 'primarySoft' },
-  note: { icon: 'file-text', color: 'warning', background: 'warningSoft' },
-  event: { icon: 'calendar', color: 'success', background: 'successSoft' },
+  expense: look('expense'),
+  income: look('income'),
+  task: look('task'),
+  note: look('note'),
+  event: look('event'),
   timer: { icon: 'clock', color: 'primary', background: 'primarySoft' },
-  exam: { icon: 'award', color: 'danger', background: 'dangerSoft' },
-  course: { icon: 'book', color: 'primary', background: 'primarySoft' },
-  subject: { icon: 'book-open', color: 'warning', background: 'warningSoft' },
+  exam: look('exam'),
+  course: look('course'),
+  subject: look('subject'),
   other: { icon: 'more-horizontal', color: 'muted', background: 'background' },
 };

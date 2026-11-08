@@ -213,3 +213,25 @@ describe('bouton +', () => {
     });
   });
 });
+
+describe('ChoiceSheet : option choisie et noms en double', () => {
+  it('annonce l’option choisie et accepte deux options de même nom', async () => {
+    await render(
+      withInsets(
+        <ChoiceSheet
+          visible
+          title="Matière"
+          options={[
+            { label: 'Toutes', onPress: () => {} },
+            { label: 'Maths', selected: true, onPress: () => {} },
+            { label: 'Maths', onPress: () => {} },
+          ]}
+          onClose={() => {}}
+        />,
+      ),
+    );
+    expect(screen.getAllByRole('button', { name: /Maths/ })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /Maths/, selected: true })).toHaveLength(1);
+    expect(screen.queryAllByRole('button', { name: /Toutes/, selected: true })).toHaveLength(0);
+  });
+});

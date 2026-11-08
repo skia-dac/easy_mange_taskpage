@@ -199,8 +199,16 @@ export function NotesPane({ title, switcher }: Props) {
         visible={subjectSheet}
         title={t('tasks.subjectPick')}
         options={[
-          { label: t('noteCategories.allSubjects'), onPress: () => setSubjectId(null) },
-          ...subjects.map((s) => ({ label: s.name, onPress: () => setSubjectId(s.id) })),
+          {
+            label: t('noteCategories.allSubjects'),
+            selected: subjectId === null,
+            onPress: () => setSubjectId(null),
+          },
+          ...subjects.map((s) => ({
+            label: s.name,
+            selected: s.id === subjectId,
+            onPress: () => setSubjectId(s.id),
+          })),
         ]}
         onClose={() => setSubjectSheet(false)}
       />

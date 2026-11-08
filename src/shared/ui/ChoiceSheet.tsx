@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { minTouchSize, useTheme } from '../theme';
@@ -11,6 +12,8 @@ export type ChoiceOption = {
   hint?: string;
   onPress: () => void;
   destructive?: boolean;
+  /** Option actuellement choisie : coche visible et état « sélectionné » pour le lecteur d'écran. */
+  selected?: boolean;
 };
 
 type Props = {
@@ -28,17 +31,22 @@ type Props = {
 export function ChoiceSheet({ visible, title, message, options, onClose }: Props) {
   const { t } = useTranslation();
   const { colors, radius, spacing } = useTheme();
+  const { height } = useWindowDimensions();
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <AppText variant="heading" accessibilityRole="header">
         {title}
       </AppText>
       {message ? <AppText color="muted">{message}</AppText> : null}
-      <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
-        {options.map((o) => (
+      <ScrollView
+        style={{ maxHeight: height * 0.6, marginTop: spacing.xs }}
+        contentContainerStyle={{ gap: spacing.sm }}
+      >
+        {options.map((o, i) => (
           <Tappable
-            key={o.label}
+            key={`${i}:${o.label}`}
             accessibilityRole="button"
+            accessibilityState={o.selected ? { selected: true } : undefined}
             onPress={() => {
               onClose();
               o.onPress();
@@ -48,20 +56,31 @@ export function ChoiceSheet({ visible, title, message, options, onClose }: Props
               borderRadius: radius.md,
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.sm,
-              justifyContent: 'center',
-              backgroundColor: o.destructive ? colors.dangerSoft : colors.background,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.sm,
+              backgroundColor: o.destructive
+                ? colors.dangerSoft
+                : o.selected
+                  ? colors.primarySoft
+                  : colors.background,
             })}
           >
-            <AppText variant="bodyStrong" color={o.destructive ? 'danger' : 'text'}>
-              {o.label}
-            </AppText>
-            {o.hint ? (
-              <AppText variant="caption" color="muted">
-                {o.hint}
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+              <AppText variant="bodyStrong" color={o.destructive ? 'danger' : 'text'}>
+                {o.label}
               </AppText>
-            ) : null}
+              {o.hint ? (
+                <AppText variant="caption" color="muted">
+                  {o.hint}
+                </AppText>
+              ) : null}
+            </View>
+            {o.selected ? <Feather name="check" size={20} color={colors.primary} /> : null}
           </Tappable>
         ))}
+      </ScrollView>
+      <View style={{ marginTop: spacing.xs }}>
         <Tappable
           accessibilityRole="button"
           onPress={onClose}

@@ -336,8 +336,16 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
         visible={subjectSheet}
         title={t('tasks.subjectPick')}
         options={[
-          { label: t('tasks.allSubjects'), onPress: () => setSubjectId(null) },
-          ...subjects.map((s) => ({ label: s.name, onPress: () => setSubjectId(s.id) })),
+          {
+            label: t('tasks.allSubjects'),
+            selected: subjectId === null,
+            onPress: () => setSubjectId(null),
+          },
+          ...subjects.map((s) => ({
+            label: s.name,
+            selected: s.id === subjectId,
+            onPress: () => setSubjectId(s.id),
+          })),
         ]}
         onClose={() => setSubjectSheet(false)}
       />
