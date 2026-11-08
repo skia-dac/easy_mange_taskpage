@@ -24,6 +24,7 @@ import {
   Checkbox,
   EmptyState,
   Fab,
+  FAB_CLEARANCE,
   IconBadge,
   CountUpText,
   ListRow,
@@ -419,7 +420,7 @@ export default function MoneyScreen() {
             ))}
           </Card>
         )}
-        <View style={{ height: 80 }} />
+        <View style={{ height: FAB_CLEARANCE }} />
       </Screen>
       <Fab accessibilityLabel={t('money.addExpense')} onPress={() => router.push('/money/add')} />
     </View>
