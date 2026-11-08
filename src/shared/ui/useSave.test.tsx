@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-native';
 
+import { haptic } from './haptics';
 import { useSave } from './useSave';
 
 jest.mock('./haptics', () => ({ haptic: jest.fn() }));
@@ -56,5 +57,20 @@ describe('useSave', () => {
     });
     expect(action).toHaveBeenCalledTimes(1);
     expect(value).toBe('ok');
+  });
+
+  it('action qui rend `false` (échec déjà annoncé) : aucun retour tactile « réussi »', async () => {
+    const { result } = await renderHook(() => useSave());
+    jest.mocked(haptic).mockClear();
+    let value: boolean | undefined;
+    await act(async () => {
+      value = await result.current.run(async () => false);
+    });
+    expect(value).toBe(false);
+    expect(haptic).not.toHaveBeenCalled();
+    await act(async () => {
+      await result.current.run(async () => true);
+    });
+    expect(haptic).toHaveBeenCalledWith('success');
   });
 });
