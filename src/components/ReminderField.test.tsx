@@ -1,10 +1,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { useState, type ReactElement } from 'react';
+import { Pressable, Text } from 'react-native';
 import { Alert, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { defaultNotificationPreferences, setNotificationPreferences } from '@/modules/identity';
 import type { NotificationPermission } from '@/modules/platform';
+import { shiftReminder } from '@/modules/productivity';
 import { atTime } from '@/shared/dates';
 import type { Db } from '@/shared/db';
 import { i18n } from '@/shared/i18n';
@@ -216,6 +218,68 @@ describe('rappel : jamais dans le passé', () => {
     await render(inApp(<Harness initial={atTime('2026-09-30', '18:00').toISOString()} />));
     await flush();
     expect(screen.getByTestId('reminder-past')).toBeTruthy();
+  });
+});
+
+/** Comme la fiche d'une tâche : le rappel suit l'échéance, qu'on peut effacer. */
+function DatedHarness({ dueDate: initialDue = '2026-10-10' }: { dueDate?: string }) {
+  const [dueDate, setDueDate] = useState<string | null>(initialDue);
+  const [value, setValue] = useState<string | null>(null);
+  return (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          setValue((v) => shiftReminder(v, dueDate, null));
+          setDueDate(null);
+        }}
+      >
+        <Text>Effacer la date</Text>
+      </Pressable>
+      <ReminderField
+        dueDate={dueDate}
+        value={value}
+        onChange={(v) => {
+          changes(v);
+          setValue(v);
+        }}
+      />
+    </>
+  );
+}
+
+describe('rappel : toujours visible quand il existe', () => {
+  it('« La veille à 18:00 » puis date effacée : devient « Personnalisé », date et heure affichées', async () => {
+    mockPermission.state = 'granted';
+    await render(inApp(<DatedHarness />));
+    await flush();
+    await fireEvent.press(screen.getByText('La veille à 18:00'));
+    expect(
+      screen.getByRole('button', { name: 'La veille à 18:00' }).props.accessibilityState,
+    ).toMatchObject({ selected: true });
+    expect(screen.queryByLabelText(/^Heure du rappel/)).toBeNull();
+
+    await fireEvent.press(screen.getByText('Effacer la date'));
+    await flush();
+    // Le rappel reste à son heure (le 9 octobre à 18:00) et se voit, modifiable.
+    expect(
+      screen.getByRole('button', { name: 'Personnalisé' }).props.accessibilityState,
+    ).toMatchObject({ selected: true });
+    expect(screen.getByLabelText(/^Heure du rappel : 18:00/)).toBeTruthy();
+    expect(screen.getByLabelText(/^Date du rappel/)).toBeTruthy();
+    expect(screen.queryByText('La veille à 18:00')).toBeNull();
+  });
+
+  it('« Personnalisé » choisi sur un préréglage : les champs restent ouverts', async () => {
+    mockPermission.state = 'granted';
+    await render(inApp(<Harness initial={atTime('2026-10-09', '18:00').toISOString()} />));
+    await flush();
+    expect(screen.queryByLabelText(/^Heure du rappel/)).toBeNull();
+    await fireEvent.press(screen.getByText('Personnalisé'));
+    expect(screen.getByLabelText(/^Heure du rappel : 18:00/)).toBeTruthy();
+    // Revenir à un préréglage referme les champs.
+    await fireEvent.press(screen.getByText('Le jour même à 09:00'));
+    expect(screen.queryByLabelText(/^Heure du rappel/)).toBeNull();
   });
 });
 
