@@ -124,16 +124,19 @@ export default function CourseDetailScreen() {
   const editOptions: ChoiceOption[] = [
     {
       label: t('occurrence.scopeThis'),
+      afterDismiss: true,
       onPress: () =>
         router.push({ pathname: '/courses/occurrence', params: { seriesId: c.id, date } }),
     },
     {
       label: t('occurrence.scopeFollowing'),
+      afterDismiss: true,
       onPress: () =>
         router.push({ pathname: '/courses/form', params: { id: c.id, scope: 'following', date } }),
     },
     {
       label: t('occurrence.scopeAll'),
+      afterDismiss: true,
       onPress: () => router.push({ pathname: '/courses/form', params: { id: c.id, scope: 'all' } }),
     },
   ];
@@ -141,15 +144,22 @@ export default function CourseDetailScreen() {
   const deleteOptions: ChoiceOption[] = [
     {
       label: t('occurrence.scopeThis'),
+      afterDismiss: true,
       hint: t('occurrence.deleteThisHint'),
       onPress: () => void cancel(),
     },
     {
       label: t('occurrence.scopeFollowing'),
+      afterDismiss: true,
       destructive: true,
       onPress: () => void deleteFollowing(),
     },
-    { label: t('occurrence.scopeAll'), destructive: true, onPress: () => void deleteAll() },
+    {
+      label: t('occurrence.scopeAll'),
+      afterDismiss: true,
+      destructive: true,
+      onPress: () => void deleteAll(),
+    },
   ];
 
   const cancel = async () => {

@@ -139,8 +139,8 @@ export default function RecurringScreen() {
         visible={menu}
         title={t('money.addRecurringMenu')}
         options={[
-          { label: t('money.chargeOption'), onPress: () => add('charge') },
-          { label: t('money.tontineOption'), onPress: () => add('tontine') },
+          { label: t('money.chargeOption'), afterDismiss: true, onPress: () => add('charge') },
+          { label: t('money.tontineOption'), afterDismiss: true, onPress: () => add('tontine') },
         ]}
         onClose={() => setMenu(false)}
       />
