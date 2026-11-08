@@ -224,7 +224,11 @@
     "pdfFooter": "Exported from MySky on {{date}}",
     "screenTitle": "Note",
     "saveFailed": "The note could not be saved. Open it again to check your text.",
-    "attachmentCannotOpen": "This file cannot be opened on this phone."
+    "attachmentCannotOpen": "This file cannot be opened on this phone.",
+    "unsavedRetry": "Not saved · Retry",
+    "unsavedRetryLabel": "Note not saved. Try saving again",
+    "notFound": "Note not found",
+    "notFoundHint": "This note may have been deleted."
   },
   "editor": {
     "heading": "Heading",
@@ -699,7 +703,7 @@
     "wipe": "Delete all my data",
     "wipeHint": "Erases subjects, classes, notes, tasks, settings, attachments and backups from this phone. Cannot be undone.",
     "wipeTitle": "Delete all your data?",
-    "wipeMessage": "Everything will be erased from this phone, including backups. Share a backup first if you want to keep a copy.",
+    "wipeMessage": "Everything will be erased from this phone, including backups. Share a backup first if you want to keep a copy.\n\nIf you are signed in to an account, changes not sent yet are sent first; if sending fails, you choose to try again or lose them. You will then be signed out: your account and its data stay on the server. To delete them too, use “Delete my account” in “Account and sync”.",
     "wipeConfirm": "Continue",
     "wipeAgainTitle": "Last check",
     "wipeAgainMessage": "This cannot be undone. Really delete all your data?",

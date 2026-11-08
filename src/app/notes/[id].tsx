@@ -63,8 +63,7 @@ import {
   showToast,
   SubjectDot,
   TextButton,
-  reportLoadError,
-  LoadingScreen,
+  StateView,
   useInputProps,
   Tappable,
 } from '@/shared/ui';
@@ -77,9 +76,14 @@ type Params = {
   categoryId?: string;
 };
 
+type Snapshot = { title: string; content: string };
+
 /**
  * Une note : lecture (cases cochables) ou édition (barre d'outils), avec enregistrement automatique.
- * `id = new` crée la note au premier contenu saisi (aucune note vide n'est créée si on ressort).
+ * `id = new` crée la note au premier contenu saisi (aucune note vide n'est créée si on ressort ;
+ * un titre pré-rempli depuis un cours, laissé tel quel, ne compte pas comme du contenu).
+ * Une note n'est réécrite que si son titre ou son texte a vraiment changé : la lire puis la
+ * quitter ne change ni sa date ni sa place dans la liste.
  */
 export default function NoteScreen() {
   const { t } = useTranslation();
@@ -100,7 +104,18 @@ export default function NoteScreen() {
   };
   /** Création en cours : les enregistrements suivants l'attendent au lieu de recréer une note. */
   const creating = useRef<Promise<string> | null>(null);
-  const [loaded, setLoaded] = useState(isNew);
+  // Lecture d'une note existante : en cours, en échec (avec « Réessayer »), introuvable, ou prête.
+  const [loadState, setLoadState] = useState<'loading' | 'error' | 'missing' | 'ready'>(
+    isNew ? 'ready' : 'loading',
+  );
+  const [reloadKey, setReloadKey] = useState(0);
+  /**
+   * Dernière version enregistrée (ou lue) du titre et du texte. `null` : rien n'est encore
+   * enregistré, ou la note n'a pas pu être lue, et rien ne doit alors être écrit à sa place.
+   */
+  const persisted = useRef<Snapshot | null>(null);
+  /** Titre proposé depuis un cours : seul, il ne suffit pas à créer la note. */
+  const prefilledTitle = useRef<string | null>(null);
   const [editing, setEditing] = useState(isNew);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -138,32 +153,46 @@ export default function NoteScreen() {
     setFavorite(n.isFavorite);
     setUpdatedAt(n.updatedAt);
     latest.current = { title: n.title, content: n.content };
+    persisted.current = { title: n.title, content: n.content };
   };
 
-  // Chargement d'une note existante ; pré-remplissage depuis un cours (§49).
+  // Nouvelle note prise depuis un cours : titre proposé (§49), dès que la matière est connue.
   useEffect(() => {
-    if (isNew) {
-      if (params.subjectId && params.courseDate) {
-        const s = byId.get(params.subjectId);
-        if (s && !latest.current.title) {
-          const prefilled = t('notes.courseTitle', {
-            subject: s.name,
-            date: formatShortDate(params.courseDate, labels.lang),
-          });
-          setTitle(prefilled);
-          latest.current.title = prefilled;
-        }
-      }
-      return;
+    if (!isNew || !params.subjectId || !params.courseDate) return;
+    const s = byId.get(params.subjectId);
+    if (s && !latest.current.title) {
+      const prefilled = t('notes.courseTitle', {
+        subject: s.name,
+        date: formatShortDate(params.courseDate, labels.lang),
+      });
+      setTitle(prefilled);
+      latest.current.title = prefilled;
+      prefilledTitle.current = prefilled;
     }
-    void getNote(db, params.id)
-      .then((n) => {
-        if (n) applyNote(n);
-        setLoaded(true);
-      })
-      .catch(reportLoadError);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, params.id, isNew, byId]);
+  }, [isNew, byId]);
+
+  // Chargement d'une note existante (et nouvel essai après un échec).
+  useEffect(() => {
+    if (isNew) return;
+    let alive = true;
+    getNote(db, params.id).then(
+      (n) => {
+        if (!alive) return;
+        if (n) applyNote(n);
+        setLoadState(n ? 'ready' : 'missing');
+      },
+      (e: unknown) => {
+        // Écran « Réessayer » plutôt qu'un chargement sans fin ; rien n'est écrit tant que la
+        // note n'a pas été lue (sinon la sortie l'enregistrerait vide).
+        logger.error(e, { where: 'note.load' });
+        if (alive) setLoadState('error');
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [db, params.id, isNew, reloadKey]);
 
   const fail = (e: unknown) => {
     setStatus('idle');
@@ -174,39 +203,70 @@ export default function NoteScreen() {
     );
   };
 
-  /** Enregistrement (crée la note au premier contenu). Retourne l'id de la note. */
-  const persist = useCallback(async (): Promise<string | null> => {
-    if (deleted.current) return null;
-    if (!noteIdRef.current && !creating.current) {
-      const { title: tt, content: cc } = latest.current;
-      if (tt.trim() === '' && cc.trim() === '') return null;
+  /**
+   * Enregistrement (crée la note au premier contenu). Retourne l'id de la note, ou `null` si
+   * rien n'est à enregistrer. `explicit` : l'utilisateur agit sur la note (favori…), le titre
+   * pré-rempli suffit alors à la créer.
+   */
+  const persist = useCallback(
+    async (explicit = false): Promise<string | null> => {
+      if (deleted.current) return null;
+      if (!noteIdRef.current && !creating.current) {
+        const snapshot = { ...latest.current };
+        const { title: tt, content: cc } = snapshot;
+        const typedTitle = tt.trim() !== '' && (explicit || tt !== prefilledTitle.current);
+        if (cc.trim() === '' && !typedTitle) return null;
+        setStatus('saving');
+        creating.current = createNote(db, {
+          title: tt,
+          content: cc,
+          subjectId,
+          courseSeriesId: params.courseSeriesId ?? null,
+          courseDate: params.courseDate ?? null,
+          categoryId,
+        })
+          .then((id) => {
+            persisted.current = snapshot;
+            return id;
+          })
+          .finally(() => {
+            creating.current = null;
+          });
+        const id = await creating.current;
+        setNoteId(id);
+        setStatus('saved');
+        setUpdatedAt(new Date().toISOString());
+        return id;
+      }
+      // Une création est en cours (frappe rapide) : on l'attend, puis on enregistre la dernière version.
+      const id = noteIdRef.current ?? (await creating.current!);
+      noteIdRef.current = id;
+      // Note pas encore lue (ou lecture en échec) : rien à enregistrer, surtout pas un texte vide.
+      const before = persisted.current;
+      if (!before) return null;
+      const snapshot = { ...latest.current };
+      if (snapshot.title === before.title && snapshot.content === before.content) return id;
       setStatus('saving');
-      creating.current = createNote(db, {
-        title: tt,
-        content: cc,
-        subjectId,
-        courseSeriesId: params.courseSeriesId ?? null,
-        courseDate: params.courseDate ?? null,
-        categoryId,
-      }).finally(() => {
-        creating.current = null;
-      });
-      const id = await creating.current;
-      setNoteId(id);
+      await saveNoteContent(db, id, snapshot.title, snapshot.content);
+      persisted.current = snapshot;
       setStatus('saved');
       setUpdatedAt(new Date().toISOString());
       return id;
-    }
-    // Une création est en cours (frappe rapide) : on l'attend, puis on enregistre la dernière version.
-    const id = noteIdRef.current ?? (await creating.current!);
-    noteIdRef.current = id;
-    const { title: tt, content: cc } = latest.current;
-    setStatus('saving');
-    await saveNoteContent(db, id, tt, cc);
-    setStatus('saved');
-    setUpdatedAt(new Date().toISOString());
-    return id;
-  }, [db, subjectId, categoryId, params.courseSeriesId, params.courseDate]);
+    },
+    [db, subjectId, categoryId, params.courseSeriesId, params.courseDate],
+  );
+
+  /** Enregistrement automatique : un échec s'affiche une seule fois, sous le titre, sans alerte. */
+  const autosave = useCallback(() => {
+    persist().then(
+      () => setUnsaved(false),
+      (e: unknown) => {
+        logger.error(e, { where: 'note.autosave' });
+        setStatus('idle');
+        setUnsaved(true);
+      },
+    );
+  }, [persist]);
 
   const scheduleSave = (next: { title?: string; content?: string }) => {
     if (next.title !== undefined) {
@@ -221,17 +281,13 @@ export default function NoteScreen() {
       latest.current.content = clipped;
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(
-      () =>
-        void persist().then(
-          () => setUnsaved(false),
-          (e: unknown) => {
-            setUnsaved(true);
-            fail(e);
-          },
-        ),
-      600,
-    );
+    // Après un échec, chaque nouvelle modification retente l'enregistrement (sans nouvelle alerte).
+    saveTimer.current = setTimeout(autosave, 600);
+  };
+
+  const retrySave = () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    autosave();
   };
 
   // Enregistre immédiatement quand on quitte l'écran (dernière version de persist, sans relancer l'effet).
@@ -252,15 +308,17 @@ export default function NoteScreen() {
 
   const saveMeta = async (next: { subjectId: string | null; categoryId: string | null }) => {
     if (!noteId) return;
+    const snapshot = { ...latest.current };
     try {
       await updateNote(db, noteId, {
-        title: latest.current.title,
-        content: latest.current.content,
+        title: snapshot.title,
+        content: snapshot.content,
         subjectId: next.subjectId,
         courseSeriesId: params.courseSeriesId ?? null,
         courseDate: params.courseDate ?? null,
         categoryId: next.categoryId,
       });
+      persisted.current = snapshot;
     } catch (e) {
       fail(e);
     }
@@ -277,7 +335,7 @@ export default function NoteScreen() {
   };
 
   const toggleFavorite = async () => {
-    const id = noteId ?? (await persist().catch(fail));
+    const id = noteId ?? (await persist(true).catch(fail));
     if (!id) return;
     setFavorite(!favorite);
     setNoteFavorite(db, id, !favorite).catch(fail);
@@ -287,7 +345,7 @@ export default function NoteScreen() {
 
   const attach = async (kind: 'image' | 'file') => {
     try {
-      const id = noteId ?? (await persist());
+      const id = noteId ?? (await persist(true));
       const target =
         id ??
         (await createNote(db, {
@@ -359,8 +417,33 @@ export default function NoteScreen() {
     }
   };
 
-  if (!loaded) return <LoadingScreen />;
-  if (!isNew && !noteId) return <EmptyState icon="alert-circle" title={t('errors.itemNotFound')} />;
+  if (loadState === 'loading' || loadState === 'error') {
+    return (
+      <View style={{ flex: 1, padding: spacing.lg }}>
+        <Stack.Screen options={{ title: t('notes.screenTitle') }} />
+        <StateView
+          state={loadState}
+          onRetry={() => {
+            setLoadState('loading');
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      </View>
+    );
+  }
+  if (loadState === 'missing' || (!isNew && !noteId)) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Stack.Screen options={{ title: t('notes.screenTitle') }} />
+        <EmptyState
+          icon="alert-circle"
+          title={t('notes.notFound')}
+          message={t('notes.notFoundHint')}
+          action={{ label: t('common.back'), onPress: () => goBack() }}
+        />
+      </View>
+    );
+  }
 
   const subject = subjectId ? byId.get(subjectId) : undefined;
   const category = (categories.data ?? []).find((c) => c.id === categoryId);
@@ -485,7 +568,21 @@ export default function NoteScreen() {
             paddingVertical: spacing.xs,
           }}
         />
-        {status !== 'idle' ? (
+        {unsaved && status !== 'saving' ? (
+          // Échec de l'enregistrement automatique : indiqué une fois, ici, sans alerte bloquante ;
+          // la prochaine modification (ou un appui) retente.
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={t('notes.unsavedRetryLabel')}
+            accessibilityLiveRegion="polite"
+            onPress={retrySave}
+            style={{ minHeight: minTouchSize, justifyContent: 'center' }}
+          >
+            <AppText variant="caption" color="danger">
+              {t('notes.unsavedRetry')}
+            </AppText>
+          </Tappable>
+        ) : status !== 'idle' ? (
           <AppText variant="caption" color={status === 'saved' ? 'success' : 'muted'}>
             {status === 'saved' ? t('notes.saved') : t('notes.saving')}
           </AppText>
@@ -596,7 +693,13 @@ function AttachmentTile({
             accessibilityRole="button"
             accessibilityLabel={`${t('notes.removeAttachment')} ${a.name}`}
             onPress={onRemove}
-            hitSlop={10}
+            // Zone tactile d'au moins 44 pt, même si le texte est petit.
+            style={{
+              minHeight: minTouchSize,
+              minWidth: minTouchSize,
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+            }}
           >
             <AppText variant="caption" color="danger">
               {t('notes.removeAttachment')}

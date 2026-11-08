@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { goBack } from '@/components/navigation';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -113,6 +113,9 @@ export default function MoneyAddScreen() {
   /** Erreur de saisie de la note, sous son champ. */
   const [noteError, setNoteError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
+  // Garde synchrone : deux appuis dans la même image passent tous deux avant que `saving` soit
+  // rendu, et créeraient deux opérations.
+  const savingRef = useRef(false);
   const { dirty } = useDirty({ kind, categoryId, digits, date, note }, loadState === 'ready');
   const leave = useUnsavedGuard(dirty);
   const custom = useLiveQuery(listCategories, ['money_categories'], []);
@@ -183,10 +186,12 @@ export default function MoneyAddScreen() {
   };
 
   const save = async () => {
+    if (savingRef.current) return;
     if (!amount) {
       setError(t('money.invalidAmount'));
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setNoteError(undefined);
     const input = {
@@ -205,8 +210,10 @@ export default function MoneyAddScreen() {
       if (existing) await updateTransaction(db, existing.id, input);
       else await createTransaction(db, input);
       haptic('success');
+      // Réussi : la garde reste fermée, l'écran se referme (aucun second enregistrement).
       leave(close);
     } catch (e) {
+      savingRef.current = false;
       setSaving(false);
       if (isValidationError(e)) {
         // Erreurs de saisie à leur place : la note sous son champ ; le montant (ex. remboursement

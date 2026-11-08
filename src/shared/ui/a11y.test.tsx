@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -8,7 +8,7 @@ import { i18n } from '../i18n';
 import { lightColors } from '../theme';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
-import { ChoiceSheet } from './ChoiceSheet';
+import { CHOICE_IOS_FALLBACK_MS, ChoiceSheet } from './ChoiceSheet';
 import { ListRow } from './ListRow';
 import { PlusButton } from './PlusButton';
 import { SwipeRow } from './SwipeRow';
@@ -154,9 +154,16 @@ describe('fenêtre de choix', () => {
     expect(backdrop.props.importantForAccessibility).toBe('no-hide-descendants');
     expect(panel.props.accessibilityViewIsModal).toBe(true);
 
+    jest.useFakeTimers();
     await fireEvent.press(option);
-    expect(pick).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
+    // Le choix part une fois la fenêtre fermée (voir ChoiceSheet.test.tsx) ; au plus tard après
+    // le filet de sécurité.
+    await act(async () => {
+      jest.advanceTimersByTime(CHOICE_IOS_FALLBACK_MS);
+    });
+    jest.useRealTimers();
+    expect(pick).toHaveBeenCalledTimes(1);
     // Le geste d'échappement de VoiceOver ferme la fenêtre.
     await fireEvent(panel, 'accessibilityEscape');
     expect(onClose).toHaveBeenCalledTimes(2);
