@@ -76,7 +76,8 @@
     "feedbackTooShort": "Write at least 10 characters.",
     "invalidEmail": "Invalid email address.",
     "invalidYear": "Enter a school year, for example 2026–2027.",
-    "reminderAfterDue": "The reminder must come before the due date. Pick an earlier time."
+    "reminderAfterDue": "The reminder must come before the due date. Pick an earlier time.",
+    "reminderPast": "This reminder has already passed: pick a time to come so it can ring."
   },
   "today": {
     "greeting": "Hello",

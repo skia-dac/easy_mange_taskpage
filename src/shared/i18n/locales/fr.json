@@ -76,7 +76,8 @@
     "feedbackTooShort": "Écris au moins 10 caractères.",
     "invalidEmail": "Adresse e-mail non valide.",
     "invalidYear": "Entre une année scolaire, par exemple 2026–2027.",
-    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt."
+    "reminderAfterDue": "Le rappel doit arriver avant l’échéance. Choisis une date plus tôt.",
+    "reminderPast": "Ce rappel est déjà passé : choisis une heure à venir pour qu’il sonne."
   },
   "today": {
     "greeting": "Bonjour",

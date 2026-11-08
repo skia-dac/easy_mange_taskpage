@@ -31,6 +31,10 @@ const task = {
   reminderAt: '2026-09-24T07:00:00.000Z',
 } as const;
 
+// Les données datent de septembre 2026 : l'horloge s'y place, pour que leurs rappels soient à
+// venir (un rappel choisi dans le passé est refusé).
+jest.useFakeTimers({ now: new Date('2026-09-20T08:00:00.000Z'), advanceTimers: true });
+
 describe('lot D — bilan du soir et planning', () => {
   it('« Tout reporter » en une transaction, et « Annuler » remet les échéances', async () => {
     const a = await createWorkItem(db, 'task', task);

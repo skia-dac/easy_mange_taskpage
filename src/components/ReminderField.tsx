@@ -158,7 +158,7 @@ export function ReminderField({ dueDate, value, onChange, error, kind }: Props) 
       ) : null}
       {error ? (
         <AppText variant="caption" color="danger" accessibilityRole="alert">
-          {error}
+          {t(error)}
         </AppText>
       ) : null}
       {settingOff && kind ? (

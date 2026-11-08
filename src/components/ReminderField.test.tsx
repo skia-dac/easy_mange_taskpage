@@ -213,6 +213,23 @@ describe('rappel : jamais dans le passé', () => {
     expect(screen.getByText(i18n.t('reminder.pastError'))).toBeTruthy();
   });
 
+  it('refus à l’enregistrement : le message traduit, jamais sa clé', async () => {
+    mockPermission.state = 'granted';
+    await render(
+      inApp(
+        <ReminderField
+          dueDate="2026-10-10"
+          value={atTime('2026-10-09', '18:00').toISOString()}
+          onChange={changes}
+          error="validation.reminderPast"
+        />,
+      ),
+    );
+    await flush();
+    expect(screen.getByText(i18n.t('validation.reminderPast'))).toBeTruthy();
+    expect(screen.queryByText('validation.reminderPast')).toBeNull();
+  });
+
   it('rappel enregistré déjà passé : le champ le signale', async () => {
     mockPermission.state = 'granted';
     await render(inApp(<Harness initial={atTime('2026-09-30', '18:00').toISOString()} />));

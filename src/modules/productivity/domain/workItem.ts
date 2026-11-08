@@ -10,7 +10,14 @@ import {
 } from '@/shared/dates';
 import { fieldLimits, SUBTASK_MAX } from '@/shared/fieldLimits';
 import { spaceSchema, type ActiveSpaces, type SpaceId } from '@/shared/spaces';
-import { isoDate, optionalId, optionalText, optionalTime, requiredText } from '@/shared/validation';
+import {
+  isoDate,
+  optionalId,
+  optionalText,
+  optionalTime,
+  requiredText,
+  ValidationError,
+} from '@/shared/validation';
 
 /** Une tâche (académique ou perso) et un devoir ont la même forme mais restent des entités séparées. */
 export const workKinds = ['task', 'assignment'] as const;
@@ -200,12 +207,32 @@ export function postponeTargets(today: IsoDate): {
 /**
  * Nouvelle échéance d'une tâche reportée : on garde l'écart entre le rappel et l'échéance.
  * Un rappel déjà passé est décalé du même nombre de jours.
+ * Date retirée (« Retirer la date ») : le rappel à venir reste à son heure (un rappel
+ * « Personnalisé ») ; un rappel déjà passé n'a plus rien à annoncer et il est retiré.
  */
 export function postponedReminder(
   item: Pick<WorkItem, 'dueDate' | 'reminderAt'>,
   dueDate: IsoDate | null,
+  now: Date = new Date(),
 ) {
-  return shiftReminder(item.reminderAt, item.dueDate, dueDate);
+  const next = shiftReminder(item.reminderAt, item.dueDate, dueDate);
+  if (dueDate === null && next && new Date(next).getTime() <= now.getTime()) return null;
+  return next;
+}
+
+/**
+ * Un rappel choisi dans le passé ne sonnerait jamais : refusé à la création et quand il change.
+ * Un rappel déjà enregistré (`previous`) et passé depuis reste accepté tel quel : modifier le
+ * titre d'une vieille tâche, ou recevoir une modification d'un autre appareil, ne bloque jamais.
+ */
+export function assertReminderNotPast(
+  next: string | null | undefined,
+  previous: string | null | undefined,
+  now: Date = new Date(),
+): void {
+  if (!next || next === previous) return;
+  if (new Date(next).getTime() <= now.getTime())
+    throw new ValidationError({ reminderAt: 'validation.reminderPast' });
 }
 
 /**

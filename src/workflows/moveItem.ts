@@ -59,14 +59,14 @@ export async function moveCalendarItem(db: Db, item: CalendarItem, to: MoveTarge
       const shift =
         atTime(to.date, to.startTime).getTime() -
         atTime(e.date, e.startTime ?? to.startTime).getTime();
+      const reminder = e.reminderAt ? new Date(new Date(e.reminderAt).getTime() + shift) : null;
       await updatePersonalEvent(db, e.id, {
         ...e,
         date: to.date,
         startTime: to.startTime,
         endTime: e.endTime ? to.endTime : null,
-        reminderAt: e.reminderAt
-          ? new Date(new Date(e.reminderAt).getTime() + shift).toISOString()
-          : null,
+        // Rendez-vous avancé : un rappel qui tomberait dans le passé ne sonnerait jamais, il part.
+        reminderAt: reminder && reminder.getTime() > Date.now() ? reminder.toISOString() : null,
       });
       return;
     }
