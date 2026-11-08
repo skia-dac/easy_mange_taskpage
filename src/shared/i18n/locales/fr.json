@@ -582,7 +582,10 @@
     "moneyBodyTime": "{{amount}} · le {{date}} à {{time}}",
     "payoutTitle": "C’est ton tour : {{name}}",
     "payoutBody": "Tu reçois {{amount}} aujourd’hui.",
-    "workBodyNoDate": "{{title}}"
+    "workBodyNoDate": "{{title}}",
+    "reviewBodyFirst": "Nouveau : 1 minute chaque soir pour préparer demain. Tu peux le couper dans Réglages › Notifications.",
+    "refreshTitle": "Tes rappels s’arrêtent bientôt",
+    "refreshBody": "Ouvre MySky pour garder tes rappels à jour."
   },
   "settings": {
     "title": "Réglages",
@@ -642,7 +645,7 @@
     "revisions": "Révisions prévues",
     "revisionsHint": "10 minutes avant chaque séance.",
     "eveningReview": "Bilan du soir",
-    "eveningReviewHint": "Un rappel chaque soir pour préparer demain.",
+    "eveningReviewHint": "Activé au départ : un rappel chaque soir pour préparer demain. Coupe-le ici si tu n’en veux pas.",
     "eveningReviewTime": "Heure du bilan",
     "money": "Argent : charges fixes et tontines",
     "moneyHint": "Aux moments choisis sur chaque charge ou tontine."

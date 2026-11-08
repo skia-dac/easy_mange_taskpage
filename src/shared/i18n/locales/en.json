@@ -582,7 +582,10 @@
     "moneyBodyTime": "{{amount}} · on {{date}} at {{time}}",
     "payoutTitle": "It’s your turn: {{name}}",
     "payoutBody": "You receive {{amount}} today.",
-    "workBodyNoDate": "{{title}}"
+    "workBodyNoDate": "{{title}}",
+    "reviewBodyFirst": "New: 1 minute each evening to get ready for tomorrow. You can turn it off in Settings › Notifications.",
+    "refreshTitle": "Your reminders stop soon",
+    "refreshBody": "Open MySky to keep your reminders up to date."
   },
   "settings": {
     "title": "Settings",
@@ -642,7 +645,7 @@
     "revisions": "Planned revision",
     "revisionsHint": "10 minutes before each session.",
     "eveningReview": "Evening review",
-    "eveningReviewHint": "A reminder every evening to get ready for tomorrow.",
+    "eveningReviewHint": "On from the start: a reminder every evening to get ready for tomorrow. Turn it off here if you don’t want it.",
     "eveningReviewTime": "Review time",
     "money": "Money: fixed costs and tontines",
     "moneyHint": "At the times chosen on each cost or tontine."

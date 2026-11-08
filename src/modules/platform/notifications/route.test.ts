@@ -2,6 +2,15 @@ import { routeForResponse } from './route';
 
 const end = { kind: 'endOfCourse' as const, seriesId: 's', date: '2026-09-23', subjectId: 'mkt' };
 
+it('le filet de sécurité « Ouvre MySky… » ouvre Aujourd’hui', () => {
+  expect(
+    routeForResponse({
+      actionIdentifier: 'expo.modules.notifications.actions.DEFAULT',
+      action: { kind: 'refresh' },
+    }),
+  ).toBe('/(tabs)');
+});
+
 describe('réponse à une notification de fin de cours (§76–79)', () => {
   it('« Ajouter une tâche » ouvre la fiche unique de tâche, matière pré-remplie', () => {
     expect(routeForResponse({ actionIdentifier: 'add_task', action: end })).toEqual({

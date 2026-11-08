@@ -3,7 +3,16 @@ import { defaultNotificationPreferences } from '@/modules/identity';
 import type { WorkItem } from '@/modules/productivity';
 import { atTime, toIsoDate } from '@/shared/dates';
 
-import { HABIT_HORIZON_DAYS, MAX_COURSE_REMINDERS, MAX_SCHEDULED, planReminders } from './plan';
+import {
+  dailyHorizonDays,
+  firstReviewDay,
+  HABIT_HORIZON_DAYS,
+  MAX_COURSE_REMINDERS,
+  MAX_HABIT_HORIZON_DAYS,
+  MAX_SCHEDULED,
+  planReminders,
+  type PlannedReminder,
+} from './plan';
 
 const series: CourseSeries = {
   id: 's1',
@@ -27,6 +36,41 @@ const now = new Date(2026, 8, 23, 8, 0); // mercredi 23 sept. 08:00
 // Le bilan du soir est testé à part : ici, seulement les rappels liés aux données.
 const prefs = { ...defaultNotificationPreferences, eveningReview: false };
 const empty = { series: [], exams: [], work: [], events: [] };
+const isCourse = (r: PlannedReminder) =>
+  r.action.kind === 'course' || r.action.kind === 'endOfCourse';
+const isNet = (r: PlannedReminder) => r.action.kind === 'refresh';
+const habit = (id: string, reminderTime: string | null = '21:00') => ({
+  id,
+  position: 0,
+  name: `Habitude ${id}`,
+  icon: 'star',
+  colorId: 'blue',
+  frequency: 'daily' as const,
+  weekdays: [],
+  timesPerWeek: 1,
+  target: 1,
+  unit: null,
+  reminderTime,
+  autoStudy: false,
+  tracksBody: false,
+});
+const task = (i: number): WorkItem => ({
+  id: `t${i}`,
+  kind: 'task',
+  title: `Tâche ${i}`,
+  description: null,
+  subjectId: null,
+  dueDate: null,
+  dueTime: null,
+  priority: 'normal',
+  status: 'todo',
+  completedAt: null,
+  // Une tâche toutes les 12 h, à partir de demain 10:00.
+  reminderAt: new Date(2026, 8, 24, 10 + 12 * i, 0).toISOString(),
+  repeat: 'none',
+  estimatedMinutes: null,
+  space: 'personal',
+});
 
 describe('rappels de cours (§72) et fin de cours (§76)', () => {
   it('programme le rappel 15 min avant et la notification de fin', () => {
@@ -164,12 +208,16 @@ it(`ne dépasse jamais ${MAX_SCHEDULED} notifications ni ${MAX_COURSE_REMINDERS}
     weekday: (i % 7) + 1,
   }));
   const plan = planReminders({ ...empty, series: many }, prefs, now, names);
-  expect(plan).toHaveLength(MAX_COURSE_REMINDERS);
+  // Quota des cours atteint, plus le filet de sécurité (des cours ne sont plus programmés).
+  expect(plan.filter(isCourse)).toHaveLength(MAX_COURSE_REMINDERS);
+  expect(plan.filter(isNet)).toHaveLength(1);
+  expect(plan).toHaveLength(MAX_COURSE_REMINDERS + 1);
   for (let i = 1; i < plan.length; i++)
     expect(plan[i]!.fireAt.getTime()).toBeGreaterThanOrEqual(plan[i - 1]!.fireAt.getTime());
 
   // Six rappels de cours par jour contre un d'habitude : les cours atteignent leur quota en
-  // quelques jours, l'habitude garde ses 7 jours de rappels, même plus lointains.
+  // quelques jours, l'habitude garde au moins ses 7 jours de rappels, même plus lointains, et
+  // prend la place restante (une place gardée pour le filet de sécurité).
   const dense = Array.from({ length: 20 }, (_, i) => ({
     ...series,
     id: `s${i}`,
@@ -196,8 +244,10 @@ it(`ne dépasse jamais ${MAX_SCHEDULED} notifications ni ${MAX_COURSE_REMINDERS}
   );
   const others = mixed.filter((r) => r.action.kind === 'habit');
   expect(courses).toHaveLength(MAX_COURSE_REMINDERS);
-  expect(others).toHaveLength(HABIT_HORIZON_DAYS);
-  expect(mixed).toHaveLength(MAX_COURSE_REMINDERS + HABIT_HORIZON_DAYS);
+  expect(others.length).toBeGreaterThanOrEqual(HABIT_HORIZON_DAYS);
+  expect(others).toHaveLength(MAX_SCHEDULED - 1 - MAX_COURSE_REMINDERS);
+  expect(mixed.filter(isNet)).toHaveLength(1);
+  expect(mixed).toHaveLength(MAX_SCHEDULED);
   const lastCourse = courses[courses.length - 1]!.fireAt.getTime();
   expect(others[others.length - 1]!.fireAt.getTime()).toBeGreaterThan(lastCourse);
 });
@@ -246,7 +296,8 @@ describe('révisions et bilan du soir', () => {
     const revision = plan.find((p) => p.id === 'revision:r1');
     expect(revision?.fireAt).toEqual(atTime(block.date, '22:50'));
     expect(plan.some((p) => p.id === 'revision:r2')).toBe(false);
-    expect(plan.filter((p) => p.action.kind === 'review')).toHaveLength(7);
+    // Le quota est presque libre : le bilan est planifié sur 4 semaines (au lieu d'une).
+    expect(plan.filter((p) => p.action.kind === 'review')).toHaveLength(MAX_HABIT_HORIZON_DAYS);
     expect(
       planReminders(
         { ...empty, revisionBlocks: [block] },
@@ -326,5 +377,113 @@ describe('argent : charges fixes et tontines', () => {
         names,
       ),
     ).toEqual([]);
+  });
+});
+
+describe('horizon des rappels quotidiens', () => {
+  it('calculé sur le quota restant, entre 7 jours et 4 semaines', () => {
+    expect(dailyHorizonDays(0, 0)).toBe(HABIT_HORIZON_DAYS);
+    // 59 places libres pour 2 rappels par jour : 29 jours, plafonnés à 28.
+    expect(dailyHorizonDays(0, 2)).toBe(MAX_HABIT_HORIZON_DAYS);
+    // 40 cours : 19 places pour 1 habitude et le bilan : 9 jours.
+    expect(dailyHorizonDays(40, 2)).toBe(9);
+    // Quota presque plein : jamais moins d'une semaine (le plus proche d'abord, comme avant).
+    expect(dailyHorizonDays(58, 3)).toBe(HABIT_HORIZON_DAYS);
+  });
+
+  it('une habitude seule : 4 semaines de rappels', () => {
+    const plan = planReminders({ ...empty, habits: [habit('h1')] }, prefs, now, names);
+    expect(plan.filter((p) => p.action.kind === 'habit')).toHaveLength(MAX_HABIT_HORIZON_DAYS);
+  });
+});
+
+describe('filet de sécurité (« Ouvre MySky pour garder tes rappels à jour »)', () => {
+  it('le matin du dernier jour couvert par les habitudes et le bilan', () => {
+    // 45 tâches : 14 places pour 1 habitude + le bilan, donc 7 jours.
+    const work = Array.from({ length: 45 }, (_, i) => task(i));
+    const plan = planReminders(
+      { ...empty, work, habits: [habit('h1')] },
+      { ...prefs, eveningReview: true, eveningReviewTime: '20:30' },
+      now,
+      names,
+    );
+    const net = plan.filter(isNet);
+    expect(net).toHaveLength(1);
+    // Septième jour (aujourd'hui + 6), 09:00 : avant son bilan de 20:30 et son habitude de 21:00.
+    expect(net[0]?.fireAt).toEqual(atTime('2026-09-29', '09:00'));
+    expect(net[0]?.id).toBe('refresh:2026-09-29');
+    expect(net[0]?.title.key).toBe('notif.refreshTitle');
+    expect(net[0]?.body.key).toBe('notif.refreshBody');
+    const reviews = plan.filter((p) => p.action.kind === 'review');
+    expect(reviews).toHaveLength(HABIT_HORIZON_DAYS);
+    expect(net[0]!.fireAt.getTime()).toBeLessThan(reviews.at(-1)!.fireAt.getTime());
+    // Dans le quota : 45 tâches + 7 habitudes + 7 bilans + le filet.
+    expect(plan).toHaveLength(MAX_SCHEDULED);
+  });
+
+  it('compté dans le quota, même plein', () => {
+    const work = Array.from({ length: 80 }, (_, i) => task(i));
+    const plan = planReminders({ ...empty, work, habits: [habit('h1')] }, prefs, now, names);
+    expect(plan).toHaveLength(MAX_SCHEDULED);
+    const net = plan.find(isNet);
+    expect(net).toBeDefined();
+    // Avant le premier rappel écarté par le quota (sinon il manquerait sans prévenir).
+    const firstMissing = Array.from({ length: 80 }, (_, i) => task(i)).find(
+      (w) => !plan.some((p) => p.id === `work:task:${w.id}`),
+    );
+    expect(net!.fireAt.getTime()).toBeLessThan(new Date(firstMissing!.reminderAt!).getTime());
+  });
+
+  it('rien de répétitif (seulement des tâches) : pas de filet, tout le quota pour les rappels', () => {
+    const work = Array.from({ length: 70 }, (_, i) => task(i));
+    const plan = planReminders({ ...empty, work }, prefs, now, names);
+    expect(plan.some(isNet)).toBe(false);
+    expect(plan).toHaveLength(MAX_SCHEDULED);
+    expect(planReminders(empty, prefs, now, names)).toEqual([]);
+    // Une habitude sans heure de rappel ne compte pas.
+    const silent = planReminders({ ...empty, habits: [habit('h1', null)] }, prefs, now, names);
+    expect(silent).toEqual([]);
+  });
+
+  it('cours seuls, sans quota atteint : à la fin de l’horizon de 45 jours', () => {
+    const plan = planReminders({ ...empty, series: [series] }, prefs, now, names);
+    const net = plan.find(isNet);
+    expect(net?.fireAt).toEqual(atTime('2026-11-07', '09:00'));
+  });
+
+  it('jamais pendant un cours en mode focus : la veille au soir', () => {
+    // Le 28e jour (aujourd'hui + 27 = mardi 20 oct.) a un cours de 08:30 à 10:00.
+    const tuesday = { ...series, id: 's2', weekday: 2, startTime: '08:30', endTime: '10:00' };
+    const plan = planReminders(
+      { ...empty, series: [tuesday], habits: [habit('h1')] },
+      { ...prefs, courses: false, endOfCourse: false, focusDuringCourses: true },
+      now,
+      names,
+    );
+    expect(plan.find(isNet)?.fireAt).toEqual(atTime('2026-10-19', '19:00'));
+  });
+
+  it('fait partie de l’empreinte : mêmes données, même filet', () => {
+    const data = { ...empty, habits: [habit('h1')] };
+    const a = planReminders(data, prefs, now, names).find(isNet);
+    const b = planReminders(data, prefs, now, names).find(isNet);
+    expect(a).toEqual(b);
+  });
+});
+
+describe('premier bilan du soir : il s’explique', () => {
+  it('le jour d’introduction a son propre texte, les suivants le texte habituel', () => {
+    const plan = planReminders(empty, { ...prefs, eveningReview: true }, now, names, {
+      reviewIntroDate: firstReviewDay(prefs, now),
+    });
+    const reviews = plan.filter((p) => p.action.kind === 'review');
+    expect(reviews[0]?.id).toBe('review:2026-09-23');
+    expect(reviews[0]?.body.key).toBe('notif.reviewBodyFirst');
+    expect(reviews.slice(1).every((r) => r.body.key === 'notif.reviewBody')).toBe(true);
+  });
+
+  it('le prochain bilan : aujourd’hui, ou demain si l’heure est passée', () => {
+    expect(firstReviewDay({ eveningReviewTime: '20:30' }, now)).toBe('2026-09-23');
+    expect(firstReviewDay({ eveningReviewTime: '07:00' }, now)).toBe('2026-09-24');
   });
 });

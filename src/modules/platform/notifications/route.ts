@@ -48,5 +48,8 @@ export function routeForResponse(r: NotificationResponse): Href | null {
       // Pas d'écran de lecture : la liste des charges et tontines, la ligne mise en avant
       // (la fiche de modification reste à un appui).
       return { pathname: '/money/recurring', params: { highlight: a.id } };
+    case 'refresh':
+      // Filet de sécurité : ouvrir l'app suffit (le plan est reprogrammé à l'ouverture).
+      return '/(tabs)';
   }
 }

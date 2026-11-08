@@ -23,6 +23,8 @@ export const reminderActionSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('revision'), id }),
   z.object({ kind: z.literal('review'), date: z.string() }),
   z.object({ kind: z.literal('money'), id }),
+  /** Filet de sécurité : « Ouvre MySky pour garder tes rappels à jour » (ouvre Aujourd'hui). */
+  z.object({ kind: z.literal('refresh') }),
 ]);
 export type ReminderAction = z.infer<typeof reminderActionSchema>;
 
@@ -46,12 +48,61 @@ export const MAX_SCHEDULED = 60;
  */
 export const MAX_COURSE_REMINDERS = 40;
 export const HORIZON_DAYS = 45;
-/** Les rappels d'habitudes sont planifiés sur une semaine (ils se répètent chaque jour). */
+/**
+ * Rappels quotidiens (habitudes, bilan du soir) : au moins une semaine, et plus quand le quota
+ * le permet (voir `dailyHorizonDays`), jusqu'à MAX_HABIT_HORIZON_DAYS.
+ */
 export const HABIT_HORIZON_DAYS = 7;
+export const MAX_HABIT_HORIZON_DAYS = 28;
+/**
+ * Filet de sécurité : une notification douce juste avant la fin des rappels programmés, pour
+ * qu'un étudiant qui n'ouvre pas l'app ne perde pas ses rappels sans le savoir. Le matin du
+ * dernier jour couvert, sinon la veille au soir.
+ */
+export const SAFETY_NET_MORNING = '09:00';
+export const SAFETY_NET_EVENING = '19:00';
 /** Rappel avant une séance de révision. */
 export const REVISION_REMINDER_MINUTES = 10;
 
 type Named = { subjectName: (id: string) => string };
+
+export type PlanOptions = {
+  /**
+   * Jour (AAAA-MM-JJ) du premier bilan du soir : ce rappel-là explique ce qu'il est et comment
+   * le couper (voir `firstReviewDay`). null : aucun rappel d'introduction.
+   */
+  reviewIntroDate?: string | null;
+};
+
+const byDate = (a: PlannedReminder, b: PlannedReminder) => a.fireAt.getTime() - b.fireAt.getTime();
+
+/** Jour du prochain bilan du soir : aujourd'hui si l'heure n'est pas passée, sinon demain. */
+export function firstReviewDay(
+  prefs: Pick<NotificationPreferences, 'eveningReviewTime'>,
+  now: Date,
+): string {
+  const today = toIsoDate(now);
+  const at = atTime(today, prefs.eveningReviewTime ?? '20:30');
+  return at.getTime() > now.getTime() ? today : addDaysIso(today, 1);
+}
+
+/**
+ * Nombre de jours de rappels quotidiens : la place laissée par les autres rappels (une place
+ * gardée pour le filet de sécurité), divisée par le nombre de rappels par jour. Jamais moins
+ * d'une semaine (comportement d'avant : le plus proche d'abord), jamais plus de 4 semaines.
+ */
+export function dailyHorizonDays(otherCount: number, perDay: number): number {
+  if (perDay <= 0) return HABIT_HORIZON_DAYS;
+  const free = MAX_SCHEDULED - 1 - otherCount;
+  const days = Math.floor(free / perDay);
+  return Math.min(MAX_HABIT_HORIZON_DAYS, Math.max(HABIT_HORIZON_DAYS, days));
+}
+
+/** Nombre de rappels gardés une fois le quota des cours appliqué (sans le quota total). */
+function countAfterCourseCap(reminders: readonly PlannedReminder[]): number {
+  const courses = reminders.filter(isCourseReminder).length;
+  return reminders.length - courses + Math.min(courses, MAX_COURSE_REMINDERS);
+}
 
 /**
  * Calcule tous les rappels à venir (dans les prochains jours), triés par date, limités à
@@ -62,6 +113,7 @@ export function planReminders(
   prefs: NotificationPreferences,
   now: Date,
   names: Named,
+  options: PlanOptions = {},
 ): PlannedReminder[] {
   const out: PlannedReminder[] = [];
   const today = toIsoDate(now);
@@ -182,30 +234,6 @@ export function planReminders(
     }
   }
 
-  if (prefs.habits !== false) {
-    // 7 jours suffisent : le plan est recalculé à chaque ouverture de l'app.
-    for (const h of data.habits ?? []) {
-      if (!h.reminderTime) continue;
-      for (let i = 0; i < HABIT_HORIZON_DAYS; i++) {
-        const day = addDaysIso(today, i);
-        const state = dayState(h, data.habitLogs ?? [], day, today);
-        if (state !== 'pending' && state !== 'partial') continue;
-        const at = atTime(day, h.reminderTime);
-        if (!future(at)) continue;
-        out.push({
-          id: `habit:${h.id}:${day}`,
-          fireAt: at,
-          title: { key: 'notif.habitTitle', params: { name: h.name } },
-          body: {
-            key: h.target > 1 ? 'notif.habitBodyCount' : 'notif.habitBody',
-            params: { target: h.target, unit: h.unit ?? '' },
-          },
-          action: { kind: 'habit', id: h.id },
-        });
-      }
-    }
-  }
-
   if (prefs.revisions !== false) {
     for (const b of data.revisionBlocks ?? []) {
       if (b.status !== 'planned' || b.date < today || b.date > until) continue;
@@ -283,25 +311,136 @@ export function planReminders(
     }
   }
 
+  // Rappels quotidiens : planifiés sur autant de jours que le quota restant le permet.
+  const others = applyFocus(out, data, prefs, now);
+  const withReminder =
+    prefs.habits !== false ? (data.habits ?? []).filter((h) => h.reminderTime) : [];
+  const perDay = withReminder.length + (prefs.eveningReview ? 1 : 0);
+  const days = dailyHorizonDays(countAfterCourseCap(others), perDay);
+  const daily: PlannedReminder[] = [];
+
+  if (prefs.habits !== false) {
+    for (const h of withReminder) {
+      if (!h.reminderTime) continue;
+      for (let i = 0; i < days; i++) {
+        const day = addDaysIso(today, i);
+        const state = dayState(h, data.habitLogs ?? [], day, today);
+        if (state !== 'pending' && state !== 'partial') continue;
+        const at = atTime(day, h.reminderTime);
+        if (!future(at)) continue;
+        daily.push({
+          id: `habit:${h.id}:${day}`,
+          fireAt: at,
+          title: { key: 'notif.habitTitle', params: { name: h.name } },
+          body: {
+            key: h.target > 1 ? 'notif.habitBodyCount' : 'notif.habitBody',
+            params: { target: h.target, unit: h.unit ?? '' },
+          },
+          action: { kind: 'habit', id: h.id },
+        });
+      }
+    }
+  }
+
   if (prefs.eveningReview) {
     const time = prefs.eveningReviewTime ?? '20:30';
-    for (let i = 0; i < HABIT_HORIZON_DAYS; i++) {
+    for (let i = 0; i < days; i++) {
       const day = addDaysIso(today, i);
       const at = atTime(day, time);
       if (!future(at)) continue;
-      out.push({
+      daily.push({
         id: `review:${day}`,
         fireAt: at,
         title: { key: 'notif.reviewTitle' },
-        body: { key: 'notif.reviewBody' },
+        // Le premier bilan dit ce qu'il est et comment le couper (activé par défaut).
+        body: {
+          key: day === options.reviewIntroDate ? 'notif.reviewBodyFirst' : 'notif.reviewBody',
+        },
         action: { kind: 'review', date: day },
       });
     }
   }
 
-  const kept = applyFocus(out, data, prefs, now);
-  return capReminders(kept.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime()));
+  const all = [...others, ...applyFocus(daily, data, prefs, now)].sort(byDate);
+  return withSafetyNet(all, data, prefs, now, until);
 }
+
+/** Groupe des rappels qui se répètent (ceux qui s'arrêtent si le plan n'est pas recalculé). */
+function recurringGroup(r: PlannedReminder): 'course' | 'habit' | 'review' | 'money' | null {
+  if (isCourseReminder(r)) return 'course';
+  if (r.action.kind === 'habit') return 'habit';
+  if (r.action.kind === 'review') return 'review';
+  if (r.action.kind === 'money' && r.id.startsWith('money:')) return 'money';
+  return null;
+}
+
+/**
+ * Ajoute le filet de sécurité au plan, en restant dans le quota : le plan est d'abord limité à
+ * MAX_SCHEDULED − 1, puis la notification « Ouvre MySky… » est placée juste avant la fin de ce
+ * qui est couvert. Sans rappel répétitif (rien ne s'arrêtera), pas de filet et tout le quota.
+ */
+function withSafetyNet(
+  sorted: readonly PlannedReminder[],
+  data: TodayData,
+  prefs: NotificationPreferences,
+  now: Date,
+  until: string,
+): PlannedReminder[] {
+  const kept = capReminders(sorted, MAX_SCHEDULED - 1);
+  const net = safetyNet(sorted, kept, data, prefs, now, until);
+  return net ? [...kept, net].sort(byDate) : capReminders(sorted);
+}
+
+/**
+ * Moment du filet : avant le premier rappel qui ne serait plus programmé si l'app restait
+ * fermée. C'est le plus tôt entre le dernier rappel quotidien gardé (habitudes, bilan), le
+ * premier rappel écarté par le quota, et la fin de l'horizon des cours et charges (45 jours).
+ * Le matin de ce jour s'il tombe avant, sinon la veille au soir ; jamais dans le passé ni
+ * pendant un moment de focus.
+ */
+export function safetyNet(
+  sorted: readonly PlannedReminder[],
+  kept: readonly PlannedReminder[],
+  data: TodayData,
+  prefs: NotificationPreferences,
+  now: Date,
+  until: string,
+): PlannedReminder | null {
+  const lastDaily = new Map<string, number>();
+  let longHorizon = false;
+  for (const r of kept) {
+    const group = recurringGroup(r);
+    if (group === 'habit' || group === 'review') lastDaily.set(group, r.fireAt.getTime());
+    else if (group) longHorizon = true;
+  }
+  if (lastDaily.size === 0 && !longHorizon) return null;
+  const limits = [...lastDaily.values()];
+  if (longHorizon) limits.push(atTime(until, '23:59').getTime());
+  const keptSet = new Set(kept);
+  const dropped = sorted.find((r) => !keptSet.has(r));
+  if (dropped) limits.push(dropped.fireAt.getTime());
+  const limit = Math.min(...limits);
+  const day = toIsoDate(new Date(limit));
+  const candidates = [
+    atTime(day, SAFETY_NET_MORNING),
+    atTime(addDaysIso(day, -1), SAFETY_NET_EVENING),
+  ];
+  for (const at of candidates) {
+    if (at.getTime() <= now.getTime() || at.getTime() >= limit) continue;
+    const net: PlannedReminder = {
+      id: `refresh:${toIsoDate(at)}`,
+      fireAt: at,
+      title: { key: 'notif.refreshTitle' },
+      body: { key: 'notif.refreshBody' },
+      action: { kind: 'refresh' },
+    };
+    if (applyFocus([net], data, prefs, now).length > 0) return net;
+  }
+  return null;
+}
+
+/** Le filet de sécurité n'est pas un vrai rappel (compté à part dans l'état des rappels). */
+export const isSafetyNet = (r: PlannedReminder) => r.action.kind === 'refresh';
 
 const isCourseReminder = (r: PlannedReminder) =>
   r.action.kind === 'course' || r.action.kind === 'endOfCourse';
@@ -310,11 +449,14 @@ const isCourseReminder = (r: PlannedReminder) =>
  * Limite à MAX_SCHEDULED rappels, les plus proches d'abord, avec au plus MAX_COURSE_REMINDERS
  * rappels de cours : le reste du quota va aux autres rappels, même plus lointains.
  */
-export function capReminders(sorted: readonly PlannedReminder[]): PlannedReminder[] {
+export function capReminders(
+  sorted: readonly PlannedReminder[],
+  max: number = MAX_SCHEDULED,
+): PlannedReminder[] {
   const out: PlannedReminder[] = [];
   let courses = 0;
   for (const r of sorted) {
-    if (out.length >= MAX_SCHEDULED) break;
+    if (out.length >= max) break;
     if (isCourseReminder(r)) {
       if (courses >= MAX_COURSE_REMINDERS) continue;
       courses += 1;
