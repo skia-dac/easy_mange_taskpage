@@ -68,6 +68,21 @@ describe('conflits de synchronisation visibles', () => {
     expect(toast).toHaveBeenCalledTimes(1);
   });
 
+  it('un conflit réglé et un nouveau dans la même synchronisation : le nouveau est annoncé', async () => {
+    await addConflict();
+    await render(<ConflictsGate />);
+    await flush();
+    expect(toast).not.toHaveBeenCalled();
+    // Même nombre (1) avant et après : seul l'id dit qu'il est nouveau.
+    await mockDb.runAsync('UPDATE sync_conflicts SET resolved_at = ? WHERE id = ?', [
+      '2026-09-24T09:00:00.000Z',
+      `c${n}`,
+    ]);
+    await addConflict();
+    expect(toast).toHaveBeenCalledTimes(1);
+    expect(toast.mock.calls[0]![0]).toBe('Un conflit de synchronisation est à régler.');
+  });
+
   it('conflits déjà là à l’ouverture : pas de message (le badge les rappelle)', async () => {
     await addConflict();
     await render(<ConflictsGate />);
