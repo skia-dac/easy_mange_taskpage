@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { ExamRow, WorkRow } from '@/components/AgendaRows';
 import { usePostpone } from '@/components/PostponeSheet';
@@ -26,7 +26,7 @@ import {
   AppText,
   CardSegment,
   cardPosition,
-  ChoiceChips,
+  ChoiceChip,
   ChoiceSheet,
   EmptyState,
   Fab,
@@ -288,33 +288,41 @@ export function TodoPane({ title, switcher, initialTab }: Props) {
               {switcher}
               {study ? (
                 // Une seule rangée de filtres : le type (tâches, examens) puis la matière (menu).
-                <ChoiceChips<string>
-                  scroll
-                  accessibilityLabel={t('tasks.kindFilter')}
-                  options={[
-                    { value: 'task', label: t('tasks.segTasks') },
-                    { value: 'exam', label: t('tasks.segExams') },
-                    ...(subjects.length > 0
-                      ? [
-                          {
-                            value: '__subject',
-                            label: subject
-                              ? t('tasks.subjectChip', { name: subject.name })
-                              : t('tasks.subjectAll'),
-                            leading: subject ? (
-                              <SubjectDot color={colorOf(subject)} size={10} />
-                            ) : null,
-                          },
-                        ]
-                      : []),
-                  ]}
-                  selected={[tab, ...(subject ? ['__subject'] : [])]}
-                  onToggle={(v) =>
-                    v === '__subject'
-                      ? setSubjectSheet(true)
-                      : setTab(v === 'exam' ? 'exam' : 'task')
-                  }
-                />
+                // Tâches / Examens changent la vue : ce sont des onglets (dans un `tablist`) ;
+                // la matière ouvre un menu : c'est un bouton.
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: spacing.sm }}
+                >
+                  <View
+                    accessibilityRole="tablist"
+                    accessibilityLabel={t('tasks.kindFilter')}
+                    style={{ flexDirection: 'row', gap: spacing.sm }}
+                  >
+                    {(['task', 'exam'] as const).map((k) => (
+                      <ChoiceChip
+                        key={k}
+                        accessibilityRole="tab"
+                        label={k === 'task' ? t('tasks.segTasks') : t('tasks.segExams')}
+                        on={tab === k}
+                        onPress={() => setTab(k)}
+                      />
+                    ))}
+                  </View>
+                  {subjects.length > 0 ? (
+                    <ChoiceChip
+                      label={
+                        subject
+                          ? t('tasks.subjectChip', { name: subject.name })
+                          : t('tasks.subjectAll')
+                      }
+                      leading={subject ? <SubjectDot color={colorOf(subject)} size={10} /> : null}
+                      on={!!subject}
+                      onPress={() => setSubjectSheet(true)}
+                    />
+                  ) : null}
+                </ScrollView>
               ) : null}
             </>
           ) : undefined

@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
-import type { ComponentProps, ReactNode } from 'react';
-import { useState } from 'react';
+import type { ComponentProps, ComponentRef, ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { AccessibilityInfo, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { spaceColor } from '@/components/SpaceUi';
@@ -48,6 +48,19 @@ export default function OnboardingScreen() {
   const [picked, setPicked] = useState<ActiveSpaces>(['study']);
   const [savingSpaces, setSavingSpaces] = useState(false);
   const { enabled: accounts } = useAuth();
+
+  // Nouvelle étape : le lecteur d'écran part de son titre, pas du bouton qu'on vient de toucher.
+  const titleRef = useRef<ComponentRef<typeof Text>>(null);
+  const shownStep = useRef(index);
+  useEffect(() => {
+    if (shownStep.current === index) return;
+    shownStep.current = index;
+    // Laisse la nouvelle étape se mettre en page avant d'y poser le focus.
+    const timer = setTimeout(() => {
+      if (titleRef.current) AccessibilityInfo.sendAccessibilityEvent(titleRef.current, 'focus');
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [index]);
 
   const [finishing, setFinishing] = useState(false);
   /**
@@ -201,7 +214,7 @@ export default function OnboardingScreen() {
             <Feather name="sun" size={44} color={colors.onPrimary} />
           </View>
         </View>
-        <AppText variant="title" accessibilityRole="header">
+        <AppText ref={titleRef} variant="title" accessibilityRole="header">
           {t('onboarding.welcome')}
         </AppText>
         {point('sun', t('onboarding.title1'), t('onboarding.body1'))}
@@ -217,7 +230,7 @@ export default function OnboardingScreen() {
   if (index === 1) {
     return page(
       <>
-        <AppText variant="title" accessibilityRole="header">
+        <AppText ref={titleRef} variant="title" accessibilityRole="header">
           {t('spaces.onboardingTitle')}
         </AppText>
         <AppText color="muted">{t('spaces.onboardingHint')}</AppText>
@@ -229,6 +242,7 @@ export default function OnboardingScreen() {
               key={id}
               onPress={() => pick(id, !on)}
               accessibilityLabel={t(`spaces.name.${id}`)}
+              accessibilityHint={t(`spaces.hint.${id}`)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
               style={{ borderWidth: 2, borderColor: on ? colors.primary : colors.border }}
@@ -274,7 +288,7 @@ export default function OnboardingScreen() {
   }
 
   const choice = (icon: Icon, title: string, hint: string, onPress: () => void) => (
-    <Card onPress={onPress} accessibilityLabel={title}>
+    <Card onPress={onPress} accessibilityLabel={title} accessibilityHint={hint}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <IconBadge icon={icon} size={48} />
         <View style={{ flex: 1, gap: spacing.xxs }}>
@@ -289,7 +303,7 @@ export default function OnboardingScreen() {
   );
   return page(
     <>
-      <AppText variant="title" accessibilityRole="header">
+      <AppText ref={titleRef} variant="title" accessibilityRole="header">
         {t('onboarding.howTitle')}
       </AppText>
       <AppText color="muted">{t('onboarding.howHint')}</AppText>

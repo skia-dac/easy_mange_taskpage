@@ -88,6 +88,14 @@ export type TodayView = {
 /** Nombre de jours à l'avance où un examen apparaît dans « Aujourd'hui ». */
 export const EXAM_HORIZON_DAYS = 30;
 
+/** « À faire » sur Aujourd'hui : au-delà, un lien « Voir tout (N) » ouvre le Carnet. */
+export const TODAY_TODO_LIMIT = 6;
+
+/** Les premiers éléments de la liste, et combien il y en a en tout. */
+export function capList<T>(items: readonly T[], limit: number): { shown: T[]; total: number } {
+  return { shown: items.slice(0, Math.max(0, limit)), total: items.length };
+}
+
 /** Tout ce qui concerne la journée (§7) : calculé, jamais stocké (architecture §10.1). */
 export function buildToday(data: TodayData, now: Date): TodayView {
   const today = toIsoDate(now);

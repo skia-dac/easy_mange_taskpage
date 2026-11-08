@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, type AccessibilityRole } from 'react-native';
 
 import { minTouchSize, useTheme } from '../theme';
 import { haptic } from './haptics';
@@ -19,7 +19,62 @@ type Props<T> = {
   accessibilityLabel?: string;
 };
 
-/** Pastilles à choisir (une ou plusieurs). */
+type ChipProps = {
+  label: string;
+  on: boolean;
+  onPress: () => void;
+  leading?: ReactNode;
+  /** « bouton » par défaut ; « onglet » quand la pastille change de vue (dans un `tablist`). */
+  accessibilityRole?: AccessibilityRole;
+  accessibilityHint?: string;
+};
+
+/** Une pastille : choisie, elle est pleine (couleur principale). */
+export function ChoiceChip({
+  label,
+  on,
+  onPress,
+  leading,
+  accessibilityRole = 'button',
+  accessibilityHint,
+}: ChipProps) {
+  const { colors, radius, spacing } = useTheme();
+  return (
+    <Tappable
+      accessibilityRole={accessibilityRole}
+      accessibilityState={{ selected: on }}
+      accessibilityHint={accessibilityHint}
+      onPress={() => {
+        haptic('selection');
+        onPress();
+      }}
+      style={{
+        minHeight: minTouchSize,
+        paddingHorizontal: spacing.lg,
+        borderRadius: radius.md,
+        borderWidth: 1.5,
+        borderColor: on ? colors.primary : colors.border,
+        backgroundColor: on ? colors.primary : colors.surface,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+      }}
+    >
+      {leading}
+      <AppText variant="bodyStrong" color={on ? 'onPrimary' : 'text'}>
+        {label}
+      </AppText>
+    </Tappable>
+  );
+}
+
+/**
+ * Pastilles à choisir (une ou plusieurs).
+ *
+ * Le nom du groupe est lu avec la PREMIÈRE pastille (en indication) : VoiceOver ignore le libellé
+ * d'une vue qui n'est pas elle-même un élément, et rendre cette vue accessible en ferait un seul
+ * élément qui cacherait les pastilles.
+ */
 export function ChoiceChips<T>({
   label,
   options,
@@ -28,39 +83,20 @@ export function ChoiceChips<T>({
   scroll,
   accessibilityLabel,
 }: Props<T>) {
-  const { colors, radius, spacing } = useTheme();
-  const chips = options.map((o, i) => {
-    const on = selected.includes(o.value);
-    return (
-      <Tappable
-        key={i}
-        accessibilityRole="button"
-        accessibilityState={{ selected: on }}
-        onPress={() => {
-          haptic('selection');
-          onToggle(o.value);
-        }}
-        style={{
-          minHeight: minTouchSize,
-          paddingHorizontal: spacing.lg,
-          borderRadius: radius.md,
-          borderWidth: 1.5,
-          borderColor: on ? colors.primary : colors.border,
-          backgroundColor: on ? colors.primary : colors.surface,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.sm,
-        }}
-      >
-        {o.leading}
-        <AppText variant="bodyStrong" color={on ? 'onPrimary' : 'text'}>
-          {o.label}
-        </AppText>
-      </Tappable>
-    );
-  });
+  const { spacing } = useTheme();
+  const group = accessibilityLabel ?? label;
+  const chips = options.map((o, i) => (
+    <ChoiceChip
+      key={i}
+      label={o.label}
+      leading={o.leading}
+      on={selected.includes(o.value)}
+      onPress={() => onToggle(o.value)}
+      accessibilityHint={i === 0 ? group : undefined}
+    />
+  ));
   return (
-    <View accessibilityLabel={accessibilityLabel ?? label} style={{ gap: spacing.sm }}>
+    <View style={{ gap: spacing.sm }}>
       {label ? (
         <AppText variant="caption" color="muted">
           {label}

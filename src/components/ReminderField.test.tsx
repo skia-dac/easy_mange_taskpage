@@ -57,7 +57,7 @@ describe('rappel : la permission est demandée au bon moment', () => {
     await fireEvent.press(screen.getByText('La veille à 18:00'));
     await flush();
     expect(alert).toHaveBeenCalledWith(
-      'Recevoir tes rappels ?',
+      i18n.t('reminder.permissionTitle'),
       expect.stringContaining('notification'),
       expect.any(Array),
       expect.any(Object),

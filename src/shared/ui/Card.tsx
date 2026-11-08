@@ -14,6 +14,8 @@ type Props = {
   children: ReactNode;
   onPress?: () => void;
   accessibilityLabel?: string;
+  /** Ce que fait la carte, lu après son libellé (ex. sa description). */
+  accessibilityHint?: string;
   /** Rôle annoncé par le lecteur d'écran (par défaut « bouton ») et son état (coché…). */
   accessibilityRole?: AccessibilityRole;
   accessibilityState?: AccessibilityState;
@@ -25,6 +27,7 @@ export function Card({
   children,
   onPress,
   accessibilityLabel,
+  accessibilityHint,
   accessibilityRole = 'button',
   accessibilityState,
   style,
@@ -42,6 +45,7 @@ export function Card({
     <PressableScale
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityState={accessibilityState}
       onPress={onPress}
       style={[base, style]}

@@ -1,3 +1,4 @@
+import type { ComponentRef, Ref } from 'react';
 import { Text, type TextProps } from 'react-native';
 
 import {
@@ -11,6 +12,8 @@ type Props = TextProps & {
   variant?: TextVariant;
   /** Nom d'une couleur du thème (jamais une valeur en dur). */
   color?: keyof ColorTokens;
+  /** Pour y poser le focus du lecteur d'écran (titre d'une nouvelle étape…). */
+  ref?: Ref<ComponentRef<typeof Text>>;
 };
 
 /**

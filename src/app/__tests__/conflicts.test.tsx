@@ -51,7 +51,7 @@ describe('conflits de synchronisation', () => {
     await fireEvent.press(screen.getByText('Ignorer'));
     await flush();
     expect(cancel).toHaveBeenCalledWith(
-      'Abandonner ta version ?',
+      i18n.t('conflicts.ignoreTitle'),
       expect.any(String),
       expect.any(Array),
       expect.any(Object),

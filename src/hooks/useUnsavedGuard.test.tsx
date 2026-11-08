@@ -39,7 +39,7 @@ describe('garde « Abandonner les modifications ? »', () => {
     tryToLeave();
     expect(alert).toHaveBeenCalledTimes(1);
     const [title, , buttons] = alert.mock.calls[0]!;
-    expect(title).toBe('Abandonner les modifications ?');
+    expect(title).toBe(i18n.t('unsaved.title'));
     expect(buttons?.map((b) => [b.text, b.style])).toEqual([
       ['Continuer la saisie', 'cancel'],
       ['Abandonner', 'destructive'],

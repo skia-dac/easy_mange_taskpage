@@ -9,6 +9,7 @@ import {
   doneInWeek,
   isDone,
   logOn,
+  restoreHabitDay,
   setHabitDone,
   streak,
   type Habit,
@@ -130,7 +131,16 @@ export function HabitRow({ habit, logs, day, today, weekStart, onMore }: Props) 
           <Checkbox
             checked={done}
             accessibilityLabel={habit.name}
-            onToggle={() => setHabitDone(db, habit.id, day, !done).catch(fail)}
+            onToggle={() => {
+              // « Annuler » remet la journée exactement comme avant (raison d'un « pas fait »…).
+              const previous = log ?? null;
+              void setHabitDone(db, habit.id, day, !done).then(() => {
+                if (done) return;
+                showUndoToast(t('habits.doneToast', { name: habit.name }), () =>
+                  restoreHabitDay(db, habit.id, day, previous),
+                );
+              }, fail);
+            }}
           />
         )}
         <Tappable

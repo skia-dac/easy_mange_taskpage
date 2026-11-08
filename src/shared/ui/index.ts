@@ -9,7 +9,7 @@ export { ChoiceSheet } from './ChoiceSheet';
 export type { ChoiceOption } from './ChoiceSheet';
 export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
-export { ChoiceChips } from './ChoiceChips';
+export { ChoiceChip, ChoiceChips } from './ChoiceChips';
 export { DateTimeField } from './DateTimeField';
 export { Disclosure } from './Disclosure';
 export {

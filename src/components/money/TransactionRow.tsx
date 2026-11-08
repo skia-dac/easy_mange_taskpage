@@ -26,6 +26,10 @@ export function TransactionRow({
     item.kind === 'expense' || item.kind === 'income'
       ? labels.categoryName(category)
       : labels.kind(item.kind);
+  const amount = formatMoney(inflow ? item.amountMinor : -item.amountMinor, item.currency, {
+    signed: true,
+    symbol: false,
+  });
   return (
     <ListRow
       title={title}
@@ -37,12 +41,10 @@ export function TransactionRow({
       leading={<CategoryBadge category={category} />}
       trailing={
         <AppText variant="bodyStrong" color={inflow ? 'success' : 'text'}>
-          {formatMoney(inflow ? item.amountMinor : -item.amountMinor, item.currency, {
-            signed: true,
-            symbol: false,
-          })}
+          {amount}
         </AppText>
       }
+      trailingLabel={amount}
       onPress={() => router.push({ pathname: '/money/add', params: { id: item.id } })}
     />
   );

@@ -103,7 +103,8 @@
       "workHint": "Add your first task or an appointment: your day will show up here.",
       "personalTitle": "Organise your personal life",
       "personalHint": "Add a first task, or create a habit to follow every day."
-    }
+    },
+    "todoSeeAll": "See all ({{count}})"
   },
   "countdown": {
     "today": "Today",
@@ -162,7 +163,7 @@
       "event": "Appointments"
     },
     "hoursHint": "Long-press an item, then drag it to change its day or time.",
-    "moveHint": "Long-press then drag to move",
+    "moveHint": "Long-press then drag to move. With a screen reader, use the actions.",
     "moveCourseTitle": "Move this class?",
     "moveCourseMessage": "Only this session moves to {{date}} at {{time}}. Other weeks stay the same.",
     "moveConfirm": "Move",
@@ -176,7 +177,15 @@
       "day": "Next day",
       "week": "Next week",
       "month": "Next month"
-    }
+    },
+    "open": "Open",
+    "moveEarlier": "Move 15 min earlier",
+    "moveLater": "Move 15 min later",
+    "movePreviousDay": "Move to the previous day",
+    "moveNextDay": "Move to the next day",
+    "todayCell": "today",
+    "offCell": "holiday, no classes",
+    "hasItemsCell": "has items"
   },
   "calendarItem": {
     "exam": "Exam",
@@ -973,7 +982,8 @@
       "edit-3": "Pencil",
       "map-pin": "Map pin",
       "smartphone": "Phone"
-    }
+    },
+    "doneToast": "Done: {{name}}"
   },
   "account": {
     "title": "Account and sync",
@@ -1526,7 +1536,8 @@
     "recurringKindLabel": "Fixed cost or tontine",
     "frequency": "Frequency",
     "leftBar": "Share of budget left",
-    "leftBarValue": "{{percent}}% left"
+    "leftBarValue": "{{percent}}% left",
+    "backToCurrent": "Goes back to the current period"
   },
   "glance": {
     "money": "Money",

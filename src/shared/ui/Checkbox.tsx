@@ -8,7 +8,9 @@ import { Tappable } from './Tappable';
 
 type Props = { checked: boolean; onToggle: () => void; accessibilityLabel: string };
 
-/** Case à cocher ronde, zone touchable de 44 pt. */
+/**
+ * Case à cocher carrée aux coins arrondis (tâches, devoirs, habitudes), zone touchable de 44 pt.
+ */
 export function Checkbox({ checked, onToggle, accessibilityLabel }: Props) {
   const { colors, spacing } = useTheme();
   return (

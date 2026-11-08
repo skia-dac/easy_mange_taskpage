@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { CourseSeries, Exam, Subject } from '@/modules/academic';
 import type { WorkItem } from '@/modules/productivity';
-import { filterBySpaces, type TodayData } from '@/projections';
+import { capList, filterBySpaces, TODAY_TODO_LIMIT, type TodayData } from '@/projections';
 import { SpacesContext, spacesValue } from '@/shared/SpacesContext';
 import { i18n } from '@/shared/i18n';
 
@@ -252,5 +253,29 @@ describe('écran Aujourd’hui', () => {
     );
     expect(screen.getByText('Organise ta vie perso')).toBeTruthy();
     expect(screen.getByText('Nouvelle habitude')).toBeTruthy();
+  });
+
+  it('« À faire » est plafonné : les premiers, puis « Voir tout (N) » vers le Carnet', async () => {
+    expect(capList([1, 2, 3], 2)).toEqual({ shown: [1, 2], total: 3 });
+    expect(capList([1], 6)).toEqual({ shown: [1], total: 1 });
+    const many = Array.from({ length: TODAY_TODO_LIMIT + 3 }, (_, i) => ({
+      ...late,
+      id: `w${i}`,
+      title: `Retard ${i + 1}`,
+    }));
+    mockAgenda = { series: [series], exams: [exam], work: many, events: [] };
+    mockAgendaQuery = () => ({ data: mockAgenda, loading: false, error: null });
+    mockSubjects = [subject];
+    const navigate = jest.spyOn(router, 'navigate').mockImplementation(() => {});
+    await render(<TodayScreen />);
+    expect(screen.getAllByText(/^Retard \d+$/)).toHaveLength(TODAY_TODO_LIMIT);
+    expect(screen.queryByText(`Retard ${TODAY_TODO_LIMIT + 1}`)).toBeNull();
+    await fireEvent.press(
+      screen.getByRole('button', {
+        name: i18n.t('today.todoSeeAll', { count: TODAY_TODO_LIMIT + 3 }),
+      }),
+    );
+    expect(navigate).toHaveBeenCalledWith('/(tabs)/tasks?view=todo');
+    navigate.mockRestore();
   });
 });

@@ -221,6 +221,34 @@ export async function setHabitDone(
   });
 }
 
+/**
+ * « Annuler » après avoir coché : la journée revient exactement comme avant (rien de noté, ou
+ * « pas fait » / « excusé » avec sa raison, ou un compte et une durée).
+ */
+export async function restoreHabitDay(
+  db: Db,
+  habitId: string,
+  date: IsoDate,
+  previous: HabitLog | null,
+): Promise<void> {
+  await write(db, async (w) => {
+    const row = await currentLog(w, habitId, date);
+    if (!previous) {
+      if (row) await w.softDelete('habit_logs', row.id);
+      return;
+    }
+    const values = {
+      count: previous.count,
+      status: previous.status,
+      reason_code: previous.reasonCode,
+      reason: previous.reason,
+      duration_minutes: previous.durationMinutes,
+    };
+    if (row) await w.update('habit_logs', row.id, values);
+    else await w.insert('habit_logs', { habit_id: habitId, date, ...values });
+  });
+}
+
 /** +1 (ou −1) sur une habitude chiffrée (verres d'eau…). Ne descend jamais sous 0. */
 export async function addHabitCount(
   db: Db,

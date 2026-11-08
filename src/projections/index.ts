@@ -1,6 +1,13 @@
 export { calendarDays, calendarStep } from './calendar';
 export type { CalendarItem, CalendarViewMode } from './calendar';
-export { buildDayLine, buildToday, EXAM_HORIZON_DAYS, nextCourse } from './today';
+export {
+  buildDayLine,
+  buildToday,
+  capList,
+  EXAM_HORIZON_DAYS,
+  nextCourse,
+  TODAY_TODO_LIMIT,
+} from './today';
 export type { DayEntry, DayLine, NextCourse, TodayData, TodayView } from './today';
 export { loadAgenda, useAgendaData } from './useAgendaData';
 export { filterBySpaces } from './spaces';

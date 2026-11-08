@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { minTouchSize, useTheme } from '../theme';
 import { haptic } from './haptics';
 import { AppText } from './AppText';
-import { useLineLimit } from './useLargeText';
+import { useLargeText } from './useLargeText';
 import { Tappable } from './Tappable';
 
 type Props<T extends string> = {
@@ -17,7 +17,10 @@ type Props<T extends string> = {
 /** Marge entre le rail et le segment choisi (comme le contrôle segmenté d'iOS). */
 const SEGMENT_INSET = 3;
 
-/** Choix exclusif sur une ligne (ex. Jour / Semaine / Mois). */
+/**
+ * Choix exclusif sur une ligne (ex. Jour / Semaine / Mois). Avec un très grand texte, rien n'est
+ * coupé, et à partir de 4 choix ils passent sur deux lignes (2 × 2) plutôt que de casser les mots.
+ */
 export function Segmented<T extends string>({
   options,
   value,
@@ -25,13 +28,16 @@ export function Segmented<T extends string>({
   accessibilityLabel,
 }: Props<T>) {
   const { colors, radius, spacing } = useTheme();
-  const lines = useLineLimit(1);
+  const large = useLargeText();
+  const lines = large ? undefined : 1;
+  const wrap = large && options.length > 3;
   return (
     <View
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
       style={{
         flexDirection: 'row',
+        flexWrap: wrap ? 'wrap' : 'nowrap',
         backgroundColor: colors.border,
         borderRadius: radius.md,
         padding: SEGMENT_INSET,
@@ -51,7 +57,10 @@ export function Segmented<T extends string>({
               onChange(o.value);
             }}
             style={{
-              flex: 1,
+              flexGrow: 1,
+              flexShrink: 1,
+              // Deux par ligne quand les choix passent sur deux lignes.
+              flexBasis: wrap ? '50%' : 0,
               minHeight: minTouchSize,
               borderRadius: radius.md - SEGMENT_INSET,
               paddingHorizontal: spacing.xs,

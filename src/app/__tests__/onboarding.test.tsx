@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
+import { AccessibilityInfo, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { getActiveSpaces, isOnboardingDone } from '@/modules/identity';
@@ -157,5 +157,25 @@ describe('première utilisation', () => {
     await fireEvent.press(screen.getByLabelText('Ajouter mes matières'));
     await flush();
     expect(router.push).toHaveBeenCalledWith('/subjects/form');
+  });
+
+  it('lecteur d’écran : chaque nouvelle étape part de son titre, les cartes lisent leur description', async () => {
+    jest.useFakeTimers();
+    const focus = jest
+      .spyOn(AccessibilityInfo, 'sendAccessibilityEvent')
+      .mockImplementation(() => {});
+    await show();
+    expect(focus).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByRole('button', { name: 'Suivant' }));
+    await act(async () => jest.advanceTimersByTime(200));
+    expect(focus).toHaveBeenCalledTimes(1);
+    const [node, event] = focus.mock.calls[0]!;
+    expect(event).toBe('focus');
+    expect((node as unknown as { props: { children: string } }).props.children).toBe(
+      i18n.t('spaces.onboardingTitle'),
+    );
+    const study = screen.getByRole('checkbox', { name: i18n.t('spaces.name.study') });
+    expect(study.props.accessibilityHint).toBe(i18n.t('spaces.hint.study'));
+    jest.useRealTimers();
   });
 });
