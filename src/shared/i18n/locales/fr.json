@@ -582,13 +582,14 @@
     "moneyBodyTime": "{{amount}} · le {{date}} à {{time}}",
     "payoutTitle": "C’est ton tour : {{name}}",
     "payoutBody": "Tu reçois {{amount}} aujourd’hui.",
-    "workBodyNoDate": "{{title}}"
+    "workBodyNoDate": "{{title}}",
+    "reviewBodyFirst": "Nouveau : 1 minute chaque soir pour préparer demain. Tu peux le couper dans Réglages › Notifications.",
+    "refreshTitle": "Tes rappels s’arrêtent bientôt",
+    "refreshBody": "Ouvre MySky pour garder tes rappels à jour."
   },
   "settings": {
     "title": "Réglages",
     "notifications": "Notifications",
-    "permissionOff": "Les notifications sont désactivées pour MySky. Active-les dans les Réglages de ton téléphone pour recevoir tes rappels.",
-    "openSettings": "Ouvrir les réglages du téléphone",
     "allow": "Autoriser les notifications",
     "courses": "Rappels de cours",
     "courseMinutes": "Avant chaque cours",
@@ -642,10 +643,25 @@
     "revisions": "Révisions prévues",
     "revisionsHint": "10 minutes avant chaque séance.",
     "eveningReview": "Bilan du soir",
-    "eveningReviewHint": "Un rappel chaque soir pour préparer demain.",
+    "eveningReviewHint": "Activé au départ : un rappel chaque soir pour préparer demain. Coupe-le ici si tu n’en veux pas.",
     "eveningReviewTime": "Heure du bilan",
     "money": "Argent : charges fixes et tontines",
-    "moneyHint": "Aux moments choisis sur chaque charge ou tontine."
+    "moneyHint": "Aux moments choisis sur chaque charge ou tontine.",
+    "reminderStatus": {
+      "active_one": "Rappels actifs : {{count}} programmé, jusqu’au {{date}}",
+      "active_other": "Rappels actifs : {{count}} programmés, jusqu’au {{date}}",
+      "activeHint": "Ouvre MySky de temps en temps pour les prolonger : sinon, une notification te le rappellera le {{date}}.",
+      "activeHintNoNet": "Ils sont reprogrammés à chaque ouverture de MySky.",
+      "none": "Rappels actifs : aucun à venir pour l’instant",
+      "pending": "Rappels en cours de programmation…",
+      "paused": "Rappels en pause",
+      "pausedHint": "Tous les rappels sont coupés. Active ceux que tu veux ci-dessous.",
+      "denied": "Notifications refusées : tes rappels ne sonneront pas",
+      "deniedHint": "Seuls les réglages du téléphone peuvent les réactiver.",
+      "undetermined": "Notifications pas encore autorisées : tes rappels ne sonneront pas",
+      "openSettings": "Ouvrir les réglages",
+      "updatedAt": "Mis à jour le {{date}}"
+    }
   },
   "reminder": {
     "pastError": "Ce moment est déjà passé : choisis une heure à venir pour que le rappel sonne.",

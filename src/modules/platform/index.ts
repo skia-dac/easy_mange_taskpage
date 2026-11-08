@@ -7,6 +7,13 @@ export {
   planReminders,
 } from './notifications/plan';
 export {
+  getReminderRunStatus,
+  REMINDER_STATUS_KEY,
+  reminderStatusView,
+  remindersPaused,
+} from './notifications/status';
+export type { ReminderRunStatus, ReminderStatusView } from './notifications/status';
+export {
   defineNotificationsTask,
   NOTIFICATIONS_TASK,
   refreshNotificationsInBackground,

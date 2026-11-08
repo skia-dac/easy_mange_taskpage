@@ -4,6 +4,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { backToList, goBack } from '@/components/navigation';
 import { EditLoadView } from '@/components/EditLoadView';
 import { useEditLoad } from '@/hooks/useEditLoad';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import type { ComponentProps } from 'react';
 import { useState } from 'react';
@@ -87,11 +88,11 @@ export default function HabitFormScreen() {
 
   const submit = () =>
     run(async () => {
+      const input = toInput();
       if (params.id) {
-        await updateHabit(db, params.id, toInput());
+        await updateHabit(db, params.id, input);
         leave(goBack);
       } else {
-        const input = toInput();
         const id = await createHabit(db, input);
         leave(() => {
           router.replace({ pathname: '/habits/[id]', params: { id } });
@@ -100,6 +101,8 @@ export default function HabitFormScreen() {
             router.push({ pathname: '/habits/checkpoint', params: { habitId: id } });
         });
       }
+      // Rappel à l'heure choisie : sans permission, il ne sonnerait jamais.
+      if (input.reminderTime) void askNotificationPermission(db);
     });
 
   const remove = async () => {

@@ -3,6 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { goBack } from '@/components/navigation';
 import { EditLoadView } from '@/components/EditLoadView';
 import { useEditLoad } from '@/hooks/useEditLoad';
+import { askNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useDirty, useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -169,6 +170,10 @@ export default function RecurringFormScreen() {
       if (params.id) await updateRecurring(db, params.id, input);
       else await createRecurring(db, input);
       leave(goBack);
+      // Rappels d'échéance ou du tour de tontine : sans permission, ils ne sonneraient jamais.
+      const payout = input.kind === 'tontine' && !!input.payoutDate;
+      if (input.active && (input.reminders.length > 0 || payout))
+        void askNotificationPermission(db);
     });
 
   const remove = async () => {

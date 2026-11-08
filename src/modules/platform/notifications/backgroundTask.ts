@@ -2,8 +2,10 @@ import * as BackgroundTask from 'expo-background-task';
 import { openDatabaseAsync } from 'expo-sqlite';
 import * as TaskManager from 'expo-task-manager';
 
+import { getLanguagePreference } from '@/modules/identity';
 import { loadAgenda } from '@/projections';
-import { DATABASE_NAME, setupDatabase } from '@/shared/db';
+import { DATABASE_NAME, setupDatabase, type Db } from '@/shared/db';
+import { detectLanguage, i18n } from '@/shared/i18n';
 import { logger } from '@/shared/logger';
 
 import { syncScheduledNotifications } from './scheduler';
@@ -17,11 +19,24 @@ export const NOTIFICATIONS_TASK = 'mysky-notifications-refresh';
 /** Intervalle minimal demandé au système (en minutes) : une fois par jour. */
 export const NOTIFICATIONS_TASK_INTERVAL_MINUTES = 24 * 60;
 
+/**
+ * Langue choisie dans les réglages. Lancée en tâche de fond, l'app peut ne pas avoir monté
+ * `LanguageGate` : sans cela, les rappels seraient écrits dans la langue du téléphone.
+ */
+export async function applyLanguagePreference(db: Db): Promise<void> {
+  const pref = await getLanguagePreference(db);
+  const target = pref === 'auto' ? detectLanguage() : pref;
+  if (i18n.language !== target) await i18n.changeLanguage(target);
+}
+
 /** Corps de la tâche : ouvre la base, recharge l'agenda et reprogramme les rappels. */
 export async function refreshNotificationsInBackground(now = new Date()): Promise<number> {
   const db = await openDatabaseAsync(DATABASE_NAME);
   try {
     await setupDatabase(db);
+    await applyLanguagePreference(db).catch((e: unknown) =>
+      logger.error(e, { where: 'backgroundLanguage' }),
+    );
     const data = await loadAgenda(db);
     return await syncScheduledNotifications(db, data, now);
   } finally {
